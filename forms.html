@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Michigan Forms of Justice</title>
+  <title>Michigan Courts - Court Forms</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <!-- ========================= -->
@@ -15,11 +15,10 @@
   <!-- ========================= -->
   <link rel="stylesheet" href="css/forms.css">
 
-  <!-- PapaParse for CSV -->
+  <!-- PapaParse for CSV parsing -->
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 </head>
 
-<!-- Add data-page attribute for JS to know current page -->
 <body data-page="forms">
 
   <!-- ================================================= -->
@@ -29,18 +28,18 @@
     <div class="header-inner">
 
       <div class="logo-container">
-        <a href="/courts" class="logo-link" data-page="home">
+        <a href="/courts" class="logo-link">
           <img src="images/court-logo.png.png" alt="Michigan Courts Logo" class="logo-img">
           <span class="logo-text">Michigan Courts</span>
         </a>
       </div>
 
       <nav class="nav">
-        <a href="/courts" data-page="home">Home</a>
-        <a href="/courts/case-search" data-page="case-search">Case Search</a>
-        <a href="/courts/forms" data-page="forms">Court Forms</a>
-        <a href="/courts/e-filing" data-page="e-filing">E-Filing</a>
-        <a href="/courts/test" data-page="contact">Contact</a>
+        <a href="/courts">Home</a>
+        <a href="/courts/case-search">Case Search</a>
+        <a href="/courts/forms" class="active">Court Forms</a>
+        <a href="/courts/e-filing">E-Filing</a>
+        <a href="/courts/test">Contact</a>
       </nav>
 
     </div>
@@ -50,48 +49,52 @@
   <!-- FORMS APPLICATION -->
   <!-- ================================================= -->
   <div class="app">
+    <main>
 
-    <!-- Page-specific header -->
-    <div class="page-header">
-      <h1>Michigan Forms of Justice</h1>
-      <p>Search, filter, and access official Michigan court forms.</p>
-    </div>
+      <!-- Page-specific header -->
+      <section class="page-header">
+        <h1>Michigan Forms of Justice</h1>
+        <p>Search, filter, and access official Michigan court forms.</p>
+      </section>
 
-    <!-- Controls -->
-    <div id="controls" class="controls-disabled">
-      <input
-        class="search-input"
-        id="searchInput"
-        placeholder="Search…"
-        onkeyup="applyFilters()"
-      >
+      <!-- Controls -->
+      <section id="controls" class="controls-disabled">
+        <input
+          class="search-input"
+          id="searchInput"
+          placeholder="Search…"
+          onkeyup="applyFilters()"
+        >
 
-      <div class="filter-group">
-        <strong>Court Level:</strong><br>
-        <button class="filter-btn active" onclick="setCourt('all',this)">All</button>
-        <button class="filter-btn" onclick="setCourt('district',this)">District Court</button>
-        <button class="filter-btn" onclick="setCourt('supreme',this)">Supreme Court</button>
-      </div>
+        <div class="filter-group">
+          <strong>Court Level:</strong><br>
+          <button class="filter-btn active" onclick="setCourt('all',this)">All</button>
+          <button class="filter-btn" onclick="setCourt('district',this)">District Court</button>
+          <button class="filter-btn" onclick="setCourt('supreme',this)">Supreme Court</button>
+        </div>
 
-      <div class="filter-group" id="categoryFilters"></div>
-    </div>
+        <div class="filter-group" id="categoryFilters"></div>
+      </section>
 
-    <!-- Forms -->
-    <div class="forms-wrapper">
+      <!-- Forms List -->
+      <section class="forms-wrapper">
 
-      <div class="skeleton-list" id="skeletons">
-        <div class="skeleton-card"></div>
-        <div class="skeleton-card"></div>
-        <div class="skeleton-card"></div>
-        <div class="skeleton-card"></div>
-      </div>
+        <!-- Skeleton Loading State -->
+        <div class="skeleton-list" id="skeletons">
+          <div class="skeleton-card"></div>
+          <div class="skeleton-card"></div>
+          <div class="skeleton-card"></div>
+          <div class="skeleton-card"></div>
+        </div>
 
-      <div class="forms-list" id="formsList">
-        <div class="empty-state" id="emptyState">No results found</div>
-      </div>
+        <!-- Actual Forms -->
+        <div class="forms-list" id="formsList">
+          <div class="empty-state" id="emptyState">No results found</div>
+        </div>
 
-    </div>
+      </section>
 
+    </main>
   </div>
 
   <!-- ================================================= -->
@@ -103,26 +106,6 @@
   <!-- FORMS PAGE SPECIFIC JS -->
   <!-- ================================================= -->
   <script src="js/forms.js"></script>
-
-  <!-- ================================================= -->
-  <!-- NAV HIGHLIGHT SCRIPT -->
-  <!-- ================================================= -->
-  <script>
-    // Highlight active nav link based on body data-page
-    window.highlightActiveNav = () => {
-      const links = document.querySelectorAll(".nav a");
-      const currentPage = document.body.dataset.page;
-
-      links.forEach(link => {
-        link.classList.remove("active"); // remove any existing active
-        if (link.dataset.page === currentPage) {
-          link.classList.add("active"); // highlight current page
-        }
-      });
-    };
-
-    document.addEventListener("DOMContentLoaded", highlightActiveNav);
-  </script>
 
 </body>
 </html>
