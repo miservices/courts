@@ -6,6 +6,26 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="stylesheet" href="css/style.css">
 <link rel="stylesheet" href="css/case-search.css">
+<style>
+/* Override header styling for Case Lookup page */
+.app .header {
+  background: transparent;   /* remove white background */
+  padding: 0;                /* remove extra padding */
+  border-radius: 0;           /* remove rounded corners */
+  box-shadow: none;           /* remove shadow */
+  margin-bottom: 20px;        /* spacing below header */
+}
+.app .header h1 {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--accent);
+}
+.app .header p {
+  margin-top: 6px;
+  color: var(--muted);
+}
+</style>
 </head>
 <body>
 
@@ -33,11 +53,13 @@
 
 <!-- PAGE CONTENT -->
 <div class="app">
+  <!-- Header without white card -->
   <div class="header">
     <h1>Case Lookup</h1>
     <p>Search court cases by Case Number, Title, or Parties</p>
   </div>
 
+  <!-- Search box -->
   <div class="search">
     <div class="search-grid">
       <div class="field">
