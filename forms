@@ -1,30 +1,52 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Michigan Forms of Justice</title>
+  <meta charset="UTF-8">
+  <title>Michigan Forms of Justice</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<!-- PapaParse for CSV -->
-<script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+  <!-- ========================= -->
+  <!-- GLOBAL / SITE-WIDE CSS -->
+  <!-- ========================= -->
+  <link rel="stylesheet" href="css/style.css">
 
-<!-- CSS -->
-<link rel="stylesheet" href="css/forms.css">
+  <!-- ========================= -->
+  <!-- FORMS PAGE SPECIFIC CSS -->
+  <!-- ========================= -->
+  <link rel="stylesheet" href="css/forms.css">
+
+  <!-- PapaParse for CSV -->
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 </head>
 <body>
 
-<!-- Top Bar Header (from index.html) -->
-<header class="top-bar">
-  <div class="logo">⚖️ CaseTracker</div>
-  <nav class="nav-links">
-    <a href="index.html">Home</a>
-    <a href="case-search.html">Search Cases</a>
-    <a href="forms.html">Forms</a>
-    <a href="e-filing.html">E-Filing</a>
-  </nav>
+<!-- ================================================= -->
+<!-- FULL WIDTH HEADER (Michigan Courts) -->
+<!-- ================================================= -->
+<header class="header">
+  <div class="header-inner">
+
+    <div class="logo-container">
+      <a href="index.html" class="logo-link">
+        <img src="images/court-logo.png.png" alt="Michigan Courts Logo" class="logo-img">
+        <span class="logo-text">Michigan Courts</span>
+      </a>
+    </div>
+
+    <nav class="nav">
+      <a href="index.html">Home</a>
+      <a href="case-search.html">Case Search</a>
+      <a href="forms.html" class="active">Court Forms</a>
+      <a href="e-filing.html">E-Filing</a>
+      <a href="#">Contact</a>
+    </nav>
+
+  </div>
 </header>
 
-<!-- Forms App Container -->
+<!-- ================================================= -->
+<!-- FORMS APPLICATION -->
+<!-- ================================================= -->
 <div class="app">
 
   <div class="header">
@@ -34,7 +56,12 @@
 
   <!-- Controls -->
   <div id="controls" class="controls-disabled">
-    <input class="search-input" id="searchInput" placeholder="Search…" onkeyup="applyFilters()">
+    <input
+      class="search-input"
+      id="searchInput"
+      placeholder="Search…"
+      onkeyup="applyFilters()"
+    >
 
     <div class="filter-group">
       <strong>Court Level:</strong><br>
@@ -48,6 +75,7 @@
 
   <!-- Forms -->
   <div class="forms-wrapper">
+
     <div class="skeleton-list" id="skeletons">
       <div class="skeleton-card"></div>
       <div class="skeleton-card"></div>
@@ -58,11 +86,20 @@
     <div class="forms-list" id="formsList">
       <div class="empty-state" id="emptyState">No results found</div>
     </div>
+
   </div>
 
 </div>
 
-<!-- JS -->
+<!-- ================================================= -->
+<!-- GLOBAL / SITE-WIDE JS -->
+<!-- ================================================= -->
+<script src="js/main.js"></script>
+
+<!-- ================================================= -->
+<!-- FORMS PAGE SPECIFIC JS -->
+<!-- ================================================= -->
 <script src="js/forms.js"></script>
+
 </body>
 </html>
