@@ -1,276 +1,65 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Michigan Forms of Justice</title>
+  <meta charset="UTF-8">
+  <title>Michigan Forms of Justice</title>
 
-<script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+  <!-- Global CSS -->
+  <link rel="stylesheet" href="css/style.css">
 
-<style>
-:root{
-  --bg:#f6f7f9;
-  --card:#ffffff;
-  --border:#e2e5ea;
-  --text:#1f2937;
-  --muted:#6b7280;
-  --accent:#3b4a67;
-  --accent-soft:#eef1f6;
-  --radius:10px;
-  --shadow:0 1px 2px rgba(0,0,0,.04);
-  --highlight:#fff8a2;
-}
-*{box-sizing:border-box}
-body{
-  margin:0;
-  background:var(--bg);
-  font-family:Arial,Helvetica,sans-serif;
-  color:var(--text);
-  padding:28px 16px;
-}
-.app{max-width:1100px;margin:0 auto}
+  <!-- Page CSS -->
+  <link rel="stylesheet" href="css/forms.css">
 
-/* ===== Header / Controls ===== */
-.header{margin-bottom:22px}
-.header h1{margin:0;font-size:28px;font-weight:700;color:var(--accent)}
-.header p{margin-top:6px;color:var(--muted)}
-
-.search-input{
-  width:100%;
-  max-width:360px;
-  height:38px;
-  padding:0 12px;
-  border:1px solid var(--border);
-  border-radius:6px;
-  margin-bottom:16px;
-}
-
-.filter-group{margin-bottom:16px}
-.filter-btn{
-  margin:4px 6px 0 0;
-  padding:8px 14px;
-  font-size:13px;
-  border:1px solid var(--border);
-  border-radius:6px;
-  background:#f2f2f2;
-  cursor:pointer;
-}
-.filter-btn.active{
-  background:var(--accent-soft);
-  border-color:var(--accent);
-  color:var(--accent);
-}
-
-/* ===== Disabled State Until Load ===== */
-.controls-disabled{
-  pointer-events:none;
-  opacity:.55;
-}
-
-/* ===== Forms ===== */
-.forms-wrapper{position:relative}
-.forms-list{display:grid;gap:16px}
-
-.form-card{
-  background:var(--card);
-  border:1px solid var(--border);
-  border-radius:var(--radius);
-  padding:18px;
-  box-shadow:var(--shadow);
-  display:flex;
-  justify-content:space-between;
-  cursor:pointer;
-}
-.form-title{font-size:16px;font-weight:700;color:var(--accent);margin-bottom:6px}
-.form-meta{font-size:13px;color:var(--muted);margin-bottom:8px}
-.form-desc{font-size:14px}
-
-.copy-btn{
-  padding:8px 16px;
-  background:var(--accent);
-  color:#fff;
-  border-radius:6px;
-  text-decoration:none;
-  align-self:center;
-}
-
-.empty-state{
-  display:none;
-  text-align:center;
-  padding:50px;
-  border:1px dashed var(--border);
-  background:var(--accent-soft);
-  border-radius:var(--radius);
-}
-
-/* ===== Skeleton Loader (FORMS ONLY) ===== */
-.skeleton-list{
-  position:absolute;
-  inset:0;
-  display:grid;
-  gap:16px;
-}
-.skeleton-card{
-  height:96px;
-  border-radius:var(--radius);
-  background:linear-gradient(
-    90deg,
-    #e5e7eb 25%,
-    #f3f4f6 37%,
-    #e5e7eb 63%
-  );
-  background-size:400% 100%;
-  animation:shimmer 1.4s infinite;
-}
-@keyframes shimmer{
-  0%{background-position:100% 0}
-  100%{background-position:-100% 0}
-}
-
-/* ===== Search Highlight ===== */
-.highlight{background:var(--highlight)}
-</style>
+  <!-- PapaParse -->
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 </head>
 
 <body>
+  <div class="app">
 
-<div class="app">
-
-  <div class="header">
-    <h1>Michigan Forms of Justice</h1>
-    <p>Search, filter, and access official Michigan court forms.</p>
-  </div>
-
-  <!-- Controls (disabled until load) -->
-  <div id="controls" class="controls-disabled">
-    <input class="search-input" id="searchInput" placeholder="Search…" onkeyup="applyFilters()">
-
-    <div class="filter-group">
-      <strong>Court Level:</strong><br>
-      <button class="filter-btn active" onclick="setCourt('all',this)">All</button>
-      <button class="filter-btn" onclick="setCourt('district',this)">District Court</button>
-      <button class="filter-btn" onclick="setCourt('supreme',this)">Supreme Court</button>
+    <div class="header">
+      <h1>Michigan Forms of Justice</h1>
+      <p>Search, filter, and access official Michigan court forms.</p>
     </div>
 
-    <div class="filter-group" id="categoryFilters"></div>
-  </div>
+    <!-- Controls -->
+    <div id="controls" class="controls-disabled">
+      <input
+        class="search-input"
+        id="searchInput"
+        placeholder="Search…"
+      >
 
-  <!-- Forms -->
-  <div class="forms-wrapper">
-    <div class="skeleton-list" id="skeletons">
-      <div class="skeleton-card"></div>
-      <div class="skeleton-card"></div>
-      <div class="skeleton-card"></div>
-      <div class="skeleton-card"></div>
-    </div>
-
-    <div class="forms-list" id="formsList">
-      <div class="empty-state" id="emptyState">No results found</div>
-    </div>
-  </div>
-
-</div>
-
-<script>
-let activeCourt="all",activeCategory="all",allForms=[];
-const categories={all:["all"],district:["all"],supreme:["all"]};
-
-/* ===== Filters ===== */
-function setCourt(c,b){
-  activeCourt=c;activeCategory="all";
-  document.querySelectorAll(".filter-btn").forEach(x=>x.classList.remove("active"));
-  b.classList.add("active");
-  renderCategoryButtons();applyFilters();
-}
-function setCategory(c,b){
-  activeCategory=c;
-  document.querySelectorAll("#categoryFilters .filter-btn").forEach(x=>x.classList.remove("active"));
-  b.classList.add("active");applyFilters();
-}
-function renderCategoryButtons(){
-  categoryFilters.innerHTML="<strong>Category:</strong><br>";
-  (categories[activeCourt]||["all"]).forEach(c=>{
-    const b=document.createElement("button");
-    b.className="filter-btn"+(c==="all"?" active":"");
-    b.textContent=c;
-    b.onclick=()=>setCategory(c,b);
-    categoryFilters.appendChild(b);
-  });
-}
-
-/* ===== Search ===== */
-function highlightText(t,q){
-  if(!q)return t;
-  return t.replace(new RegExp(`(${q})`,'gi'),'<span class="highlight">$1</span>');
-}
-function applyFilters(){
-  const q=searchInput.value.toLowerCase();
-  let v=0;
-  document.querySelectorAll(".form-card").forEach(card=>{
-    const t=card.dataset.title,d=card.dataset.desc;
-    const ok=(activeCourt==="all"||card.dataset.court===activeCourt)
-      &&(activeCategory==="all"||card.dataset.category===activeCategory)
-      &&(t.toLowerCase().includes(q)||d.toLowerCase().includes(q));
-    card.style.display=ok?"":"none";
-    if(ok){
-      v++;
-      card.querySelector(".form-title").innerHTML=highlightText(t,q);
-      card.querySelector(".form-desc").innerHTML=highlightText(d,q);
-    }
-  });
-  emptyState.style.display=v?"none":"block";
-}
-
-/* ===== Render Forms ===== */
-function renderForms(){
-  formsList.innerHTML=emptyState.outerHTML;
-  allForms.forEach(f=>{
-    const d=document.createElement("div");
-    d.className="form-card";
-    d.dataset.title=f.title;
-    d.dataset.desc=f.description;
-    d.dataset.category=f.category;
-    d.dataset.court=f.court;
-    d.onclick=()=>window.open(f.url,"_blank");
-    d.innerHTML=`
-      <div>
-        <div class="form-title">${f.title}</div>
-        <div class="form-meta">${f.meta}</div>
-        <div class="form-desc">${f.description}</div>
+      <div class="filter-group">
+        <strong>Court Level:</strong><br>
+        <button class="filter-btn active" data-court="all">All</button>
+        <button class="filter-btn" data-court="district">District Court</button>
+        <button class="filter-btn" data-court="supreme">Supreme Court</button>
       </div>
-      <a class="copy-btn" href="${f.url}" target="_blank" onclick="event.stopPropagation()">Open</a>`;
-    formsList.appendChild(d);
-  });
-  renderCategoryButtons();applyFilters();
-}
 
-/* ===== CSV Load ===== */
-Papa.parse(
-  "https://docs.google.com/spreadsheets/d/e/2PACX-1vTaX3RHX7Xg10q0hs7sYOAOoUk_iPPYHD1UreZ0qdOSOoMbAFuWFnHZvGVxe-HIzSVr-BHCx3Hgn138/pub?output=csv",
-{
-  download:true,
-  header:true,
-  complete:(res)=>{
-    allForms=res.data.map(r=>{
-      const court=r.Level.toLowerCase().includes("district")?"district":"supreme";
-      if(!categories[court].includes(r.Category.toLowerCase()))
-        categories[court].push(r.Category.toLowerCase());
-      return{
-        title:r.Name,
-        meta:`${r.Number} • ${r.Level}`,
-        description:r.Description,
-        category:r.Category.toLowerCase(),
-        court,
-        url:r.Link
-      };
-    });
+      <div class="filter-group" id="categoryFilters"></div>
+    </div>
 
-    renderForms();
+    <!-- Forms -->
+    <div class="forms-wrapper">
+      <div class="skeleton-list" id="skeletons">
+        <div class="skeleton-card"></div>
+        <div class="skeleton-card"></div>
+        <div class="skeleton-card"></div>
+        <div class="skeleton-card"></div>
+      </div>
 
-    /* Enable controls + remove skeletons */
-    document.getElementById("controls").classList.remove("controls-disabled");
-    document.getElementById("skeletons").remove();
-  }
-});
-</script>
+      <div class="forms-list" id="formsList">
+        <div class="empty-state" id="emptyState">No results found</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Global JS -->
+  <script src="js/main.js"></script>
+
+  <!-- Page JS -->
+  <script src="js/forms.js"></script>
 </body>
 </html>
