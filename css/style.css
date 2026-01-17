@@ -35,8 +35,7 @@ body {
 
 /* INNER CONTAINER */
 .header-inner {
-  max-width: 1200px;
-  margin: 0 auto;
+  width: 100%;
   padding: 14px 24px;
   display: flex;
   align-items: center;
@@ -52,8 +51,9 @@ body {
 }
 
 .logo-img {
-  width: 36px;
-  height: 36px;
+  width: 34px;
+  height: 34px;
+  display: block;
   object-fit: contain;
 }
 
@@ -61,12 +61,14 @@ body {
   font-size: 22px;
   font-weight: 800;
   color: var(--accent);
+  line-height: 1;
 }
 
 /* NAV */
 .nav {
   display: flex;
-  gap: 22px;
+  align-items: center;
+  gap: 26px;
 }
 
 .nav a {
