@@ -25,14 +25,12 @@ body {
   padding: 0 16px;
 }
 
-/* =========================
-   HEADER
-========================= */
+/* HEADER */
 .header {
   background: var(--card);
   border-bottom: 1px solid var(--border);
-  box-shadow: var(--shadow);
   border-radius: var(--radius);
+  box-shadow: var(--shadow);
   margin-bottom: 28px;
 }
 
@@ -111,8 +109,8 @@ body {
   display: inline-block;
   background: var(--accent);
   color: #fff;
-  transition: transform 0.2s, box-shadow 0.2s;
   box-shadow: var(--shadow);
+  transition: transform 0.2s, box-shadow 0.2s;
 }
 
 .button:hover {
@@ -131,9 +129,7 @@ body {
   color: #fff;
 }
 
-/* =========================
-   MAIN
-========================= */
+/* MAIN */
 main {
   min-height: 400px;
   padding-bottom: 40px;
