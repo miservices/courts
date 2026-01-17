@@ -32,16 +32,26 @@ window.showGlobalError = (containerId, message) => {
 window.highlightActiveNav = () => {
   const links = document.querySelectorAll(".nav a");
   const path = window.location.pathname; // e.g., "/courts/forms"
-  
+
+  // First, remove 'active' from all links
+  links.forEach(link => link.classList.remove("active"));
+
+  // Then, add 'active' to the link that matches the path
+  let found = false;
   links.forEach(link => {
-    // Remove any existing active
-    link.classList.remove("active");
-    
-    // If href matches current path, add active
-    if (path.startsWith(link.getAttribute("href"))) {
+    const href = link.getAttribute("href");
+
+    // If the current path starts with the link href, mark it active
+    if (path.startsWith(href)) {
       link.classList.add("active");
+      found = true;
     }
   });
+
+  // Fallback: if no link matches, highlight Home
+  if (!found && links.length) {
+    links[0].classList.add("active");
+  }
 };
 
 // Run after DOM loads
