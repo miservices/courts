@@ -94,13 +94,13 @@ function showDetail(i){
     <button class="back-button" onclick="searchCases()">← Back</button>
     <div class="detail-card">
       ${next?`<div class="hearing-banner">📅 Hearing Scheduled in the ${next.court} on ${next.date} · ${next.type}</div>`:""}
-<div class="detail-title">
-  <span>${get(r,h,"Title")}</span>
-  <div class="detail-actions" style="display:flex; gap:10px;">
-    <button class="print-button" onclick="window.print()">Print</button>
-    ${portal ? `<a href="${portal}" target="_blank"><button>Open Case Tracker</button></a>` : ""}
-  </div>
-</div>
+      <div class="detail-title">
+        <span>${get(r,h,"Title")}</span>
+        <div class="detail-actions" style="display:flex; gap:10px;">
+          ${portal ? `<a href="${portal}" target="_blank"><button>Open Case Tracker</button></a>` : ""}
+          <button class="print-button" onclick="window.print()" style="background:white; color:#000; border:1px solid #ccc; padding:5px 10px; cursor:pointer;">Print</button>
+        </div>
+      </div>
       <div class="detail-grid">
         ${[["Case No", get(r,h,"Case No")], ["Court", court], ["Status", get(r,h,"Status")], ["Judge", get(r,h,"Judge")], ["Matter", get(r,h,"Matter")], ["Filing Party", get(r,h,"Filing Party")], ["Opposing Party", get(r,h,"Opposing Party")], ["Date Filed", get(r,h,"File Date")], ["Date Closed", get(r,h,"Close Date")]].map(([label,val])=>`<div class="detail-field"><span>${label}</span>${safe(val)||"—"}</div>`).join("")}
       </div>
