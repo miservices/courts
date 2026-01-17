@@ -2,36 +2,48 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Michigan Courts</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Case Tracker Portal</title>
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-<div class="app">
-  <header class="header">
-    <div class="header-inner">
-      <div class="logo">Michigan Courts</div>
-      <nav class="nav">
-        <a href="index.html" class="active">Home</a>
-        <a href="case-search.html">Case Search</a>
-        <a href="forms.html">Court Forms</a>
-        <a href="e-filing.html">E-Filing</a>
-        <a href="#">Contact</a>
-      </nav>
-    </div>
-    <div class="header-hero">
-      <h1>Welcome to Michigan Courts</h1>
-      <p>Access filings, case searches, forms, and court resources with ease.</p>
-      <div class="header-actions">
-        <a href="e-filing.html" class="button">File a Case</a>
-        <a href="case-search.html" class="button button-outline">Search Cases</a>
-      </div>
-    </div>
+  <!-- Top navigation/header -->
+  <header class="top-bar">
+    <div class="logo">⚖️ CaseTracker</div>
+    <nav class="nav-links">
+      <a href="#" onclick="openPage('index.html')">Home</a>
+      <a href="#" onclick="openPage('case-search.html')">Search Cases</a>
+      <a href="#" onclick="openPage('forms.html')">Forms</a>
+      <a href="#" onclick="openPage('e-filing.html')">E-Filing</a>
+    </nav>
   </header>
 
-  <main>
-    <!-- Page-specific content goes here -->
-  </main>
-</div>
+  <!-- Banner -->
+  <section class="banner">
+    <h1>Welcome to the Michigan Court Case Portal</h1>
+    <p>Search, file, and track cases quickly and securely.</p>
+    <button onclick="openPage('case-search.html')">Start Searching Cases</button>
+  </section>
+
+  <!-- Features/Quick Links -->
+  <section class="features">
+    <div class="feature-card">
+      <h3>Case Lookup</h3>
+      <p>Find court cases by case number, party, or title.</p>
+      <button onclick="openPage('case-search.html')">Search Cases</button>
+    </div>
+    <div class="feature-card">
+      <h3>Forms</h3>
+      <p>Access all required court forms in one place.</p>
+      <button onclick="openPage('forms.html')">View Forms</button>
+    </div>
+    <div class="feature-card">
+      <h3>E-Filing</h3>
+      <p>Submit documents electronically without visiting the court.</p>
+      <button onclick="openPage('e-filing.html')">E-File Now</button>
+    </div>
+  </section>
+
 <script src="js/main.js"></script>
 </body>
 </html>
