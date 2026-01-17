@@ -154,4 +154,42 @@ button:disabled {
   font-size: 13px;
   color: var(--muted);
   text-align: center;
+
+   /* =========================
+   SITE HEADER
+========================= */
+
+.site-header {
+  background: #ffffff;
+  border-bottom: 1px solid var(--border);
+}
+
+.header-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 14px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.logo {
+  font-weight: 800;
+  font-size: 18px;
+  color: var(--accent);
+}
+
+.nav a {
+  margin-left: 18px;
+  text-decoration: none;
+  font-size: 14px;
+  color: #374151;
+  padding-bottom: 4px;
+}
+
+.nav a.active {
+  color: var(--accent);
+  border-bottom: 2px solid var(--accent);
+}
+
 }
