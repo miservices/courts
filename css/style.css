@@ -10,7 +10,9 @@
   --shadow: 0 4px 16px rgba(0,0,0,0.08);
 }
 
-* { box-sizing: border-box; }
+* {
+  box-sizing: border-box;
+}
 
 body {
   margin: 0;
@@ -44,7 +46,7 @@ body {
 }
 
 .logo {
-  font-size: 22px;
+  font-size: 24px;
   font-weight: 800;
   color: var(--accent);
 }
@@ -135,3 +137,17 @@ main {
   padding-bottom: 40px;
 }
 
+/* Make responsive */
+@media (max-width: 768px) {
+  .header-inner {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .nav {
+    margin-top: 12px;
+  }
+  .nav a {
+    margin-left: 0;
+    margin-right: 16px;
+  }
+}
