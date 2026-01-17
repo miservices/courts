@@ -27,3 +27,22 @@ window.showGlobalError = (containerId, message) => {
   box.innerHTML = `<div style="padding:12px;border:1px solid #f00;background:#fee;color:#900;border-radius:6px;font-weight:600">${message}</div>`;
   scrollTopSmooth();
 };
+
+// Highlight active nav link based on current URL
+window.highlightActiveNav = () => {
+  const links = document.querySelectorAll(".nav a");
+  const path = window.location.pathname; // e.g., "/courts/forms"
+  
+  links.forEach(link => {
+    // Remove any existing active
+    link.classList.remove("active");
+    
+    // If href matches current path, add active
+    if (path.startsWith(link.getAttribute("href"))) {
+      link.classList.add("active");
+    }
+  });
+};
+
+// Run after DOM loads
+document.addEventListener("DOMContentLoaded", highlightActiveNav);
