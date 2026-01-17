@@ -22,30 +22,30 @@
 * { box-sizing: border-box; }
 body { margin:0; background: var(--bg); font-family: Arial, Helvetica, sans-serif; color: var(--text); padding:28px 16px;}
 
-/* Header and nav */
+/* SLIM HEADER / NAV like Case Lookup */
 header.header {
-  background: #fff;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-  padding: 12px 28px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  margin-bottom: 40px;
-  border-radius: var(--radius);
+  width: 100%;
+  background: transparent;
+  padding: 10px 16px;
+  margin-bottom: 20px;
+  box-shadow: none;
 }
 .header-inner {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  width: 100%;
+  flex-wrap: wrap;
 }
-.logo-container { display: flex; align-items: center; text-decoration: none; }
-.logo-container img { height: 40px; margin-right: 10px; }
+.logo-container {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+}
+.logo-container img { height: 32px; margin-right: 8px; }
 .logo-text { font-weight: 700; color: var(--accent); font-size: 18px; }
 
 nav.nav a {
-  margin-left: 20px;
+  margin-left: 16px;
   text-decoration: none;
   color: var(--text);
   font-weight: 500;
@@ -54,7 +54,7 @@ nav.nav a {
 nav.nav a:hover { color: var(--accent); }
 nav.nav a.active { color: var(--accent); font-weight: 700; }
 
-/* Page content */
+/* PAGE CONTENT */
 .app { max-width:1100px; margin:0 auto; text-align:center;}
 .page-header { margin-bottom:40px; }
 .page-header h1 { margin:0; font-size:36px; font-weight:700; color: var(--accent);}
