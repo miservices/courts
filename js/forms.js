@@ -1,25 +1,23 @@
 let activeCourt="all",activeCategory="all",allForms=[];
 const categories={all:["all"],district:["all"],supreme:["all"]};
+const searchInput=document.getElementById("searchInput");
+const categoryFilters=document.getElementById("categoryFilters");
+const formsList=document.getElementById("formsList");
+const emptyState=document.getElementById("emptyState");
 
 /* ===== Filters ===== */
 function setCourt(c,b){
-  activeCourt=c;
-  activeCategory="all";
+  activeCourt=c;activeCategory="all";
   document.querySelectorAll(".filter-btn").forEach(x=>x.classList.remove("active"));
   b.classList.add("active");
-  renderCategoryButtons();
-  applyFilters();
+  renderCategoryButtons();applyFilters();
 }
-
 function setCategory(c,b){
   activeCategory=c;
   document.querySelectorAll("#categoryFilters .filter-btn").forEach(x=>x.classList.remove("active"));
-  b.classList.add("active");
-  applyFilters();
+  b.classList.add("active");applyFilters();
 }
-
 function renderCategoryButtons(){
-  const categoryFilters=document.getElementById("categoryFilters");
   categoryFilters.innerHTML="<strong>Category:</strong><br>";
   (categories[activeCourt]||["all"]).forEach(c=>{
     const b=document.createElement("button");
@@ -32,12 +30,11 @@ function renderCategoryButtons(){
 
 /* ===== Search ===== */
 function highlightText(t,q){
-  if(!q) return t;
+  if(!q)return t;
   return t.replace(new RegExp(`(${q})`,'gi'),'<span class="highlight">$1</span>');
 }
-
 function applyFilters(){
-  const q=document.getElementById("searchInput").value.toLowerCase();
+  const q=searchInput.value.toLowerCase();
   let v=0;
   document.querySelectorAll(".form-card").forEach(card=>{
     const t=card.dataset.title,d=card.dataset.desc;
@@ -51,13 +48,11 @@ function applyFilters(){
       card.querySelector(".form-desc").innerHTML=highlightText(d,q);
     }
   });
-  document.getElementById("emptyState").style.display=v?"none":"block";
+  emptyState.style.display=v?"none":"block";
 }
 
 /* ===== Render Forms ===== */
 function renderForms(){
-  const formsList=document.getElementById("formsList");
-  const emptyState=document.getElementById("emptyState");
   formsList.innerHTML=emptyState.outerHTML;
   allForms.forEach(f=>{
     const d=document.createElement("div");
@@ -76,36 +71,34 @@ function renderForms(){
       <a class="copy-btn" href="${f.url}" target="_blank" onclick="event.stopPropagation()">Open</a>`;
     formsList.appendChild(d);
   });
-  renderCategoryButtons();
-  applyFilters();
+  renderCategoryButtons();applyFilters();
 }
 
 /* ===== CSV Load ===== */
 Papa.parse(
   "https://docs.google.com/spreadsheets/d/e/2PACX-1vTaX3RHX7Xg10q0hs7sYOAOoUk_iPPYHD1UreZ0qdOSOoMbAFuWFnHZvGVxe-HIzSVr-BHCx3Hgn138/pub?output=csv",
-  {
-    download:true,
-    header:true,
-    complete:(res)=>{
-      allForms=res.data.map(r=>{
-        const court=r.Level.toLowerCase().includes("district")?"district":"supreme";
-        if(!categories[court].includes(r.Category.toLowerCase()))
-          categories[court].push(r.Category.toLowerCase());
-        return{
-          title:r.Name,
-          meta:`${r.Number} • ${r.Level}`,
-          description:r.Description,
-          category:r.Category.toLowerCase(),
-          court,
-          url:r.Link
-        };
-      });
+{
+  download:true,
+  header:true,
+  complete:(res)=>{
+    allForms=res.data.map(r=>{
+      const court=r.Level.toLowerCase().includes("district")?"district":"supreme";
+      if(!categories[court].includes(r.Category.toLowerCase()))
+        categories[court].push(r.Category.toLowerCase());
+      return{
+        title:r.Name,
+        meta:`${r.Number} • ${r.Level}`,
+        description:r.Description,
+        category:r.Category.toLowerCase(),
+        court,
+        url:r.Link
+      };
+    });
 
-      renderForms();
+    renderForms();
 
-      /* Enable controls + remove skeletons */
-      document.getElementById("controls").classList.remove("controls-disabled");
-      document.getElementById("skeletons").remove();
-    }
+    /* Enable controls + remove skeletons */
+    document.getElementById("controls").classList.remove("controls-disabled");
+    document.getElementById("skeletons").remove();
   }
-);
+});
