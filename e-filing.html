@@ -1,1 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Filing Center - Michigan Courts</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="stylesheet" href="css/style.css">
+<style>
+:root {
+  --bg: #f6f7f9;
+  --card: #ffffff;
+  --border: #e2e5ea;
+  --text: #1f2937;
+  --muted: #6b7280;
+  --accent: #3b4a67;
+  --accent-soft: #eef1f6;
+  --radius: 10px;
+  --shadow: 0 4px 8px rgba(0,0,0,0.08);
+}
 
+/* Global resets */
+* { box-sizing: border-box; }
+body { margin:0; background: var(--bg); font-family: Arial, Helvetica, sans-serif; color: var(--text); padding:28px 16px;}
+
+/* Header and nav */
+header.header {
+  background: #fff;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  padding: 12px 28px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 40px;
+  border-radius: var(--radius);
+}
+.header-inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+.logo-container { display: flex; align-items: center; text-decoration: none; }
+.logo-container img { height: 40px; margin-right: 10px; }
+.logo-text { font-weight: 700; color: var(--accent); font-size: 18px; }
+
+nav.nav a {
+  margin-left: 20px;
+  text-decoration: none;
+  color: var(--text);
+  font-weight: 500;
+  transition: color 0.2s;
+}
+nav.nav a:hover { color: var(--accent); }
+nav.nav a.active { color: var(--accent); font-weight: 700; }
+
+/* Page content */
+.app { max-width:1100px; margin:0 auto; text-align:center;}
+.page-header { margin-bottom:40px; }
+.page-header h1 { margin:0; font-size:36px; font-weight:700; color: var(--accent);}
+.page-header p { margin-top:6px; font-size:16px; color: var(--muted);}
+
+/* Option cards grid */
+.options-grid { display:grid; grid-template-columns:1fr 1fr; gap:30px; margin-top:20px;}
+@media (max-width:700px){.options-grid{grid-template-columns:1fr;}}
+.option-card{
+  background: var(--card);
+  border:1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding:30px 20px;
+  cursor:pointer;
+  transition: transform 0.25s, box-shadow 0.25s;
+}
+.option-card:hover{
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+}
+.option-title{font-size:22px; font-weight:700; color: var(--accent); margin-bottom:10px;}
+.option-description{font-size:14px; color: var(--muted);}
+.footer-note{margin-top:40px; font-size:13px; color: var(--muted);}
+</style>
+</head>
+<body>
+
+<!-- FULL WIDTH HEADER -->
+<header class="header">
+  <div class="header-inner">
+
+    <div class="logo-container">
+      <a href="/courts" class="logo-link">
+        <img src="images/court-logo.png.png" alt="Michigan Courts Logo" class="logo-img">
+        <span class="logo-text">Michigan Courts</span>
+      </a>
+    </div>
+
+    <nav class="nav">
+      <a href="/courts/home">Home</a>
+      <a href="/courts/case-search">Case Search</a>
+      <a href="/courts/forms">Court Forms</a>
+      <a href="/courts/e-filing" class="active">E-Filing</a>
+      <a href="/courts/contact">Contact</a>
+    </nav>
+
+  </div>
+</header>
+
+<!-- PAGE CONTENT -->
+<div class="app">
+  <div class="page-header">
+    <h1>Filing Center</h1>
+    <p>Select an action to get started</p>
+  </div>
+
+  <div class="options-grid">
+    <div class="option-card" onclick="window.open('https://sites.google.com/view/micourts/file/case', '_blank')">
+      <div class="option-title">File a New Case</div>
+      <div class="option-description">Start a new court case filing. Enter all required details for your new case.</div>
+    </div>
+    <div class="option-card" onclick="window.open('https://sites.google.com/view/micourts/file/update', '_blank')">
+      <div class="option-title">Update an Existing Case</div>
+      <div class="option-description">Add information or documents to a case you've already filed.</div>
+    </div>
+  </div>
+
+  <div class="footer-note">
+    In case you misclick or need to submit another filing, we'll keep this tab open for you.
+  </div>
+</div>
+
+</body>
+</html>
