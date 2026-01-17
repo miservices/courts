@@ -1,3 +1,34 @@
+:root {
+  --bg: #f6f7f9;
+  --card: #ffffff;
+  --border: #e2e5ea;
+  --text: #1f2937;
+  --muted: #6b7280;
+  --accent: #3b4a67;
+  --radius: 10px;
+  --shadow: 0 4px 16px rgba(0,0,0,0.08);
+}
+
+/* RESET */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+
+/* APP CONTAINER */
+.app {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
 /* FULL WIDTH STICKY HEADER */
 .header {
   width: 100%;
@@ -30,6 +61,7 @@
   width: 40px;   /* adjust size as needed */
   height: 40px;  /* keep square */
   object-fit: contain;
+  cursor: pointer;
 }
 
 .logo-text {
@@ -71,10 +103,10 @@
 /* MAIN CONTENT */
 main {
   min-height: 400px;
-  padding: 60px 20px 40px 20px; /* top padding so content isn't under sticky header */
-  font-family: Arial, sans-serif;
+  padding: 80px 20px 40px 20px; /* top padding so content isn't under sticky header */
   text-align: center;
   color: var(--muted);
+  font-family: Arial, sans-serif;
 }
 
 /* RESPONSIVE HEADER */
