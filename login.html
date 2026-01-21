@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Court Staff Login</title>
+<link rel="stylesheet" href="css/style.css">
+<style>
+.login-card{
+  max-width:400px;
+  margin:120px auto;
+  background:#fff;
+  padding:24px;
+  border-radius:10px;
+  border:1px solid #e2e5ea;
+  box-shadow:0 2px 6px rgba(0,0,0,.08);
+}
+.login-card h1{margin:0 0 14px;color:#3b4a67}
+.login-card button{width:100%}
+.error{color:#b91c1c;font-size:13px;margin-top:8px}
+</style>
+</head>
+<body>
+
+<div class="login-card">
+  <h1>Court Staff Login</h1>
+
+  <label>Username</label>
+  <input id="user" required>
+
+  <label style="margin-top:10px;">Password</label>
+  <input id="pass" type="password" required>
+
+  <button onclick="login()">Login</button>
+  <div id="err" class="error"></div>
+</div>
+
+<script>
+function login(){
+  const u=document.getElementById("user").value.trim();
+  const p=document.getElementById("pass").value;
+
+  if(!u){err.textContent="Username required";return;}
+  const up=p.toUpperCase();
+  if(!["L","U","N","A"].every(x=>up.includes(x))){
+    err.textContent="Invalid staff password";
+    return;
+  }
+
+  sessionStorage.setItem("staff","true");
+  location.href="case-update.html";
+}
+</script>
+</body>
+</html>
