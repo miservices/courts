@@ -2,45 +2,60 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Update Court Case</title>
+<title>Case Update Entry</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="stylesheet" href="css/style.css">
-<style>
-.card{
-  max-width:700px;
-  margin:40px auto;
-  background:#fff;
-  padding:24px;
-  border-radius:10px;
-  border:1px solid #e2e5ea;
-}
-.grid{display:grid;gap:14px}
-</style>
+<link rel="stylesheet" href="css/case-update.css">
 </head>
 <body>
 
-<div class="card">
-  <h2>Update Court Case (Staff)</h2>
+<div class="app">
+  <div class="header">
+    <h1>Case Update Submission</h1>
+    <p>Internal court staff tool</p>
+  </div>
 
-  <div class="grid">
-    <input id="caseNo" placeholder="Case No (ex: 26-CR-283)">
-    <input id="eventDate" type="date">
-    <select id="party">
-      <option value="__other_option__">Other</option>
-      <option value="Plaintiff">Plaintiff</option>
-      <option value="Defendant">Defendant</option>
-    </select>
-    <input id="partyOther" placeholder="Other Party (if applicable)">
-    <input id="judge" placeholder="Judge or NADNS">
-    <textarea id="desc" placeholder="Event description"></textarea>
+  <div class="update-card">
+    <div class="field">
+      <label>Case No</label>
+      <input id="caseNo">
+    </div>
+
+    <div class="field">
+      <label>Event Date</label>
+      <input id="eventDate" type="date">
+    </div>
+
+    <div class="field">
+      <label>Party</label>
+      <select id="party">
+        <option>Plaintiff</option>
+        <option>Defendant</option>
+        <option value="Other">Other</option>
+        <option value="NADNS">NADNS</option>
+      </select>
+    </div>
+
+    <div class="field" id="otherPartyWrap" style="display:none">
+      <label>Other Party</label>
+      <input id="otherParty">
+    </div>
+
+    <div class="field">
+      <label>Judge</label>
+      <input id="judge" placeholder="NADNS if unavailable">
+    </div>
+
+    <div class="field">
+      <label>Event Description</label>
+      <textarea id="desc" rows="4"></textarea>
+    </div>
+
     <button onclick="submitUpdate()">Submit Update</button>
+
+    <div id="status" class="status"></div>
   </div>
 </div>
-
-<script>
-if(sessionStorage.getItem("staff")!=="true"){
-  location.href="login.html";
-}
-</script>
 
 <script src="js/case-update.js"></script>
 </body>
