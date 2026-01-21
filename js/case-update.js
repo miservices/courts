@@ -11,9 +11,7 @@ party.addEventListener("change", () => {
 const FORM_BASE =
 "https://docs.google.com/forms/d/e/1FAIpQLSd7z_NTRHAhaVVUAG3ER2Ltce2J-0q7dx3sUqqBlDaEZRyaAw/formResponse";
 
-function v(x) {
-  return encodeURIComponent(x && x.trim() ? x.trim() : "NADNS");
-}
+function v(x) { return encodeURIComponent(x && x.trim() ? x.trim() : "NADNS"); }
 
 function submitUpdate() {
   const cn = v(caseNo.value);
