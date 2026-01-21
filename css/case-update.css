@@ -1,11 +1,11 @@
 .update-card {
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 20px;
+  border-radius: var(--radius);
   box-shadow: var(--shadow);
+  padding: 24px;
   max-width: 700px;
-  margin: 0 auto;
+  margin: 0 auto 40px;
 }
 
 .update-card .field {
@@ -15,16 +15,40 @@
   margin-bottom: 14px;
 }
 
+.update-card input,
+.update-card select,
 .update-card textarea {
-  resize: vertical;
-  padding: 10px;
+  height: 38px;
+  padding: 0 12px;
   font-size: 14px;
   border-radius: 6px;
   border: 1px solid var(--border);
 }
 
+.update-card textarea {
+  resize: vertical;
+  padding: 10px;
+  min-height: 80px;
+}
+
+.update-card button {
+  height: 38px;
+  padding: 0 20px;
+  border-radius: 6px;
+  border: 1px solid var(--accent);
+  background: var(--accent);
+  color: #fff;
+  cursor: pointer;
+  font-size: 14px;
+}
+
 .status {
-  margin-top: 14px;
+  margin-top: 12px;
   font-size: 14px;
   color: var(--accent);
+}
+
+/* Responsive */
+@media (max-width: 700px){
+  .update-card { padding: 18px; }
 }
