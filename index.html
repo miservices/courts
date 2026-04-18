@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Michigan Courts</title>
+<link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;1,300&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:#f4f1ec;color:#1a1a1a;min-height:100vh}
+
+.rp-banner{background:#1a1a2e;color:#a0a8b8;text-align:center;padding:9px 20px;font-size:11.5px;letter-spacing:0.01em;border-bottom:1px solid #2d3a50;line-height:1.5}
+
+.header{background:#0a1628}
+.header-top{display:flex;align-items:center;justify-content:space-between;padding:22px 40px 18px;border-bottom:1px solid #1e3a5f}
+.logo-text h1{font-family:'Merriweather',serif;color:#fff;font-size:22px;font-weight:300;letter-spacing:0.01em}
+.logo-text p{color:#7a9bbf;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;margin-top:3px}
+.header-right{text-align:right}
+.header-right p{color:#7a9bbf;font-size:11px;letter-spacing:0.06em;text-transform:uppercase}
+.header-right .date{color:#c8a84b;font-size:13px;margin-top:3px}
+
+nav{background:#0d1f3c;display:flex;align-items:center;padding:0 40px}
+nav a{color:#a0b8d0;font-size:12.5px;padding:14px 18px;text-decoration:none;letter-spacing:0.04em;border-bottom:3px solid transparent;transition:all 0.15s}
+nav a:hover{color:#fff;border-bottom-color:#c8a84b}
+nav a.active{color:#fff;border-bottom-color:#c8a84b}
+nav .nav-right{margin-left:auto;display:flex;gap:8px}
+nav .nav-btn{background:#c8a84b;color:#0a1628;padding:8px 18px;border-radius:3px;font-size:12px;font-weight:600;letter-spacing:0.05em;text-decoration:none}
+nav .nav-btn:hover{background:#d4b85e;border-bottom-color:transparent}
+
+.hero{background:#0a1628;padding:52px 40px;display:flex;align-items:flex-start;gap:60px;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;right:-40px;top:-40px;width:320px;height:320px;border-radius:50%;border:1px solid #1e3a5f;opacity:0.5}
+.hero::after{content:'';position:absolute;right:40px;top:40px;width:200px;height:200px;border-radius:50%;border:1px solid #1e3a5f;opacity:0.3}
+.hero-text{flex:1;position:relative;z-index:1}
+.hero-text h2{font-family:'Merriweather',serif;color:#fff;font-size:32px;font-weight:300;line-height:1.35;max-width:520px}
+.hero-text h2 em{color:#c8a84b;font-style:italic}
+.hero-text p{color:#7a9bbf;font-size:14px;line-height:1.75;margin-top:16px;max-width:460px}
+.hero-actions{display:flex;gap:12px;margin-top:28px}
+.btn-primary{background:#c8a84b;color:#0a1628;padding:11px 24px;border-radius:3px;text-decoration:none;font-size:13px;font-weight:600;letter-spacing:0.04em}
+.btn-ghost{border:1px solid #2d4f6e;color:#a0b8d0;padding:11px 24px;border-radius:3px;text-decoration:none;font-size:13px}
+.btn-ghost:hover{border-color:#c8a84b;color:#fff}
+.hero-stats{display:flex;flex-direction:column;gap:20px;position:relative;z-index:1;flex-shrink:0}
+.hstat{text-align:center;padding:20px 28px;background:#0d1f3c;border:1px solid #1e3a5f;border-radius:4px}
+.hstat .n{font-family:'Merriweather',serif;font-size:36px;color:#c8a84b;font-weight:700;line-height:1}
+.hstat .l{color:#7a9bbf;font-size:11px;text-transform:uppercase;letter-spacing:0.08em;margin-top:6px}
+
+.section-label{display:flex;align-items:center;gap:12px;margin-bottom:24px}
+.section-label span{font-family:'Merriweather',serif;font-size:13px;font-weight:400;color:#6b5f4e;text-transform:uppercase;letter-spacing:0.12em}
+.section-label::after{content:'';flex:1;height:1px;background:#d6cfc4}
+
+.courts-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;padding:0 40px 40px}
+
+.court-card{background:#fff;border-radius:4px;overflow:hidden;border:1px solid #e0d9cf}
+.court-card-top{background:#0a1628;padding:24px 28px;position:relative}
+.court-tier{font-size:10px;color:#c8a84b;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:8px}
+.court-card-top h3{font-family:'Merriweather',serif;color:#fff;font-size:20px;font-weight:300}
+.court-card-top p{color:#7a9bbf;font-size:12px;margin-top:6px}
+.court-tag{position:absolute;top:24px;right:24px;background:#c8a84b;color:#0a1628;font-size:10px;font-weight:700;letter-spacing:0.08em;padding:4px 10px;border-radius:2px;text-transform:uppercase}
+.court-body{padding:24px 28px}
+.court-body p{font-size:13.5px;color:#4a4035;line-height:1.7;margin-bottom:18px}
+.court-meta{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}
+.meta-item .k{font-size:10px;color:#9a8f82;text-transform:uppercase;letter-spacing:0.08em}
+.meta-item .v{font-size:14px;font-weight:600;color:#1a1a1a;margin-top:2px}
+.court-footer{border-top:1px solid #f0ebe3;padding:14px 28px;display:flex;justify-content:space-between;align-items:center}
+.court-footer a{font-size:12.5px;color:#1a4a7a;font-weight:600;text-decoration:none;letter-spacing:0.02em}
+.court-footer a:hover{text-decoration:underline}
+.court-footer .jurisdiction{font-size:11px;color:#9a8f82;text-transform:uppercase;letter-spacing:0.06em}
+
+.bottom-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;padding:0 40px 40px}
+.side-card{background:#fff;border:1px solid #e0d9cf;border-radius:4px;overflow:hidden}
+.side-card-header{padding:18px 22px;border-bottom:1px solid #f0ebe3;display:flex;align-items:center;justify-content:space-between}
+.side-card-header h3{font-family:'Merriweather',serif;font-size:15px;font-weight:400;color:#1a1a1a}
+.side-card-header a{font-size:11.5px;color:#1a4a7a;text-decoration:none}
+.side-card-body{padding:6px 0}
+.news-row{padding:12px 22px;border-bottom:1px solid #f8f5f0;display:flex;flex-direction:column;gap:3px}
+.news-row:last-child{border-bottom:none}
+.news-row .court-label{font-size:10px;color:#c8a84b;font-weight:700;text-transform:uppercase;letter-spacing:0.08em}
+.news-row .title{font-size:13px;color:#1a1a1a;line-height:1.45}
+.news-row .date{font-size:11px;color:#9a8f82}
+.qlink{padding:11px 22px;display:flex;align-items:center;gap:12px;border-bottom:1px solid #f8f5f0;text-decoration:none;color:#1a1a1a;font-size:13px;transition:background 0.1s}
+.qlink:last-child{border-bottom:none}
+.qlink:hover{background:#f8f5f0}
+.qlink .arrow{margin-left:auto;color:#c8a84b;font-size:15px}
+.qlink .ql-icon{width:28px;height:28px;border-radius:3px;background:#f0ebe3;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+
+.footer{background:#0a1628;padding:24px 40px;display:flex;justify-content:space-between;align-items:center;border-top:3px solid #c8a84b}
+.footer p{color:#4a6a8a;font-size:12px}
+</style>
+</head>
+<body>
+
+<div class="rp-banner">
+  This site is not a real court, does not have legal authority, and is not affiliated with or endorsed by any real court system or government agency.
+</div>
+
+<div class="header">
+  <div class="header-top">
+    <div class="logo-text">
+      <h1>Michigan Courts</h1>
+      <p>State Court Administrative Office</p>
+    </div>
+    <div class="header-right">
+      <p>Official Judicial Portal</p>
+      <div class="date" id="today"></div>
+    </div>
+  </div>
+  <nav>
+    <a href="index.html" class="active">Home</a>
+    <a href="cases.html">Case Search</a>
+    <a href="#">Court Finder</a>
+    <a href="#">Opinions &amp; Orders</a>
+    <a href="#">Forms &amp; Filing</a>
+    <a href="#">Judges &amp; Justices</a>
+    <div class="nav-right">
+      <a href="cases.html" class="nav-btn">Search Cases ›</a>
+    </div>
+  </nav>
+</div>
+
+<div class="hero">
+  <div class="hero-text">
+    <h2>Justice for Every <em>Michigan</em> Citizen</h2>
+    <p>The Michigan court system serves all residents through two courts of law — the District Court and the Supreme Court. Find cases, access records, and navigate the legal system from this unified portal.</p>
+    <div class="hero-actions">
+      <a href="cases.html" class="btn-primary">Search Case Records</a>
+      <a href="#" class="btn-ghost">Find Your Court</a>
+    </div>
+  </div>
+  <div class="hero-stats">
+    <div class="hstat"><div class="n">2</div><div class="l">Court Tiers</div></div>
+    <div class="hstat"><div class="n">104</div><div class="l">Districts</div></div>
+    <div class="hstat"><div class="n">7</div><div class="l">Justices</div></div>
+  </div>
+</div>
+
+<div style="padding:40px 40px 0;background:#f4f1ec">
+  <div class="section-label"><span>Our Courts</span></div>
+</div>
+
+<div class="courts-grid">
+  <div class="court-card">
+    <div class="court-card-top">
+      <div class="court-tier">Court of Last Resort</div>
+      <h3>Michigan Supreme Court</h3>
+      <p>Lansing, Michigan</p>
+      <div class="court-tag">Highest Court</div>
+    </div>
+    <div class="court-body">
+      <p>The Supreme Court is the final authority on Michigan law. Seven elected justices hear appeals of significant legal questions, interpret the state constitution, and issue binding opinions across all courts.</p>
+      <div class="court-meta">
+        <div class="meta-item"><div class="k">Justices</div><div class="v">7</div></div>
+        <div class="meta-item"><div class="k">Term</div><div class="v">8 Years</div></div>
+        <div class="meta-item"><div class="k">Session</div><div class="v">Oct – Jun</div></div>
+        <div class="meta-item"><div class="k">Location</div><div class="v">Lansing</div></div>
+      </div>
+    </div>
+    <div class="court-footer">
+      <span class="jurisdiction">Final Appellate Jurisdiction</span>
+      <a href="cases.html">Search Supreme Court Cases →</a>
+    </div>
+  </div>
+
+  <div class="court-card">
+    <div class="court-card-top">
+      <div class="court-tier">Trial Court of Limited Jurisdiction</div>
+      <h3>Michigan District Courts</h3>
+      <p>104 Districts Statewide</p>
+      <div class="court-tag">Trial Court</div>
+    </div>
+    <div class="court-body">
+      <p>District Courts are the entry point into Michigan's justice system. They handle misdemeanors, civil disputes up to $25,000, small claims, traffic offenses, landlord-tenant matters, and felony arraignments.</p>
+      <div class="court-meta">
+        <div class="meta-item"><div class="k">Districts</div><div class="v">104</div></div>
+        <div class="meta-item"><div class="k">Civil Limit</div><div class="v">$25,000</div></div>
+        <div class="meta-item"><div class="k">Judges</div><div class="v">Elected</div></div>
+        <div class="meta-item"><div class="k">Term</div><div class="v">6 Years</div></div>
+      </div>
+    </div>
+    <div class="court-footer">
+      <span class="jurisdiction">Original Limited Jurisdiction</span>
+      <a href="cases.html">Search District Court Cases →</a>
+    </div>
+  </div>
+</div>
+
+<div style="padding:0 40px 8px;background:#f4f1ec">
+  <div class="section-label"><span>News &amp; Resources</span></div>
+</div>
+
+<div class="bottom-grid">
+  <div class="side-card">
+    <div class="side-card-header">
+      <h3>Recent Announcements</h3>
+      <a href="#">View All</a>
+    </div>
+    <div class="side-card-body">
+      <div class="news-row">
+        <span class="court-label">Supreme Court</span>
+        <span class="title">New electronic filing rules take effect across all District Courts</span>
+        <span class="date">April 14, 2026</span>
+      </div>
+      <div class="news-row">
+        <span class="court-label">District Court</span>
+        <span class="title">Remote hearing procedures extended through end of fiscal year 2026</span>
+        <span class="date">April 9, 2026</span>
+      </div>
+      <div class="news-row">
+        <span class="court-label">Supreme Court</span>
+        <span class="title">Opinion issued in People v. Harmon — Fourth Amendment search and seizure</span>
+        <span class="date">March 28, 2026</span>
+      </div>
+      <div class="news-row">
+        <span class="court-label">District Court</span>
+        <span class="title">Increased small claims limit of $25,000 now in effect statewide</span>
+        <span class="date">March 15, 2026</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="side-card">
+    <div class="side-card-header"><h3>Quick Access</h3></div>
+    <div class="side-card-body">
+      <a href="#" class="qlink"><div class="ql-icon">💳</div>Pay a Traffic Ticket<span class="arrow">›</span></a>
+      <a href="#" class="qlink"><div class="ql-icon">📋</div>Small Claims Information<span class="arrow">›</span></a>
+      <a href="cases.html" class="qlink"><div class="ql-icon">⚖</div>Supreme Court Opinions<span class="arrow">›</span></a>
+      <a href="#" class="qlink"><div class="ql-icon">📁</div>Request Court Records<span class="arrow">›</span></a>
+      <a href="#" class="qlink"><div class="ql-icon">🏛</div>Jury Duty Portal<span class="arrow">›</span></a>
+      <a href="#" class="qlink"><div class="ql-icon">📝</div>Downloadable Court Forms<span class="arrow">›</span></a>
+      <a href="#" class="qlink"><div class="ql-icon">🔍</div>Legal Self-Help Center<span class="arrow">›</span></a>
+    </div>
+  </div>
+</div>
+
+<div class="footer">
+  <p>© 2026 Michigan Courts · State Court Administrative Office · P.O. Box 30048, Lansing, MI 48909</p>
+</div>
+
+<script>
+  const d = new Date();
+  document.getElementById('today').textContent = d.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
+</script>
+</body>
+</html>
