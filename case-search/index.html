@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Case Search — Michigan Courts</title>
+<link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;1,300&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:#f4f1ec;color:#1a1a1a;min-height:100vh}
+
+.rp-banner{background:#1a1a2e;color:#a0a8b8;text-align:center;padding:9px 20px;font-size:11.5px;letter-spacing:0.01em;border-bottom:1px solid #2d3a50;line-height:1.5}
+
+.header{background:#0a1628}
+.header-top{display:flex;align-items:center;justify-content:space-between;padding:22px 40px 18px;border-bottom:1px solid #1e3a5f}
+.logo-text h1{font-family:'Merriweather',serif;color:#fff;font-size:22px;font-weight:300;letter-spacing:0.01em}
+.logo-text p{color:#7a9bbf;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;margin-top:3px}
+.header-right{text-align:right}
+.header-right p{color:#7a9bbf;font-size:11px;letter-spacing:0.06em;text-transform:uppercase}
+.header-right .date{color:#c8a84b;font-size:13px;margin-top:3px}
+
+nav{background:#0d1f3c;display:flex;align-items:center;padding:0 40px}
+nav a{color:#a0b8d0;font-size:12.5px;padding:14px 18px;text-decoration:none;letter-spacing:0.04em;border-bottom:3px solid transparent;transition:all 0.15s}
+nav a:hover{color:#fff;border-bottom-color:#c8a84b}
+nav a.active{color:#fff;border-bottom-color:#c8a84b}
+nav .nav-right{margin-left:auto}
+nav .nav-btn{background:#c8a84b;color:#0a1628;padding:8px 18px;border-radius:3px;font-size:12px;font-weight:600;letter-spacing:0.05em;text-decoration:none}
+
+/* Page header */
+.page-hero{background:#0a1628;padding:32px 40px;border-bottom:3px solid #c8a84b}
+.page-hero h2{font-family:'Merriweather',serif;color:#fff;font-size:24px;font-weight:300}
+.page-hero p{color:#7a9bbf;font-size:13px;margin-top:6px}
+
+/* Search panel */
+.search-panel{background:#fff;border-bottom:1px solid #e0d9cf;padding:24px 40px}
+.search-fields{display:grid;grid-template-columns:160px 1fr 1fr 1fr auto;gap:14px;align-items:end}
+.field{display:flex;flex-direction:column;gap:5px}
+.field label{font-size:11px;font-weight:600;color:#6b5f4e;text-transform:uppercase;letter-spacing:0.08em}
+.field input,.field select{height:40px;padding:0 12px;border:1px solid #d6cfc4;border-radius:3px;font-size:13.5px;font-family:'DM Sans',sans-serif;background:#faf9f7;color:#1a1a1a;transition:border 0.15s}
+.field input:focus,.field select:focus{outline:none;border-color:#0a1628}
+.search-btn{height:40px;padding:0 28px;background:#0a1628;color:#c8a84b;border:none;border-radius:3px;font-size:13px;font-weight:600;font-family:'DM Sans',sans-serif;letter-spacing:0.05em;cursor:pointer;transition:background 0.15s;white-space:nowrap}
+.search-btn:hover{background:#102240}
+.search-meta{margin-top:12px;font-size:12px;color:#9a8f82}
+.search-meta span{color:#0a1628;font-weight:600}
+
+/* Results area */
+.results-area{padding:28px 40px;min-height:300px}
+.results-empty{text-align:center;padding:60px 20px;color:#9a8f82}
+.results-empty .big{font-size:40px;margin-bottom:12px}
+.results-empty p{font-size:14px}
+
+.results-count{font-size:12px;color:#6b5f4e;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #e0d9cf}
+
+/* Case cards */
+.case-card{background:#fff;border:1px solid #e0d9cf;border-radius:4px;margin-bottom:12px;overflow:hidden;cursor:pointer;transition:border-color 0.15s,transform 0.1s}
+.case-card:hover{border-color:#0a1628;transform:translateY(-1px)}
+.case-card.supreme-case{border-left:4px solid #c8a84b}
+.case-inner{padding:18px 22px;display:grid;grid-template-columns:1fr auto;gap:16px;align-items:start}
+.case-title-row{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.case-title{font-family:'Merriweather',serif;font-size:16px;font-weight:400;color:#0a1628;line-height:1.3}
+.supreme-pill{background:#c8a84b;color:#0a1628;font-size:9.5px;font-weight:700;letter-spacing:0.08em;padding:3px 8px;border-radius:2px;text-transform:uppercase;white-space:nowrap;flex-shrink:0}
+.case-fields{display:flex;gap:28px;flex-wrap:wrap}
+.cf{display:flex;flex-direction:column;gap:2px}
+.cf .cl{font-size:10px;color:#9a8f82;text-transform:uppercase;letter-spacing:0.07em}
+.cf .cv{font-size:13px;color:#1a1a1a;font-weight:500}
+.status-badge{display:inline-block;padding:3px 10px;border-radius:2px;font-size:11px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase}
+.status-open{background:#e8f0e8;color:#2a5a2a}
+.status-closed{background:#f0e8e8;color:#5a2a2a}
+.status-pending{background:#f0ece0;color:#5a4a1a}
+.status-default{background:#eef1f6;color:#3b4a67}
+.case-arrow{color:#c8a84b;font-size:20px;align-self:center}
+
+/* Skeleton shimmer */
+.skeleton-card{background:#fff;border:1px solid #e0d9cf;border-radius:4px;padding:18px 22px;margin-bottom:12px}
+.sk{background:linear-gradient(90deg,#ede9e3 25%,#f4f1ec 50%,#ede9e3 75%);background-size:400% 100%;animation:shimmer 1.3s infinite;border-radius:3px}
+@keyframes shimmer{0%{background-position:100% 0}100%{background-position:-100% 0}}
+.sk-title{height:18px;width:50%;margin-bottom:14px}
+.sk-row{display:flex;gap:24px}
+.sk-field{height:13px;border-radius:3px}
+
+/* Detail view */
+.detail-view{background:#fff;border:1px solid #e0d9cf;border-radius:4px;overflow:hidden}
+.detail-header{background:#0a1628;padding:24px 28px}
+.detail-hearing{background:#1e3a5f;border-left:3px solid #c8a84b;padding:10px 16px;margin-bottom:16px;font-size:13px;color:#a0c4e0;border-radius:2px}
+.detail-hearing strong{color:#c8a84b}
+.detail-title{font-family:'Merriweather',serif;color:#fff;font-size:22px;font-weight:300;margin-bottom:8px;line-height:1.3}
+.detail-subtitle{color:#7a9bbf;font-size:12px;letter-spacing:0.05em;display:flex;align-items:center;gap:12px}
+.detail-body{padding:28px}
+.detail-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-bottom:28px}
+.dfield .dk{font-size:10px;color:#9a8f82;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px}
+.dfield .dv{font-size:14px;color:#1a1a1a;font-weight:500}
+
+/* Timeline */
+.timeline-label{font-size:11px;color:#6b5f4e;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid #e0d9cf;font-weight:600}
+.tl-group{margin-bottom:24px;padding-left:20px;border-left:2px solid #e0d9cf;position:relative}
+.tl-group::before{content:'';position:absolute;left:-5px;top:2px;width:8px;height:8px;border-radius:50%;background:#c8a84b}
+.tl-date{font-size:12px;font-weight:600;color:#0a1628;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px}
+.tl-event{margin-bottom:14px;padding:12px 16px;background:#faf9f7;border:1px solid #f0ebe3;border-radius:3px}
+.tl-meta{font-size:11px;color:#9a8f82;margin-bottom:6px;display:flex;gap:16px;flex-wrap:wrap}
+.tl-desc{font-size:13.5px;color:#2a2a2a;line-height:1.6}
+.tl-link{display:inline-block;margin-top:8px;font-size:12px;color:#1a4a7a;font-weight:600;text-decoration:none}
+.tl-link:hover{text-decoration:underline}
+
+.back-btn{display:inline-flex;align-items:center;gap:6px;margin-bottom:16px;padding:8px 16px;background:#fff;border:1px solid #d6cfc4;border-radius:3px;font-size:13px;color:#0a1628;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500;transition:border-color 0.15s}
+.back-btn:hover{border-color:#0a1628}
+
+.detail-actions{display:flex;gap:10px;margin-top:16px}
+.portal-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 18px;background:#c8a84b;color:#0a1628;border-radius:3px;font-size:12.5px;font-weight:600;text-decoration:none;letter-spacing:0.04em}
+.portal-btn:hover{background:#d4b85e}
+
+.footer{background:#0a1628;padding:24px 40px;display:flex;justify-content:space-between;align-items:center;border-top:3px solid #c8a84b;margin-top:40px}
+.footer p{color:#4a6a8a;font-size:12px}
+.footer a{color:#4a6a8a;text-decoration:none}
+.footer a:hover{color:#7a9bbf}
+</style>
+</head>
+<body>
+
+<div class="rp-banner">
+  This site is not a real court, does not have legal authority, and is not affiliated with or endorsed by any real court system or government agency.
+</div>
+
+<div class="header">
+  <div class="header-top">
+    <div class="logo-text">
+      <h1>Michigan Courts</h1>
+      <p>State Court Administrative Office</p>
+    </div>
+    <div class="header-right">
+      <p>Official Judicial Portal</p>
+      <div class="date" id="today"></div>
+    </div>
+  </div>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="cases.html" class="active">Case Search</a>
+    <a href="#">Court Finder</a>
+    <a href="#">Opinions &amp; Orders</a>
+    <a href="#">Forms &amp; Filing</a>
+    <a href="#">Judges &amp; Justices</a>
+    <div class="nav-right">
+      <a href="cases.html" class="nav-btn">Search Cases ›</a>
+    </div>
+  </nav>
+</div>
+
+<div class="page-hero">
+  <h2>Case Search</h2>
+  <p>Search all District Court and Supreme Court case records by case number, title, or party name.</p>
+</div>
+
+<div class="search-panel">
+  <div class="search-fields">
+    <div class="field">
+      <label>Court</label>
+      <select id="courtFilter">
+        <option value="">All Courts</option>
+        <option value="supreme">Supreme Court</option>
+        <option value="district">District Court</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Case Number</label>
+      <input id="caseSearch" placeholder="e.g. 2026-SC-001" onkeydown="handleEnter(event)">
+    </div>
+    <div class="field">
+      <label>Case Title</label>
+      <input id="titleSearch" placeholder="e.g. People v. Smith" onkeydown="handleEnter(event)">
+    </div>
+    <div class="field">
+      <label>Party / Username</label>
+      <input id="userSearch" placeholder="Search by party name" onkeydown="handleEnter(event)">
+    </div>
+    <button class="search-btn" onclick="searchCases()">Search</button>
+  </div>
+  <div class="search-meta" id="searchMeta"></div>
+</div>
+
+<div class="results-area" id="resultsArea">
+  <div class="results-empty">
+    <div class="big">⚖</div>
+    <p>Enter search terms above to find cases.</p>
+  </div>
+</div>
+
+<div class="footer">
+  <p>© 2026 Michigan Courts · State Court Administrative Office</p>
+  <a href="index.html">← Return to Home</a>
+</div>
+
+<script>
+const CSV_URL="https://docs.google.com/spreadsheets/d/e/2PACX-1vQZakTnz5DihZnyTEeO5iGB3u-9QXO_YCP9PCzeZJWm53QNAsauMav3dWNJ_ce_ZCwMHIghNa4ujx4U/pub?output=csv";
+let cachedData=null,lastMatches=[];
+
+document.getElementById('today').textContent=new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
+
+function handleEnter(e){if(e.key==="Enter")searchCases();}
+
+function parseCSV(text){
+  return text.split(/\r?\n/).map(row=>{
+    const values=[];let current="",inQuotes=false;
+    for(const ch of row){
+      if(ch==='"'){inQuotes=!inQuotes;continue;}
+      if(ch===','&&!inQuotes){values.push(current);current="";continue;}
+      current+=ch;
+    }
+    values.push(current);
+    return values.map(v=>v.trim());
+  });
+}
+
+async function loadCSV(){
+  if(cachedData)return cachedData;
+  const r=await fetch(CSV_URL);
+  cachedData=parseCSV(await r.text());
+  return cachedData;
+}
+
+function get(row,header,name){const i=header.indexOf(name);return i>-1?row[i]||"":"";}
+function parseDate(v){const d=new Date(v);return isNaN(d)?new Date(0):d;}
+function parseNextHearing(v){if(!v)return null;const p=v.split(",").map(x=>x.trim());return{date:p[0],court:p[1],type:p.slice(2).join(",")};}
+function parseEvents(summary){
+  if(!summary)return[];
+  return summary.split("|").map(e=>{
+    const parts=e.split("\\").map(v=>v.trim());
+    return{date:parts[0]||"",party:parts[1]==="NADNS"?null:parts[1],judge:parts[2]==="NADNS"?null:parts[2],desc:parts[3]==="NADNS"?null:parts[3],url:parts[4]==="NADNS"?null:parts[4]};
+  });
+}
+
+function statusClass(s){
+  if(!s)return'status-default';
+  const l=s.toLowerCase();
+  if(l.includes('open')||l.includes('active'))return'status-open';
+  if(l.includes('closed')||l.includes('dismissed'))return'status-closed';
+  if(l.includes('pending')||l.includes('scheduled'))return'status-pending';
+  return'status-default';
+}
+
+function showSkeletons(){
+  const area=document.getElementById('resultsArea');
+  area.innerHTML='';
+  for(let i=0;i<4;i++){
+    area.innerHTML+=`<div class="skeleton-card"><div class="sk sk-title"></div><div class="sk-row"><div class="sk sk-field" style="width:80px"></div><div class="sk sk-field" style="width:100px"></div><div class="sk sk-field" style="width:70px"></div><div class="sk sk-field" style="width:90px"></div></div></div>`;
+  }
+}
+
+async function searchCases(){
+  showSkeletons();
+  const cq=document.getElementById('caseSearch').value.toLowerCase();
+  const tq=document.getElementById('titleSearch').value.toLowerCase();
+  const uq=document.getElementById('userSearch').value.toLowerCase();
+  const cf=document.getElementById('courtFilter').value;
+
+  const data=await loadCSV();
+  const h=data[0];
+
+  lastMatches=data.slice(1).filter(r=>{
+    if(!r[0]&&!r[1])return false;
+    const court=(get(r,h,"Court")||"").toLowerCase();
+    if(cf==="supreme"&&!court.includes("supreme"))return false;
+    if(cf==="district"&&court.includes("supreme"))return false;
+    return(!cq||get(r,h,"Case No").toLowerCase().includes(cq))&&
+           (!tq||get(r,h,"Title").toLowerCase().includes(tq))&&
+           (!uq||get(r,h,"Filing Party").toLowerCase().includes(uq)||get(r,h,"Opposing Party").toLowerCase().includes(uq));
+  });
+
+  lastMatches.sort((a,b)=>{
+    const ca=get(a,h,"Court").toLowerCase(),cb=get(b,h,"Court").toLowerCase();
+    if(ca.includes("supreme")&&!cb.includes("supreme"))return-1;
+    if(cb.includes("supreme")&&!ca.includes("supreme"))return 1;
+    return parseDate(get(b,h,"File Date"))-parseDate(get(a,h,"File Date"));
+  });
+
+  const area=document.getElementById('resultsArea');
+  const meta=document.getElementById('searchMeta');
+
+  if(!lastMatches.length){
+    area.innerHTML=`<div class="results-empty"><div class="big">🔍</div><p>No cases found matching your search criteria.</p></div>`;
+    meta.innerHTML='';
+    return;
+  }
+
+  meta.innerHTML=`Found <span>${lastMatches.length}</span> case${lastMatches.length!==1?'s':''} matching your search`;
+  area.innerHTML=`<div class="results-count">${lastMatches.length} result${lastMatches.length!==1?'s':''}</div>`;
+
+  lastMatches.forEach((r,i)=>{
+    const court=get(r,h,"Court");
+    const isSupreme=court.toLowerCase().includes("supreme");
+    const status=get(r,h,"Status");
+    const sc=statusClass(status);
+    area.innerHTML+=`
+      <div class="case-card ${isSupreme?'supreme-case':''}" onclick="showDetail(${i})">
+        <div class="case-inner">
+          <div>
+            <div class="case-title-row">
+              <div class="case-title">${get(r,h,"Title")||"Untitled Case"}</div>
+              ${isSupreme?`<span class="supreme-pill">Supreme Court</span>`:''}
+            </div>
+            <div class="case-fields">
+              <div class="cf"><span class="cl">Case No</span><span class="cv">${get(r,h,"Case No")||"—"}</span></div>
+              <div class="cf"><span class="cl">Court</span><span class="cv">${court||"—"}</span></div>
+              <div class="cf"><span class="cl">Status</span><span class="cv"><span class="status-badge ${sc}">${status||"—"}</span></span></div>
+              <div class="cf"><span class="cl">Filed</span><span class="cv">${get(r,h,"File Date")||"—"}</span></div>
+              ${get(r,h,"Judge")?`<div class="cf"><span class="cl">Judge</span><span class="cv">${get(r,h,"Judge")}</span></div>`:''}
+            </div>
+          </div>
+          <div class="case-arrow">›</div>
+        </div>
+      </div>`;
+  });
+}
+
+function showDetail(i){
+  const h=cachedData[0],r=lastMatches[i];
+  const court=get(r,h,"Court");
+  const isSupreme=court.toLowerCase().includes("supreme");
+  const next=parseNextHearing(get(r,h,"Next Hearing"));
+  const portal=get(r,h,"Link");
+  const status=get(r,h,"Status");
+  const events=parseEvents(get(r,h,"Summary"));
+
+  const grouped={};
+  events.forEach(e=>{if(!grouped[e.date])grouped[e.date]=[];grouped[e.date].push(e);});
+
+  const safe=v=>(!v||v==="NADNS")?null:v;
+
+  const fields=[
+    ["Case No",get(r,h,"Case No")],["Court",court],["Status",status],
+    ["Judge",get(r,h,"Judge")],["Matter",get(r,h,"Matter")],["Date Filed",get(r,h,"File Date")],
+    ["Filing Party",get(r,h,"Filing Party")],["Opposing Party",get(r,h,"Opposing Party")],["Date Closed",get(r,h,"Close Date")]
+  ];
+
+  const area=document.getElementById('resultsArea');
+  document.getElementById('searchMeta').innerHTML='';
+
+  area.innerHTML=`
+    <button class="back-btn" onclick="searchCases()">← Back to Results</button>
+    <div class="detail-view">
+      <div class="detail-header">
+        ${next?`<div class="detail-hearing">📅 Hearing scheduled in the <strong>${next.court}</strong> on <strong>${next.date}</strong>${next.type?` · ${next.type}`:''}</div>`:''}
+        <div class="detail-title">${get(r,h,"Title")||"Untitled Case"}</div>
+        <div class="detail-subtitle">
+          <span>${get(r,h,"Case No")||""}</span>
+          ${isSupreme?`<span style="background:#c8a84b;color:#0a1628;font-size:10px;font-weight:700;letter-spacing:0.08em;padding:2px 8px;border-radius:2px;text-transform:uppercase">Supreme Court</span>`:''}
+          <span class="status-badge ${statusClass(status)}" style="font-size:10px">${status||""}</span>
+        </div>
+        ${portal?`<div class="detail-actions"><a href="${portal}" target="_blank" class="portal-btn">↗ Open in Case Tracker</a></div>`:''}
+      </div>
+      <div class="detail-body">
+        <div class="detail-grid">
+          ${fields.map(([label,val])=>`<div class="dfield"><div class="dk">${label}</div><div class="dv">${safe(val)||"—"}</div></div>`).join("")}
+        </div>
+        ${Object.keys(grouped).length?`
+        <div class="timeline-label">Case Timeline</div>
+        ${Object.keys(grouped).map(date=>`
+          <div class="tl-group">
+            <div class="tl-date">${date}</div>
+            ${grouped[date].map(e=>`
+              <div class="tl-event">
+                <div class="tl-meta">
+                  ${e.party?`<span>Party: ${e.party}</span>`:''}
+                  ${e.judge?`<span>Judge: ${e.judge}</span>`:''}
+                </div>
+                ${e.desc?`<div class="tl-desc">${e.desc.replace(/\n/g,'<br>')}</div>`:''}
+                ${e.url?`<a class="tl-link" href="${e.url}" target="_blank">↓ Download Document</a>`:''}
+              </div>`).join('')}
+          </div>`).join('')}
+        `:''}
+      </div>
+    </div>`;
+}
+</script>
+</body>
+</html>
