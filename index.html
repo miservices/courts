@@ -9,8 +9,10 @@
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'DM Sans',sans-serif;background:#f4f1ec;color:#1a1a1a;min-height:100vh}
 
-.rp-banner{background:#1a1a2e;color:#a0a8b8;text-align:center;padding:9px 20px;font-size:11.5px;letter-spacing:0.01em;border-bottom:1px solid #2d3a50;line-height:1.5}
+/* ── RP Banner ── */
+.rp-banner{background:#2c1a3e;color:#c9b8d8;text-align:center;padding:9px 20px;font-size:11.5px;letter-spacing:0.01em;border-bottom:1px solid #4a2e6a;line-height:1.5}
 
+/* ── Header ── */
 .header{background:#0a1628}
 .header-top{display:flex;align-items:center;justify-content:space-between;padding:22px 40px 18px;border-bottom:1px solid #1e3a5f}
 .logo-text h1{font-family:'Merriweather',serif;color:#fff;font-size:22px;font-weight:300;letter-spacing:0.01em}
@@ -19,14 +21,35 @@ body{font-family:'DM Sans',sans-serif;background:#f4f1ec;color:#1a1a1a;min-heigh
 .header-right p{color:#7a9bbf;font-size:11px;letter-spacing:0.06em;text-transform:uppercase}
 .header-right .date{color:#c8a84b;font-size:13px;margin-top:3px}
 
-nav{background:#0d1f3c;display:flex;align-items:center;padding:0 40px}
-nav a{color:#a0b8d0;font-size:12.5px;padding:14px 18px;text-decoration:none;letter-spacing:0.04em;border-bottom:3px solid transparent;transition:all 0.15s}
-nav a:hover{color:#fff;border-bottom-color:#c8a84b}
-nav a.active{color:#fff;border-bottom-color:#c8a84b}
-nav .nav-right{margin-left:auto;display:flex;gap:8px}
-nav .nav-btn{background:#c8a84b;color:#0a1628;padding:8px 18px;border-radius:3px;font-size:12px;font-weight:600;letter-spacing:0.05em;text-decoration:none}
-nav .nav-btn:hover{background:#d4b85e;border-bottom-color:transparent}
+/* ── Nav ── */
+nav{background:#0d1f3c;display:flex;align-items:center;padding:0 40px;position:relative;z-index:100}
+nav > a{color:#a0b8d0;font-size:12.5px;padding:14px 18px;text-decoration:none;letter-spacing:0.04em;border-bottom:3px solid transparent;transition:all 0.15s;white-space:nowrap}
+nav > a:hover{color:#fff;border-bottom-color:#c8a84b}
+nav > a.active{color:#fff;border-bottom-color:#c8a84b}
+nav .nav-right{margin-left:auto;display:flex;gap:8px;align-items:center}
+nav .nav-btn{background:#c8a84b;color:#0a1628;padding:8px 18px;border-radius:3px;font-size:12px;font-weight:600;letter-spacing:0.05em;text-decoration:none;border-bottom:none;white-space:nowrap}
+nav .nav-btn:hover{background:#d4b85e}
 
+/* Dropdowns */
+.nav-dropdown{position:relative;display:inline-block}
+.nav-dropdown > a{color:#a0b8d0;font-size:12.5px;padding:14px 18px;text-decoration:none;letter-spacing:0.04em;border-bottom:3px solid transparent;transition:all 0.15s;white-space:nowrap;display:flex;align-items:center;gap:5px;cursor:pointer}
+.nav-dropdown > a::after{content:'v';font-size:9px;color:#7a9bbf;font-weight:700;margin-top:1px}
+.nav-dropdown:hover > a{color:#fff;border-bottom-color:#c8a84b}
+.nav-dropdown:hover > a::after{color:#c8a84b}
+.dropdown-menu{display:none;position:absolute;top:100%;left:0;background:#0d1f3c;border:1px solid #1e3a5f;border-top:2px solid #c8a84b;min-width:200px;z-index:200;box-shadow:0 8px 28px rgba(0,0,0,0.4)}
+.nav-dropdown:hover .dropdown-menu{display:block}
+.dropdown-menu a{display:block;padding:10px 18px;color:#a0b8d0;font-size:12px;text-decoration:none;border-bottom:1px solid #1a2d48;letter-spacing:0.03em;border-left:3px solid transparent;transition:all 0.12s}
+.dropdown-menu a:last-child{border-bottom:none}
+.dropdown-menu a:hover{color:#fff;background:#112240;border-left-color:#c8a84b}
+
+/* ── Court Selector Bar ── */
+.court-selector-bar{background:#071220;border-bottom:1px solid #1e3a5f;padding:7px 40px;display:flex;align-items:center;gap:14px}
+.court-selector-bar label{color:#7a9bbf;font-size:11px;text-transform:uppercase;letter-spacing:0.1em;white-space:nowrap}
+.court-selector-bar select{background:#0d1f3c;color:#c8a84b;border:1px solid #2d4f6e;border-radius:3px;padding:5px 32px 5px 10px;font-size:12px;font-family:'DM Sans',sans-serif;cursor:pointer;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23c8a84b'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;min-width:280px}
+.court-selector-bar select:focus{outline:none;border-color:#c8a84b}
+.court-selector-bar .selector-note{color:#4a6a8a;font-size:11px;margin-left:auto}
+
+/* ── Hero ── */
 .hero{background:#0a1628;padding:52px 40px;display:flex;align-items:flex-start;gap:60px;position:relative;overflow:hidden}
 .hero::before{content:'';position:absolute;right:-40px;top:-40px;width:320px;height:320px;border-radius:50%;border:1px solid #1e3a5f;opacity:0.5}
 .hero::after{content:'';position:absolute;right:40px;top:40px;width:200px;height:200px;border-radius:50%;border:1px solid #1e3a5f;opacity:0.3}
@@ -34,21 +57,31 @@ nav .nav-btn:hover{background:#d4b85e;border-bottom-color:transparent}
 .hero-text h2{font-family:'Merriweather',serif;color:#fff;font-size:32px;font-weight:300;line-height:1.35;max-width:520px}
 .hero-text h2 em{color:#c8a84b;font-style:italic}
 .hero-text p{color:#7a9bbf;font-size:14px;line-height:1.75;margin-top:16px;max-width:460px}
-.hero-actions{display:flex;gap:12px;margin-top:28px}
+.hero-actions{display:flex;gap:12px;margin-top:28px;flex-wrap:wrap}
 .btn-primary{background:#c8a84b;color:#0a1628;padding:11px 24px;border-radius:3px;text-decoration:none;font-size:13px;font-weight:600;letter-spacing:0.04em}
+.btn-primary:hover{background:#d4b85e}
 .btn-ghost{border:1px solid #2d4f6e;color:#a0b8d0;padding:11px 24px;border-radius:3px;text-decoration:none;font-size:13px}
 .btn-ghost:hover{border-color:#c8a84b;color:#fff}
+
+.micourt-callout{display:flex;align-items:flex-start;gap:14px;background:#0d1f3c;border:1px solid #2d4f6e;border-left:3px solid #c8a84b;border-radius:3px;padding:14px 18px;margin-top:22px;max-width:420px}
+.mc-icon{font-size:22px;flex-shrink:0;margin-top:2px}
+.mc-body .mc-title{color:#c8a84b;font-size:13px;font-weight:600;letter-spacing:0.04em}
+.mc-body .mc-sub{color:#7a9bbf;font-size:12px;line-height:1.55;margin-top:3px}
+.mc-body a{color:#c8a84b;font-size:12px;font-weight:600;text-decoration:none;display:inline-block;margin-top:7px}
+.mc-body a:hover{text-decoration:underline}
+
 .hero-stats{display:flex;flex-direction:column;gap:20px;position:relative;z-index:1;flex-shrink:0}
 .hstat{text-align:center;padding:20px 28px;background:#0d1f3c;border:1px solid #1e3a5f;border-radius:4px}
 .hstat .n{font-family:'Merriweather',serif;font-size:36px;color:#c8a84b;font-weight:700;line-height:1}
 .hstat .l{color:#7a9bbf;font-size:11px;text-transform:uppercase;letter-spacing:0.08em;margin-top:6px}
 
+/* ── Section Label ── */
 .section-label{display:flex;align-items:center;gap:12px;margin-bottom:24px}
 .section-label span{font-family:'Merriweather',serif;font-size:13px;font-weight:400;color:#6b5f4e;text-transform:uppercase;letter-spacing:0.12em}
 .section-label::after{content:'';flex:1;height:1px;background:#d6cfc4}
 
+/* ── Court Cards ── */
 .courts-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;padding:0 40px 40px}
-
 .court-card{background:#fff;border-radius:4px;overflow:hidden;border:1px solid #e0d9cf}
 .court-card-top{background:#0a1628;padding:24px 28px;position:relative}
 .court-tier{font-size:10px;color:#c8a84b;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:8px}
@@ -65,6 +98,7 @@ nav .nav-btn:hover{background:#d4b85e;border-bottom-color:transparent}
 .court-footer a:hover{text-decoration:underline}
 .court-footer .jurisdiction{font-size:11px;color:#9a8f82;text-transform:uppercase;letter-spacing:0.06em}
 
+/* ── Bottom Grid ── */
 .bottom-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;padding:0 40px 40px}
 .side-card{background:#fff;border:1px solid #e0d9cf;border-radius:4px;overflow:hidden}
 .side-card-header{padding:18px 22px;border-bottom:1px solid #f0ebe3;display:flex;align-items:center;justify-content:space-between}
@@ -76,12 +110,16 @@ nav .nav-btn:hover{background:#d4b85e;border-bottom-color:transparent}
 .news-row .court-label{font-size:10px;color:#c8a84b;font-weight:700;text-transform:uppercase;letter-spacing:0.08em}
 .news-row .title{font-size:13px;color:#1a1a1a;line-height:1.45}
 .news-row .date{font-size:11px;color:#9a8f82}
+
 .qlink{padding:11px 22px;display:flex;align-items:center;gap:12px;border-bottom:1px solid #f8f5f0;text-decoration:none;color:#1a1a1a;font-size:13px;transition:background 0.1s}
 .qlink:last-child{border-bottom:none}
 .qlink:hover{background:#f8f5f0}
-.qlink .arrow{margin-left:auto;color:#c8a84b;font-size:15px}
+.qlink .arrow{margin-left:auto;color:#c8a84b;font-size:13px;font-weight:700;flex-shrink:0}
 .qlink .ql-icon{width:28px;height:28px;border-radius:3px;background:#f0ebe3;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+.qlink .ql-text{display:flex;flex-direction:column;gap:2px}
+.qlink .ql-sub{font-size:11px;color:#9a8f82}
 
+/* ── Footer ── */
 .footer{background:#0a1628;padding:24px 40px;display:flex;justify-content:space-between;align-items:center;border-top:3px solid #c8a84b}
 .footer p{color:#4a6a8a;font-size:12px}
 </style>
@@ -96,38 +134,77 @@ nav .nav-btn:hover{background:#d4b85e;border-bottom-color:transparent}
   <div class="header-top">
     <div class="logo-text">
       <h1>Michigan Courts</h1>
-      <p>State Court Administrative Office</p>
+      <p>One Court of Justice</p>
     </div>
     <div class="header-right">
-      <p>Official Judicial Portal</p>
+      <p>SCAO Maintained</p>
       <div class="date" id="today"></div>
     </div>
   </div>
+
   <nav>
     <a href="index.html" class="active">Home</a>
-    <a href="cases.html">Case Search</a>
-    <a href="#">Court Finder</a>
-    <a href="#">Opinions &amp; Orders</a>
-    <a href="#">Forms &amp; Filing</a>
-    <a href="#">Judges &amp; Justices</a>
+
+    <div class="nav-dropdown">
+      <a href="#">Online Services</a>
+      <div class="dropdown-menu">
+        <a href="#">Online Portal (MiCOURT)</a>
+        <a href="cases.html">Search Cases</a>
+        <a href="#">Pay Fines &amp; Fees</a>
+        <a href="#">Docket Calendar</a>
+        <a href="#">Jury Duty Portal</a>
+        <a href="#">Request Court Records</a>
+      </div>
+    </div>
+
+    <div class="nav-dropdown">
+      <a href="#">Forms &amp; Filing</a>
+      <div class="dropdown-menu">
+        <a href="#">Filing Information</a>
+        <a href="#">Court Forms</a>
+      </div>
+    </div>
+
+    <a href="#">Self Help</a>
+    <a href="#">Careers</a>
+
     <div class="nav-right">
-      <a href="cases.html" class="nav-btn">Search Cases ›</a>
+      <a href="#" class="nav-btn">Access MiCOURT ></a>
     </div>
   </nav>
+
+  <div class="court-selector-bar">
+    <label for="courtSelect">Viewing court:</label>
+    <select id="courtSelect">
+      <option value="all">All Michigan Courts</option>
+      <option value="sc">Michigan Supreme Court</option>
+      <option value="gcdc">Genesee County District Court</option>
+    </select>
+    <span class="selector-note">Select a court to filter content and announcements</span>
+  </div>
 </div>
 
+<!-- Hero -->
 <div class="hero">
   <div class="hero-text">
     <h2>Justice for Every <em>Michigan</em> Citizen</h2>
-    <p>The Michigan court system serves all residents through two courts of law — the District Court and the Supreme Court. Find cases, access records, and navigate the legal system from this unified portal.</p>
+    <p>The Michigan court system serves all residents through two courts of law — the Genesee County District Court and the Supreme Court. Find cases, access records, and navigate the legal system from this unified portal.</p>
     <div class="hero-actions">
-      <a href="cases.html" class="btn-primary">Search Case Records</a>
-      <a href="#" class="btn-ghost">Find Your Court</a>
+      <a href="#" class="btn-primary">Access MiCOURT</a>
+      <a href="cases.html" class="btn-ghost">Search Cases</a>
+    </div>
+    <div class="micourt-callout">
+      <div class="mc-icon">⚖</div>
+      <div class="mc-body">
+        <div class="mc-title">MiCOURT — Online Court Portal</div>
+        <div class="mc-sub">File documents, pay fines and fees, manage your appearances, and access case records — all in one place.</div>
+        <a href="#">Launch MiCOURT ></a>
+      </div>
     </div>
   </div>
   <div class="hero-stats">
     <div class="hstat"><div class="n">2</div><div class="l">Court Tiers</div></div>
-    <div class="hstat"><div class="n">104</div><div class="l">Districts</div></div>
+    <div class="hstat"><div class="n">1</div><div class="l">District</div></div>
     <div class="hstat"><div class="n">7</div><div class="l">Justices</div></div>
   </div>
 </div>
@@ -145,39 +222,39 @@ nav .nav-btn:hover{background:#d4b85e;border-bottom-color:transparent}
       <div class="court-tag">Highest Court</div>
     </div>
     <div class="court-body">
-      <p>The Supreme Court is the final authority on Michigan law. Seven elected justices hear appeals of significant legal questions, interpret the state constitution, and issue binding opinions across all courts.</p>
+      <p>The Supreme Court is the final authority on Michigan law. Seven justices hear appeals of significant legal questions, interpret the state constitution, and issue binding opinions across all courts. Justices are elected statewide during the annual general election (January 1 – December 31) and serve one-year terms.</p>
       <div class="court-meta">
         <div class="meta-item"><div class="k">Justices</div><div class="v">7</div></div>
-        <div class="meta-item"><div class="k">Term</div><div class="v">8 Years</div></div>
-        <div class="meta-item"><div class="k">Session</div><div class="v">Oct – Jun</div></div>
+        <div class="meta-item"><div class="k">Term</div><div class="v">1 Year</div></div>
+        <div class="meta-item"><div class="k">Election</div><div class="v">Statewide</div></div>
         <div class="meta-item"><div class="k">Location</div><div class="v">Lansing</div></div>
       </div>
     </div>
     <div class="court-footer">
       <span class="jurisdiction">Final Appellate Jurisdiction</span>
-      <a href="cases.html">Search Supreme Court Cases →</a>
+      <a href="cases.html">Search Supreme Court Cases ></a>
     </div>
   </div>
 
   <div class="court-card">
     <div class="court-card-top">
-      <div class="court-tier">Trial Court of Limited Jurisdiction</div>
-      <h3>Michigan District Courts</h3>
-      <p>104 Districts Statewide</p>
+      <div class="court-tier">Trial Court of General Jurisdiction</div>
+      <h3>Genesee County District Court</h3>
+      <p>Flint, Michigan</p>
       <div class="court-tag">Trial Court</div>
     </div>
     <div class="court-body">
-      <p>District Courts are the entry point into Michigan's justice system. They handle misdemeanors, civil disputes up to $25,000, small claims, traffic offenses, landlord-tenant matters, and felony arraignments.</p>
+      <p>The Genesee County District Court handles all trial matters for Genesee County with no jurisdictional limits — criminal, civil, traffic, and felony proceedings. The Chief Judge is elected countywide each year. Associate judges are appointed by the Governor from a nonpartisan commission shortlist. Magistrates are appointed by the Chief Judge.</p>
       <div class="court-meta">
-        <div class="meta-item"><div class="k">Districts</div><div class="v">104</div></div>
-        <div class="meta-item"><div class="k">Civil Limit</div><div class="v">$25,000</div></div>
-        <div class="meta-item"><div class="k">Judges</div><div class="v">Elected</div></div>
-        <div class="meta-item"><div class="k">Term</div><div class="v">6 Years</div></div>
+        <div class="meta-item"><div class="k">Jurisdiction</div><div class="v">Genesee Co.</div></div>
+        <div class="meta-item"><div class="k">Authority</div><div class="v">General</div></div>
+        <div class="meta-item"><div class="k">Chief Judge</div><div class="v">Elected</div></div>
+        <div class="meta-item"><div class="k">Judges</div><div class="v">Appointed</div></div>
       </div>
     </div>
     <div class="court-footer">
-      <span class="jurisdiction">Original Limited Jurisdiction</span>
-      <a href="cases.html">Search District Court Cases →</a>
+      <span class="jurisdiction">Original General Jurisdiction</span>
+      <a href="cases.html">Search District Court Cases ></a>
     </div>
   </div>
 </div>
@@ -195,7 +272,7 @@ nav .nav-btn:hover{background:#d4b85e;border-bottom-color:transparent}
     <div class="side-card-body">
       <div class="news-row">
         <span class="court-label">Supreme Court</span>
-        <span class="title">New electronic filing rules take effect across all District Courts</span>
+        <span class="title">New electronic filing rules via MiCOURT take effect statewide</span>
         <span class="date">April 14, 2026</span>
       </div>
       <div class="news-row">
@@ -210,7 +287,7 @@ nav .nav-btn:hover{background:#d4b85e;border-bottom-color:transparent}
       </div>
       <div class="news-row">
         <span class="court-label">District Court</span>
-        <span class="title">Increased small claims limit of $25,000 now in effect statewide</span>
+        <span class="title">Genesee County District Court annex reopens following renovations</span>
         <span class="date">March 15, 2026</span>
       </div>
     </div>
@@ -219,13 +296,41 @@ nav .nav-btn:hover{background:#d4b85e;border-bottom-color:transparent}
   <div class="side-card">
     <div class="side-card-header"><h3>Quick Access</h3></div>
     <div class="side-card-body">
-      <a href="#" class="qlink"><div class="ql-icon">💳</div>Pay a Traffic Ticket<span class="arrow">›</span></a>
-      <a href="#" class="qlink"><div class="ql-icon">📋</div>Small Claims Information<span class="arrow">›</span></a>
-      <a href="cases.html" class="qlink"><div class="ql-icon">⚖</div>Supreme Court Opinions<span class="arrow">›</span></a>
-      <a href="#" class="qlink"><div class="ql-icon">📁</div>Request Court Records<span class="arrow">›</span></a>
-      <a href="#" class="qlink"><div class="ql-icon">🏛</div>Jury Duty Portal<span class="arrow">›</span></a>
-      <a href="#" class="qlink"><div class="ql-icon">📝</div>Downloadable Court Forms<span class="arrow">›</span></a>
-      <a href="#" class="qlink"><div class="ql-icon">🔍</div>Legal Self-Help Center<span class="arrow">›</span></a>
+      <a href="#" class="qlink">
+        <div class="ql-icon">⚖</div>
+        <div class="ql-text"><span>MiCOURT Online Portal</span><span class="ql-sub">File, pay, manage appearances, and view cases</span></div>
+        <span class="arrow">></span>
+      </a>
+      <a href="cases.html" class="qlink">
+        <div class="ql-icon">🔎</div>
+        <div class="ql-text"><span>Search Case Records</span><span class="ql-sub">Look up cases by name, number, or party</span></div>
+        <span class="arrow">></span>
+      </a>
+      <a href="#" class="qlink">
+        <div class="ql-icon">💳</div>
+        <div class="ql-text"><span>Pay Fines &amp; Fees</span><span class="ql-sub">Traffic fines, court costs, and other fees</span></div>
+        <span class="arrow">></span>
+      </a>
+      <a href="#" class="qlink">
+        <div class="ql-icon">📅</div>
+        <div class="ql-text"><span>Docket Calendar</span><span class="ql-sub">View scheduled hearings and upcoming court dates</span></div>
+        <span class="arrow">></span>
+      </a>
+      <a href="#" class="qlink">
+        <div class="ql-icon">🏛</div>
+        <div class="ql-text"><span>Jury Duty Portal</span><span class="ql-sub">Respond to a summons or check your status</span></div>
+        <span class="arrow">></span>
+      </a>
+      <a href="#" class="qlink">
+        <div class="ql-icon">📁</div>
+        <div class="ql-text"><span>Request Court Records</span><span class="ql-sub">Submit a FOIA or public records request</span></div>
+        <span class="arrow">></span>
+      </a>
+      <a href="#" class="qlink">
+        <div class="ql-icon">📝</div>
+        <div class="ql-text"><span>Downloadable Court Forms</span><span class="ql-sub">Access standardized forms for filing</span></div>
+        <span class="arrow">></span>
+      </a>
     </div>
   </div>
 </div>
