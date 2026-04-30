@@ -136,45 +136,123 @@
         }
 
         // Sample Data for "cases"
-        const sampleCases = [
-            {
-                caseNumber: "2026-CR-0001",
-                type: "Criminal",
-                plaintiff: "State of Michigan",
-                defendant: "John Doe",
-                status: "Open",
-                filingDate: "2026-04-10",
-                judge: "Hon. Sarah Jenkins"
-            },
-            {
-                caseNumber: "2026-CV-0142",
-                type: "Civil",
-                plaintiff: "Acme Corp",
-                defendant: "Global Tech LLC",
-                status: "Pending Mediation",
-                filingDate: "2026-03-22",
-                judge: "Hon. Michael Torres"
-            },
-            {
-                caseNumber: "2025-DR-0883",
-                type: "Domestic Relations",
-                plaintiff: "Jane Smith",
-                defendant: "Robert Smith",
-                status: "Closed",
-                filingDate: "2025-11-05",
-                judge: "Hon. Emily Chen"
-            },
-            {
-                caseNumber: "2026-PR-0019",
-                type: "Probate",
-                plaintiff: "Estate of William Johnson",
-                defendant: "N/A",
-                status: "Open",
-                filingDate: "2026-04-28",
-                judge: "Hon. Sarah Jenkins"
-            }
-        ];
+   const sampleCases = [
+  {
+    caseId: "26-48289",
+    court: "Genesee Co. District Court",
+    caseType: "Criminal",
+    status: "Open",
 
+    dates: {
+      filed: "2026-04-10",
+      closed: null,
+      lastUpdated: new Date().toISOString()
+    },
+
+    judge: "Hon. Sarah Jenkins",
+
+    // 👥 Parties
+    parties: {
+      primaryPlaintiff: {
+        name: "State of Michigan",
+        role: "Plaintiff"
+      },
+      primaryDefendant: {
+        name: "John Doe",
+        role: "Defendant"
+      },
+      additionalParties: [
+        {
+          name: "Jane Witness",
+          role: "Witness"
+        }
+      ]
+    },
+
+    // ⚖️ Charges / Claims / Torts
+    charges: [
+      {
+        title: "Assault",
+        statute: "MCL 750.81",
+        count: 1,
+        level: "Misdemeanor",
+        status: "Pending",
+        arraignmentDate: "2026-04-12",
+        notes: "Defendant pleaded not guilty"
+      }
+    ],
+
+    // 💰 Financial Orders (fines/fees)
+    financialOrders: [
+      {
+        orderId: "FO-001",
+        type: "Fine",
+        description: "Court Fine",
+        amount: 500,
+        owedBy: "Defendant",
+        status: "Unpaid",
+        issuedDate: "2026-04-15",
+
+        payments: [
+          {
+            paymentId: "PMT-001",
+            amount: 100,
+            paidBy: "Defendant",
+            method: "Card",
+            waived: false,
+            date: "2026-04-20",
+            notes: "Partial payment"
+          }
+        ]
+      }
+    ],
+
+    // 🪙 Bonds
+    bonds: {
+      amount: 1000,
+      posted: true,
+      postedBy: "Defendant",
+      postedDate: "2026-04-10",
+      bondType: "Cash",
+      conditions: ["No contact with victim"],
+      judge: "Hon. Sarah Jenkins"
+    },
+
+    // 🏛️ Hearings
+    hearings: [
+      {
+        type: "Arraignment",
+        date: "2026-04-12T09:00:00",
+        officer: "Hon. Sarah Jenkins",
+        result: "Not Guilty Plea Entered",
+        notes: "Bond set at $1,000"
+      }
+    ],
+
+    // ⚖️ Sentencing (only if criminal)
+    sentencing: {
+      applicable: false,
+      sentenceDate: null,
+      jailTimeDays: null,
+      probationMonths: null,
+      finesTotal: null,
+      restitution: null,
+      notes: null
+    },
+
+    // 📄 Filings
+    filings: [
+      {
+        title: "Complaint",
+        filedBy: "State of Michigan",
+        role: "Plaintiff",
+        dateFiled: "2026-04-10T08:30:00",
+        documentLink: "https://drive.google.com/example1",
+        notes: "Initial charging document"
+      }
+    ]
+  }
+];
         // Seeding Logic
         async function seedDatabase() {
             seedBtn.disabled = true;
