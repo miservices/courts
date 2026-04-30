@@ -441,221 +441,235 @@ const sampleCases = [
     }
   ]
 },
-    {
-  caseId: "26-48832",
-  court: "Genesee Co. District Court",
-  caseType: "Criminal",
-  status: "Closed",
+{
+  "caseId": "26-48832",
+  "court": "Genesee Co. District Court",
+  "caseType": "Criminal",
+  "status": "Closed",
 
-  dates: {
-    filed: "2026-04-18T10:15:00",
-    closed: "2026-06-02T16:30:00",
-    lastUpdated: new Date().toISOString()
+  "dates": {
+    "filed": "2026-04-18T10:15:00",
+    "trialStart": "2026-05-20T09:00:00",
+    "closed": "2026-06-10T16:30:00",
+    "lastUpdated": "2026-06-10T16:30:00"
   },
 
-  judge: "Hon. Sarah Jenkins",
+  "judge": "Hon. Sarah Jenkins",
 
-  parties: {
-    primaryPlaintiff: {
-      name: "State of Michigan",
-      role: "Prosecution",
-      prosecutor: "Genesee County Prosecutor's Office"
+  "parties": {
+    "primaryPlaintiff": {
+      "name": "State of Michigan",
+      "role": "Prosecution",
+      "prosecutor": "Genesee County Prosecutor's Office"
     },
 
-    primaryDefendant: {
-      name: "Chris Taylor",
-      role: "Defendant",
-      attorney: "Public Defender Office"
+    "primaryDefendant": {
+      "name": "Chris Taylor",
+      "role": "Defendant",
+      "attorney": "Public Defender Office"
     },
 
-    additionalParties: [
+    "additionalParties": [
       {
-        name: "Officer Daniel Brooks",
-        role: "Arresting Officer"
+        "name": "Officer Daniel Brooks",
+        "role": "Arresting Officer"
       },
       {
-        name: "Emily Carter",
-        role: "Witness"
+        "name": "Emily Carter",
+        "role": "Witness"
       },
       {
-        name: "Dr. Kevin Marshall",
-        role: "Medical Examiner",
-        involvement: "Injury report verification"
+        "name": "Dr. Kevin Marshall",
+        "role": "Medical Examiner"
+      },
+      {
+        "name": "Officer Rachel Dunn",
+        "role": "Investigating Officer"
       }
     ]
   },
 
-  charges: [
+  "charges": [
     {
-      chargeId: "C-3001",
-      statute: "MCL 750.81",
-      title: "Assault and Battery",
-      level: "Misdemeanor",
-      count: 1,
-      status: "Convicted",
-      arraignmentDate: "2026-04-20T09:00:00",
-      plea: "No Contest",
-      convictionDate: "2026-05-28T10:00:00",
-      notes: "Plea entered and accepted by court after negotiations"
-    }
-  ],
-
-  financialOrders: [
-    {
-      orderId: "FO-CR-3001",
-      type: "Court Fine",
-      description: "Statutory fine imposed upon conviction",
-      amount: 500,
-      owedBy: "Defendant",
-      status: "Paid",
-      payments: [
-        {
-          paymentId: "PMT-3001",
-          amount: 500,
-          paidBy: "Chris Taylor",
-          method: "Card",
-          date: "2026-05-28T11:15:00",
-          notes: "Paid immediately after sentencing"
-        }
-      ]
+      "chargeId": "C-3001",
+      "statute": "MCL 750.81",
+      "title": "Assault and Battery",
+      "level": "Misdemeanor",
+      "count": 1,
+      "status": "Convicted"
     },
     {
-      orderId: "FO-CR-3002",
-      type: "Court Costs",
-      description: "Administrative court costs",
-      amount: 250,
-      owedBy: "Defendant",
-      status: "Paid",
-      payments: [
-        {
-          paymentId: "PMT-3002",
-          amount: 250,
-          paidBy: "Chris Taylor",
-          method: "Bank Transfer",
-          date: "2026-05-28T11:20:00"
-        }
-      ]
+      "chargeId": "C-3002",
+      "statute": "MCL 750.479",
+      "title": "Resisting and Obstructing a Police Officer",
+      "level": "Felony",
+      "count": 1,
+      "status": "Convicted"
+    },
+    {
+      "chargeId": "C-3003",
+      "statute": "MCL 750.157a",
+      "title": "Conspiracy to Commit Assault",
+      "level": "Felony",
+      "count": 1,
+      "status": "Convicted"
+    },
+    {
+      "chargeId": "C-3004",
+      "statute": "MCL 750.234d",
+      "title": "Possession of Weapon During Commission of Crime",
+      "level": "Felony",
+      "count": 1,
+      "status": "Convicted"
     }
   ],
 
-  bonds: {
-    required: true,
-    amount: 1500,
-    type: "Cash Bond",
-    posted: true,
-    postedBy: "Defendant",
-    postedDate: "2026-04-18T11:00:00",
-    released: true,
-    releasedDate: "2026-05-28T16:45:00",
-    conditions: [
-      "No contact with alleged victim during case",
-      "Must appear for all hearings",
-      "No criminal activity while on bond"
-    ],
-    judgeApproval: "Hon. Sarah Jenkins"
+  "plea": {
+    "entered": "Not Guilty",
+    "date": "2026-04-20T09:00:00"
   },
 
-  hearings: [
-    {
-      hearingId: "H-3001",
-      type: "Arraignment",
-      date: "2026-04-20T09:00:00",
-      officer: "Hon. Sarah Jenkins",
-      courtroom: "Courtroom 2A",
-      result: "Plea Entered - Not Guilty",
-      notes: "Bond set at $1,500"
-    },
-    {
-      hearingId: "H-3002",
-      type: "Pre-Trial Conference",
-      date: "2026-05-05T13:00:00",
-      officer: "Hon. Sarah Jenkins",
-      courtroom: "Courtroom 2A",
-      result: "Plea Negotiations Initiated",
-      notes: "Discussion of plea agreement options"
-    },
-    {
-      hearingId: "H-3003",
-      type: "Motion Hearing",
-      date: "2026-05-15T10:30:00",
-      officer: "Hon. Sarah Jenkins",
-      result: "Motion to Suppress Denied",
-      notes: "Evidence deemed admissible"
-    },
-    {
-      hearingId: "H-3004",
-      type: "Plea Hearing",
-      date: "2026-05-28T10:00:00",
-      officer: "Hon. Sarah Jenkins",
-      result: "No Contest Plea Accepted",
-      notes: "Case proceeded to sentencing"
-    },
-    {
-      hearingId: "H-3005",
-      type: "Sentencing",
-      date: "2026-05-28T11:00:00",
-      officer: "Hon. Sarah Jenkins",
-      result: "Sentenced",
-      courtroom: "Courtroom 2A",
-      notes: "Fines and costs imposed; bond released"
-    }
-  ],
+  "trial": {
+    "startDate": "2026-05-20T09:00:00",
+    "endDate": "2026-05-27T16:00:00",
+    "juryTrial": true,
+    "verdict": "Guilty on all counts",
+    "notes": "Jury found defendant guilty after 5-day trial with multiple witness testimonies and forensic evidence."
+  },
 
-  sentencing: {
-    applicable: true,
-    outcome: "Guilty - No Contest Plea Accepted",
-    sentenceDate: "2026-05-28T11:00:00",
-    penalties: {
-      fines: 500,
-      courtCosts: 250,
-      jailTime: "Time Served (0 days)",
-      probation: {
-        duration: "6 months",
-        conditions: [
-          "No contact with victim",
-          "No further criminal offenses",
-          "Monthly probation check-ins"
+  "sentencing": {
+    "applicable": true,
+    "sentenceDate": "2026-06-10T11:00:00",
+    "outcome": "Guilty on all charges",
+
+    "penalties": {
+      "jailTime": "3 to 10 years state prison",
+      "fines": 2500,
+      "courtCosts": 750,
+      "probation": {
+        "applicable": true,
+        "duration": "5 years post-release",
+        "conditions": [
+          "No contact with victims",
+          "Mandatory anger management program",
+          "Regular probation check-ins",
+          "No firearm possession"
         ]
       }
     },
-    notes: "Defendant completed all requirements and paid all fines in full"
+
+    "notes": "Sentences run concurrently with enhanced penalties due to multiple felony convictions."
   },
 
-  filings: [
+  "financialOrders": [
     {
-      filingId: "F-3001",
-      title: "Criminal Complaint",
-      filedBy: "State of Michigan",
-      role: "Prosecution",
-      dateFiled: "2026-04-18T10:15:00"
+      "orderId": "FO-CR-3001",
+      "type": "Court Fine",
+      "amount": 1000,
+      "status": "Paid"
     },
     {
-      filingId: "F-3002",
-      title: "Arrest Report",
-      filedBy: "Officer Daniel Brooks",
-      role: "Law Enforcement",
-      dateFiled: "2026-04-18T12:00:00"
+      "orderId": "FO-CR-3002",
+      "type": "Court Costs",
+      "amount": 750,
+      "status": "Paid"
+    }
+  ],
+
+  "bonds": {
+    "required": true,
+    "amount": 5000,
+    "posted": false,
+    "notes": "Bond forfeited after conviction"
+  },
+
+  "hearings": [
+    {
+      "type": "Arraignment",
+      "date": "2026-04-20T09:00:00",
+      "courtroom": "2A",
+      "result": "Not Guilty Plea Entered"
     },
     {
-      filingId: "F-3003",
-      title: "Plea Agreement",
-      filedBy: "Defense Counsel & Prosecution",
-      role: "Both Parties",
-      dateFiled: "2026-05-28T09:45:00"
+      "type": "Pre-Trial Conference",
+      "date": "2026-05-05T13:00:00",
+      "courtroom": "2A",
+      "result": "Trial Scheduled"
     },
     {
-      filingId: "F-3004",
-      title: "Judgment and Sentence",
-      filedBy: "Genesee Co. District Court",
-      role: "Court",
-      dateFiled: "2026-05-28T11:10:00"
+      "type": "Motion Hearing",
+      "date": "2026-05-15T10:30:00",
+      "result": "Motion to Suppress Denied"
     },
     {
-      filingId: "F-3005",
-      title: "Case Closure Order",
-      filedBy: "Genesee Co. District Court",
-      role: "Court",
-      dateFiled: "2026-06-02T16:30:00"
+      "type": "Jury Trial Day 1",
+      "date": "2026-05-20T09:00:00",
+      "result": "Witness testimony began"
+    },
+    {
+      "type": "Jury Trial Day 2",
+      "date": "2026-05-21T09:00:00",
+      "result": "Forensic evidence presented"
+    },
+    {
+      "type": "Jury Trial Day 5",
+      "date": "2026-05-27T15:30:00",
+      "result": "Case submitted to jury"
+    },
+    {
+      "type": "Verdict Hearing",
+      "date": "2026-05-28T10:00:00",
+      "result": "Guilty on all counts"
+    },
+    {
+      "type": "Sentencing",
+      "date": "2026-06-10T11:00:00",
+      "result": "Prison sentence imposed"
+    }
+  ],
+
+  "filings": [
+    {
+      "filingId": "F-3001",
+      "title": "Criminal Complaint",
+      "filedBy": "State of Michigan",
+      "dateFiled": "2026-04-18T10:15:00",
+      "driveLink": "https://drive.google.com/file/d/CR3001"
+    },
+    {
+      "filingId": "F-3002",
+      "title": "Arrest Report",
+      "filedBy": "Officer Daniel Brooks",
+      "dateFiled": "2026-04-18T12:00:00",
+      "driveLink": "https://drive.google.com/file/d/CR3002"
+    },
+    {
+      "filingId": "F-3003",
+      "title": "Trial Brief - Prosecution",
+      "filedBy": "Prosecutor Office",
+      "dateFiled": "2026-05-10T09:00:00",
+      "driveLink": "https://drive.google.com/file/d/CR3003"
+    },
+    {
+      "filingId": "F-3004",
+      "title": "Trial Transcript",
+      "filedBy": "Court Reporter",
+      "dateFiled": "2026-05-27T17:00:00",
+      "driveLink": "https://drive.google.com/file/d/CR3004"
+    },
+    {
+      "filingId": "F-3005",
+      "title": "Jury Verdict Form",
+      "filedBy": "Genesee Co. District Court",
+      "dateFiled": "2026-05-28T10:30:00",
+      "driveLink": "https://drive.google.com/file/d/CR3005"
+    },
+    {
+      "filingId": "F-3006",
+      "title": "Judgment and Sentence",
+      "filedBy": "Genesee Co. District Court",
+      "dateFiled": "2026-06-10T11:10:00",
+      "driveLink": "https://drive.google.com/file/d/CR3006"
     }
   ]
 },
