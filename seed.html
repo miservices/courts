@@ -136,28 +136,26 @@
         }
 
 const sampleCases = [
-{
-  caseId: "MSC 88412",
+    {
+  caseId: "MSC-88941",
   court: "Michigan Supreme Court",
-  caseType: "Appellate",
-  appellateSubtype: "Civil Appeal - Landlord Tenant Judgment Review",
-  status: "Pending Decision",
+  caseType: "Appeal",
+  status: "Closed",
 
   dates: {
-    filed: "2026-03-28T14:10:00",
-    lowerCourtDecisionDate: "2026-02-20T11:30:00",
+    filed: "2026-02-10T09:00:00",
+    closed: "2026-05-30T15:20:00",
     lastUpdated: new Date().toISOString()
   },
 
   judges: [
     "Hon. William Whitfield",
     "Hon. Andrea Morales",
-    "Hon. David Kessler"
+    "Hon. David Kessler",
+    "Hon. Patricia Nguyen",
+    "Hon. Robert Ellison"
   ],
 
-  docketSummary: "Defendant appeals Genesee County District Court judgment in favor of landlord, challenging findings of breach of lease and damages awarded.",
-
-  // 👥 Parties (Appellant vs Appellee structure)
   parties: {
     appellant: {
       name: "Jordan Williams",
@@ -166,56 +164,56 @@ const sampleCases = [
     },
 
     appellee: {
-      name: "Acme Property Management LLC",
+      name: "State of Michigan",
       role: "Appellee",
-      attorney: "David L. Harper, Esq."
+      attorney: "Michigan Attorney General Office"
     },
 
     additionalParties: [
       {
-        name: "Taylor Williams",
-        role: "Interested Party",
-        involvement: "Co-tenant at trial level"
+        name: "Acme Property Management LLC",
+        role: "Interested Party"
+      },
+      {
+        name: "Genesee Co. District Court",
+        role: "Lower Court"
       }
     ]
   },
 
-  // ⚖️ Issues on Appeal (key appellate component)
   issues: [
     {
-      issueId: "APL-1",
-      title: "Whether the trial court erred in finding breach of lease",
-      category: "Contract Law",
-      standardOfReview: "Clear error",
-      argumentSummary: "Appellant argues evidence did not support finding of non-payment and that habitability defenses were ignored.",
-      reliefRequested: "Reversal of judgment"
+      issueId: "APL-9001",
+      title: "Whether the trial court erred in admitting key evidence",
+      category: "Procedural Law",
+      standardOfReview: "Abuse of discretion",
+      argumentSummary: "Appellant argues evidence was improperly admitted and prejudiced outcome at trial level.",
+      reliefRequested: "Reversal and remand"
     },
     {
-      issueId: "APL-2",
-      title: "Whether damages awarded were excessive",
-      category: "Damages Review",
-      standardOfReview: "Abuse of discretion",
-      argumentSummary: "Appellant claims damages included unsupported repair estimates.",
-      reliefRequested: "Reduction or remand for recalculation"
+      issueId: "APL-9002",
+      title: "Whether damages awarded were supported by record",
+      category: "Civil Procedure",
+      standardOfReview: "Clear error",
+      argumentSummary: "Appellant challenges sufficiency of evidence supporting damages calculation.",
+      reliefRequested: "Reduction or vacatur of damages"
     }
   ],
 
-  // 💰 Costs (appellate costs, not fines)
   financialOrders: [
     {
-      orderId: "FO-APL-5001",
+      orderId: "FO-APL-9001",
       type: "Appeal Filing Fee",
       amount: 375,
       owedBy: "Appellant",
       status: "Paid",
       payments: [
         {
-          paymentId: "PMT-APL-5001",
+          paymentId: "PMT-9001",
           amount: 375,
-          paidBy: "Appellant",
+          paidBy: "Jordan Williams",
           method: "Credit Card",
-          date: "2026-03-28T14:12:00",
-          notes: "Notice of appeal filing fee"
+          date: "2026-02-10T09:05:00"
         }
       ]
     }
@@ -223,294 +221,149 @@ const sampleCases = [
 
   bonds: {
     required: false,
-    notes: "No bond required for civil appeal in this matter"
+    notes: "No appellate bond required for civil/criminal mixed appeal"
   },
 
   hearings: [
     {
-      hearingId: "H-APL-1001",
+      hearingId: "H-9001",
       type: "Oral Argument",
-      date: "2026-05-10T10:00:00",
+      date: "2026-05-05T10:00:00",
       court: "Michigan Supreme Court",
-      result: "Pending",
-      notes: "15-minute oral arguments per side scheduled"
+      result: "Completed",
+      notes: "15 minutes per side; questions focused on evidentiary issues"
+    },
+    {
+      hearingId: "H-9002",
+      type: "Conference of Justices",
+      date: "2026-05-22T13:00:00",
+      court: "Michigan Supreme Court",
+      result: "Case Decided",
+      notes: "Majority opinion drafted and circulated"
     }
   ],
 
   sentencing: {
     applicable: false,
-    notes: "Appellate review only - no sentencing authority"
+    outcome: "Lower Court Judgment Affirmed in Part, Reversed in Part",
+    notes: "Case remanded for recalculation of damages"
   },
 
-  // 📄 Appellate filings (brief-centric system)
   filings: [
     {
-      filingId: "F-APL-1001",
+      filingId: "F-9001",
       title: "Claim of Appeal",
       filedBy: "Jordan Williams",
       role: "Appellant",
-      dateFiled: "2026-03-28T14:10:00",
-      documentLink: "https://drive.google.com/claim-of-appeal-example",
-      notes: "Initiates appellate review"
+      dateFiled: "2026-02-10T09:00:00"
     },
     {
-      filingId: "F-APL-1002",
+      filingId: "F-9002",
       title: "Appellant Brief",
       filedBy: "Jordan Williams",
       role: "Appellant",
-      dateFiled: "2026-04-12T09:00:00",
-      documentLink: "https://drive.google.com/appellant-brief-example",
-      notes: "Argues trial court errors in fact-finding and damages calculation"
+      dateFiled: "2026-03-15T11:30:00"
     },
     {
-      filingId: "F-APL-1003",
+      filingId: "F-9003",
       title: "Appellee Brief",
-      filedBy: "Acme Property Management LLC",
+      filedBy: "State of Michigan",
       role: "Appellee",
-      dateFiled: "2026-04-26T15:45:00",
-      documentLink: "https://drive.google.com/appellee-brief-example",
-      notes: "Argues trial court decision should be affirmed"
+      dateFiled: "2026-04-10T14:45:00"
     },
     {
-      filingId: "F-APL-1004",
+      filingId: "F-9004",
       title: "Reply Brief",
       filedBy: "Jordan Williams",
       role: "Appellant",
-      dateFiled: "2026-05-01T11:20:00",
-      documentLink: "https://drive.google.com/reply-brief-example",
-      notes: "Rebuttal to appellee arguments"
+      dateFiled: "2026-04-25T10:20:00"
+    },
+    {
+      filingId: "F-9005",
+      title: "Opinion of the Court",
+      filedBy: "Michigan Supreme Court",
+      role: "Court",
+      dateFiled: "2026-05-30T15:20:00"
     }
   ]
-},
-{
+}
+    {
   caseId: "26-70114",
   court: "Genesee Co. District Court",
   caseType: "Administrative",
-  administrativeSubtype: "FOIA Exemption / Nondisclosure Petition",
-  status: "Pending Review",
+  administrativeSubtype: "License Revocation Petition",
+  status: "Closed",
 
   dates: {
-    filed: "2026-03-18T10:22:00",
-    closed: null,
+    filed: "2026-03-22T09:10:00",
+    closed: "2026-05-18T14:45:00",
     lastUpdated: new Date().toISOString()
   },
 
   judge: "Hon. Emily Chen",
 
-  docketSummary: "Ex parte petition filed by the Michigan Department of State seeking a nondisclosure order under FOIA exemptions regarding active investigative records.",
-
   parties: {
     primaryPetitioner: {
-      name: "Michigan Department of State",
+      name: "Michigan Department of State (Secretary of State)",
       role: "Petitioner",
       attorney: "Office of the Attorney General"
     },
 
     respondent: {
-      name: "Unknown / Ex Parte Filing",
-      role: "Non-adversarial",
-      attorney: null
+      name: "Jordan Williams",
+      role: "Respondent",
+      attorney: "Self-Represented"
     },
 
-    interestedParties: [
+    additionalParties: [
       {
-        name: "Michigan Press Association",
-        role: "Interested Party",
-        noticeStatus: "Notified"
+        name: "Michigan State Police Licensing Division",
+        role: "Investigating Agency"
       },
       {
-        name: "FOIA Requestor (Anonymous)",
-        role: "Requesting Party",
-        noticeStatus: "Pending Notice"
+        name: "Bureau of Driver and Vehicle Records",
+        role: "Records Custodian"
       }
     ]
   },
 
   issues: [
     {
-      issueId: "A-3001",
-      title: "FOIA Exemption Claim",
-      category: "Public Records Law",
-      statute: "MCL 15.231 et seq.",
-      description: "Records withheld due to ongoing law enforcement investigation exemption.",
-      status: "Under Review",
-      reliefRequested: "Protective nondisclosure order",
-      urgency: "High"
+      issueId: "A-4001",
+      title: "Revocation of Driver’s License for Statutory Violations",
+      category: "Administrative Enforcement",
+      statute: "MCL 257.303",
+      description: "Petition to revoke driving privileges based on repeated traffic violations and failure to comply with prior suspensions.",
+      status: "Resolved",
+      reliefRequested: "License revocation for statutory period",
+      outcome: "Partial Revocation Granted",
+      notes: "Court found sufficient basis for suspension but modified duration"
     },
     {
-      issueId: "A-3002",
-      title: "In Camera Review Request",
-      category: "Procedure",
-      description: "Request for private judicial review of contested documents.",
-      status: "Pending"
+      issueId: "A-4002",
+      title: "Failure to Comply with Prior Suspension Order",
+      category: "Compliance",
+      description: "Allegation that respondent operated a motor vehicle during suspension period.",
+      status: "Sustained",
+      outcome: "Violation Confirmed"
     }
   ],
 
   financialOrders: [
     {
-      orderId: "FO-ADM-3001",
-      type: "Filing Fee",
-      amount: 150,
-      owedBy: "Petitioner",
+      orderId: "FO-ADM-4001",
+      type: "Administrative Fine",
+      description: "Statutory penalty for compliance violation",
+      amount: 350,
+      owedBy: "Respondent",
       status: "Paid",
       payments: [
         {
-          paymentId: "PMT-3001",
-          amount: 150,
-          paidBy: "State of Michigan Department of State",
-          method: "Government Transfer",
-          date: "2026-03-18T10:23:00"
-        }
-      ]
-    }
-  ],
-
-  bonds: {
-    required: false
-  },
-
-  hearings: [
-    {
-      hearingId: "H-3001",
-      type: "Ex Parte Motion Review",
-      date: "2026-03-25T09:30:00",
-      officer: "Hon. Emily Chen",
-      result: "Pending",
-      notes: "Court to determine applicability of FOIA exemptions"
-    }
-  ],
-
-  sentencing: {
-    applicable: false,
-    notes: "Administrative FOIA matter – no sentencing authority"
-  },
-
-  filings: [
-    {
-      filingId: "F-3001",
-      title: "Ex Parte Petition for Nondisclosure Order",
-      filedBy: "Michigan Department of State",
-      role: "Petitioner",
-      dateFiled: "2026-03-18T10:22:00",
-      documentLink: "https://drive.google.com/foia-petition-example"
-    },
-    {
-      filingId: "F-3002",
-      title: "Supporting Affidavit",
-      filedBy: "Investigations Division",
-      role: "Petitioner",
-      dateFiled: "2026-03-18T10:25:00",
-      documentLink: "https://drive.google.com/foia-affidavit-example"
-    }
-  ]
-},
-/* =========================
-   ⚖️ CIVIL CASE (EVICTION + DAMAGES)
-========================= */
-{
-  caseId: "26-59321",
-  court: "Genesee Co. District Court",
-  caseType: "Civil",
-  civilSubtype: "Landlord-Tenant / Breach of Lease",
-  status: "Active",
-
-  dates: {
-    filed: "2026-02-14T09:12:00",
-    closed: null,
-    lastUpdated: new Date().toISOString()
-  },
-
-  judge: "Hon. Michael Torres",
-
-  docketSummary: "Plaintiff alleges breach of lease, unpaid rent, and property damage. Defendant denies liability and claims habitability issues.",
-
-  parties: {
-    primaryPlaintiff: {
-      name: "Acme Property Management LLC",
-      role: "Plaintiff",
-      attorney: "David L. Harper",
-      contactType: "Business"
-    },
-
-    primaryDefendant: {
-      name: "Jordan Williams",
-      role: "Defendant",
-      attorney: "Self-Represented",
-      contactType: "Individual"
-    },
-
-    additionalParties: [
-      {
-        name: "Taylor Williams",
-        role: "Co-Defendant",
-        relation: "Occupant",
-        attorney: "Self-Represented"
-      }
-    ]
-  },
-
-  charges: [
-    {
-      type: "Claim",
-      title: "Breach of Lease Agreement",
-      category: "Contract",
-      count: 1,
-      status: "Pending",
-      filingBasis: "Non-payment of rent for 3 consecutive months",
-      damagesClaimed: 3600,
-      requestedRelief: "Monetary damages + eviction",
-      notes: "Lease executed on 2025-06-01"
-    },
-    {
-      type: "Claim",
-      title: "Property Damage",
-      category: "Tort",
-      count: 1,
-      status: "Pending",
-      damagesClaimed: 1250,
-      requestedRelief: "Compensatory damages",
-      notes: "Carpet and drywall damage alleged"
-    }
-  ],
-
-  financialOrders: [
-    {
-      orderId: "FO-CIV-1001",
-      type: "Filing Fee",
-      description: "Civil filing fee",
-      amount: 175,
-      owedBy: "Plaintiff",
-      status: "Paid",
-      issuedDate: "2026-02-14T09:12:00",
-      payments: [
-        {
-          paymentId: "PMT-1001",
-          amount: 175,
-          paidBy: "Plaintiff",
-          method: "Credit Card",
-          waived: false,
-          date: "2026-02-14T09:13:00",
-          processedBy: "Clerk Office",
-          notes: "Paid at filing"
-        }
-      ]
-    },
-    {
-      orderId: "FO-CIV-1002",
-      type: "Service Fee",
-      description: "Service of process fee",
-      amount: 85,
-      owedBy: "Plaintiff",
-      status: "Paid",
-      payments: [
-        {
-          paymentId: "PMT-1002",
-          amount: 85,
-          paidBy: "Plaintiff",
+          paymentId: "PMT-4001",
+          amount: 350,
+          paidBy: "Jordan Williams",
           method: "Card",
-          waived: false,
-          date: "2026-02-15",
-          notes: "Process server fee"
+          date: "2026-05-18T15:10:00"
         }
       ]
     }
@@ -518,89 +371,89 @@ const sampleCases = [
 
   bonds: {
     required: false,
-    amount: null,
-    posted: false,
-    postedBy: null,
-    bondType: null,
-    conditions: []
+    notes: "No bond required in administrative licensing matter"
   },
 
   hearings: [
     {
-      hearingId: "H-1001",
-      type: "Initial Hearing",
-      date: "2026-03-05T10:00:00",
-      officer: "Hon. Michael Torres",
-      courtroom: "Courtroom 3B",
-      result: "Adjourned",
-      notes: "Defendant requested continuance to seek counsel"
+      hearingId: "H-4001",
+      type: "Initial Review Hearing",
+      date: "2026-04-05T10:00:00",
+      officer: "Hon. Emily Chen",
+      courtroom: "Courtroom 1C",
+      result: "Matter Set for Full Review",
+      notes: "Petitioner presented violation history"
     },
     {
-      hearingId: "H-1002",
-      type: "Mediation",
-      date: "2026-04-01T13:00:00",
-      officer: "Court Mediator Lisa Grant",
-      result: "No Agreement",
-      notes: "Parties failed to reach settlement"
+      hearingId: "H-4002",
+      type: "Evidentiary Hearing",
+      date: "2026-04-28T13:30:00",
+      officer: "Hon. Emily Chen",
+      courtroom: "Courtroom 1C",
+      result: "Violation Established",
+      notes: "DMV records and officer testimony admitted"
+    },
+    {
+      hearingId: "H-4003",
+      type: "Final Determination Hearing",
+      date: "2026-05-18T14:00:00",
+      officer: "Hon. Emily Chen",
+      courtroom: "Courtroom 1C",
+      result: "License Revoked (Modified Term)",
+      notes: "Revocation reduced from 1 year to 6 months with reinstatement conditions"
     }
   ],
 
   sentencing: {
     applicable: false,
-    outcome: null,
-    notes: "Civil case - no sentencing authority"
+    outcome: "Administrative Order Issued",
+    notes: "Driver’s license revoked for 6 months with reinstatement conditions"
   },
 
   filings: [
     {
-      filingId: "F-1001",
-      title: "Complaint",
-      filedBy: "Acme Property Management LLC",
-      role: "Plaintiff",
-      dateFiled: "2026-02-14T09:12:00",
-      documentLink: "https://drive.google.com/civil-complaint-example",
-      notes: "Initial complaint filed"
+      filingId: "F-4001",
+      title: "Petition for License Revocation",
+      filedBy: "Michigan Department of State",
+      role: "Petitioner",
+      dateFiled: "2026-03-22T09:10:00"
     },
     {
-      filingId: "F-1002",
-      title: "Answer to Complaint",
+      filingId: "F-4002",
+      title: "Driving Record Summary",
+      filedBy: "Bureau of Driver and Vehicle Records",
+      role: "Agency Record",
+      dateFiled: "2026-03-22T09:30:00"
+    },
+    {
+      filingId: "F-4003",
+      title: "Respondent Answer",
       filedBy: "Jordan Williams",
-      role: "Defendant",
-      dateFiled: "2026-02-25T14:42:00",
-      documentLink: "https://drive.google.com/answer-example",
-      notes: "Denial of allegations"
+      role: "Respondent",
+      dateFiled: "2026-04-10T11:20:00"
     },
     {
-      filingId: "F-1003",
-      title: "Motion to Dismiss",
-      filedBy: "Taylor Williams",
-      role: "Defendant",
-      dateFiled: "2026-03-02T11:20:00",
-      documentLink: "https://drive.google.com/motion-example",
-      notes: "Improper party inclusion argument"
+      filingId: "F-4004",
+      title: "Final Administrative Order",
+      filedBy: "Genesee Co. District Court",
+      role: "Court",
+      dateFiled: "2026-05-18T14:45:00"
     }
   ]
-},
-
-/* =========================
-   ⚖️ CRIMINAL CASE (ASSAULT)
-========================= */
-{
-  caseId: "26-48289",
+}
+    {
+  caseId: "26-48832",
   court: "Genesee Co. District Court",
   caseType: "Criminal",
-  offenseType: "Assault and Battery",
-  status: "Pre-Trial",
+  status: "Closed",
 
   dates: {
-    filed: "2026-04-10T08:30:00",
-    closed: null,
+    filed: "2026-04-18T10:15:00",
+    closed: "2026-06-02T16:30:00",
     lastUpdated: new Date().toISOString()
   },
 
   judge: "Hon. Sarah Jenkins",
-
-  docketSummary: "Defendant charged with misdemeanor assault following altercation outside private residence.",
 
   parties: {
     primaryPlaintiff: {
@@ -610,54 +463,76 @@ const sampleCases = [
     },
 
     primaryDefendant: {
-      name: "John Doe",
+      name: "Chris Taylor",
       role: "Defendant",
       attorney: "Public Defender Office"
     },
 
     additionalParties: [
       {
-        name: "Jane Witness",
+        name: "Officer Daniel Brooks",
+        role: "Arresting Officer"
+      },
+      {
+        name: "Emily Carter",
         role: "Witness"
       },
       {
-        name: "Officer Mark Daniels",
-        role: "Arresting Officer"
+        name: "Dr. Kevin Marshall",
+        role: "Medical Examiner",
+        involvement: "Injury report verification"
       }
     ]
   },
 
   charges: [
     {
-      chargeId: "C-2001",
+      chargeId: "C-3001",
       statute: "MCL 750.81",
       title: "Assault and Battery",
       level: "Misdemeanor",
       count: 1,
-      status: "Pending",
-      arraignmentDate: "2026-04-12T09:00:00",
-      plea: "Not Guilty",
-      notes: "Defendant denies physical contact"
+      status: "Convicted",
+      arraignmentDate: "2026-04-20T09:00:00",
+      plea: "No Contest",
+      convictionDate: "2026-05-28T10:00:00",
+      notes: "Plea entered and accepted by court after negotiations"
     }
   ],
 
   financialOrders: [
     {
-      orderId: "FO-CR-2001",
+      orderId: "FO-CR-3001",
       type: "Court Fine",
-      description: "Potential fine upon conviction",
+      description: "Statutory fine imposed upon conviction",
       amount: 500,
       owedBy: "Defendant",
-      status: "Unpaid",
+      status: "Paid",
       payments: [
         {
-          paymentId: "PMT-2001",
-          amount: 100,
-          paidBy: "Defendant",
+          paymentId: "PMT-3001",
+          amount: 500,
+          paidBy: "Chris Taylor",
           method: "Card",
-          waived: false,
-          date: "2026-04-20",
-          notes: "Partial payment toward fees"
+          date: "2026-05-28T11:15:00",
+          notes: "Paid immediately after sentencing"
+        }
+      ]
+    },
+    {
+      orderId: "FO-CR-3002",
+      type: "Court Costs",
+      description: "Administrative court costs",
+      amount: 250,
+      owedBy: "Defendant",
+      status: "Paid",
+      payments: [
+        {
+          paymentId: "PMT-3002",
+          amount: 250,
+          paidBy: "Chris Taylor",
+          method: "Bank Transfer",
+          date: "2026-05-28T11:20:00"
         }
       ]
     }
@@ -665,50 +540,290 @@ const sampleCases = [
 
   bonds: {
     required: true,
-    amount: 1000,
+    amount: 1500,
     type: "Cash Bond",
     posted: true,
     postedBy: "Defendant",
-    postedDate: "2026-04-10T10:00:00",
+    postedDate: "2026-04-18T11:00:00",
+    released: true,
+    releasedDate: "2026-05-28T16:45:00",
     conditions: [
-      "No contact with alleged victim",
-      "No return to incident location",
-      "Must appear at all hearings"
+      "No contact with alleged victim during case",
+      "Must appear for all hearings",
+      "No criminal activity while on bond"
     ],
     judgeApproval: "Hon. Sarah Jenkins"
   },
 
   hearings: [
     {
-      hearingId: "H-2001",
+      hearingId: "H-3001",
       type: "Arraignment",
-      date: "2026-04-12T09:00:00",
+      date: "2026-04-20T09:00:00",
       officer: "Hon. Sarah Jenkins",
-      result: "Plea Entered - Not Guilty",
       courtroom: "Courtroom 2A",
-      notes: "Bond set at $1,000"
+      result: "Plea Entered - Not Guilty",
+      notes: "Bond set at $1,500"
+    },
+    {
+      hearingId: "H-3002",
+      type: "Pre-Trial Conference",
+      date: "2026-05-05T13:00:00",
+      officer: "Hon. Sarah Jenkins",
+      courtroom: "Courtroom 2A",
+      result: "Plea Negotiations Initiated",
+      notes: "Discussion of plea agreement options"
+    },
+    {
+      hearingId: "H-3003",
+      type: "Motion Hearing",
+      date: "2026-05-15T10:30:00",
+      officer: "Hon. Sarah Jenkins",
+      result: "Motion to Suppress Denied",
+      notes: "Evidence deemed admissible"
+    },
+    {
+      hearingId: "H-3004",
+      type: "Plea Hearing",
+      date: "2026-05-28T10:00:00",
+      officer: "Hon. Sarah Jenkins",
+      result: "No Contest Plea Accepted",
+      notes: "Case proceeded to sentencing"
+    },
+    {
+      hearingId: "H-3005",
+      type: "Sentencing",
+      date: "2026-05-28T11:00:00",
+      officer: "Hon. Sarah Jenkins",
+      result: "Sentenced",
+      courtroom: "Courtroom 2A",
+      notes: "Fines and costs imposed; bond released"
+    }
+  ],
+
+  sentencing: {
+    applicable: true,
+    outcome: "Guilty - No Contest Plea Accepted",
+    sentenceDate: "2026-05-28T11:00:00",
+    penalties: {
+      fines: 500,
+      courtCosts: 250,
+      jailTime: "Time Served (0 days)",
+      probation: {
+        duration: "6 months",
+        conditions: [
+          "No contact with victim",
+          "No further criminal offenses",
+          "Monthly probation check-ins"
+        ]
+      }
+    },
+    notes: "Defendant completed all requirements and paid all fines in full"
+  },
+
+  filings: [
+    {
+      filingId: "F-3001",
+      title: "Criminal Complaint",
+      filedBy: "State of Michigan",
+      role: "Prosecution",
+      dateFiled: "2026-04-18T10:15:00"
+    },
+    {
+      filingId: "F-3002",
+      title: "Arrest Report",
+      filedBy: "Officer Daniel Brooks",
+      role: "Law Enforcement",
+      dateFiled: "2026-04-18T12:00:00"
+    },
+    {
+      filingId: "F-3003",
+      title: "Plea Agreement",
+      filedBy: "Defense Counsel & Prosecution",
+      role: "Both Parties",
+      dateFiled: "2026-05-28T09:45:00"
+    },
+    {
+      filingId: "F-3004",
+      title: "Judgment and Sentence",
+      filedBy: "Genesee Co. District Court",
+      role: "Court",
+      dateFiled: "2026-05-28T11:10:00"
+    },
+    {
+      filingId: "F-3005",
+      title: "Case Closure Order",
+      filedBy: "Genesee Co. District Court",
+      role: "Court",
+      dateFiled: "2026-06-02T16:30:00"
+    }
+  ]
+}
+    {
+  caseId: "26-60788",
+  court: "Genesee Co. District Court",
+  caseType: "Civil",
+  status: "Closed",
+
+  dates: {
+    filed: "2026-01-08T09:00:00",
+    closed: "2026-04-20T12:00:00",
+    lastUpdated: new Date().toISOString()
+  },
+
+  judge: "Hon. Michael Torres",
+
+  parties: {
+    primaryPlaintiff: {
+      name: "Riverside Property Holdings LLC",
+      role: "Plaintiff",
+      attorney: "David L. Harper",
+      contactType: "Business"
+    },
+
+    primaryDefendant: {
+      name: "Alex Johnson",
+      role: "Defendant",
+      attorney: "Self-Represented",
+      contactType: "Individual"
+    },
+
+    additionalParties: [
+      {
+        name: "Morgan Johnson",
+        role: "Co-Occupant",
+        relation: "Household Member",
+        attorney: "Self-Represented"
+      }
+    ]
+  },
+
+  charges: [
+    {
+      type: "Claim",
+      title: "Non-Payment of Rent",
+      category: "Contract",
+      count: 1,
+      status: "Judgment Entered",
+      filingBasis: "Failure to pay rent for 4 consecutive months",
+      damagesClaimed: 4800,
+      awardedAmount: 4200,
+      requestedRelief: "Eviction and monetary damages",
+      notes: "Court found partial payments insufficient to cure arrears"
+    },
+    {
+      type: "Claim",
+      title: "Property Damage",
+      category: "Tort",
+      count: 1,
+      status: "Dismissed in Part",
+      damagesClaimed: 1800,
+      awardedAmount: 900,
+      requestedRelief: "Compensatory damages",
+      notes: "Damages reduced due to limited documentation"
+    }
+  ],
+
+  financialOrders: [
+    {
+      orderId: "FO-CIV-2001",
+      type: "Judgment Amount",
+      description: "Court-ordered damages for rent arrears and property damage",
+      amount: 5100,
+      owedBy: "Defendant",
+      status: "Paid",
+      payments: [
+        {
+          paymentId: "PMT-2001",
+          amount: 5100,
+          paidBy: "Alex Johnson",
+          method: "Bank Transfer",
+          date: "2026-04-19T15:30:00",
+          notes: "Full payment prior to case closure"
+        }
+      ]
+    },
+    {
+      orderId: "FO-CIV-2002",
+      type: "Court Costs",
+      amount: 220,
+      owedBy: "Defendant",
+      status: "Paid",
+      payments: [
+        {
+          paymentId: "PMT-2002",
+          amount: 220,
+          paidBy: "Alex Johnson",
+          method: "Card",
+          date: "2026-04-19T15:35:00"
+        }
+      ]
+    }
+  ],
+
+  bonds: {
+    required: false,
+    posted: false,
+    notes: "No bond required in civil matter"
+  },
+
+  hearings: [
+    {
+      hearingId: "H-2001",
+      type: "Initial Hearing",
+      date: "2026-02-05T10:00:00",
+      officer: "Hon. Michael Torres",
+      courtroom: "Courtroom 3B",
+      result: "Adjourned"
+    },
+    {
+      hearingId: "H-2002",
+      type: "Mediation",
+      date: "2026-03-10T13:00:00",
+      officer: "Court Mediator Lisa Grant",
+      result: "No Agreement"
+    },
+    {
+      hearingId: "H-2003",
+      type: "Bench Trial",
+      date: "2026-04-15T09:30:00",
+      officer: "Hon. Michael Torres",
+      courtroom: "Courtroom 3B",
+      result: "Judgment for Plaintiff (Partial)"
     }
   ],
 
   sentencing: {
     applicable: false,
-    expectedRange: "Up to 93 days jail / $500 fine",
-    notes: "Pending trial outcome"
+    outcome: "Judgment Entered",
+    notes: "Civil case resolved with monetary judgment"
   },
 
   filings: [
     {
       filingId: "F-2001",
-      title: "Criminal Complaint",
-      filedBy: "State of Michigan",
-      role: "Prosecution",
-      dateFiled: "2026-04-10T08:30:00",
-      documentLink: "https://drive.google.com/criminal-complaint-example",
-      notes: "Filed by prosecutor"
+      title: "Complaint",
+      filedBy: "Riverside Property Holdings LLC",
+      role: "Plaintiff",
+      dateFiled: "2026-01-08T09:00:00"
+    },
+    {
+      filingId: "F-2002",
+      title: "Answer to Complaint",
+      filedBy: "Alex Johnson",
+      role: "Defendant",
+      dateFiled: "2026-01-20T14:10:00"
+    },
+    {
+      filingId: "F-2003",
+      title: "Judgment and Order",
+      filedBy: "Genesee Co. District Court",
+      role: "Court",
+      dateFiled: "2026-04-20T12:00:00"
     }
   ]
 }
-];
+
         // Seeding Logic
        async function seedDatabase() {
     seedBtn.disabled = true;
