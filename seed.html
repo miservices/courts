@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Seed Firestore Cases</title>
+</head>
+<body>
+  <h2>Seed Michigan Courts Database</h2>
+  <button onclick="seedCases()">Seed Cases</button>
+
+  <script type="module">
+    // 🔥 Import Firebase
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getFirestore, doc, setDoc, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    // 🔧 YOUR FIREBASE CONFIG HERE
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT.firebaseapp.com",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_PROJECT.appspot.com",
+      messagingSenderId: "YOUR_ID",
+      appId: "YOUR_APP_ID"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    async function seedCases() {
+      try {
+        // 📁 CASE 1
+        const case1Ref = doc(db, "cases", "24-CV-3832");
+        await setDoc(case1Ref, {
+          caseNo: "24-CV-3832",
+          fileDate: "2026-01-01",
+          closeDate: "2026-04-06",
+          court: "Genesee County District Court",
+          status: "Closed",
+          judge: "Hon. takosull0",
+          matter: "Civil",
+          title: "officer_banks08 v. CripplingR4T",
+          filingParty: "officer_banks08",
+          opposingParty: "CripplingR4T",
+          link: "https://google.com"
+        });
+
+        // Events
+        await addDoc(collection(case1Ref, "events"), {
+          date: "2026-01-01",
+          actor: "Plaintiff",
+          description: "Civil complaint filed alleging negligence and property damage."
+        });
+
+        await addDoc(collection(case1Ref, "events"), {
+          date: "2026-03-22",
+          actor: "Court",
+          description: "Summary disposition granted in favor of plaintiff."
+        });
+
+        // 📁 CASE 2
+        const case2Ref = doc(db, "cases", "26-CR-283");
+        await setDoc(case2Ref, {
+          caseNo: "26-CR-283",
+          fileDate: "2026-01-20",
+          court: "Genesee County District Court",
+          status: "Open",
+          judge: "Hon. Sullivan",
+          matter: "Criminal",
+          title: "State of Michigan v. Leone",
+          filingParty: "State of Michigan",
+          opposingParty: "Joey Leone",
+          nextHearing: "2026-01-22T16:00:00"
+        });
+
+        await addDoc(collection(case2Ref, "events"), {
+          date: "2026-01-20",
+          actor: "Police",
+          description: "Criminal complaint filed with multiple felony charges."
+        });
+
+        await addDoc(collection(case2Ref, "events"), {
+          date: "2026-01-21",
+          actor: "Court",
+          description: "Arraignment held; defendant entered not guilty plea."
+        });
+
+        // 📁 CASE 3
+        const case3Ref = doc(db, "cases", "MSC-986");
+        await setDoc(case3Ref, {
+          caseNo: "MSC-986",
+          fileDate: "2025-03-01",
+          court: "Supreme Court",
+          status: "Open",
+          judge: "Hon. Richard Bernstein",
+          matter: "Civil Appeal",
+          title: "Johnson v. State of Michigan",
+          filingParty: "Mary Johnson",
+          opposingParty: "State of Michigan"
+        });
+
+        alert("Cases seeded successfully!");
+      } catch (error) {
+        console.error(error);
+        alert("Error seeding cases");
+      }
+    }
+
+    window.seedCases = seedCases;
+  </script>
+</body>
+</html>
