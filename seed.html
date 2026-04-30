@@ -2,129 +2,207 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Michigan Court Data Seeder</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firestore Data Seeder</title>
     <style>
-        body { font-family: sans-serif; padding: 2rem; background: #f4f4f9; line-height: 1.5; }
-        .card { background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); max-width: 600px; margin: auto; }
-        button { background: #004477; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; width: 100%; font-weight: bold; }
-        button:disabled { background: #ccc; }
-        #log { margin-top: 20px; font-family: monospace; font-size: 12px; background: #222; color: #0f0; padding: 15px; border-radius: 4px; max-height: 300px; overflow-y: auto; }
+        :root {
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --bg: #f8fafc;
+            --text: #0f172a;
+            --success: #16a34a;
+            --error: #dc2626;
+            --border: #e2e8f0;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            margin-top: 0;
+            margin-bottom: 1rem;
+        }
+
+        p {
+            color: #475569;
+            margin-bottom: 1.5rem;
+            font-size: 0.95rem;
+        }
+
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            width: 100%;
+        }
+
+        button:hover {
+            background-color: var(--primary-hover);
+        }
+
+        button:disabled {
+            background-color: #94a3b8;
+            cursor: not-allowed;
+        }
+
+        #logArea {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            background-color: #f1f5f9;
+            text-align: left;
+            max-height: 200px;
+            overflow-y: auto;
+            font-family: ui-monospace, monospace;
+            font-size: 0.85rem;
+        }
+
+        .log-entry { margin-bottom: 0.5rem; }
+        .log-success { color: var(--success); }
+        .log-error { color: var(--error); }
+        .log-info { color: var(--primary); }
     </style>
 </head>
 <body>
 
-<div class="card">
-    <h2>MI Court System Seeder</h2>
-    <p>This script will create cases using <strong>Case Numbers as IDs</strong> with <strong>events</strong> and <strong>hearings</strong> subcollections.</p>
-    <button id="runBtn">Push Case Data</button>
-    <div id="log">Ready...</div>
-</div>
+    <div class="container">
+        <h1>Seed Database</h1>
+        <p>Click the button below to inject sample data into the <strong>"cases"</strong> collection.</p>
+        
+        <button id="seedBtn">Seed Data</button>
 
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
-    import { getFirestore, doc, setDoc, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
+        <div id="logArea">
+            <div class="log-entry">Waiting to start...</div>
+        </div>
+    </div>
 
-    const firebaseConfig = {
-        apiKey: "AIzaSyA8sUFIq81cs6uQvqduardpGJ4R2DxO8NQ",
-        authDomain: "micourt-dada6.firebaseapp.com",
-        projectId: "micourt-dada6",
-        storageBucket: "micourt-dada6.firebasestorage.app",
-        messagingSenderId: "1013564619997",
-        appId: "1:1013564619997:web:8f259dab457915758f6f34"
-    };
+    <!-- Firebase SDKs (v10+ Modular via CDN) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+        import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
+        // Your Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyA8sUFIq81cs6uQvqduardpGJ4R2DxO8NQ",
+            authDomain: "micourt-dada6.firebaseapp.com",
+            projectId: "micourt-dada6",
+            storageBucket: "micourt-dada6.firebasestorage.app",
+            messagingSenderId: "1013564619997",
+            appId: "1:1013564619997:web:8f259dab457915758f6f34",
+            measurementId: "G-HBJ0KGV2SE"
+        };
 
-    const logEl = document.getElementById('log');
-    const runBtn = document.getElementById('runBtn');
+        // Initialize Firebase and Firestore
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
 
-    function writeLog(msg) {
-        const div = document.createElement('div');
-        div.textContent = `> ${msg}`;
-        logEl.appendChild(div);
-        logEl.scrollTop = logEl.scrollHeight;
-    }
+        // UI Elements
+        const seedBtn = document.getElementById('seedBtn');
+        const logArea = document.getElementById('logArea');
 
-    const sampleData = [
-        {
-            id: "2026-004412-CB",
-            data: {
-                fileDate: "2026-01-15",
-                closeDate: null,
-                courtName: "3rd Circuit Court (Wayne County)",
-                status: "open",
-                judge: "Hon. Patricia Fresard",
-                caseType: "civil",
-                caseTitle: "TechCorp vs. DataFlow Solutions",
-                filingParty: "TechCorp",
-                opposingParty: "DataFlow Solutions",
-                externalRef: "https://courts.michigan.gov/example/1",
-                nextHearing: "2026-05-12T09:00:00"
-            },
-            events: [
-                { date: "2026-01-15", actor: "plaintiff", description: "Complaint Filed", link: "doc_001" },
-                { date: "2026-02-01", actor: "court", judge: "Hon. Patricia Fresard", description: "Summons Issued" }
-            ],
-            hearings: [
-                { date: "2026-05-12T09:00:00", location: "Room 701 - Coleman A. Young Center", type: "Scheduling Conference" }
-            ]
-        },
-        {
-            id: "2025-099123-FC",
-            data: {
-                fileDate: "2025-11-20",
-                closeDate: "2026-04-01",
-                courtName: "6th Circuit Court (Oakland County)",
-                status: "closed",
-                judge: "Hon. Kwame Rowe",
-                caseType: "criminal",
-                caseTitle: "People of MI v. Marcus Wright",
-                filingParty: "State of Michigan",
-                opposingParty: "Marcus Wright",
-                externalRef: "https://courts.michigan.gov/example/2",
-                nextHearing: null
-            },
-            events: [
-                { date: "2025-11-20", actor: "prosecutor", description: "Arraignment on Information" },
-                { date: "2026-04-01", actor: "judge", description: "Sentencing Order Signed", link: "order_99" }
-            ],
-            hearings: []
+        // Helper function to log messages to the UI
+        function log(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = `log-entry log-${type}`;
+            div.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logArea.appendChild(div);
+            logArea.scrollTop = logArea.scrollHeight;
         }
-    ];
 
-    async function seed() {
-        runBtn.disabled = true;
-        writeLog("Starting seed process...");
-
-        for (const item of sampleData) {
-            try {
-                // 1. Create Main Document with Case Number as ID
-                const caseRef = doc(db, "cases", item.id);
-                await setDoc(caseRef, item.data);
-                writeLog(`Created Case: ${item.id}`);
-
-                // 2. Add Events Subcollection
-                for (const ev of item.events) {
-                    await addDoc(collection(caseRef, "events"), ev);
-                }
-                writeLog(`-- Added ${item.events.length} timeline events`);
-
-                // 3. Add Hearings Subcollection
-                for (const hr of item.hearings) {
-                    await addDoc(collection(caseRef, "hearings"), hr);
-                }
-                if(item.hearings.length > 0) writeLog(`-- Added ${item.hearings.length} hearings`);
-
-            } catch (e) {
-                writeLog(`ERROR on ${item.id}: ${e.message}`);
+        // Sample Data for "cases"
+        const sampleCases = [
+            {
+                caseNumber: "2026-CR-0001",
+                type: "Criminal",
+                plaintiff: "State of Michigan",
+                defendant: "John Doe",
+                status: "Open",
+                filingDate: "2026-04-10",
+                judge: "Hon. Sarah Jenkins"
+            },
+            {
+                caseNumber: "2026-CV-0142",
+                type: "Civil",
+                plaintiff: "Acme Corp",
+                defendant: "Global Tech LLC",
+                status: "Pending Mediation",
+                filingDate: "2026-03-22",
+                judge: "Hon. Michael Torres"
+            },
+            {
+                caseNumber: "2025-DR-0883",
+                type: "Domestic Relations",
+                plaintiff: "Jane Smith",
+                defendant: "Robert Smith",
+                status: "Closed",
+                filingDate: "2025-11-05",
+                judge: "Hon. Emily Chen"
+            },
+            {
+                caseNumber: "2026-PR-0019",
+                type: "Probate",
+                plaintiff: "Estate of William Johnson",
+                defendant: "N/A",
+                status: "Open",
+                filingDate: "2026-04-28",
+                judge: "Hon. Sarah Jenkins"
             }
-        }
-        writeLog("Seeding Complete.");
-        runBtn.disabled = false;
-    }
+        ];
 
-    runBtn.addEventListener('click', seed);
-</script>
+        // Seeding Logic
+        async function seedDatabase() {
+            seedBtn.disabled = true;
+            seedBtn.textContent = "Seeding...";
+            logArea.innerHTML = ''; // Clear logs
+            log("Starting data seed...", "info");
+
+            const casesRef = collection(db, "cases");
+            let successCount = 0;
+
+            for (const caseData of sampleCases) {
+                try {
+                    const docRef = await addDoc(casesRef, caseData);
+                    log(`Added document with ID: ${docRef.id}`, "success");
+                    successCount++;
+                } catch (error) {
+                    console.error("Error adding document: ", error);
+                    log(`Error adding ${caseData.caseNumber}: ${error.message}`, "error");
+                }
+            }
+
+            log(`Finished! Successfully added ${successCount}/${sampleCases.length} records.`, "info");
+            seedBtn.disabled = false;
+            seedBtn.textContent = "Seed Data Again";
+        }
+
+        // Event Listener
+        seedBtn.addEventListener('click', seedDatabase);
+    </script>
 </body>
 </html>
