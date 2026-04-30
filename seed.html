@@ -11,18 +11,19 @@
     // 🔥 Import Firebase
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import { getFirestore, doc, setDoc, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-    // 🔧 YOUR FIREBASE CONFIG HERE
+    
     const firebaseConfig = {
-      apiKey: "YOUR_API_KEY",
-      authDomain: "YOUR_PROJECT.firebaseapp.com",
-      projectId: "YOUR_PROJECT_ID",
-      storageBucket: "YOUR_PROJECT.appspot.com",
-      messagingSenderId: "YOUR_ID",
-      appId: "YOUR_APP_ID"
+      apiKey: "AIzaSyA8sUFIq81cs6uQvqduardpGJ4R2DxO8NQ",
+      authDomain: "micourt-dada6.firebaseapp.com",
+      projectId: "micourt-dada6",
+      storageBucket: "micourt-dada6.firebasestorage.app",
+      messagingSenderId: "1013564619997",
+      appId: "1:1013564619997:web:8f259dab457915758f6f34",
+      measurementId: "G-HBJ0KGV2SE"
     };
-
+    
     const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
     const db = getFirestore(app);
 
     async function seedCases() {
