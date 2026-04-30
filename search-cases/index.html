@@ -780,16 +780,25 @@ function renderDetailPage(c) {
   const filingsHtml     = buildFilingsTab(c);
   const financialsHtml  = buildFinancialsTab(c);
 
+  const isCivil = c.caseType === 'Civil';
+  const isAppellate = c.caseType === 'Appellate' || c.caseType === 'Appeal';
+  const isAdmin = c.caseType === 'Administrative';
+
+  let chargesLabel = 'Charges';
+  if (isCivil) chargesLabel = 'Claims';
+  else if (isAppellate) chargesLabel = 'Issues on Appeal';
+  else if (isAdmin) chargesLabel = 'Issues';
+
   const tabs = [
-    { id: 'overview',    label: '📋 Overview',     html: overviewHtml },
-    { id: 'parties',     label: '👥 Parties',       html: partiesHtml },
+    { id: 'overview',    label: 'Overview',    html: overviewHtml },
+    { id: 'parties',     label: 'Parties',     html: partiesHtml },
   ];
   if (c.charges?.length || c.issues?.length) {
-    tabs.push({ id:'charges', label: c.caseType==='Appellate' ? '⚖️ Issues on Appeal' : (c.caseType==='Administrative'?'📌 Issues':'⚖️ Charges'), html: chargesHtml });
+    tabs.push({ id:'charges', label: chargesLabel, html: chargesHtml });
   }
-  if (c.hearings?.length) tabs.push({ id:'hearings', label: '📅 Hearings', html: hearingsHtml });
-  if (c.filings?.length)  tabs.push({ id:'filings',  label: '📄 Filings',  html: filingsHtml });
-  tabs.push({ id:'financials', label: '💰 Financials', html: financialsHtml });
+  if (c.hearings?.length) tabs.push({ id:'hearings', label: 'Hearings',   html: hearingsHtml });
+  if (c.filings?.length)  tabs.push({ id:'filings',  label: 'Filings',    html: filingsHtml });
+  tabs.push({ id:'financials', label: 'Financials', html: financialsHtml });
 
   const tabNav  = tabs.map((t,i) => `<button class="detail-tab${i===0?' active':''}" data-tab="${t.id}">${t.label}</button>`).join('');
   const tabPans = tabs.map((t,i) => `<div class="tab-panel${i===0?' active':''}" id="panel-${t.id}">${t.html}</div>`).join('');
@@ -837,15 +846,95 @@ function renderDetailPage(c) {
 function buildOverviewTab(c) {
   const filed   = fmtDateTime(c.dates?.filed);
   const updated = fmtDateTime(c.dates?.lastUpdated);
-  const lower   = fmtDateTime(c.dates?.lowerCourtDecisionDate);
+  // Only show lower court decision date for appellate cases
+  const isAppellate = c.caseType === 'Appellate' || c.caseType === 'Appeal';
+  const lower = isAppellate ? fmtDateTime(c.dates?.lowerCourtDecisionDate) : null;
   const judge   = c.judge || (Array.isArray(c.judges) ? c.judges.join(', ') : null) || '—';
 
-  const sentencingBlock = c.sentencing?.applicable === false ? '' :
-    (c.sentencing?.outcome ? `<div class="d-card"><div class="d-card-header"><h3>Sentencing</h3></div><div class="d-card-body">
-      <div class="info-grid">
-        <div class="info-item"><div class="k">Outcome</div><div class="v">${c.sentencing.outcome}</div></div>
-        ${c.sentencing.notes ? `<div class="info-item"><div class="k">Notes</div><div class="v small">${c.sentencing.notes}</div></div>` : ''}
-      </div></div></div>` : '');
+  // Sentencing: show only when applicable===true OR there's a meaningful outcome on a closed case
+  let sentencingBlock = '';
+  const sent = c.sentencing;
+  if (sent && sent.applicable === true) {
+    const penalties = sent.penalties || {};
+    sentencingBlock = `<div class="d-card">
+      <div class="d-card-header"><h3>Sentencing</h3></div>
+      <div class="d-card-body">
+        <div class="info-grid">
+          ${sent.outcome ? `<div class="info-item" style="grid-column:1/-1"><div class="k">Outcome</div><div class="v">${sent.outcome}</div></div>` : ''}
+          ${sent.sentenceDate ? `<div class="info-item"><div class="k">Sentence Date</div><div class="v small">${fmtDate(sent.sentenceDate)}</div></div>` : ''}
+          ${penalties.jailTime ? `<div class="info-item"><div class="k">Incarceration</div><div class="v small">${penalties.jailTime}</div></div>` : ''}
+          ${penalties.fines != null ? `<div class="info-item"><div class="k">Fines</div><div class="v">${fmtMoney(penalties.fines)}</div></div>` : ''}
+          ${penalties.courtCosts != null ? `<div class="info-item"><div class="k">Court Costs</div><div class="v">${fmtMoney(penalties.courtCosts)}</div></div>` : ''}
+          ${sent.expectedRange ? `<div class="info-item"><div class="k">Sentencing Range</div><div class="v small">${sent.expectedRange}</div></div>` : ''}
+          ${sent.notes ? `<div class="info-item" style="grid-column:1/-1"><div class="k">Notes</div><div class="v small">${sent.notes}</div></div>` : ''}
+        </div>
+        ${penalties.probation?.applicable ? `<div style="margin-top:14px;padding-top:14px;border-top:1px solid #f0ebe3">
+          <div style="font-size:11px;color:#9a8f82;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px">Probation · ${penalties.probation.duration||''}</div>
+          <div class="bond-conditions">${(penalties.probation.conditions||[]).map(cd=>`<div class="bond-condition">${cd}</div>`).join('')}</div>
+        </div>` : ''}
+      </div>
+    </div>`;
+  } else if (sent && sent.outcome && c.status === 'Closed') {
+    // Show a lighter outcome block for non-criminal closed cases (administrative orders, civil judgments, appellate decisions)
+    sentencingBlock = `<div class="d-card">
+      <div class="d-card-header"><h3>Outcome</h3></div>
+      <div class="d-card-body">
+        <div class="info-grid">
+          <div class="info-item" style="grid-column:1/-1"><div class="k">Disposition</div><div class="v">${sent.outcome}</div></div>
+          ${sent.notes ? `<div class="info-item" style="grid-column:1/-1"><div class="k">Notes</div><div class="v small">${sent.notes}</div></div>` : ''}
+        </div>
+      </div>
+    </div>`;
+  }
+
+  // Bond: only show for criminal cases
+  const isCriminal = c.caseType === 'Criminal';
+  let bondBlock = '';
+  if (isCriminal && c.bonds?.required === true) {
+    bondBlock = `<div class="d-card">
+      <div class="d-card-header"><h3>Bond / Bail</h3></div>
+      <div class="d-card-body">
+        <div class="bond-block">
+          <div class="bond-amount">${fmtMoney(c.bonds.amount)}</div>
+          <div class="bond-type">${c.bonds.type || 'Bond'} · Posted by: ${c.bonds.postedBy || '—'} · ${c.bonds.posted ? 'Posted ' + fmtDate(c.bonds.postedDate) : 'Not Posted'}</div>
+          ${(c.bonds.conditions||[]).length ? `<div style="font-size:11px;color:#9a8f82;text-transform:uppercase;letter-spacing:0.06em;margin-top:10px;margin-bottom:6px">Conditions</div>
+          <div class="bond-conditions">${c.bonds.conditions.map(cd=>`<div class="bond-condition">${cd}</div>`).join('')}</div>` : ''}
+          ${c.bonds.notes ? `<div style="font-size:12px;color:#9a8f82;margin-top:8px">${c.bonds.notes}</div>` : ''}
+        </div>
+      </div>
+    </div>`;
+  }
+
+  // Trial block for criminal cases with trial data
+  let trialBlock = '';
+  if (c.trial) {
+    trialBlock = `<div class="d-card">
+      <div class="d-card-header"><h3>Trial</h3></div>
+      <div class="d-card-body">
+        <div class="info-grid">
+          <div class="info-item"><div class="k">Type</div><div class="v">${c.trial.juryTrial ? 'Jury Trial' : 'Bench Trial'}</div></div>
+          ${c.trial.startDate ? `<div class="info-item"><div class="k">Start Date</div><div class="v small">${fmtDate(c.trial.startDate)}</div></div>` : ''}
+          ${c.trial.endDate ? `<div class="info-item"><div class="k">End Date</div><div class="v small">${fmtDate(c.trial.endDate)}</div></div>` : ''}
+          ${c.trial.verdict ? `<div class="info-item" style="grid-column:1/-1"><div class="k">Verdict</div><div class="v">${c.trial.verdict}</div></div>` : ''}
+          ${c.trial.notes ? `<div class="info-item" style="grid-column:1/-1"><div class="k">Notes</div><div class="v small">${c.trial.notes}</div></div>` : ''}
+        </div>
+      </div>
+    </div>`;
+  }
+
+  // Plea block
+  let pleaBlock = '';
+  if (c.plea) {
+    pleaBlock = `<div class="d-card">
+      <div class="d-card-header"><h3>Plea</h3></div>
+      <div class="d-card-body">
+        <div class="info-grid">
+          <div class="info-item"><div class="k">Plea Entered</div><div class="v">${c.plea.entered}</div></div>
+          ${c.plea.date ? `<div class="info-item"><div class="k">Date</div><div class="v small">${fmtDate(c.plea.date)}</div></div>` : ''}
+        </div>
+      </div>
+    </div>`;
+  }
 
   return `
     <div class="detail-grid">
@@ -868,18 +957,10 @@ function buildOverviewTab(c) {
             </div>
           </div>
         </div>
+        ${pleaBlock}
+        ${trialBlock}
         ${sentencingBlock}
-        ${c.bonds?.required ? `<div class="d-card">
-          <div class="d-card-header"><h3>Bond / Bail</h3></div>
-          <div class="d-card-body">
-            <div class="bond-block">
-              <div class="bond-amount">${fmtMoney(c.bonds.amount)}</div>
-              <div class="bond-type">${c.bonds.type || 'Bond'} · Posted by: ${c.bonds.postedBy || '—'} · ${c.bonds.posted ? '✅ Posted ' + fmtDate(c.bonds.postedDate) : '❌ Not Posted'}</div>
-              <div><strong style="font-size:11px;color:#9a8f82;letter-spacing:0.06em;text-transform:uppercase">Conditions</strong></div>
-              <div class="bond-conditions">${(c.bonds.conditions||[]).map(cd=>`<div class="bond-condition">${cd}</div>`).join('')}</div>
-            </div>
-          </div>
-        </div>` : (c.bonds?.required === false ? `<div class="d-card"><div class="d-card-header"><h3>Bond / Bail</h3></div><div class="d-card-body"><div class="bond-block no-bond"><div style="font-size:13px;color:#6b5f4e">No bond required. ${c.bonds.notes||''}</div></div></div></div>` : '')}
+        ${bondBlock}
       </div>
       <div class="detail-sidebar">
         <div class="d-card">
@@ -893,11 +974,10 @@ function buildOverviewTab(c) {
               <div class="si-row"><span class="si-key">Hearings</span><span class="si-val">${(c.hearings||[]).length}</span></div>
               <div class="si-row"><span class="si-key">Financial Orders</span><span class="si-val">${(c.financialOrders||[]).length}</span></div>
               ${c.charges?.length ? `<div class="si-row"><span class="si-key">Charges</span><span class="si-val">${c.charges.length}</span></div>` : ''}
-              ${c.issues?.length  ? `<div class="si-row"><span class="si-key">Issues on Appeal</span><span class="si-val">${c.issues.length}</span></div>` : ''}
+              ${c.issues?.length  ? `<div class="si-row"><span class="si-key">Issues</span><span class="si-val">${c.issues.length}</span></div>` : ''}
             </div>
           </div>
         </div>
-        ${c.sentencing?.expectedRange ? `<div class="d-card"><div class="d-card-header"><h3>Sentencing Range</h3></div><div class="d-card-body"><div style="font-size:13.5px;color:#1a1a1a;font-weight:500">${c.sentencing.expectedRange}</div><div style="font-size:12px;color:#9a8f82;margin-top:5px">${c.sentencing.notes||''}</div></div></div>` : ''}
       </div>
     </div>
   `;
@@ -943,12 +1023,25 @@ function buildPartiesTab(c) {
 }
 
 function buildChargesTab(c) {
+  const isCivil = c.caseType === 'Civil';
+  const isAppellate = c.caseType === 'Appellate' || c.caseType === 'Appeal';
+  const isAdmin = c.caseType === 'Administrative';
+
+  let label = 'Charges';
+  if (isCivil) label = 'Claims';
+  else if (isAppellate) label = 'Issues on Appeal';
+  else if (isAdmin) label = 'Issues';
+
   if (c.charges?.length) {
     return `<div class="d-card">
-      <div class="d-card-header"><h3>Charges</h3><span class="d-card-tag">${c.charges.length} count(s)</span></div>
+      <div class="d-card-header"><h3>${label}</h3><span class="d-card-tag">${c.charges.length} count(s)</span></div>
       <div class="d-card-body">
         ${c.charges.map(ch => {
-          const scls = ch.status?.toLowerCase().includes('pending') ? 'status-pending' : 'status-default';
+          const statusLow = (ch.status||'').toLowerCase();
+          let scls = 'status-default';
+          if (statusLow.includes('pending')) scls = 'status-pending';
+          else if (statusLow.includes('convicted') || statusLow.includes('judgment')) scls = 'status-active';
+          else if (statusLow.includes('dismissed')) scls = 'status-closed';
           return `<div class="charge-row">
             <div class="charge-top">
               <div>
@@ -956,18 +1049,17 @@ function buildChargesTab(c) {
                 <div class="charge-title">${ch.title || ch.type}</div>
                 ${ch.statute ? `<div style="font-size:11.5px;color:#9a8f82;margin-top:2px">${ch.statute}</div>` : ''}
               </div>
-              <div>
+              <div style="display:flex;flex-direction:column;gap:4px;align-items:flex-end">
                 ${ch.level ? `<span class="charge-status-badge ${ch.level==='Misdemeanor'?'status-pending':'status-active'}">${ch.level}</span>` : ''}
-                ${ch.status ? `<span class="charge-status-badge ${scls}" style="margin-top:4px;display:block">${ch.status}</span>` : ''}
+                ${ch.status ? `<span class="charge-status-badge ${scls}">${ch.status}</span>` : ''}
               </div>
             </div>
             <div class="charge-meta">
               ${ch.count!=null ? `<div class="charge-meta-item"><strong>Count:</strong> ${ch.count}</div>` : ''}
-              ${ch.plea ? `<div class="charge-meta-item"><strong>Plea:</strong> ${ch.plea}</div>` : ''}
               ${ch.category ? `<div class="charge-meta-item"><strong>Category:</strong> ${ch.category}</div>` : ''}
               ${ch.damagesClaimed!=null ? `<div class="charge-meta-item"><strong>Damages Claimed:</strong> ${fmtMoney(ch.damagesClaimed)}</div>` : ''}
+              ${ch.awardedAmount!=null ? `<div class="charge-meta-item"><strong>Amount Awarded:</strong> ${fmtMoney(ch.awardedAmount)}</div>` : ''}
               ${ch.requestedRelief ? `<div class="charge-meta-item"><strong>Relief:</strong> ${ch.requestedRelief}</div>` : ''}
-              ${ch.arraignmentDate ? `<div class="charge-meta-item"><strong>Arraignment:</strong> ${fmtDate(ch.arraignmentDate)}</div>` : ''}
               ${ch.filingBasis ? `<div class="charge-meta-item"><strong>Basis:</strong> ${ch.filingBasis}</div>` : ''}
             </div>
             ${ch.notes ? `<div class="charge-notes">${ch.notes}</div>` : ''}
@@ -978,19 +1070,20 @@ function buildChargesTab(c) {
   }
   if (c.issues?.length) {
     return `<div class="d-card">
-      <div class="d-card-header"><h3>${c.caseType==='Appellate'?'Issues on Appeal':'Issues'}</h3><span class="d-card-tag">${c.issues.length} issue(s)</span></div>
+      <div class="d-card-header"><h3>${label}</h3><span class="d-card-tag">${c.issues.length} issue(s)</span></div>
       <div class="d-card-body">
         ${c.issues.map(iss => `<div class="appeal-issue">
-          <div class="ai-id">${iss.issueId||''}</div>
+          ${iss.issueId ? `<div class="ai-id">${iss.issueId}</div>` : ''}
           <div class="ai-title">${iss.title||iss.description||''}</div>
-          <div class="ai-row"><strong>Category:</strong> ${iss.category||'—'}</div>
+          ${iss.category ? `<div class="ai-row"><strong>Category:</strong> ${iss.category}</div>` : ''}
           ${iss.standardOfReview ? `<div class="ai-row"><strong>Standard of Review:</strong> ${iss.standardOfReview}</div>` : ''}
           ${iss.statute ? `<div class="ai-row"><strong>Statute:</strong> ${iss.statute}</div>` : ''}
           ${iss.status ? `<div class="ai-row"><strong>Status:</strong> ${iss.status}</div>` : ''}
-          ${iss.urgency ? `<div class="ai-row"><strong>Urgency:</strong> ${iss.urgency}</div>` : ''}
+          ${iss.outcome ? `<div class="ai-row"><strong>Outcome:</strong> ${iss.outcome}</div>` : ''}
           ${iss.reliefRequested ? `<div class="ai-row"><strong>Relief Requested:</strong> ${iss.reliefRequested}</div>` : ''}
           ${iss.argumentSummary ? `<div class="ai-arg">${iss.argumentSummary}</div>` : ''}
           ${iss.description && !iss.argumentSummary ? `<div class="ai-arg">${iss.description}</div>` : ''}
+          ${iss.notes ? `<div class="ai-arg" style="color:#9a8f82">${iss.notes}</div>` : ''}
         </div>`).join('')}
       </div>
     </div>`;
