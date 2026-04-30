@@ -515,10 +515,13 @@ const acceptBtn   = document.getElementById('accept-btn');
 acceptCheck.addEventListener('change', () => { acceptBtn.disabled = !acceptCheck.checked; });
 acceptBtn.addEventListener('click', () => {
   document.getElementById('disclaimer-screen').classList.add('hidden');
+  document.getElementById('search-screen').style.display = 'block';
   document.getElementById('search-screen').classList.add('active');
-  // Check URL on load
-  routeFromURL();
+  handleHash();
 });
+
+// On initial page load, check for a case hash before disclaimer
+routeFromURL();
 
 // ─── Helpers ───
 function fmtDate(str) {
@@ -626,7 +629,8 @@ async function doSearch() {
 
   resultsList.innerHTML = filtered.map(c => renderResultCard(c)).join('');
   resultsList.querySelectorAll('.result-card').forEach(card => {
-    card.addEventListener('click', () => {
+    card.addEventListener('click', e => {
+      e.preventDefault();
       const id = card.dataset.caseid;
       navigateToCase(id);
     });
@@ -641,7 +645,7 @@ function renderResultCard(c) {
   const judge = c.judge || (Array.isArray(c.judges) ? c.judges[0] : null) || '—';
   const filed = fmtDate(c.dates?.filed);
 
-  return `<a class="result-card" href="${c.caseId}/" data-caseid="${c._id}">
+  return `<a class="result-card" href="#case-${c._id}" data-caseid="${c._id}">
     <div class="rc-top">
       <div class="rc-ids">
         <span class="rc-case-num">${c.caseId}</span>
@@ -676,33 +680,42 @@ document.getElementById('clear-btn').addEventListener('click', () => {
   document.getElementById('results-section').style.display = 'none';
 });
 
-// ─── Routing ───
+// ─── Hash-based Routing (works on GitHub Pages / static hosts) ───
+// URL format: #case-<caseId>  e.g. #case-26-48289
+
 function navigateToCase(id) {
-  history.pushState({caseId: id}, '', `/${id}/`);
-  showDetailScreen(id);
+  window.location.hash = `case-${id}`;
+  // hashchange event will fire and call showDetailScreen
 }
 
 function navigateBack() {
-  history.pushState({}, '', '/cases.html');
+  window.location.hash = '';
   showSearchScreen();
 }
 
-window.addEventListener('popstate', e => {
-  if (e.state?.caseId) {
-    showDetailScreen(e.state.caseId);
+window.addEventListener('hashchange', () => {
+  handleHash();
+});
+
+function handleHash() {
+  const hash = window.location.hash; // e.g. "#case-26-48289"
+  if (hash.startsWith('#case-')) {
+    const id = hash.slice(6); // strip "#case-"
+    showDetailScreen(id);
   } else {
     showSearchScreen();
   }
-});
+}
 
 function routeFromURL() {
-  const path = window.location.pathname;
-  // Match /<case-id>/ pattern
-  const m = path.match(/^\/([^\/]+)\/?$/);
-  if (m && m[1] !== 'cases.html' && m[1] !== '') {
+  const hash = window.location.hash;
+  if (hash.startsWith('#case-')) {
+    // Direct link to a case — skip disclaimer and go straight to detail
     document.getElementById('disclaimer-screen').classList.add('hidden');
+    document.getElementById('search-screen').style.display = 'block';
     document.getElementById('search-screen').classList.add('active');
-    showDetailScreen(m[1]);
+    const id = hash.slice(6);
+    showDetailScreen(id);
   }
 }
 
