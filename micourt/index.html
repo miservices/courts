@@ -460,12 +460,13 @@ window.doRegister = async function() {
 
     window.location.href = '/courts/dashboard/';
   } catch(e) {
+    console.error('Registration error:', e.code, e.message);
     const msgs = {
       'auth/email-already-in-use': 'An account with this email already exists. Please sign in.',
       'auth/invalid-email':        'Please enter a valid email address.',
       'auth/weak-password':        'Password must be at least 8 characters.',
     };
-    showError('reg-error', msgs[e.code] || 'Registration failed. Please try again.');
+    showError('reg-error', msgs[e.code] || `Registration failed: ${e.code || e.message}`);
     setLoading('register-btn', false);
   }
 };
