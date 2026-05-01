@@ -351,7 +351,7 @@ const db   = getFirestore(app);
 
 // If already logged in, redirect to dashboard
 onAuthStateChanged(auth, user => {
-  if (user) window.location.href = '/courts/micourt/dashboard/';
+  if (user) window.location.href = '/courts/dashboard/';
 });
 
 // ── Tab switching ──
@@ -444,19 +444,27 @@ window.doRegister = async function() {
     const cred = await createUserWithEmailAndPassword(auth, email, password);
     const uid  = cred.user.uid;
 
-    await setDoc(doc(db, 'accounts', uid), {
-      uid,
-      email,
-      firstName: first,
-      lastName:  last,
-      name:      `${first} ${last}`,
-      sin,
-      role:      null,          // No role assigned at registration
-      roleLabel: 'General Public',
-      verified:  false,
-      createdAt: serverTimestamp(),
-      lastLogin: serverTimestamp()
-    });
+    try {
+      await setDoc(doc(db, 'accounts', uid), {
+        uid,
+        email,
+        firstName: first,
+        lastName:  last,
+        name:      `${first} ${last}`,
+        sin,
+        role:      null,
+        roleLabel: 'General Public',
+        verified:  false,
+        createdAt: serverTimestamp(),
+        lastLogin: serverTimestamp()
+      });
+      console.log('Firestore document written successfully for uid:', uid);
+    } catch(firestoreErr) {
+      console.error('Firestore write failed:', firestoreErr.code, firestoreErr.message);
+      showError('reg-error', `Account created but profile save failed: ${firestoreErr.code || firestoreErr.message}. Please contact support.`);
+      setLoading('register-btn', false);
+      return;
+    }
 
     window.location.href = '/courts/dashboard/';
   } catch(e) {
