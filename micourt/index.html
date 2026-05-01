@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MiCOURT — Sign In</title>
+<link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;1,300&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#0a1628;
+  --navy2:#0d1f3c;
+  --navy3:#112240;
+  --border:#1e3a5f;
+  --gold:#c8a84b;
+  --gold2:#d4b85e;
+  --blue-muted:#7a9bbf;
+  --blue-light:#a0b8d0;
+  --text:#1a1a1a;
+  --bg:#f4f1ec;
+  --warm:#e0d9cf;
+  --error:#dc3545;
+  --success:#198754;
+}
+
+body{
+  font-family:'DM Sans',sans-serif;
+  background:var(--navy);
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+}
+
+/* ── Subtle background texture ── */
+body::before{
+  content:'';
+  position:fixed;
+  inset:0;
+  background:
+    radial-gradient(ellipse 80% 60% at 10% 100%, rgba(200,168,75,0.06) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 80% at 90% 0%, rgba(26,74,122,0.15) 0%, transparent 60%);
+  pointer-events:none;
+  z-index:0;
+}
+
+/* ── Top bar ── */
+.top-bar{
+  background:#071220;
+  border-bottom:1px solid var(--border);
+  padding:0 40px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  height:52px;
+  position:relative;
+  z-index:10;
+  flex-shrink:0;
+}
+.top-bar-brand{display:flex;align-items:center;gap:14px}
+.brand-divider{width:1px;height:20px;background:var(--border)}
+.top-bar-brand h1{font-family:'Merriweather',serif;color:#fff;font-size:16px;font-weight:300;letter-spacing:0.02em}
+.top-bar-brand .sub{color:var(--blue-muted);font-size:11px;letter-spacing:0.1em;text-transform:uppercase}
+.micourt-wordmark{font-family:'Merriweather',serif;color:var(--gold);font-size:17px;font-weight:700;letter-spacing:0.06em}
+.top-bar-right{display:flex;align-items:center;gap:16px}
+.top-bar-right a{color:var(--blue-muted);font-size:12px;text-decoration:none;letter-spacing:0.04em}
+.top-bar-right a:hover{color:var(--gold)}
+
+/* ── Main layout ── */
+.main{
+  flex:1;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:48px 20px;
+  position:relative;
+  z-index:1;
+}
+
+/* ── Card ── */
+.auth-card{
+  background:var(--navy2);
+  border:1px solid var(--border);
+  border-radius:4px;
+  width:100%;
+  max-width:480px;
+  overflow:hidden;
+  box-shadow:0 24px 60px rgba(0,0,0,0.5);
+}
+
+.card-header{
+  background:var(--navy);
+  padding:28px 36px 24px;
+  border-bottom:1px solid var(--border);
+  position:relative;
+}
+.card-header::after{
+  content:'';
+  position:absolute;
+  bottom:-1px;left:0;
+  width:64px;height:3px;
+  background:var(--gold);
+}
+.card-header .mode-label{
+  font-size:10px;color:var(--gold);text-transform:uppercase;
+  letter-spacing:0.12em;margin-bottom:8px;
+}
+.card-header h2{
+  font-family:'Merriweather',serif;color:#fff;font-size:22px;font-weight:300;
+}
+.card-header p{color:var(--blue-muted);font-size:12.5px;margin-top:5px;line-height:1.5}
+
+/* Tabs */
+.auth-tabs{
+  display:flex;border-bottom:1px solid var(--border);
+}
+.auth-tab{
+  flex:1;padding:14px;text-align:center;font-size:13px;color:var(--blue-muted);
+  cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;
+  background:none;border-top:none;border-left:none;border-right:none;
+  font-family:'DM Sans',sans-serif;letter-spacing:0.03em;
+  transition:all 0.15s;
+}
+.auth-tab:hover{color:#fff}
+.auth-tab.active{color:#fff;border-bottom-color:var(--gold)}
+
+/* Form panels */
+.form-panel{display:none;padding:28px 36px 32px}
+.form-panel.active{display:block}
+
+.field{margin-bottom:18px}
+.field label{
+  display:block;font-size:11px;color:var(--blue-light);
+  text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;
+}
+.field input,.field select{
+  width:100%;padding:11px 14px;
+  background:#071220;border:1px solid var(--border);
+  border-radius:3px;color:#fff;font-family:'DM Sans',sans-serif;
+  font-size:14px;outline:none;transition:border 0.15s;
+}
+.field input::placeholder{color:#3a5a7a}
+.field input:focus,.field select:focus{border-color:var(--gold);background:#0a1628}
+.field select option{background:#071220}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.field-hint{font-size:11px;color:#4a6a8a;margin-top:5px;line-height:1.5}
+
+.btn-submit{
+  width:100%;padding:13px;background:var(--gold);
+  color:var(--navy);font-family:'DM Sans',sans-serif;font-size:14px;
+  font-weight:600;letter-spacing:0.05em;border:none;border-radius:3px;
+  cursor:pointer;transition:all 0.15s;margin-top:8px;
+}
+.btn-submit:hover{background:var(--gold2)}
+.btn-submit:disabled{background:#2d4f6e;color:#4a6a8a;cursor:not-allowed}
+
+.divider{
+  display:flex;align-items:center;gap:12px;margin:20px 0;
+}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border)}
+.divider span{color:#3a5a7a;font-size:11px;text-transform:uppercase;letter-spacing:0.08em}
+
+/* Alert messages */
+.alert{
+  padding:11px 14px;border-radius:3px;font-size:13px;margin-bottom:16px;
+  display:none;line-height:1.5;
+}
+.alert.show{display:block}
+.alert-error{background:rgba(220,53,69,0.12);border:1px solid rgba(220,53,69,0.3);color:#f08090}
+.alert-success{background:rgba(25,135,84,0.12);border:1px solid rgba(25,135,84,0.3);color:#6fcfa0}
+
+/* SIN info */
+.sin-info{
+  background:#071220;border:1px solid var(--border);
+  border-left:3px solid var(--gold);
+  border-radius:3px;padding:12px 14px;margin-bottom:20px;
+}
+.sin-info p{color:var(--blue-muted);font-size:12px;line-height:1.6}
+.sin-info strong{color:var(--blue-light)}
+
+/* Footer */
+.auth-footer{
+  background:#071220;border-top:1px solid var(--border);
+  padding:14px 36px;
+}
+.auth-footer p{color:#3a5a7a;font-size:11.5px;line-height:1.6}
+.auth-footer a{color:var(--blue-muted);text-decoration:none}
+.auth-footer a:hover{color:var(--gold)}
+
+/* Page footer */
+.page-footer{
+  text-align:center;padding:18px;
+  color:#2d4f6e;font-size:11px;
+  position:relative;z-index:1;
+  flex-shrink:0;
+}
+
+/* Loading spinner inside button */
+.btn-loading{position:relative;color:transparent!important}
+.btn-loading::after{
+  content:'';position:absolute;width:16px;height:16px;
+  top:50%;left:50%;margin:-8px 0 0 -8px;
+  border:2px solid rgba(10,22,40,0.3);border-top-color:var(--navy);
+  border-radius:50%;animation:spin 0.7s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+@media(max-width:500px){
+  .form-panel{padding:22px 20px 26px}
+  .card-header{padding:22px 20px 18px}
+  .auth-footer{padding:12px 20px}
+  .field-row{grid-template-columns:1fr}
+  .top-bar{padding:0 16px}
+}
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <div class="top-bar-brand">
+    <span class="micourt-wordmark">MiCOURT</span>
+    <div class="brand-divider"></div>
+    <div>
+      <div class="sub">Michigan Courts</div>
+    </div>
+  </div>
+  <div class="top-bar-right">
+    <a href="/courts/">Court Home</a>
+    <a href="/courts/search-cases/">Case Search</a>
+  </div>
+</div>
+
+<div class="main">
+  <div class="auth-card">
+    <div class="card-header">
+      <div class="mode-label">Secure Portal Access</div>
+      <h2 id="card-title">Sign In to MiCOURT</h2>
+      <p id="card-sub">Access your case filings, court calendar, and payment history.</p>
+    </div>
+
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tab-signin" onclick="switchTab('signin')">Sign In</button>
+      <button class="auth-tab" id="tab-register" onclick="switchTab('register')">Create Account</button>
+    </div>
+
+    <!-- ── SIGN IN ── -->
+    <div class="form-panel active" id="panel-signin">
+      <div class="alert alert-error" id="signin-error"></div>
+      <div class="alert alert-success" id="signin-success"></div>
+
+      <div class="field">
+        <label>Email Address</label>
+        <input type="email" id="si-email" placeholder="your@email.com" autocomplete="email">
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input type="password" id="si-password" placeholder="••••••••" autocomplete="current-password">
+      </div>
+
+      <button class="btn-submit" id="signin-btn" onclick="doSignIn()">Sign In</button>
+
+      <div style="text-align:center;margin-top:16px">
+        <a href="#" style="color:var(--blue-muted);font-size:12.5px;text-decoration:none" onclick="switchTab('register')">
+          Don't have an account? Register here
+        </a>
+      </div>
+    </div>
+
+    <!-- ── REGISTER ── -->
+    <div class="form-panel" id="panel-register">
+      <div class="alert alert-error" id="reg-error"></div>
+
+      <div class="sin-info">
+        <p><strong>State Identification Number (SIN)</strong> — Your SIN is issued by the Michigan Secretary of State and appears on your driver's license or state ID card. It is used to verify your identity within the court system.</p>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label>First Name</label>
+          <input type="text" id="reg-first" placeholder="First">
+        </div>
+        <div class="field">
+          <label>Last Name</label>
+          <input type="text" id="reg-last" placeholder="Last">
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Email Address</label>
+        <input type="email" id="reg-email" placeholder="your@email.com" autocomplete="email">
+      </div>
+
+      <div class="field">
+        <label>Password</label>
+        <input type="password" id="reg-password" placeholder="Minimum 8 characters" autocomplete="new-password">
+        <div class="field-hint">Must be at least 8 characters.</div>
+      </div>
+
+      <div class="field">
+        <label>State Identification Number (SIN)</label>
+        <input type="text" id="reg-sin" placeholder="e.g. MI-123-456-789" autocomplete="off">
+        <div class="field-hint">Enter the ID number printed on your Michigan driver's license or state ID. This is used for court record verification only.</div>
+      </div>
+
+      <button class="btn-submit" id="register-btn" onclick="doRegister()">Create Account</button>
+
+      <div style="text-align:center;margin-top:16px">
+        <a href="#" style="color:var(--blue-muted);font-size:12.5px;text-decoration:none" onclick="switchTab('signin')">
+          Already have an account? Sign in
+        </a>
+      </div>
+    </div>
+
+    <div class="auth-footer">
+      <p>By accessing MiCOURT you agree to the <a href="#">Terms of Use</a> and <a href="#">Privacy Policy</a>. This system is for authorized users only. Unauthorized access is prohibited under MCL 752.795.</p>
+    </div>
+  </div>
+</div>
+
+<div class="page-footer">
+  © 2026 Michigan Courts · State Court Administrative Office · MiCOURT Portal
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+import {
+  getAuth,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
+import {
+  getFirestore,
+  doc,
+  setDoc,
+  getDoc,
+  serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyA8sUFIq81cs6uQvqduardpGJ4R2DxO8NQ",
+  authDomain: "micourt-dada6.firebaseapp.com",
+  projectId: "micourt-dada6",
+  storageBucket: "micourt-dada6.firebasestorage.app",
+  messagingSenderId: "1013564619997",
+  appId: "1:1013564619997:web:8f259dab457915758f6f34"
+};
+
+const app  = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db   = getFirestore(app);
+
+// If already logged in, redirect to dashboard
+onAuthStateChanged(auth, user => {
+  if (user) window.location.href = '/courts/dashboard/';
+});
+
+// ── Tab switching ──
+window.switchTab = function(tab) {
+  document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.form-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  document.getElementById('panel-' + tab).classList.add('active');
+
+  if (tab === 'signin') {
+    document.getElementById('card-title').textContent = 'Sign In to MiCOURT';
+    document.getElementById('card-sub').textContent = 'Access your case filings, court calendar, and payment history.';
+  } else {
+    document.getElementById('card-title').textContent = 'Create Your Account';
+    document.getElementById('card-sub').textContent = 'Register to file documents, track cases, and manage appearances.';
+  }
+};
+
+// ── Show/hide loading state ──
+function setLoading(btnId, loading) {
+  const btn = document.getElementById(btnId);
+  btn.disabled = loading;
+  if (loading) btn.classList.add('btn-loading');
+  else btn.classList.remove('btn-loading');
+}
+
+function showError(id, msg) {
+  const el = document.getElementById(id);
+  el.textContent = msg;
+  el.classList.add('show');
+  el.className = el.className.replace('alert-success','') + ' alert-error show';
+}
+function showSuccess(id, msg) {
+  const el = document.getElementById(id);
+  el.textContent = msg;
+  el.classList.add('show');
+  el.className = el.className.replace('alert-error','') + ' alert-success show';
+}
+function clearAlert(id) {
+  const el = document.getElementById(id);
+  el.classList.remove('show');
+  el.textContent = '';
+}
+
+// ── Sign In ──
+window.doSignIn = async function() {
+  clearAlert('signin-error');
+  clearAlert('signin-success');
+
+  const email    = document.getElementById('si-email').value.trim();
+  const password = document.getElementById('si-password').value;
+
+  if (!email || !password) { showError('signin-error', 'Please enter your email and password.'); return; }
+
+  setLoading('signin-btn', true);
+  try {
+    await signInWithEmailAndPassword(auth, email, password);
+    showSuccess('signin-success', 'Signed in. Redirecting…');
+    setTimeout(() => { window.location.href = '/courts/dashboard/'; }, 800);
+  } catch(e) {
+    const msgs = {
+      'auth/user-not-found': 'No account found with that email address.',
+      'auth/wrong-password': 'Incorrect password. Please try again.',
+      'auth/invalid-email': 'Please enter a valid email address.',
+      'auth/too-many-requests': 'Too many attempts. Please wait a moment and try again.',
+      'auth/invalid-credential': 'Invalid email or password.'
+    };
+    showError('signin-error', msgs[e.code] || 'Sign in failed. Please try again.');
+    setLoading('signin-btn', false);
+  }
+};
+
+// ── Register ──
+window.doRegister = async function() {
+  clearAlert('reg-error');
+
+  const first    = document.getElementById('reg-first').value.trim();
+  const last     = document.getElementById('reg-last').value.trim();
+  const email    = document.getElementById('reg-email').value.trim();
+  const password = document.getElementById('reg-password').value;
+  const sin      = document.getElementById('reg-sin').value.trim();
+
+  if (!first || !last)       { showError('reg-error', 'Please enter your first and last name.'); return; }
+  if (!email)                { showError('reg-error', 'Please enter your email address.'); return; }
+  if (password.length < 8)   { showError('reg-error', 'Password must be at least 8 characters.'); return; }
+  if (!sin)                  { showError('reg-error', 'Please enter your State Identification Number (SIN).'); return; }
+
+  setLoading('register-btn', true);
+  try {
+    const cred = await createUserWithEmailAndPassword(auth, email, password);
+    const uid  = cred.user.uid;
+
+    await setDoc(doc(db, 'accounts', uid), {
+      uid,
+      email,
+      firstName: first,
+      lastName:  last,
+      name:      `${first} ${last}`,
+      sin,
+      role:      null,          // No role assigned at registration
+      roleLabel: 'General Public',
+      verified:  false,
+      createdAt: serverTimestamp(),
+      lastLogin: serverTimestamp()
+    });
+
+    window.location.href = '/courts/dashboard/';
+  } catch(e) {
+    const msgs = {
+      'auth/email-already-in-use': 'An account with this email already exists. Please sign in.',
+      'auth/invalid-email':        'Please enter a valid email address.',
+      'auth/weak-password':        'Password must be at least 8 characters.',
+    };
+    showError('reg-error', msgs[e.code] || 'Registration failed. Please try again.');
+    setLoading('register-btn', false);
+  }
+};
+
+// Enter key support
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Enter') return;
+  if (document.getElementById('panel-signin').classList.contains('active')) doSignIn();
+  else doRegister();
+});
+</script>
+</body>
+</html>
