@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sign In | MiCOURT Portal</title>
+<link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;1,300&family=DM+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy:       #0a1628;
+    --navy-mid:   #0d1f3c;
+    --navy-light: #112240;
+    --border:     #1e3a5f;
+    --gold:       #c8a84b;
+    --gold-light: #d4b85e;
+    --cream:      #f4f1ec;
+    --white:      #ffffff;
+    --text:       #1a1a1a;
+    --muted:      #6b5f4e;
+    --line:       #e0d9cf;
+    --blue-muted: #7a9bbf;
+    --green:      #15803d;
+    --green-bg:   #f0fdf4;
+    --green-bdr:  #dcfce7;
+    --red:        #dc2626;
+    --red-bg:     #fef2f2;
+    --red-bdr:    #fee2e2;
+    --amber-bg:   #fef9e7;
+    --amber-bdr:  #fde68a;
+    --amber:      #a16207;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
+
+  /* ── RP Banner ── */
+  .rp-banner { background: #071220; color: var(--blue-muted); text-align: center; padding: 8px 20px; font-size: 11px; letter-spacing: 0.01em; border-bottom: 1px solid var(--border); line-height: 1.5; }
+
+  /* ── Header ── */
+  .header { background: var(--navy); border-bottom: 1px solid var(--border); }
+  .header-inner { max-width: 1200px; margin: 0 auto; padding: 0 40px; display: flex; align-items: center; justify-content: space-between; height: 72px; }
+  .logo-area { display: flex; align-items: center; gap: 14px; text-decoration: none; }
+  .logo-seal { width: 38px; height: 38px; background: var(--gold); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+  .logo-text { line-height: 1; }
+  .logo-text .site { font-family: 'Merriweather', serif; color: #fff; font-size: 18px; font-weight: 400; letter-spacing: 0.01em; }
+  .logo-text .tagline { color: var(--blue-muted); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; margin-top: 3px; display: block; }
+  .header-nav { display: flex; align-items: center; gap: 6px; }
+  .header-nav a { color: #a0b8d0; font-size: 12.5px; padding: 7px 14px; text-decoration: none; letter-spacing: 0.03em; border-radius: 3px; transition: all 0.15s; }
+  .header-nav a:hover { color: #fff; background: var(--navy-light); }
+  .header-nav .nav-cta { background: var(--gold); color: var(--navy); font-weight: 700; padding: 8px 16px; border-radius: 3px; font-size: 12px; }
+  .header-nav .nav-cta:hover { background: var(--gold-light); }
+
+  /* ── Main layout ── */
+  .page-wrap { flex: 1; display: flex; align-items: center; justify-content: center; padding: 60px 24px; }
+
+  /* ── Login card ── */
+  .login-shell { width: 100%; max-width: 960px; display: grid; grid-template-columns: 1fr 400px; gap: 0; background: var(--white); border: 1px solid var(--line); border-radius: 6px; overflow: hidden; box-shadow: 0 8px 40px rgba(10,22,40,0.12); }
+
+  /* Left panel — branding */
+  .login-left { background: var(--navy); padding: 52px 44px; display: flex; flex-direction: column; justify-content: space-between; position: relative; overflow: hidden; }
+  .login-left::before { content: ''; position: absolute; top: -80px; right: -80px; width: 300px; height: 300px; border-radius: 50%; background: rgba(200,168,75,0.07); pointer-events: none; }
+  .login-left::after  { content: ''; position: absolute; bottom: -60px; left: -60px; width: 240px; height: 240px; border-radius: 50%; background: rgba(200,168,75,0.05); pointer-events: none; }
+  .ll-top { position: relative; z-index: 1; }
+  .ll-seal { width: 56px; height: 56px; background: var(--gold); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 26px; margin-bottom: 24px; }
+  .ll-title { font-family: 'Merriweather', serif; color: #fff; font-size: 22px; font-weight: 400; line-height: 1.3; margin-bottom: 10px; }
+  .ll-desc { color: var(--blue-muted); font-size: 13px; line-height: 1.7; }
+  .ll-divider { border: none; border-top: 1px solid var(--border); margin: 28px 0; }
+  .ll-features { display: flex; flex-direction: column; gap: 14px; position: relative; z-index: 1; }
+  .ll-feat { display: flex; align-items: flex-start; gap: 12px; }
+  .ll-feat-icon { width: 30px; height: 30px; border-radius: 3px; background: var(--navy-light); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; margin-top: 1px; }
+  .ll-feat-text { }
+  .ll-feat-text strong { font-size: 12.5px; color: #fff; font-weight: 600; display: block; margin-bottom: 2px; }
+  .ll-feat-text span { font-size: 11.5px; color: var(--blue-muted); line-height: 1.5; }
+  .ll-bottom { font-size: 10.5px; color: #3a5a7a; line-height: 1.5; position: relative; z-index: 1; }
+
+  /* Right panel — form */
+  .login-right { padding: 52px 44px; display: flex; flex-direction: column; }
+  .lr-header { margin-bottom: 32px; }
+  .lr-header h2 { font-family: 'Merriweather', serif; font-size: 20px; font-weight: 400; color: var(--text); margin-bottom: 6px; }
+  .lr-header p { font-size: 13px; color: var(--muted); line-height: 1.6; }
+
+  /* Auth provider button */
+  .auth-provider { border: 1.5px solid var(--line); border-radius: 4px; padding: 20px; margin-bottom: 20px; }
+  .ap-label { font-size: 10px; color: #9a8f82; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700; margin-bottom: 14px; }
+  .ap-card { display: flex; align-items: center; gap: 14px; padding: 14px 16px; background: #faf9f7; border: 1.5px solid var(--line); border-radius: 4px; cursor: pointer; transition: all 0.15s; text-decoration: none; }
+  .ap-card:hover { border-color: var(--navy); background: #f0ede8; }
+  .ap-card.active { border-color: var(--gold); background: var(--amber-bg); }
+  .ap-logo { width: 36px; height: 36px; border-radius: 3px; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+  .ap-info { flex: 1; }
+  .ap-info strong { font-size: 13.5px; color: var(--text); font-weight: 700; display: block; line-height: 1.2; }
+  .ap-info span { font-size: 11.5px; color: var(--muted); margin-top: 2px; display: block; }
+  .ap-arrow { color: var(--gold); font-size: 13px; font-weight: 700; }
+
+  /* Status boxes */
+  .status-box { border-radius: 4px; padding: 14px 16px; margin-bottom: 16px; display: none; }
+  .status-box.show { display: flex; align-items: flex-start; gap: 12px; }
+  .status-box.loading { background: #f0f4fa; border: 1px solid #c0d0e8; }
+  .status-box.success { background: var(--green-bg); border: 1px solid var(--green-bdr); }
+  .status-box.error   { background: var(--red-bg); border: 1px solid var(--red-bdr); }
+  .status-box.warning { background: var(--amber-bg); border: 1px solid var(--amber-bdr); }
+  .sb-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+  .sb-body { flex: 1; }
+  .sb-body strong { font-size: 13px; font-weight: 700; display: block; margin-bottom: 3px; }
+  .sb-body p { font-size: 12px; line-height: 1.6; }
+  .status-box.loading strong, .status-box.loading p { color: #1a3a6a; }
+  .status-box.success strong, .status-box.success p { color: #14532d; }
+  .status-box.error   strong, .status-box.error   p { color: #7f1d1d; }
+  .status-box.warning strong, .status-box.warning p { color: #78350f; }
+
+  /* Spinner */
+  .spin-sm { width: 16px; height: 16px; border: 2px solid #c0d0e8; border-top-color: #1a3a6a; border-radius: 50%; animation: spin 0.7s linear infinite; flex-shrink: 0; margin-top: 2px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Connected user card */
+  .user-card { border: 1.5px solid var(--green-bdr); border-radius: 4px; padding: 16px; background: var(--green-bg); display: none; margin-bottom: 16px; }
+  .user-card.show { display: flex; align-items: center; gap: 14px; }
+  .uc-avatar { width: 42px; height: 42px; border-radius: 50%; background: #dcfce7; border: 2px solid #86efac; display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
+  .uc-info { flex: 1; }
+  .uc-info strong { font-size: 14px; color: #14532d; font-weight: 700; display: block; }
+  .uc-info span { font-size: 11.5px; color: #15803d; }
+  .uc-verified { background: #dcfce7; border: 1px solid #86efac; border-radius: 20px; padding: 3px 10px; font-size: 10px; font-weight: 700; color: var(--green); letter-spacing: 0.06em; text-transform: uppercase; flex-shrink: 0; }
+
+  /* Not-a-citizen card */
+  .not-citizen-card { display: none; }
+  .not-citizen-card.show { display: block; }
+  .ncc-inner { border: 1.5px solid var(--amber-bdr); border-radius: 4px; background: var(--amber-bg); padding: 20px; text-align: center; }
+  .ncc-inner .ncc-icon { font-size: 32px; margin-bottom: 12px; }
+  .ncc-inner h3 { font-family: 'Merriweather', serif; font-size: 16px; font-weight: 400; color: #78350f; margin-bottom: 8px; }
+  .ncc-inner p { font-size: 12.5px; color: #92400e; line-height: 1.65; margin-bottom: 16px; }
+  .ncc-dev-badge { display: inline-flex; align-items: center; gap: 6px; background: #fef3c7; border: 1px solid #fcd34d; border-radius: 3px; padding: 4px 10px; font-size: 10px; font-weight: 700; color: #78350f; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 16px; }
+  .ncc-apply-btn { display: inline-block; background: var(--navy); color: #fff; padding: 10px 22px; border-radius: 3px; font-size: 13px; font-weight: 700; text-decoration: none; transition: background 0.15s; }
+  .ncc-apply-btn:hover { background: var(--navy-mid); }
+  .ncc-disconnect { display: block; margin-top: 12px; font-size: 11.5px; color: var(--muted); cursor: pointer; text-decoration: underline; background: none; border: none; font-family: inherit; width: 100%; }
+
+  /* Sign-in button */
+  .signin-btn { width: 100%; padding: 13px 20px; background: var(--navy); color: #fff; border: none; border-radius: 4px; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 700; cursor: pointer; transition: background 0.15s; display: flex; align-items: center; justify-content: center; gap: 8px; letter-spacing: 0.02em; }
+  .signin-btn:hover:not(:disabled) { background: var(--navy-mid); }
+  .signin-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .signin-btn.hidden { display: none; }
+
+  .retry-btn { width: 100%; padding: 11px 20px; background: none; color: var(--navy); border: 1.5px solid var(--line); border-radius: 4px; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 700; cursor: pointer; transition: background 0.15s; margin-top: 10px; }
+  .retry-btn:hover { background: var(--cream); }
+  .retry-btn.hidden { display: none; }
+
+  /* Footer divider */
+  .lr-footer { margin-top: auto; padding-top: 28px; border-top: 1px solid var(--line); }
+  .lr-footer p { font-size: 11px; color: #9a8f82; line-height: 1.6; }
+  .lr-footer a { color: var(--muted); }
+
+  /* Page footer */
+  footer { background: var(--navy); padding: 20px 40px; display: flex; justify-content: space-between; align-items: center; border-top: 3px solid var(--gold); }
+  footer p { color: #3a5a7a; font-size: 11.5px; }
+
+  @media (max-width: 780px) {
+    .login-shell { grid-template-columns: 1fr; }
+    .login-left { display: none; }
+    .login-right { padding: 36px 28px; }
+    .header-inner { padding: 0 20px; }
+    .header-nav a:not(.nav-cta) { display: none; }
+    footer { padding: 16px 20px; flex-direction: column; gap: 6px; text-align: center; }
+  }
+</style>
+</head>
+<body>
+
+<div class="rp-banner">
+  This site is not a real court, does not have legal authority, and is not affiliated with or endorsed by any real court system or government agency.
+</div>
+
+<div class="header">
+  <div class="header-inner">
+    <a class="logo-area" href="/micourt/">
+      <div class="logo-seal">⚖️</div>
+      <div class="logo-text">
+        <div class="site">MiCOURT</div>
+        <span class="tagline">Michigan Court Online Portal</span>
+      </div>
+    </a>
+    <div class="header-nav">
+      <a href="/micourt/">Home</a>
+      <a href="/micourt/cases/">Case Search</a>
+      <a href="/micourt/help/">Help</a>
+      <a class="nav-cta" href="/micourt/account/">Sign In</a>
+    </div>
+  </div>
+</div>
+
+<div class="page-wrap">
+  <div class="login-shell">
+
+    <!-- Left branding panel -->
+    <div class="login-left">
+      <div class="ll-top">
+        <div class="ll-seal">⚖️</div>
+        <div class="ll-title">Michigan Court Online Portal</div>
+        <p class="ll-desc">MiCOURT is the official online portal for the Michigan Court system, maintained by the State Court Administrative Office (SCAO). Sign in to access your case records, filings, and court services.</p>
+        <hr class="ll-divider">
+        <div class="ll-features">
+          <div class="ll-feat">
+            <div class="ll-feat-icon">📋</div>
+            <div class="ll-feat-text">
+              <strong>Your Cases</strong>
+              <span>View cases you are a party to, track hearing dates, and monitor case status.</span>
+            </div>
+          </div>
+          <div class="ll-feat">
+            <div class="ll-feat-icon">📄</div>
+            <div class="ll-feat-text">
+              <strong>E-Filing</strong>
+              <span>Submit documents and filings directly to the clerk's office electronically.</span>
+            </div>
+          </div>
+          <div class="ll-feat">
+            <div class="ll-feat-icon">💳</div>
+            <div class="ll-feat-text">
+              <strong>Fines &amp; Fees</strong>
+              <span>Pay outstanding court fines, fees, and financial obligations online.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p class="ll-bottom">Authentication is provided through the Michigan Secretary of State identity registry. Your identity and citizenship status are verified against official SOS records.</p>
+    </div>
+
+    <!-- Right login panel -->
+    <div class="login-right">
+      <div class="lr-header">
+        <h2>Sign In to MiCOURT</h2>
+        <p>MiCOURT uses the Michigan Secretary of State identity system to verify your identity. Sign in with your Roblox account — the same one linked to your SOS record.</p>
+      </div>
+
+      <!-- Auth provider selector -->
+      <div class="auth-provider" id="providerSection">
+        <div class="ap-label">Sign in with</div>
+        <div class="ap-card" id="sosProviderCard" onclick="initRobloxLogin()">
+          <div class="ap-logo">🏛️</div>
+          <div class="ap-info">
+            <strong>Michigan Secretary of State</strong>
+            <span>Verify via your SOS Roblox account &amp; identity registry</span>
+          </div>
+          <span class="ap-arrow">›</span>
+        </div>
+      </div>
+
+      <!-- Status: loading -->
+      <div class="status-box loading" id="statusLoading">
+        <div class="spin-sm"></div>
+        <div class="sb-body">
+          <strong id="loadingTitle">Connecting to SOS registry…</strong>
+          <p id="loadingMsg">Please wait while we verify your identity.</p>
+        </div>
+      </div>
+
+      <!-- Status: error -->
+      <div class="status-box error" id="statusError">
+        <span class="sb-icon">⚠️</span>
+        <div class="sb-body">
+          <strong>Sign-In Failed</strong>
+          <p id="errorMsg">Something went wrong. Please try again.</p>
+        </div>
+      </div>
+
+      <!-- Connected user card (shown when Roblox verified) -->
+      <div class="user-card" id="userCard">
+        <div class="uc-avatar">🎮</div>
+        <div class="uc-info">
+          <strong id="ucUsername">—</strong>
+          <span id="ucSin">SIN: —</span>
+        </div>
+        <span class="uc-verified">Verified</span>
+      </div>
+
+      <!-- Not-a-citizen state -->
+      <div class="not-citizen-card" id="notCitizenCard">
+        <div class="ncc-inner">
+          <div class="ncc-icon">🚧</div>
+          <h3>Citizen Account Required</h3>
+          <p>MiCOURT accounts are available to Michigan citizens. Your Roblox account was not found in the Secretary of State identity registry as an approved citizen.</p>
+          <div class="ncc-dev-badge">🔧 Still Under Development</div>
+          <p style="font-size:11.5px;color:#92400e;">Non-citizen account access is coming soon. In the meantime, you must be an approved Michigan citizen to access the MiCOURT portal.</p>
+          <br>
+          <a class="ncc-apply-btn" href="/sos/citizenship/apply/">Apply for Citizenship →</a>
+          <button class="ncc-disconnect" onclick="resetLogin()">Sign in with a different account</button>
+        </div>
+      </div>
+
+      <!-- Primary CTA -->
+      <button class="signin-btn" id="signinBtn" onclick="initRobloxLogin()" disabled>
+        <span>🏛️</span> Sign In with Michigan SOS
+      </button>
+
+      <button class="retry-btn hidden" id="retryBtn" onclick="resetLogin()">
+        ← Try a different account
+      </button>
+
+      <div class="lr-footer">
+        <p>
+          By signing in you agree to the MiCOURT Terms of Service. Your identity is verified through the Michigan Secretary of State identity registry and Roblox OAuth. MiCOURT does not store your Roblox credentials.
+          <br><br>
+          <a href="/micourt/help/">Need help signing in?</a> &nbsp;·&nbsp;
+          <a href="/micourt/privacy/">Privacy Policy</a>
+        </p>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<footer>
+  <p>© 2026 Michigan Courts · State Court Administrative Office · P.O. Box 30048, Lansing, MI 48909</p>
+  <p style="color:#2a4a6a;">Portal v2.1 · Secured by Michigan SOS Identity Registry</p>
+</footer>
+
+<!-- Firebase -->
+<script type="module">
+  import { initializeApp }      from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
+  import { getFirestore, collection, doc, getDoc, getDocs, setDoc, query, where }
+    from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+
+  // ── SOS Firebase (holds "registry" collection) ──
+  const sosConfig = {
+    apiKey:            "AIzaSyCzMDtySiPOXM5J15ePmjyUZRn_Zcyz2w0",
+    authDomain:        "misos-f7956.firebaseapp.com",
+    projectId:         "misos-f7956",
+    storageBucket:     "misos-f7956.firebasestorage.app",
+    messagingSenderId: "696781263120",
+    appId:             "1:696781263120:web:0a2b3c56d8ad9ede0f5595",
+  };
+
+  const sosApp = initializeApp(sosConfig, 'sos');
+  const sosDb  = getFirestore(sosApp);
+
+  window._sosDb = sosDb;
+  window._firestoreHelpers = { collection, doc, getDoc, getDocs, setDoc, query, where };
+  window._firebaseReady = true;
+  document.dispatchEvent(new CustomEvent('firebaseReady'));
+</script>
+
+<script>
+  // ── CONFIG ──
+  const ROBLOX_CLIENT_ID = '6125371219815664523';
+  const REDIRECT_URI     = 'https://miservices.github.io/micourt/account/';
+  const WORKER_URL       = 'https://roblox-oauth.takosull0.workers.dev/';
+
+  // ── SESSION STORAGE KEYS ──
+  const SS_STATE    = 'micourt_oauth_state';
+  const SS_REDIRECT = 'micourt_post_login_redirect';
+
+  // ── UI helpers ──
+  function showLoading(title, msg) {
+    hide('statusError'); hide('userCard'); hide('notCitizenCard');
+    document.getElementById('loadingTitle').textContent = title || 'Verifying…';
+    document.getElementById('loadingMsg').textContent   = msg   || 'Please wait.';
+    show('statusLoading');
+    disable('signinBtn');
+    document.getElementById('providerSection').style.opacity = '0.4';
+    document.getElementById('providerSection').style.pointerEvents = 'none';
+  }
+
+  function showError(msg) {
+    hide('statusLoading'); hide('userCard'); hide('notCitizenCard');
+    document.getElementById('errorMsg').textContent = msg;
+    show('statusError');
+    enable('signinBtn');
+    showEl('retryBtn');
+    document.getElementById('providerSection').style.opacity = '1';
+    document.getElementById('providerSection').style.pointerEvents = '';
+  }
+
+  function showUserCard(username, sin) {
+    hide('statusLoading'); hide('statusError');
+    document.getElementById('ucUsername').textContent = username;
+    document.getElementById('ucSin').textContent      = 'SIN: ' + sin;
+    show('userCard');
+  }
+
+  function showNotCitizen() {
+    hide('statusLoading');
+    show('notCitizenCard');
+    hideEl('signinBtn');
+    showEl('retryBtn');
+  }
+
+  function show(id)    { document.getElementById(id).classList.add('show'); }
+  function hide(id)    { document.getElementById(id).classList.remove('show'); }
+  function showEl(id)  { document.getElementById(id).classList.remove('hidden'); }
+  function hideEl(id)  { document.getElementById(id).classList.add('hidden'); }
+  function disable(id) { document.getElementById(id).disabled = true; }
+  function enable(id)  { document.getElementById(id).disabled = false; }
+
+  // ── Boot: activate the sign-in button once page is ready ──
+  window.addEventListener('DOMContentLoaded', () => {
+    enable('signinBtn');
+    handleOAuthCallback();
+  });
+
+  // ── STEP 1: kick off Roblox OAuth ──
+  function initRobloxLogin() {
+    const state = crypto.randomUUID();
+    sessionStorage.setItem(SS_STATE, state);
+
+    const params = new URLSearchParams({
+      client_id:     ROBLOX_CLIENT_ID,
+      redirect_uri:  REDIRECT_URI,
+      response_type: 'Code',
+      scope:         'openid profile',
+      state,
+    });
+    window.location.href = 'https://authorize.roblox.com/?' + params.toString();
+  }
+
+  // ── STEP 2: handle redirect back from Roblox ──
+  async function handleOAuthCallback() {
+    const params     = new URLSearchParams(window.location.search);
+    const code       = params.get('code');
+    const stateParam = params.get('state');
+    const savedState = sessionStorage.getItem(SS_STATE);
+
+    if (!code) return; // normal page load, nothing to do
+
+    // Clean URL
+    window.history.replaceState({}, '', window.location.pathname);
+    sessionStorage.removeItem(SS_STATE);
+
+    // Validate state
+    if (stateParam !== savedState) {
+      showError('Security validation failed (state mismatch). Please try signing in again.');
+      return;
+    }
+
+    showLoading('Exchanging authorization code…', 'Contacting the SOS identity service. This may take a moment.');
+
+    try {
+      // Exchange code for user info via Worker (same worker as SOS uses)
+      const res  = await fetch(WORKER_URL, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ code }),
+      });
+      const data = await res.json();
+
+      if (!data.userId || !data.username) {
+        throw new Error(data.error || data.detail?.error_description || 'Could not retrieve Roblox account details.');
+      }
+
+      await verifyWithRegistry(data.userId, data.username);
+
+    } catch (err) {
+      showError('Connection failed: ' + (err.message || 'Unknown error. Please try again.'));
+    }
+  }
+
+  // ── STEP 3: look up citizen in SOS registry ──
+  async function verifyWithRegistry(robloxId, username) {
+    showLoading('Checking SOS identity registry…', 'Looking up your citizenship record with the Secretary of State.');
+
+    // Wait for Firebase
+    if (!window._firebaseReady) {
+      await new Promise(resolve => document.addEventListener('firebaseReady', resolve, { once: true }));
+    }
+
+    const { collection, getDocs, query, where } = window._firestoreHelpers;
+    const db = window._sosDb;
+
+    try {
+      // Query the "registry" collection for an approved citizen with this roblox ID
+      const regRef = collection(db, 'registry');
+      const q = query(
+        regRef,
+        where('robloxId', '==', String(robloxId)),
+        where('status',   '==', 'approved')
+      );
+      const snap = await getDocs(q);
+
+      if (snap.empty) {
+        // Not found as approved — also check "applications" for clarity
+        const appsRef = collection(db, 'applications');
+        const appQ = query(
+          appsRef,
+          where('robloxId', '==', String(robloxId))
+        );
+        const appSnap = await getDocs(appQ);
+
+        // Show the user card so they know we found their Roblox account
+        showUserCard(username, robloxId);
+        showNotCitizen();
+        return;
+      }
+
+      // Found — citizen approved
+      const citizenDoc  = snap.docs[0].data();
+      const displayName = citizenDoc.fullName || citizenDoc.firstName
+        ? [citizenDoc.firstName, citizenDoc.lastName].filter(Boolean).join(' ')
+        : username;
+
+      showUserCard(username, robloxId);
+      showLoading('Identity confirmed. Signing you in…', 'Welcome, ' + displayName + '. Redirecting to your dashboard.');
+
+      // Store session info
+      sessionStorage.setItem('micourt_user', JSON.stringify({
+        robloxId:    String(robloxId),
+        username,
+        sin:         citizenDoc.sin || String(robloxId),
+        fullName:    displayName,
+        citizenData: citizenDoc,
+        loginAt:     new Date().toISOString(),
+      }));
+
+      // Redirect to dashboard
+      setTimeout(() => {
+        const dest = sessionStorage.getItem(SS_REDIRECT) || '/micourt/dashboard/';
+        sessionStorage.removeItem(SS_REDIRECT);
+        window.location.href = dest;
+      }, 1200);
+
+    } catch (err) {
+      console.error('Registry lookup error:', err);
+      showError('Could not connect to the SOS identity registry: ' + (err.message || 'Please try again.'));
+    }
+  }
+
+  // ── Reset back to initial state ──
+  function resetLogin() {
+    hide('statusLoading');
+    hide('statusError');
+    hide('userCard');
+    hide('notCitizenCard');
+    hideEl('retryBtn');
+    showEl('signinBtn');
+    enable('signinBtn');
+    document.getElementById('providerSection').style.opacity = '1';
+    document.getElementById('providerSection').style.pointerEvents = '';
+  }
+
+  // Expose to global
+  window.initRobloxLogin = initRobloxLogin;
+  window.resetLogin      = resetLogin;
+</script>
+
+</body>
+</html>
