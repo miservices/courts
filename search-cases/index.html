@@ -205,16 +205,21 @@ nav .nav-btn:hover{background:#d4b85e}
 .hr-nogagree{background:#fef2f2;color:#dc2626}
 
 /* Filings */
-.filing-row{display:flex;align-items:flex-start;gap:14px;padding:12px 0;border-bottom:1px solid #f8f5f0}
+.filing-row{display:flex;align-items:flex-start;gap:14px;padding:16px 0;border-bottom:1px solid #f8f5f0}
 .filing-row:last-child{border-bottom:none}
-.filing-icon{width:34px;height:34px;background:#f4f1ec;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
-.filing-info{flex:1}
-.filing-title-text{font-size:13.5px;color:#1a1a1a;font-weight:500;margin-bottom:2px}
+.filing-icon{width:36px;height:36px;background:#f0ebe3;border:1px solid #e0d9cf;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;margin-top:1px}
+.filing-info{flex:1;min-width:0}
+.filing-title-text{font-size:13.5px;color:#1a1a1a;font-weight:600;margin-bottom:3px;line-height:1.3}
 .filing-by{font-size:11.5px;color:#6b5f4e}
-.filing-date{font-size:11px;color:#9a8f82}
-.filing-notes-text{font-size:11.5px;color:#9a8f82;margin-top:3px}
-.filing-link{font-size:12px;color:#1a4a7a;font-weight:600;text-decoration:none;margin-top:4px;display:inline-block}
-.filing-link:hover{text-decoration:underline}
+.filing-date{font-size:11px;color:#9a8f82;margin-top:1px}
+.filing-notes-text{font-size:11.5px;color:#9a8f82;margin-top:5px;line-height:1.5}
+.filing-actions{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+.filing-btn{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:600;letter-spacing:0.03em;padding:5px 12px;border-radius:2px;text-decoration:none;border:1px solid;transition:all 0.12s;cursor:pointer;font-family:'DM Sans',sans-serif}
+.filing-btn-open{color:#1a4a7a;border-color:#bfdbfe;background:#eff6ff}
+.filing-btn-open:hover{background:#dbeafe;border-color:#93c5fd;color:#1e3a8a}
+.filing-btn-download{color:#15803d;border-color:#bbf7d0;background:#f0fdf4}
+.filing-btn-download:hover{background:#dcfce7;border-color:#86efac;color:#14532d}
+.filing-no-doc{font-size:11px;color:#b0a898;margin-top:7px;font-style:italic}
 
 /* Financials — fixed overlap */
 .fin-row{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:14px 0;border-bottom:1px solid #f8f5f0}
@@ -1022,16 +1027,29 @@ function buildFilingsTab(c) {
   return `<div class="d-card">
     <div class="d-card-header"><h3>Case Filings</h3><span class="d-card-tag">${c.filings.length} document(s)</span></div>
     <div class="d-card-body">
-      ${c.filings.map(f => `<div class="filing-row">
-        <div class="filing-icon">📄</div>
-        <div class="filing-info">
-          <div class="filing-title-text">${f.title}</div>
-          <div class="filing-by">Filed by: ${f.filedBy} <span style="color:#c8a84b;font-size:10px;font-weight:700;margin-left:4px">${f.role||''}</span></div>
-          <div class="filing-date">${fmtDateTime(f.dateFiled)}</div>
-          ${f.notes ? `<div class="filing-notes-text">${f.notes}</div>` : ''}
-          ${f.documentLink ? `<a class="filing-link" href="${f.documentLink}" target="_blank">View Document ↗</a>` : ''}
-        </div>
-      </div>`).join('')}
+      ${c.filings.map(f => {
+        const hasLink = !!f.documentLink;
+        const actions = hasLink
+          ? `<div class="filing-actions">
+               <a class="filing-btn filing-btn-open" href="${f.documentLink}" target="_blank" rel="noopener">
+                 <span>↗</span> Open
+               </a>
+               <a class="filing-btn filing-btn-download" href="${f.documentLink}" download target="_blank" rel="noopener">
+                 <span>⬇</span> Download
+               </a>
+             </div>`
+          : `<div class="filing-no-doc">Document not available for public access</div>`;
+        return `<div class="filing-row">
+          <div class="filing-icon">📄</div>
+          <div class="filing-info">
+            <div class="filing-title-text">${f.title}</div>
+            <div class="filing-by">Filed by: ${f.filedBy}${f.role ? `<span style="color:#c8a84b;font-size:10px;font-weight:700;margin-left:6px">${f.role}</span>` : ''}</div>
+            <div class="filing-date">${fmtDateTime(f.dateFiled)}</div>
+            ${f.notes ? `<div class="filing-notes-text">${f.notes}</div>` : ''}
+            ${actions}
+          </div>
+        </div>`;
+      }).join('')}
     </div>
   </div>`;
 }
