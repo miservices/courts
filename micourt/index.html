@@ -383,36 +383,74 @@
         <button class="btn-primary" onclick="stepEmailNext()">Continue →</button>
       </div>
 
-      <!-- STEP 2 — Role -->
+      <!-- STEP 2 — Role + Bar -->
       <div class="step" id="step-2">
         <div class="step-indicator" id="step-indicator-2"></div>
 
         <div class="step-header">
           <h2>Your Role</h2>
-          <p>Select the option that best describes how you'll be using MiCOURT. This determines your account permissions and available features.</p>
+          <p>Select the option that best describes how you'll be using MiCOURT.</p>
         </div>
 
-        <div class="role-grid">
+        <div class="role-grid" style="grid-template-columns:1fr 1fr;">
           <label class="role-card featured" id="rc-public" onclick="selectRole('public')">
             <input type="radio" name="role" value="public">
             <span class="role-badge">Most Common</span>
             <span class="rc-icon">👤</span>
             <span class="rc-title">Portal User</span>
-            <span class="rc-sub">I'm an individual using MiCOURT to access my cases, pay fines, or file documents.</span>
+            <span class="rc-sub">Access your cases, pay fines, or file documents.</span>
           </label>
-          <label class="role-card featured" id="rc-attorney" onclick="selectRole('attorney')">
-            <input type="radio" name="role" value="attorney">
+          <label class="role-card featured" id="rc-bar" onclick="selectRole('bar')">
+            <input type="radio" name="role" value="bar">
             <span class="role-badge">Professional</span>
             <span class="rc-icon">⚖️</span>
-            <span class="rc-title">Licensed Attorney</span>
-            <span class="rc-sub">I am a licensed attorney and will be representing clients before Michigan courts.</span>
+            <span class="rc-title">Bar Member</span>
+            <span class="rc-sub">Licensed attorney, judge, or court officer listed in the State Bar registry.</span>
           </label>
-          <label class="role-card disabled" id="rc-staff" title="Court staff access is not available through self-registration.">
-            <input type="radio" name="role" value="staff" disabled>
-            <span class="rc-icon">🏛️</span>
-            <span class="rc-title">Court Staff</span>
-            <span class="rc-sub">For court employees only. Contact your administrator for access.</span>
-          </label>
+        </div>
+
+        <!-- Bar verification panel — shown when 'bar' selected -->
+        <div id="bar-verify-panel" style="display:none;">
+          <div class="note-box" id="bar-processing-note">
+            Your bar number will be looked up against the Michigan State Bar Member registry. Your PIN must match the record on file.
+          </div>
+
+          <div class="form-group">
+            <label>Michigan State Bar Number</label>
+            <input type="text" id="f-bar" placeholder="e.g. P12345" style="font-family:monospace;font-size:15px;letter-spacing:0.04em;" oninput="clearBarResult()">
+            <div class="field-error" id="f-bar-err"></div>
+          </div>
+
+          <!-- Loading state -->
+          <div class="status-box loading" id="bar-loading">
+            <div class="spin-sm"></div>
+            <div class="sb-body">
+              <strong>Checking registry…</strong>
+              <p>Looking up your bar number in the State Bar Member registry.</p>
+            </div>
+          </div>
+
+          <!-- Success state -->
+          <div class="status-box success" id="bar-success">
+            <span class="sb-icon">✅</span>
+            <div class="sb-body">
+              <strong id="bar-success-name">—</strong>
+              <p id="bar-success-detail">—</p>
+            </div>
+          </div>
+
+          <!-- Error state -->
+          <div class="status-box error" id="bar-error">
+            <span class="sb-icon">⚠️</span>
+            <div class="sb-body">
+              <strong>Verification Failed</strong>
+              <p id="bar-error-msg">—</p>
+            </div>
+          </div>
+
+          <button class="btn-primary" id="bar-verify-btn" onclick="verifyBarNumber()" style="margin-bottom:10px;">
+            Verify Bar Number →
+          </button>
         </div>
 
         <div class="status-box error" id="s2-error">
@@ -422,61 +460,31 @@
 
         <div class="btn-row">
           <button class="btn-back" onclick="goToStep(1)">← Back</button>
-          <button class="btn-primary" onclick="stepRoleNext()">Continue →</button>
+          <button class="btn-primary" id="s2-continue-btn" onclick="stepRoleNext()">Continue →</button>
         </div>
       </div>
 
-      <!-- STEP 3 — Bar Number -->
+      <!-- STEP 3 — Creating Account -->
       <div class="step" id="step-3">
-        <div class="step-indicator" id="step-indicator-3"></div>
-
-        <div class="step-header">
-          <h2>Bar Verification</h2>
-          <p>Enter your Michigan State Bar number to verify your licensure. Your bar number will be validated against the State Bar registry.</p>
-        </div>
-
-        <div class="note-box">
-          Your bar number is used to verify active licensure. Once verified, you'll receive full attorney access including client representation, e-filing on behalf of clients, and professional case management tools.
-        </div>
-
-        <div class="form-group">
-          <label>Michigan State Bar Number</label>
-          <input type="text" id="f-bar" placeholder="e.g. P12345" style="font-family: monospace; font-size: 15px; letter-spacing: 0.04em;">
-          <div class="field-error" id="f-bar-err">Bar number not found in the Michigan State Bar registry.</div>
-        </div>
-
-        <div class="status-box error" id="s3-error">
-          <span class="sb-icon">⚠️</span>
-          <div class="sb-body"><strong>Verification Failed</strong><p id="s3-error-msg"></p></div>
-        </div>
-
-        <div class="btn-row">
-          <button class="btn-back" onclick="goToStep(2)">← Back</button>
-          <button class="btn-primary" id="s3-verify-btn" onclick="stepBarNext()">Verify Bar Number →</button>
-        </div>
-      </div>
-
-      <!-- STEP 4 — Creating Account -->
-      <div class="step" id="step-4">
         <div class="step-header" style="margin-bottom:20px">
           <h2>Creating Your Account</h2>
           <p>Setting up your MiCOURT portal account. This will only take a moment.</p>
         </div>
 
-        <div class="status-box loading show" id="s4-loading">
+        <div class="status-box loading show" id="s3-loading">
           <div class="spin-sm"></div>
           <div class="sb-body">
-            <strong id="s4-loading-title">Creating account…</strong>
-            <p id="s4-loading-msg">Please wait while we set up your MiCOURT access.</p>
+            <strong id="s3-loading-title">Creating account…</strong>
+            <p id="s3-loading-msg">Please wait while we set up your MiCOURT access.</p>
           </div>
         </div>
 
-        <div class="status-box error" id="s4-error">
+        <div class="status-box error" id="s3-error">
           <span class="sb-icon">⚠️</span>
-          <div class="sb-body"><strong>Account Creation Failed</strong><p id="s4-error-msg"></p></div>
+          <div class="sb-body"><strong>Account Creation Failed</strong><p id="s3-error-msg"></p></div>
         </div>
 
-        <div class="status-box success" id="s4-success">
+        <div class="status-box success" id="s3-success">
           <span class="sb-icon">✅</span>
           <div class="sb-body">
             <strong>Account Created!</strong>
@@ -484,12 +492,12 @@
           </div>
         </div>
 
-        <div class="redirect-bar-wrap" id="s4-redirect-bar">
+        <div class="redirect-bar-wrap" id="s3-redirect-bar">
           <p>Signing you in to MiCOURT…</p>
-          <div class="redirect-bar"><div class="redirect-fill" id="s4-redirect-fill"></div></div>
+          <div class="redirect-bar"><div class="redirect-fill" id="s3-redirect-fill"></div></div>
         </div>
 
-        <button class="btn-secondary" id="s4-retry-btn" style="display:none" onclick="retryAccountCreation()">Try Again</button>
+        <button class="btn-secondary" id="s3-retry-btn" style="display:none" onclick="retryAccountCreation()">Try Again</button>
       </div>
 
     </div><!-- /login-right -->
@@ -506,7 +514,7 @@
   import { initializeApp }         from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
   import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword }
                                    from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
-  import { getFirestore, doc, setDoc, serverTimestamp }
+  import { getFirestore, doc, getDoc, setDoc, serverTimestamp }
                                    from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 
   const micourtConfig = {
@@ -526,6 +534,7 @@
   window._micourtDb   = db;
   window._serverTimestamp = serverTimestamp;
   window._doc    = doc;
+  window._getDoc = getDoc;
   window._setDoc = setDoc;
   window._createUser = createUserWithEmailAndPassword;
   window._signIn     = signInWithEmailAndPassword;
@@ -566,7 +575,7 @@
   }
 
   function buildIndicator(containerId, current) {
-    const labels = ['Email', 'Role', 'Verify', 'Done'];
+    const labels = ['Email', 'Role', 'Done'];
     let html = '';
     for (let i = 0; i < labels.length; i++) {
       let cls = '';
@@ -586,7 +595,6 @@
     if (n >= 1) {
       buildIndicator('step-indicator',   n);
       buildIndicator('step-indicator-2', n);
-      buildIndicator('step-indicator-3', n);
     }
   }
   window.goToStep = goToStep;
@@ -617,13 +625,100 @@
   }
   window.stepEmailNext = stepEmailNext;
 
+  let verifiedBarData = null; // { barNumber, name, role, status } from sbm doc
+
   function selectRole(role) {
     selectedRole = role;
     document.querySelectorAll('.role-card').forEach(c => c.classList.remove('selected'));
     const el = document.getElementById('rc-' + role);
     if (el) el.classList.add('selected');
+
+    const panel = document.getElementById('bar-verify-panel');
+    if (role === 'bar') {
+      panel.style.display = 'block';
+      // Reset any previous verification
+      verifiedBarData = null;
+      hide('bar-loading'); hide('bar-success'); hide('bar-error');
+    } else {
+      panel.style.display = 'none';
+      verifiedBarData = null;
+    }
   }
   window.selectRole = selectRole;
+
+  function clearBarResult() {
+    verifiedBarData = null;
+    hide('bar-success'); hide('bar-error');
+    fieldErr('f-bar', 'f-bar-err', null);
+  }
+  window.clearBarResult = clearBarResult;
+
+  async function verifyBarNumber() {
+    const barInput = document.getElementById('f-bar').value.trim().toUpperCase();
+    fieldErr('f-bar', 'f-bar-err', null);
+    hide('bar-success'); hide('bar-error');
+
+    if (!barInput) {
+      fieldErr('f-bar', 'f-bar-err', 'Please enter your bar number.');
+      return;
+    }
+
+    const btn = document.getElementById('bar-verify-btn');
+    btn.disabled = true;
+    show('bar-loading');
+
+    if (!window._fbReady) {
+      await new Promise(r => document.addEventListener('fbReady', r, {once:true}));
+    }
+
+    try {
+      const docSnap = await window._getDoc(
+        window._doc(window._micourtDb, 'sbm', barInput)
+      );
+
+      hide('bar-loading');
+
+      if (!docSnap.exists()) {
+        show('bar-error');
+        document.getElementById('bar-error-msg').textContent =
+          'Bar number "' + barInput + '" was not found in the Michigan State Bar Member registry.';
+        btn.disabled = false;
+        return;
+      }
+
+      const d = docSnap.data();
+
+      // PIN must match the logged-in MiPASS user
+      if (String(d.pin) !== String(mipassData.pin)) {
+        show('bar-error');
+        document.getElementById('bar-error-msg').textContent =
+          'This bar number is registered to a different identity. Your MiPASS PIN does not match the record on file.';
+        btn.disabled = false;
+        return;
+      }
+
+      // All good
+      verifiedBarData = {
+        barNumber: barInput,
+        name:      d.name   || mipassData.name,
+        role:      d.role   || 'Bar Member',
+        status:    d.status || 'Unknown',
+      };
+
+      document.getElementById('bar-success-name').textContent = d.name + ' — ' + verifiedBarData.role;
+      document.getElementById('bar-success-detail').textContent =
+        'Status: ' + verifiedBarData.status + ' · Bar No. ' + barInput;
+      show('bar-success');
+      btn.disabled = false;
+
+    } catch(err) {
+      hide('bar-loading');
+      show('bar-error');
+      document.getElementById('bar-error-msg').textContent = 'Lookup failed: ' + (err.message || 'Unknown error.');
+      btn.disabled = false;
+    }
+  }
+  window.verifyBarNumber = verifyBarNumber;
 
   function stepRoleNext() {
     hide('s2-error');
@@ -631,48 +726,44 @@
       document.getElementById('s2-error-msg').textContent = 'Please select your role to continue.';
       show('s2-error'); return;
     }
-    if (selectedRole === 'attorney') { goToStep(3); }
-    else { submitAccount(); }
+    if (selectedRole === 'bar') {
+      if (!verifiedBarData) {
+        document.getElementById('s2-error-msg').textContent = 'Please verify your bar number before continuing.';
+        show('s2-error'); return;
+      }
+    }
+    submitAccount();
   }
   window.stepRoleNext = stepRoleNext;
 
-  async function stepBarNext() {
-    const bar = document.getElementById('f-bar').value.trim();
-    fieldErr('f-bar', 'f-bar-err', null);
-    hide('s3-error');
-    if (!bar) { fieldErr('f-bar','f-bar-err','Please enter your Michigan State Bar number.'); return; }
-    const btn = document.getElementById('s3-verify-btn');
-    btn.disabled = true; btn.textContent = 'Verifying…';
-    await new Promise(r => setTimeout(r, 1400));
-    btn.disabled = false; btn.textContent = 'Verify Bar Number →';
-    fieldErr('f-bar','f-bar-err','Bar number not found in the Michigan State Bar registry. Please check the number and try again.');
-  }
-  window.stepBarNext = stepBarNext;
-
   async function submitAccount() {
-    goToStep(4);
-    hide('s4-error'); hide('s4-success');
-    hideEl('s4-redirect-bar'); hideEl('s4-retry-btn');
-    show('s4-loading');
+    goToStep(3);
+    hide('s3-error'); hide('s3-success');
+    hideEl('s3-redirect-bar'); hideEl('s3-retry-btn');
+    show('s3-loading');
 
-    const email     = document.getElementById('f-email').value.trim();
-    const password  = generatePassword();
-    const name      = mipassData?.name || '—';
-    const pin       = mipassData?.pin  || null;
-    const dob       = mipassData?.dob  || null;
-    const barNumber = (selectedRole === 'attorney') ? (document.getElementById('f-bar')?.value.trim() || null) : null;
-    const roleLabel = selectedRole === 'attorney' ? 'Licensed Attorney' : 'Portal User';
+    const email    = document.getElementById('f-email').value.trim();
+    const password = generatePassword();
+    const pin      = mipassData?.pin  || null;
+    const dob      = mipassData?.dob  || null;
+
+    // Role comes from bar registry if bar member, otherwise Portal User
+    const isBar    = selectedRole === 'bar' && verifiedBarData;
+    const name     = isBar ? verifiedBarData.name : (mipassData?.name || '—');
+    const roleLabel = isBar ? verifiedBarData.role : 'Portal User';
+    const barNumber = isBar ? verifiedBarData.barNumber : null;
+    const barStatus = isBar ? verifiedBarData.status : null;
 
     if (!window._fbReady) {
       await new Promise(r => document.addEventListener('fbReady', r, {once:true}));
     }
 
     try {
-      setLoading('s4-loading-title','s4-loading-msg','Creating your account…','Registering your MiCOURT credentials.');
+      setLoading('s3-loading-title','s3-loading-msg','Creating your account…','Registering your MiCOURT credentials.');
       const cred = await window._createUser(window._micourtAuth, email, password);
       const uid  = cred.user.uid;
 
-      setLoading('s4-loading-title','s4-loading-msg','Saving your profile…','Writing your account information to the registry.');
+      setLoading('s3-loading-title','s3-loading-msg','Saving your profile…','Writing your account information to the registry.');
       await window._setDoc(
         window._doc(window._micourtDb, 'accounts', uid),
         {
@@ -682,6 +773,7 @@
           pin:         pin,
           dob:         dob,
           barNumber:   barNumber,
+          barStatus:   barStatus,
           createdAt:   window._serverTimestamp(),
           lastLogin:   window._serverTimestamp(),
           mipassPin:   pin,
@@ -691,33 +783,32 @@
 
       sessionStorage.setItem('micourt_user', JSON.stringify({
         uid, pin, name, email,
-        role: roleLabel,
-        barNumber,
+        role: roleLabel, barNumber,
         loginAt: new Date().toISOString()
       }));
 
-      hide('s4-loading');
-      show('s4-success');
-      document.getElementById('s4-redirect-bar').style.display = 'block';
-      setTimeout(() => { document.getElementById('s4-redirect-fill').style.width = '100%'; }, 50);
+      hide('s3-loading');
+      show('s3-success');
+      document.getElementById('s3-redirect-bar').style.display = 'block';
+      setTimeout(() => { document.getElementById('s3-redirect-fill').style.width = '100%'; }, 50);
       setTimeout(() => { window.location.href = '/micourt/dashboard/'; }, 2700);
 
     } catch(err) {
-      hide('s4-loading');
+      hide('s3-loading');
       let msg = err.message || 'An unexpected error occurred.';
       if (err.code === 'auth/email-already-in-use') {
         msg = 'An account already exists with this email address. Please sign in instead, or use a different email.';
       } else if (err.code === 'auth/invalid-email') {
         msg = 'The email address you entered is not valid.';
       }
-      document.getElementById('s4-error-msg').textContent = msg;
-      show('s4-error');
-      showEl('s4-retry-btn');
+      document.getElementById('s3-error-msg').textContent = msg;
+      show('s3-error');
+      showEl('s3-retry-btn');
     }
   }
   window.submitAccount = submitAccount;
 
-  function retryAccountCreation() { hide('s4-error'); hideEl('s4-retry-btn'); submitAccount(); }
+  function retryAccountCreation() { hide('s3-error'); hideEl('s3-retry-btn'); submitAccount(); }
   window.retryAccountCreation = retryAccountCreation;
 
   function init() {
