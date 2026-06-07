@@ -619,7 +619,7 @@ body { font-family:'DM Sans',sans-serif; background:var(--cream); color:var(--te
   <div id="sidebar-nav"></div>
 
   <div class="sb-bottom">
-    <button class="sb-sign-out" onclick="window.location.href='/courts/micourt/account/'">
+    <button class="sb-sign-out" onclick="window.location.href='/courts/micourt/'">
       <span style="font-size:14px">←</span> Sign Out
     </button>
   </div>
@@ -1674,7 +1674,7 @@ async function signOutUser() {
     if (window._micourtAuth) await window._micourtAuth.signOut();
   } catch(e) {}
   sessionStorage.removeItem('micourt_user');
-  window.location.href = '/courts/micourt/account/';
+  window.location.href = '/courts/micourt/';
 }
 window.signOutUser = signOutUser;
 
@@ -1717,7 +1717,7 @@ onAuthStateChanged(auth, async (user) => {
   if (!user) {
     // Not signed in — bounce to login
     setOverlayMsg('Session expired. Redirecting…');
-    setTimeout(() => { window.location.href = '/courts/micourt/account/'; }, 1200);
+    setTimeout(() => { window.location.href = '/courts/micourt/'; }, 1200);
     return;
   }
 
@@ -1729,7 +1729,7 @@ onAuthStateChanged(auth, async (user) => {
     if (!snap.exists()) {
       // Account doc missing — treat as new Portal User and redirect to finish onboarding
       setOverlayMsg('Account not found. Redirecting…');
-      setTimeout(() => { window.location.href = '/courts/micourt/account/'; }, 1200);
+      setTimeout(() => { window.location.href = '/courts/micourt/'; }, 1200);
       return;
     }
 
