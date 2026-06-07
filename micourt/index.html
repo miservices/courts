@@ -4,27 +4,25 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Sign In | MiCOURT Portal</title>
+
+<!-- ★ MiCOURT Shell — injects banner, header/nav, footer automatically -->
+<script src="/courts/shell.js" data-active="home"></script>
+
 <link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;1,300&family=DM+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-
-<!--
-  ┌─────────────────────────────────────────────────────────────────┐
-  │  SHARED LAYOUT  — banner, header, nav, footer                   │
-  │  Designed in:  layout.html                                       │
-  │  Injected by:  micourt-layout-inject.js  (one line below)       │
-  │                                                                  │
-  │  To update the header or footer, edit layout.html only.         │
-  │  This file owns only the page-level styles and content below.   │
-  └─────────────────────────────────────────────────────────────────┘
--->
-<script src="micourt-layout-inject.js" data-active-nav="services"></script>
-
 <style>
-  /* ── Page-level tokens (not in layout.html) ── */
   :root {
+    --navy:       #0a1628;
+    --navy-mid:   #0d1f3c;
+    --navy-light: #112240;
+    --border:     #1e3a5f;
+    --gold:       #c8a84b;
+    --gold-light: #d4b85e;
+    --cream:      #f4f1ec;
     --white:      #ffffff;
     --text:       #1a1a1a;
     --muted:      #6b5f4e;
     --line:       #e0d9cf;
+    --blue-muted: #7a9bbf;
     --green:      #15803d;
     --green-bg:   #f0fdf4;
     --green-bdr:  #dcfce7;
@@ -36,357 +34,130 @@
     --amber:      #a16207;
   }
 
-  /* ── Page layout ── */
-  .page-wrap {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 60px 24px;
-  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
 
-  /* ── Login shell ── */
-  .login-shell {
-    width: 100%;
-    max-width: 960px;
-    display: grid;
-    grid-template-columns: 1fr 440px;
-    background: var(--white);
-    border: 1px solid var(--line);
-    border-radius: 6px;
-    overflow: hidden;
-    box-shadow: 0 8px 40px rgba(10,22,40,0.12);
-  }
+  .page-wrap { flex: 1; display: flex; align-items: center; justify-content: center; padding: 60px 24px; }
 
-  /* ── Left branding panel ── */
-  .login-left {
-    background: var(--navy);
-    padding: 52px 44px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    position: relative;
-    overflow: hidden;
-  }
-  .login-left::before {
-    content: '';
-    position: absolute;
-    top: -80px; right: -80px;
-    width: 300px; height: 300px;
-    border-radius: 50%;
-    background: rgba(200,168,75,0.07);
-    pointer-events: none;
-  }
-  .login-left::after {
-    content: '';
-    position: absolute;
-    bottom: -60px; left: -60px;
-    width: 240px; height: 240px;
-    border-radius: 50%;
-    background: rgba(200,168,75,0.05);
-    pointer-events: none;
-  }
+  .login-shell { width: 100%; max-width: 960px; display: grid; grid-template-columns: 1fr 440px; gap: 0; background: var(--white); border: 1px solid var(--line); border-radius: 6px; overflow: hidden; box-shadow: 0 8px 40px rgba(10,22,40,0.12); }
+
+  .login-left { background: var(--navy); padding: 52px 44px; display: flex; flex-direction: column; justify-content: space-between; position: relative; overflow: hidden; }
+  .login-left::before { content: ''; position: absolute; top: -80px; right: -80px; width: 300px; height: 300px; border-radius: 50%; background: rgba(200,168,75,0.07); pointer-events: none; }
+  .login-left::after  { content: ''; position: absolute; bottom: -60px; left: -60px; width: 240px; height: 240px; border-radius: 50%; background: rgba(200,168,75,0.05); pointer-events: none; }
   .ll-top { position: relative; z-index: 1; }
-  .ll-seal {
-    width: 56px; height: 56px;
-    background: var(--gold);
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 26px;
-    margin-bottom: 24px;
-  }
-  .ll-title {
-    font-family: 'Merriweather', serif;
-    color: #fff;
-    font-size: 22px;
-    font-weight: 400;
-    line-height: 1.3;
-    margin-bottom: 10px;
-  }
+  .ll-seal { width: 56px; height: 56px; background: var(--gold); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 26px; margin-bottom: 24px; }
+  .ll-title { font-family: 'Merriweather', serif; color: #fff; font-size: 22px; font-weight: 400; line-height: 1.3; margin-bottom: 10px; }
   .ll-desc { color: var(--blue-muted); font-size: 13px; line-height: 1.7; }
   .ll-divider { border: none; border-top: 1px solid var(--border); margin: 28px 0; }
   .ll-features { display: flex; flex-direction: column; gap: 14px; position: relative; z-index: 1; }
   .ll-feat { display: flex; align-items: flex-start; gap: 12px; }
-  .ll-feat-icon {
-    width: 30px; height: 30px;
-    border-radius: 3px;
-    background: var(--navy-light);
-    border: 1px solid var(--border);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 14px;
-    flex-shrink: 0;
-    margin-top: 1px;
-  }
+  .ll-feat-icon { width: 30px; height: 30px; border-radius: 3px; background: var(--navy-light); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; margin-top: 1px; }
   .ll-feat-text strong { font-size: 12.5px; color: #fff; font-weight: 600; display: block; margin-bottom: 2px; }
-  .ll-feat-text span   { font-size: 11.5px; color: var(--blue-muted); line-height: 1.5; }
+  .ll-feat-text span { font-size: 11.5px; color: var(--blue-muted); line-height: 1.5; }
   .ll-bottom { font-size: 10.5px; color: #3a5a7a; line-height: 1.5; position: relative; z-index: 1; }
 
-  /* ── Right form panel ── */
   .login-right { padding: 48px 44px; display: flex; flex-direction: column; min-height: 0; }
 
-  /* ── Step system ── */
   .step { display: none; flex-direction: column; flex: 1; }
   .step.active { display: flex; }
   .step-header { margin-bottom: 24px; }
-  .step-header h2 {
-    font-family: 'Merriweather', serif;
-    font-size: 19px; font-weight: 400;
-    color: var(--text);
-    margin-bottom: 6px;
-  }
+  .step-header h2 { font-family: 'Merriweather', serif; font-size: 19px; font-weight: 400; color: var(--text); margin-bottom: 6px; }
   .step-header p { font-size: 13px; color: var(--muted); line-height: 1.6; }
 
-  /* ── Step indicator ── */
-  .step-indicator { display: flex; align-items: center; margin-bottom: 28px; }
-  .si-dot {
-    width: 28px; height: 28px;
-    border-radius: 50%;
-    border: 2px solid var(--line);
-    background: var(--white);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 11px; font-weight: 700;
-    color: var(--muted);
-    flex-shrink: 0;
-    transition: all 0.2s;
-    position: relative; z-index: 1;
-  }
+  .step-indicator { display: flex; align-items: center; gap: 0; margin-bottom: 28px; }
+  .si-dot { width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--line); background: var(--white); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--muted); flex-shrink: 0; transition: all 0.2s; position: relative; z-index: 1; }
   .si-dot.active { border-color: var(--navy); background: var(--navy); color: #fff; }
-  .si-dot.done   { border-color: var(--green); background: var(--green); color: #fff; }
+  .si-dot.done { border-color: var(--green); background: var(--green); color: #fff; }
   .si-line { flex: 1; height: 2px; background: var(--line); transition: background 0.2s; margin: 0 -1px; }
   .si-line.done { background: var(--green); }
 
-  /* ── MiPASS button ── */
-  .mipass-btn {
-    display: flex; align-items: center; gap: 14px;
-    padding: 14px 16px;
-    background: #faf9f7;
-    border: 1.5px solid var(--line);
-    border-radius: 4px;
-    cursor: pointer;
-    transition: all 0.15s;
-    text-decoration: none;
-    width: 100%;
-  }
+  .mipass-btn { display: flex; align-items: center; gap: 14px; padding: 14px 16px; background: #faf9f7; border: 1.5px solid var(--line); border-radius: 4px; cursor: pointer; transition: all 0.15s; text-decoration: none; width: 100%; }
   .mipass-btn:hover { border-color: var(--navy); background: #f0ede8; }
-  .mp-logo-box {
-    width: 36px; height: 36px;
-    border-radius: 3px;
-    background: #00274C;
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
-  }
-  .mp-logo-inner {
-    font-size: 11px; font-weight: 900;
-    color: white;
-    transform: skew(-8deg);
-    letter-spacing: -0.5px;
-    font-family: 'DM Sans', sans-serif;
-  }
+  .mp-logo-box { width: 36px; height: 36px; border-radius: 3px; background: #00274C; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .mp-logo-inner { font-size: 11px; font-weight: 900; color: white; transform: skew(-8deg); letter-spacing: -0.5px; font-family: 'DM Sans', sans-serif; }
   .mp-logo-inner span { transform: skew(8deg); display: block; }
   .ap-info { flex: 1; }
   .ap-info strong { font-size: 13.5px; color: var(--text); font-weight: 700; display: block; line-height: 1.2; }
-  .ap-info span   { font-size: 11.5px; color: var(--muted); margin-top: 2px; display: block; }
+  .ap-info span { font-size: 11.5px; color: var(--muted); margin-top: 2px; display: block; }
   .ap-arrow { color: var(--gold); font-size: 13px; font-weight: 700; }
 
-  /* ── MiPASS verified user card ── */
-  .user-card {
-    border: 1.5px solid var(--green-bdr);
-    border-radius: 4px;
-    padding: 14px 16px;
-    background: var(--green-bg);
-    display: none;
-    margin-bottom: 18px;
-  }
+  .user-card { border: 1.5px solid var(--green-bdr); border-radius: 4px; padding: 14px 16px; background: var(--green-bg); display: none; margin-bottom: 18px; }
   .user-card.show { display: flex; align-items: center; gap: 14px; }
-  .uc-avatar {
-    width: 34px; height: 34px;
-    border-radius: 3px;
-    background: #00274C;
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
-  }
-  .uc-avatar-inner {
-    font-size: 10px; font-weight: 900;
-    color: white;
-    transform: skew(-8deg);
-    font-family: 'DM Sans', sans-serif;
-  }
+  .uc-avatar { width: 34px; height: 34px; border-radius: 3px; background: #00274C; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .uc-avatar-inner { font-size: 10px; font-weight: 900; color: white; transform: skew(-8deg); font-family: 'DM Sans', sans-serif; }
   .uc-avatar-inner span { transform: skew(8deg); display: block; }
   .uc-info { flex: 1; }
   .uc-info strong { font-size: 13px; color: #14532d; font-weight: 700; display: block; }
-  .uc-info span   { font-size: 11px; color: #15803d; }
-  .uc-verified {
-    background: #dcfce7;
-    border: 1px solid #86efac;
-    border-radius: 20px;
-    padding: 3px 10px;
-    font-size: 10px; font-weight: 700;
-    color: var(--green);
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    flex-shrink: 0;
-  }
+  .uc-info span { font-size: 11px; color: #15803d; }
+  .uc-verified { background: #dcfce7; border: 1px solid #86efac; border-radius: 20px; padding: 3px 10px; font-size: 10px; font-weight: 700; color: var(--green); letter-spacing: 0.06em; text-transform: uppercase; flex-shrink: 0; }
 
-  /* ── Form elements ── */
   .form-group { margin-bottom: 16px; }
-  .form-group label {
-    display: block;
-    font-size: 11px;
-    color: #9a8f82;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    font-weight: 700;
-    margin-bottom: 6px;
-  }
-  .form-group input,
-  .form-group select {
-    width: 100%;
-    padding: 11px 14px;
-    border: 1.5px solid var(--line);
-    border-radius: 4px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 14px;
-    color: var(--text);
-    background: #faf9f7;
-    transition: border 0.15s;
-    outline: none;
-  }
-  .form-group input:focus,
-  .form-group select:focus { border-color: var(--navy); background: #fff; }
-  .form-group input.error  { border-color: var(--red); }
-  .form-group input.autofilled { border-color: var(--green); background: #f0fdf4; }
+  .form-group label { display: block; font-size: 11px; color: #9a8f82; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700; margin-bottom: 6px; }
+  .form-group input, .form-group select { width: 100%; padding: 11px 14px; border: 1.5px solid var(--line); border-radius: 4px; font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--text); background: #faf9f7; transition: border 0.15s; outline: none; }
+  .form-group input:focus, .form-group select:focus { border-color: var(--navy); background: #fff; }
+  .form-group input.error, .form-group select.error { border-color: var(--red); }
   .form-group .field-error { font-size: 11.5px; color: var(--red); margin-top: 5px; display: none; }
   .form-group .field-error.show { display: block; }
-  .form-group .field-hint  { font-size: 11px; color: var(--green); margin-top: 4px; display: none; }
-  .form-group .field-hint.show  { display: block; }
 
-  /* ── Role cards ── */
   .role-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
-  .role-card {
-    border: 1.5px solid var(--line);
-    border-radius: 4px;
-    padding: 18px 16px;
-    cursor: pointer;
-    transition: all 0.15s;
-    position: relative;
-    background: #faf9f7;
-    text-align: center;
-  }
-  .role-card:hover  { border-color: var(--navy); background: #f0ede8; }
-  .role-card.selected { border-color: var(--navy); background: #f0f4fa; box-shadow: 0 0 0 2px rgba(10,22,40,0.08); }
+  .role-card { border: 1.5px solid var(--line); border-radius: 4px; padding: 18px 16px 16px; cursor: pointer; transition: all 0.15s; position: relative; background: #faf9f7; display: flex; flex-direction: column; align-items: flex-start; }
+  .role-card:hover { border-color: var(--navy); background: #f0ede8; }
+  .role-card.selected { border-color: var(--navy); background: #f0f4fa; }
   .role-card input[type=radio] { position: absolute; opacity: 0; width: 0; height: 0; }
-  .role-card .rc-icon  { font-size: 26px; margin-bottom: 8px; display: block; }
-  .role-card .rc-title { font-size: 13.5px; font-weight: 700; color: var(--text); display: block; margin-bottom: 3px; }
+  .role-card .rc-icon { font-size: 24px; margin-bottom: 10px; display: block; }
+  .role-card .rc-title { font-size: 14px; font-weight: 700; color: var(--text); display: block; margin-bottom: 4px; line-height: 1.2; }
+  .role-card .rc-sub { font-size: 11.5px; color: var(--muted); line-height: 1.5; display: block; }
+  .role-badge { position: absolute; top: 10px; right: 10px; background: var(--gold); color: var(--navy); font-size: 9px; font-weight: 800; padding: 2px 7px; border-radius: 2px; letter-spacing: 0.06em; text-transform: uppercase; }
   .role-card.selected .rc-title { color: var(--navy); }
-  .role-card .rc-sub   { font-size: 11px; color: var(--muted); line-height: 1.45; display: block; }
-  .role-card .rc-check {
-    position: absolute; top: 10px; right: 10px;
-    width: 18px; height: 18px;
-    border-radius: 50%;
-    background: var(--navy);
-    display: none; align-items: center; justify-content: center;
-  }
-  .role-card .rc-check::after { content: '✓'; font-size: 10px; color: #fff; font-weight: 800; }
-  .role-card.selected .rc-check { display: flex; }
+  .role-card.selected::after { content: '✓'; position: absolute; bottom: 10px; right: 10px; width: 18px; height: 18px; background: var(--navy); color: #fff; border-radius: 50%; font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
 
-  /* ── Status boxes ── */
   .status-box { border-radius: 4px; padding: 13px 16px; margin-bottom: 16px; display: none; }
   .status-box.show { display: flex; align-items: flex-start; gap: 12px; }
   .status-box.loading { background: #f0f4fa; border: 1px solid #c0d0e8; }
   .status-box.success { background: var(--green-bg); border: 1px solid var(--green-bdr); }
   .status-box.error   { background: var(--red-bg);   border: 1px solid var(--red-bdr); }
-  .status-box.warning { background: var(--amber-bg);  border: 1px solid var(--amber-bdr); }
+  .status-box.warning { background: var(--amber-bg); border: 1px solid var(--amber-bdr); }
   .sb-icon { font-size: 15px; flex-shrink: 0; margin-top: 1px; }
   .sb-body { flex: 1; }
   .sb-body strong { font-size: 13px; font-weight: 700; display: block; margin-bottom: 3px; }
-  .sb-body p      { font-size: 12px; line-height: 1.6; }
+  .sb-body p { font-size: 12px; line-height: 1.6; }
   .status-box.loading strong, .status-box.loading p { color: #1a3a6a; }
   .status-box.success strong, .status-box.success p { color: #14532d; }
   .status-box.error   strong, .status-box.error   p { color: #7f1d1d; }
   .status-box.warning strong, .status-box.warning p { color: #78350f; }
-  .spin-sm {
-    width: 16px; height: 16px;
-    border: 2px solid #c0d0e8;
-    border-top-color: #1a3a6a;
-    border-radius: 50%;
-    animation: spin 0.7s linear infinite;
-    flex-shrink: 0; margin-top: 2px;
-  }
+  .spin-sm { width: 16px; height: 16px; border: 2px solid #c0d0e8; border-top-color: #1a3a6a; border-radius: 50%; animation: spin 0.7s linear infinite; flex-shrink: 0; margin-top: 2px; }
   @keyframes spin { to { transform: rotate(360deg); } }
 
-  /* ── Buttons ── */
-  .btn-primary {
-    width: 100%; padding: 13px 20px;
-    background: var(--navy); color: #fff;
-    border: none; border-radius: 4px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 14px; font-weight: 700;
-    cursor: pointer;
-    transition: background 0.15s;
-    display: flex; align-items: center; justify-content: center; gap: 10px;
-    letter-spacing: 0.02em;
-  }
+  .btn-primary { width: 100%; padding: 13px 20px; background: var(--navy); color: #fff; border: none; border-radius: 4px; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 700; cursor: pointer; transition: background 0.15s; display: flex; align-items: center; justify-content: center; gap: 10px; letter-spacing: 0.02em; }
   .btn-primary:hover:not(:disabled) { background: var(--navy-mid); }
   .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
-  .btn-secondary {
-    width: 100%; padding: 11px 20px;
-    background: none; color: var(--navy);
-    border: 1.5px solid var(--line); border-radius: 4px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 13px; font-weight: 700;
-    cursor: pointer; transition: all 0.15s; margin-top: 10px;
-  }
+  .btn-secondary { width: 100%; padding: 11px 20px; background: none; color: var(--navy); border: 1.5px solid var(--line); border-radius: 4px; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.15s; margin-top: 10px; }
   .btn-secondary:hover { background: var(--cream); border-color: #9a8f82; }
   .btn-row { display: grid; grid-template-columns: auto 1fr; gap: 10px; align-items: center; margin-top: 4px; }
-  .btn-back {
-    background: none; border: 1.5px solid var(--line);
-    color: var(--muted); padding: 12px 16px; border-radius: 4px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 13px; font-weight: 600;
-    cursor: pointer; transition: all 0.15s; white-space: nowrap;
-  }
+  .btn-back { background: none; border: 1.5px solid var(--line); color: var(--muted); padding: 12px 16px; border-radius: 4px; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.15s; white-space: nowrap; }
   .btn-back:hover { border-color: var(--navy); color: var(--navy); }
 
-  /* ── Redirect progress bar ── */
   .redirect-bar-wrap { margin-bottom: 12px; display: none; }
   .redirect-bar-wrap p { font-size: 12px; color: #1a3a6a; margin-bottom: 6px; }
   .redirect-bar { width: 100%; height: 4px; background: #c0d0e8; border-radius: 2px; overflow: hidden; }
   .redirect-fill { height: 100%; background: var(--navy); width: 0%; transition: width 2.5s linear; border-radius: 2px; }
 
-  /* ── Misc ── */
-  .note-box {
-    background: var(--amber-bg); border: 1px solid var(--amber-bdr);
-    border-radius: 4px; padding: 12px 16px;
-    margin-bottom: 16px; font-size: 12px; color: #78350f; line-height: 1.6;
-  }
-  .login-email-row { position: relative; }
-  .login-email-row .autofill-tag {
-    position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
-    font-size: 10px; font-weight: 700;
-    color: var(--green); letter-spacing: 0.06em; text-transform: uppercase;
-    background: #dcfce7; border: 1px solid #86efac;
-    border-radius: 20px; padding: 2px 8px;
-    pointer-events: none;
-  }
+  .note-box { background: var(--amber-bg); border: 1px solid var(--amber-bdr); border-radius: 4px; padding: 12px 16px; margin-bottom: 16px; font-size: 12px; color: #78350f; line-height: 1.6; }
+
   .lr-footer { margin-top: auto; padding-top: 24px; border-top: 1px solid var(--line); }
   .lr-footer p { font-size: 11px; color: #9a8f82; line-height: 1.6; }
   .lr-footer a { color: var(--muted); }
 
-  /* ── Responsive ── */
   @media (max-width: 780px) {
     .login-shell { grid-template-columns: 1fr; }
-    .login-left  { display: none; }
+    .login-left { display: none; }
     .login-right { padding: 32px 24px; }
-    .role-grid   { grid-template-columns: 1fr; }
+    .role-grid { grid-template-columns: 1fr; }
   }
 </style>
 </head>
 <body>
 
-<!-- ═══ HEADER SLOT — populated by micourt-layout-inject.js from layout.html ═══ -->
-<div id="layout-header"></div>
-
-<!-- ═══ PAGE CONTENT ═══════════════════════════════════════════════════════════ -->
 <div class="page-wrap">
   <div class="login-shell">
 
@@ -424,7 +195,7 @@
       <p class="ll-bottom">Authentication is provided through MiPASS — the Michigan State Identity Authentication System. Your identity is verified against the official state registry.</p>
     </div>
 
-    <!-- Right form panel -->
+    <!-- Right panel — all steps -->
     <div class="login-right">
 
       <!-- STEP 0 — Sign in with MiPASS -->
@@ -489,69 +260,55 @@
         </div>
       </div>
 
-      <!-- STEP-LOGIN — Existing account: autofill + sign in -->
-      <div class="step" id="step-login">
-        <div class="step-header">
+      <!-- STEP AUTO-LOGIN — Account found -->
+      <div class="step" id="step-autologin">
+        <div class="step-header" style="margin-bottom:20px">
           <h2>Welcome Back</h2>
-          <p>We found an existing MiCOURT account linked to your MiPASS identity. Sign in below.</p>
+          <p>We found your MiCOURT account linked to this MiPASS identity. Signing you in now…</p>
         </div>
 
-        <div class="user-card show" id="sl-user-card">
+        <div class="user-card show" id="sal-user-card">
           <div class="uc-avatar"><div class="uc-avatar-inner"><span>MI</span></div></div>
           <div class="uc-info">
-            <strong id="sl-uc-name">—</strong>
-            <span id="sl-uc-role">—</span>
+            <strong id="sal-uc-name">—</strong>
+            <span id="sal-uc-role">—</span>
           </div>
           <span class="uc-verified">MiPASS Verified</span>
         </div>
 
-        <div class="form-group">
-          <label>Email Address</label>
-          <div class="login-email-row">
-            <input type="email" id="sl-email" placeholder="Loading…" readonly style="cursor:default;">
-            <span class="autofill-tag" id="sl-autofill-tag" style="display:none;">Autofilled</span>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label>Password</label>
-          <input type="password" id="sl-password" placeholder="Enter your MiCOURT password" autocomplete="current-password">
-          <div class="field-error" id="sl-password-err">Password is required.</div>
-        </div>
-
-        <div class="status-box error" id="sl-error">
-          <span class="sb-icon">⚠️</span>
-          <div class="sb-body"><strong>Sign-In Failed</strong><p id="sl-error-msg"></p></div>
-        </div>
-
-        <div class="status-box loading" id="sl-loading">
+        <div class="status-box loading show" id="sal-loading">
           <div class="spin-sm"></div>
           <div class="sb-body">
-            <strong>Signing you in…</strong>
-            <p>Verifying your credentials. Please wait.</p>
+            <strong id="sal-loading-title">Authenticating…</strong>
+            <p id="sal-loading-msg">Signing you in to your MiCOURT account.</p>
           </div>
         </div>
 
-        <div class="redirect-bar-wrap" id="sl-redirect-bar">
-          <p>Signing you in to MiCOURT…</p>
-          <div class="redirect-bar"><div class="redirect-fill" id="sl-redirect-fill"></div></div>
+        <div class="status-box success" id="sal-success">
+          <span class="sb-icon">✅</span>
+          <div class="sb-body">
+            <strong>Signed In!</strong>
+            <p>Redirecting you to your MiCOURT dashboard…</p>
+          </div>
         </div>
 
-        <button class="btn-primary" id="sl-btn" onclick="submitLogin()">Sign In to MiCOURT →</button>
-
-        <p style="text-align:center;font-size:12px;color:var(--muted);margin-top:14px;">
-          Not you? <a href="#" onclick="resetToStart();return false;" style="color:var(--navy);font-weight:600;">Sign in with a different account</a>
-        </p>
-
-        <div class="lr-footer">
-          <p>
-            <a href="/courts/micourt/help/">Forgot your password?</a> &nbsp;·&nbsp;
-            <a href="/courts/micourt/privacy/">Privacy Policy</a>
-          </p>
+        <div class="status-box error" id="sal-error">
+          <span class="sb-icon">⚠️</span>
+          <div class="sb-body">
+            <strong>Sign-In Error</strong>
+            <p id="sal-error-msg">Something went wrong. Please try again.</p>
+          </div>
         </div>
+
+        <div class="redirect-bar-wrap" id="sal-redirect-bar">
+          <p>Redirecting to your dashboard…</p>
+          <div class="redirect-bar"><div class="redirect-fill" id="sal-redirect-fill"></div></div>
+        </div>
+
+        <button class="btn-secondary" id="sal-retry-btn" style="display:none" onclick="goMipass()">← Try Again with MiPASS</button>
       </div>
 
-      <!-- STEP 1 — Email (new account) -->
+      <!-- STEP 1 — Email -->
       <div class="step" id="step-1">
         <div class="step-indicator" id="step-indicator"></div>
 
@@ -572,7 +329,6 @@
         <div class="form-group">
           <label>Email Address</label>
           <input type="email" id="f-email" placeholder="you@example.com" autocomplete="email">
-          <div class="field-hint" id="f-email-hint">✓ Autofilled from your MiPASS profile</div>
           <div class="field-error" id="f-email-err">Please enter a valid email address.</div>
         </div>
         <div class="form-group">
@@ -589,7 +345,7 @@
         <button class="btn-primary" onclick="stepEmailNext()">Continue →</button>
       </div>
 
-      <!-- STEP 2 — Role + Bar -->
+      <!-- STEP 2 — Role -->
       <div class="step" id="step-2">
         <div class="step-indicator" id="step-indicator-2"></div>
 
@@ -601,14 +357,14 @@
         <div class="role-grid">
           <label class="role-card" id="rc-public" onclick="selectRole('public')">
             <input type="radio" name="role" value="public">
-            <div class="rc-check"></div>
+            <span class="role-badge">Common</span>
             <span class="rc-icon">👤</span>
             <span class="rc-title">Portal User</span>
-            <span class="rc-sub">Access your cases, pay fines, or file documents.</span>
+            <span class="rc-sub">Access your cases, pay fines, or file documents as an individual.</span>
           </label>
           <label class="role-card" id="rc-bar" onclick="selectRole('bar')">
             <input type="radio" name="role" value="bar">
-            <div class="rc-check"></div>
+            <span class="role-badge">Professional</span>
             <span class="rc-icon">⚖️</span>
             <span class="rc-title">Bar Member</span>
             <span class="rc-sub">Licensed attorney, judge, or court officer in the State Bar registry.</span>
@@ -617,15 +373,13 @@
 
         <div id="bar-verify-panel" style="display:none;">
           <div class="note-box">
-            Your bar number will be looked up against the Michigan State Bar Member registry. Your PIN must match the record on file.
+            Your bar number will be checked against the Michigan State Bar Member registry. Your MiPASS PIN must match the record on file.
           </div>
-
           <div class="form-group">
             <label>Michigan State Bar Number</label>
             <input type="text" id="f-bar" placeholder="e.g. P12345" style="font-family:monospace;font-size:15px;letter-spacing:0.04em;" oninput="clearBarResult()">
             <div class="field-error" id="f-bar-err"></div>
           </div>
-
           <div class="status-box loading" id="bar-loading">
             <div class="spin-sm"></div>
             <div class="sb-body">
@@ -647,7 +401,6 @@
               <p id="bar-error-msg">—</p>
             </div>
           </div>
-
           <button class="btn-primary" id="bar-verify-btn" onclick="verifyBarNumber()" style="margin-bottom:10px;">
             Verify Bar Number →
           </button>
@@ -678,10 +431,12 @@
             <p id="s3-loading-msg">Please wait while we set up your MiCOURT access.</p>
           </div>
         </div>
+
         <div class="status-box error" id="s3-error">
           <span class="sb-icon">⚠️</span>
           <div class="sb-body"><strong>Account Creation Failed</strong><p id="s3-error-msg"></p></div>
         </div>
+
         <div class="status-box success" id="s3-success">
           <span class="sb-icon">✅</span>
           <div class="sb-body">
@@ -702,11 +457,7 @@
   </div><!-- /login-shell -->
 </div><!-- /page-wrap -->
 
-<!-- ═══ FOOTER SLOT — populated by micourt-layout-inject.js from layout.html ═══ -->
-<div id="layout-footer"></div>
-
-
-<!-- ═══ FIREBASE ═══════════════════════════════════════════════════════════════ -->
+<!-- Firebase -->
 <script type="module">
   import { initializeApp }         from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
   import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword }
@@ -727,303 +478,324 @@
   const auth = getAuth(app);
   const db   = getFirestore(app);
 
-  window._micourtAuth       = auth;
-  window._micourtDb         = db;
-  window._serverTimestamp   = serverTimestamp;
-  window._doc               = doc;
-  window._getDoc            = getDoc;
-  window._setDoc            = setDoc;
-  window._query             = query;
-  window._collection        = collection;
-  window._where             = where;
-  window._getDocs           = getDocs;
-  window._createUser        = createUserWithEmailAndPassword;
-  window._signIn            = signInWithEmailAndPassword;
-  window._fbReady           = true;
+  window._micourtAuth      = auth;
+  window._micourtDb        = db;
+  window._serverTimestamp  = serverTimestamp;
+  window._doc              = doc;
+  window._getDoc           = getDoc;
+  window._setDoc           = setDoc;
+  window._query            = query;
+  window._collection       = collection;
+  window._where            = where;
+  window._getDocs          = getDocs;
+  window._createUser       = createUserWithEmailAndPassword;
+  window._signIn           = signInWithEmailAndPassword;
+  window._fbReady          = true;
   document.dispatchEvent(new Event('fbReady'));
 </script>
 
-
-<!-- ═══ PAGE LOGIC ═════════════════════════════════════════════════════════════ -->
 <script>
   const MIPASS_LOGIN_URL = 'https://miservices.github.io/mipass/login/';
   const THIS_URL         = window.location.href.split('?')[0];
   const SITE_NAME        = 'MiCOURT — Michigan Court Online Portal';
 
-  let mipassData          = null;
-  let selectedRole        = null;
-  let existingAccountData = null;
+  let mipassData   = null;
+  let selectedRole = null;
 
-  /* ── Utility ── */
   function show(id)   { const el=document.getElementById(id); if(el) el.classList.add('show'); }
   function hide(id)   { const el=document.getElementById(id); if(el) el.classList.remove('show'); }
   function showEl(id) { const el=document.getElementById(id); if(el) el.style.display=''; }
   function hideEl(id) { const el=document.getElementById(id); if(el) el.style.display='none'; }
 
-  function setLoading(titleId, msgId, title, msg) {
-    if(titleId) document.getElementById(titleId).textContent = title;
-    if(msgId)   document.getElementById(msgId).textContent   = msg;
-  }
   function fieldErr(fieldId, errId, msg) {
-    const f=document.getElementById(fieldId), e=document.getElementById(errId);
-    if(msg){ f.classList.add('error'); e.textContent=msg; e.classList.add('show'); }
-    else   { f.classList.remove('error'); e.classList.remove('show'); }
+    const f = document.getElementById(fieldId);
+    const e = document.getElementById(errId);
+    if(msg) { f.classList.add('error'); e.textContent=msg; e.classList.add('show'); }
+    else    { f.classList.remove('error'); e.classList.remove('show'); }
   }
   function generatePassword(len=18) {
-    const chars='ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#$%';
-    let pw=''; const arr=new Uint8Array(len); crypto.getRandomValues(arr);
-    arr.forEach(b => pw+=chars[b%chars.length]); return pw;
+    const chars = 'ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#$%';
+    let pw = '';
+    const arr = new Uint8Array(len);
+    crypto.getRandomValues(arr);
+    arr.forEach(b => pw += chars[b % chars.length]);
+    return pw;
   }
-
-  /* ── Step indicator ── */
   function buildIndicator(containerId, current) {
-    const labels=['Email','Role','Done']; let html='';
-    for(let i=0;i<labels.length;i++){
-      let cls = i+1<current?'done':i+1===current?'active':'';
-      html+=`<div class="si-dot ${cls}">${cls==='done'?'✓':(i+1)}</div>`;
-      if(i<labels.length-1) html+=`<div class="si-line${i+1<current?' done':''}"></div>`;
+    const labels = ['Email', 'Role', 'Done'];
+    let html = '';
+    for (let i = 0; i < labels.length; i++) {
+      let cls = i+1 < current ? 'done' : (i+1 === current ? 'active' : '');
+      html += `<div class="si-dot ${cls}">${cls==='done'?'✓':(i+1)}</div>`;
+      if (i < labels.length-1) html += `<div class="si-line${i+1<current?' done':''}"></div>`;
     }
-    const el=document.getElementById(containerId); if(el) el.innerHTML=html;
+    const el = document.getElementById(containerId);
+    if (el) el.innerHTML = html;
   }
-
-  /* ── Navigation ── */
   function goToStep(n) {
-    document.querySelectorAll('.step').forEach(s=>s.classList.remove('active'));
-    const t=document.getElementById('step-'+n); if(t) t.classList.add('active');
-    if(typeof n==='number'&&n>=1){
-      buildIndicator('step-indicator',n);
-      buildIndicator('step-indicator-2',n);
+    document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+    const target = document.getElementById('step-' + n);
+    if (target) target.classList.add('active');
+    if (typeof n === 'number' && n >= 1) {
+      buildIndicator('step-indicator',   n);
+      buildIndicator('step-indicator-2', n);
     }
   }
-  window.goToStep=goToStep;
-
-  function goToStepLogin() {
-    document.querySelectorAll('.step').forEach(s=>s.classList.remove('active'));
-    document.getElementById('step-login').classList.add('active');
-  }
+  window.goToStep = goToStep;
 
   function goMipass() {
-    window.location.href = MIPASS_LOGIN_URL
-      +'?redirect_uri='+encodeURIComponent(THIS_URL)
-      +'&site_name='+encodeURIComponent(SITE_NAME);
+    const url = MIPASS_LOGIN_URL
+      + '?redirect_uri=' + encodeURIComponent(THIS_URL)
+      + '&site_name='    + encodeURIComponent(SITE_NAME);
+    window.location.href = url;
   }
-  window.goMipass=goMipass;
+  window.goMipass = goMipass;
 
-  function resetToStart() {
-    mipassData=null; existingAccountData=null;
-    document.getElementById('s0-btn').disabled=false;
-    document.getElementById('s0-provider').style.opacity='';
-    document.getElementById('s0-provider').style.pointerEvents='';
-    hide('s0-loading'); hide('s0-user-card'); hide('s0-error');
-    goToStep(0);
-  }
-  window.resetToStart=resetToStart;
-
-  /* ── Account lookup by PIN ── */
   async function checkExistingAccount(pin) {
-    if(!window._fbReady) await new Promise(r=>document.addEventListener('fbReady',r,{once:true}));
+    if (!window._fbReady) await new Promise(r => document.addEventListener('fbReady', r, {once:true}));
     try {
-      const snap=await window._getDocs(
-        window._query(window._collection(window._micourtDb,'accounts'),
-                      window._where('mipassPin','==',String(pin)))
-      );
-      if(!snap.empty){ const d=snap.docs[0]; return{uid:d.id,...d.data()}; }
-    } catch(e){ console.warn('Account lookup failed:',e); }
-    return null;
+      const q    = window._query(window._collection(window._micourtDb, 'accounts'), window._where('mipassPin', '==', String(pin)));
+      const snap = await window._getDocs(q);
+      if (!snap.empty) {
+        const d = snap.docs[0].data();
+        return { found: true, uid: snap.docs[0].id, email: d.email, name: d.name, role: d.role, barNumber: d.barNumber };
+      }
+    } catch(e) { console.warn('Account check failed:', e); }
+    return { found: false };
   }
 
-  /* ── Email step ── */
-  function stepEmailNext() {
-    const email=document.getElementById('f-email').value.trim();
-    const email2=document.getElementById('f-email2').value.trim();
-    let ok=true;
-    fieldErr('f-email','f-email-err',null); fieldErr('f-email2','f-email2-err',null); hide('s1-error');
-    if(!email||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
-      fieldErr('f-email','f-email-err','Please enter a valid email address.'); ok=false;
+  async function doAutoLogin(accountData) {
+    document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+    document.getElementById('step-autologin').classList.add('active');
+    document.getElementById('sal-uc-name').textContent = accountData.name;
+    document.getElementById('sal-uc-role').textContent = 'Role: ' + accountData.role;
+    show('sal-loading');
+    hide('sal-success'); hide('sal-error');
+    hideEl('sal-retry-btn');
+    document.getElementById('sal-redirect-bar').style.display = 'none';
+    document.getElementById('sal-loading-title').textContent = 'Signing you in…';
+    document.getElementById('sal-loading-msg').textContent   = 'Authenticating your MiCOURT account via MiPASS.';
+
+    if (!window._fbReady) await new Promise(r => document.addEventListener('fbReady', r, {once:true}));
+
+    try {
+      await window._signIn(window._micourtAuth, accountData.email, String(mipassData.pin));
+      sessionStorage.setItem('micourt_user', JSON.stringify({
+        uid: accountData.uid, pin: mipassData.pin,
+        name: accountData.name, email: accountData.email,
+        role: accountData.role, barNumber: accountData.barNumber || null,
+        loginAt: new Date().toISOString()
+      }));
+      hide('sal-loading');
+      show('sal-success');
+      document.getElementById('sal-redirect-bar').style.display = 'block';
+      setTimeout(() => { document.getElementById('sal-redirect-fill').style.width = '100%'; }, 50);
+      setTimeout(() => { window.location.href = '/courts/micourt/dashboard/'; }, 2700);
+    } catch(err) {
+      hide('sal-loading');
+      let msg = 'Could not sign you in automatically. ';
+      if (err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
+        msg += 'Credential mismatch. Please re-authenticate.';
+      } else { msg += (err.message || 'Unknown error.'); }
+      document.getElementById('sal-error-msg').textContent = msg;
+      show('sal-error');
+      showEl('sal-retry-btn');
     }
-    if(ok&&email!==email2){ fieldErr('f-email2','f-email2-err','Email addresses do not match.'); ok=false; }
-    if(!ok) return;
+  }
+
+  function stepEmailNext() {
+    const email  = document.getElementById('f-email').value.trim();
+    const email2 = document.getElementById('f-email2').value.trim();
+    let ok = true;
+    fieldErr('f-email',  'f-email-err',  null);
+    fieldErr('f-email2', 'f-email2-err', null);
+    hide('s1-error');
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      fieldErr('f-email', 'f-email-err', 'Please enter a valid email address.'); ok=false;
+    }
+    if (ok && email !== email2) {
+      fieldErr('f-email2', 'f-email2-err', 'Email addresses do not match.'); ok=false;
+    }
+    if (!ok) return;
     goToStep(2);
   }
-  window.stepEmailNext=stepEmailNext;
+  window.stepEmailNext = stepEmailNext;
 
-  /* ── Role selection ── */
-  let verifiedBarData=null;
-  function selectRole(role){
-    selectedRole=role;
-    document.querySelectorAll('.role-card').forEach(c=>c.classList.remove('selected'));
-    document.getElementById('rc-'+role)?.classList.add('selected');
-    const panel=document.getElementById('bar-verify-panel');
-    if(role==='bar'){ panel.style.display='block'; verifiedBarData=null; hide('bar-loading');hide('bar-success');hide('bar-error'); }
-    else            { panel.style.display='none';  verifiedBarData=null; }
-  }
-  window.selectRole=selectRole;
+  let verifiedBarData = null;
 
-  function clearBarResult(){ verifiedBarData=null; hide('bar-success');hide('bar-error'); fieldErr('f-bar','f-bar-err',null); }
-  window.clearBarResult=clearBarResult;
-
-  /* ── Bar verification ── */
-  async function verifyBarNumber(){
-    const barInput=document.getElementById('f-bar').value.trim().toUpperCase();
-    fieldErr('f-bar','f-bar-err',null); hide('bar-success');hide('bar-error');
-    if(!barInput){ fieldErr('f-bar','f-bar-err','Please enter your bar number.'); return; }
-    const btn=document.getElementById('bar-verify-btn'); btn.disabled=true;
-    show('bar-loading');
-    if(!window._fbReady) await new Promise(r=>document.addEventListener('fbReady',r,{once:true}));
-    try {
-      const docSnap=await window._getDoc(window._doc(window._micourtDb,'sbm',barInput));
-      hide('bar-loading');
-      if(!docSnap.exists()){
-        show('bar-error');
-        document.getElementById('bar-error-msg').textContent='Bar number "'+barInput+'" was not found in the Michigan State Bar Member registry.';
-        btn.disabled=false; return;
-      }
-      const d=docSnap.data();
-      if(String(d.pin)!==String(mipassData.pin)){
-        show('bar-error');
-        document.getElementById('bar-error-msg').textContent='This bar number is registered to a different identity. Your MiPASS PIN does not match the record on file.';
-        btn.disabled=false; return;
-      }
-      verifiedBarData={barNumber:barInput,name:d.name||mipassData.name,role:d.role||'Bar Member',status:d.status||'Unknown'};
-      document.getElementById('bar-success-name').textContent  =d.name+' — '+verifiedBarData.role;
-      document.getElementById('bar-success-detail').textContent='Status: '+verifiedBarData.status+' · Bar No. '+barInput;
-      show('bar-success'); btn.disabled=false;
-    } catch(err){
-      hide('bar-loading'); show('bar-error');
-      document.getElementById('bar-error-msg').textContent='Lookup failed: '+(err.message||'Unknown error.');
-      btn.disabled=false;
+  function selectRole(role) {
+    selectedRole = role;
+    document.querySelectorAll('.role-card').forEach(c => c.classList.remove('selected'));
+    const el = document.getElementById('rc-' + role);
+    if (el) el.classList.add('selected');
+    const panel = document.getElementById('bar-verify-panel');
+    if (role === 'bar') {
+      panel.style.display = 'block';
+      verifiedBarData = null;
+      hide('bar-loading'); hide('bar-success'); hide('bar-error');
+    } else {
+      panel.style.display = 'none';
+      verifiedBarData = null;
     }
   }
-  window.verifyBarNumber=verifyBarNumber;
+  window.selectRole = selectRole;
 
-  function stepRoleNext(){
+  function clearBarResult() {
+    verifiedBarData = null;
+    hide('bar-success'); hide('bar-error');
+    fieldErr('f-bar', 'f-bar-err', null);
+  }
+  window.clearBarResult = clearBarResult;
+
+  async function verifyBarNumber() {
+    const barInput = document.getElementById('f-bar').value.trim().toUpperCase();
+    fieldErr('f-bar', 'f-bar-err', null);
+    hide('bar-success'); hide('bar-error');
+    if (!barInput) { fieldErr('f-bar', 'f-bar-err', 'Please enter your bar number.'); return; }
+    const btn = document.getElementById('bar-verify-btn');
+    btn.disabled = true;
+    show('bar-loading');
+    if (!window._fbReady) await new Promise(r => document.addEventListener('fbReady', r, {once:true}));
+    try {
+      const docSnap = await window._getDoc(window._doc(window._micourtDb, 'sbm', barInput));
+      hide('bar-loading');
+      if (!docSnap.exists()) {
+        show('bar-error');
+        document.getElementById('bar-error-msg').textContent = 'Bar number "' + barInput + '" was not found in the Michigan State Bar Member registry.';
+        btn.disabled = false; return;
+      }
+      const d = docSnap.data();
+      if (String(d.pin) !== String(mipassData.pin)) {
+        show('bar-error');
+        document.getElementById('bar-error-msg').textContent = 'This bar number is registered to a different identity. Your MiPASS PIN does not match the record on file.';
+        btn.disabled = false; return;
+      }
+      verifiedBarData = { barNumber: barInput, name: d.name || mipassData.name, role: d.role || 'Bar Member', status: d.status || 'Unknown' };
+      document.getElementById('bar-success-name').textContent   = d.name + ' — ' + verifiedBarData.role;
+      document.getElementById('bar-success-detail').textContent = 'Status: ' + verifiedBarData.status + ' · Bar No. ' + barInput;
+      show('bar-success');
+      btn.disabled = false;
+    } catch(err) {
+      hide('bar-loading');
+      show('bar-error');
+      document.getElementById('bar-error-msg').textContent = 'Lookup failed: ' + (err.message || 'Unknown error.');
+      btn.disabled = false;
+    }
+  }
+  window.verifyBarNumber = verifyBarNumber;
+
+  function stepRoleNext() {
     hide('s2-error');
-    if(!selectedRole){ document.getElementById('s2-error-msg').textContent='Please select your role to continue.'; show('s2-error'); return; }
-    if(selectedRole==='bar'&&!verifiedBarData){ document.getElementById('s2-error-msg').textContent='Please verify your bar number before continuing.'; show('s2-error'); return; }
+    if (!selectedRole) {
+      document.getElementById('s2-error-msg').textContent = 'Please select your role to continue.';
+      show('s2-error'); return;
+    }
+    if (selectedRole === 'bar' && !verifiedBarData) {
+      document.getElementById('s2-error-msg').textContent = 'Please verify your bar number before continuing.';
+      show('s2-error'); return;
+    }
     submitAccount();
   }
-  window.stepRoleNext=stepRoleNext;
+  window.stepRoleNext = stepRoleNext;
 
-  /* ── Sign in (existing account) ── */
-  async function submitLogin(){
-    const password=document.getElementById('sl-password').value;
-    const email=document.getElementById('sl-email').value;
-    hide('sl-error'); fieldErr('sl-password','sl-password-err',null);
-    if(!password){ fieldErr('sl-password','sl-password-err','Password is required.'); return; }
-    document.getElementById('sl-btn').disabled=true; show('sl-loading');
-    if(!window._fbReady) await new Promise(r=>document.addEventListener('fbReady',r,{once:true}));
-    try {
-      const cred=await window._signIn(window._micourtAuth,email,password);
-      hide('sl-loading');
-      sessionStorage.setItem('micourt_user',JSON.stringify({
-        uid:cred.user.uid, pin:mipassData?.pin, name:existingAccountData?.name,
-        email, role:existingAccountData?.role, barNumber:existingAccountData?.barNumber||null,
-        loginAt:new Date().toISOString()
-      }));
-      document.getElementById('sl-redirect-bar').style.display='block';
-      setTimeout(()=>{ document.getElementById('sl-redirect-fill').style.width='100%'; },50);
-      setTimeout(()=>{ window.location.href='/courts/micourt/dashboard/'; },2700);
-    } catch(err){
-      hide('sl-loading'); document.getElementById('sl-btn').disabled=false;
-      let msg='Sign-in failed. Please check your password and try again.';
-      if(err.code==='auth/wrong-password'||err.code==='auth/invalid-credential') msg='Incorrect password. Please try again.';
-      else if(err.code==='auth/too-many-requests') msg='Too many failed attempts. Please wait a moment before trying again.';
-      document.getElementById('sl-error-msg').textContent=msg; show('sl-error');
-    }
-  }
-  window.submitLogin=submitLogin;
+  async function submitAccount() {
+    goToStep(3);
+    hide('s3-error'); hide('s3-success');
+    hideEl('s3-redirect-bar'); hideEl('s3-retry-btn');
+    show('s3-loading');
+    const email     = document.getElementById('f-email').value.trim();
+    const pin       = mipassData?.pin  || null;
+    const dob       = mipassData?.dob  || null;
+    const isBar     = selectedRole === 'bar' && verifiedBarData;
+    const name      = isBar ? verifiedBarData.name   : (mipassData?.name || '—');
+    const roleLabel = isBar ? verifiedBarData.role   : 'Portal User';
+    const barNumber = isBar ? verifiedBarData.barNumber : null;
+    const barStatus = isBar ? verifiedBarData.status    : null;
+    const password  = String(pin); // PIN-as-password for passwordless MiPASS flow
 
-  /* ── Create new account ── */
-  async function submitAccount(){
-    goToStep(3); hide('s3-error');hide('s3-success'); hideEl('s3-redirect-bar');hideEl('s3-retry-btn'); show('s3-loading');
-    const email=document.getElementById('f-email').value.trim();
-    const password=generatePassword();
-    const pin=mipassData?.pin||null, dob=mipassData?.dob||null;
-    const isBar=selectedRole==='bar'&&verifiedBarData;
-    const name=isBar?verifiedBarData.name:(mipassData?.name||'—');
-    const roleLabel=isBar?verifiedBarData.role:'Portal User';
-    const barNumber=isBar?verifiedBarData.barNumber:null;
-    const barStatus=isBar?verifiedBarData.status:null;
-    if(!window._fbReady) await new Promise(r=>document.addEventListener('fbReady',r,{once:true}));
+    if (!window._fbReady) await new Promise(r => document.addEventListener('fbReady', r, {once:true}));
+
     try {
-      setLoading('s3-loading-title','s3-loading-msg','Creating your account…','Registering your MiCOURT credentials.');
-      const cred=await window._createUser(window._micourtAuth,email,password);
-      const uid=cred.user.uid;
-      setLoading('s3-loading-title','s3-loading-msg','Saving your profile…','Writing your account information to the registry.');
-      await window._setDoc(window._doc(window._micourtDb,'accounts',uid),{
-        name,email,role:roleLabel,pin,dob,barNumber,barStatus,
-        createdAt:window._serverTimestamp(), lastLogin:window._serverTimestamp(),
-        mipassPin:pin, robloxUser:mipassData?.robloxUsername||null,
+      document.getElementById('s3-loading-title').textContent = 'Creating your account…';
+      document.getElementById('s3-loading-msg').textContent   = 'Registering your MiCOURT credentials.';
+      const cred = await window._createUser(window._micourtAuth, email, password);
+      const uid  = cred.user.uid;
+
+      document.getElementById('s3-loading-title').textContent = 'Saving your profile…';
+      document.getElementById('s3-loading-msg').textContent   = 'Writing your account information to the registry.';
+      await window._setDoc(window._doc(window._micourtDb, 'accounts', uid), {
+        name, email, role: roleLabel, pin, dob, barNumber, barStatus,
+        createdAt: window._serverTimestamp(), lastLogin: window._serverTimestamp(),
+        mipassPin: pin, robloxUser: mipassData?.robloxUsername || null,
       });
-      sessionStorage.setItem('micourt_user',JSON.stringify({uid,pin,name,email,role:roleLabel,barNumber,loginAt:new Date().toISOString()}));
-      hide('s3-loading'); show('s3-success');
-      document.getElementById('s3-redirect-bar').style.display='block';
-      setTimeout(()=>{ document.getElementById('s3-redirect-fill').style.width='100%'; },50);
-      setTimeout(()=>{ window.location.href='/courts/micourt/dashboard/'; },2700);
-    } catch(err){
+
+      sessionStorage.setItem('micourt_user', JSON.stringify({
+        uid, pin, name, email, role: roleLabel, barNumber,
+        loginAt: new Date().toISOString()
+      }));
+
       hide('s3-loading');
-      let msg=err.message||'An unexpected error occurred.';
-      if(err.code==='auth/email-already-in-use') msg='An account already exists with this email address. Please sign in instead, or use a different email.';
-      else if(err.code==='auth/invalid-email') msg='The email address you entered is not valid.';
-      document.getElementById('s3-error-msg').textContent=msg; show('s3-error'); showEl('s3-retry-btn');
+      show('s3-success');
+      document.getElementById('s3-redirect-bar').style.display = 'block';
+      setTimeout(() => { document.getElementById('s3-redirect-fill').style.width = '100%'; }, 50);
+      setTimeout(() => { window.location.href = '/courts/micourt/dashboard/'; }, 2700);
+    } catch(err) {
+      hide('s3-loading');
+      let msg = err.message || 'An unexpected error occurred.';
+      if (err.code === 'auth/email-already-in-use') msg = 'An account already exists with this email address. Please sign in instead, or use a different email.';
+      else if (err.code === 'auth/invalid-email')   msg = 'The email address you entered is not valid.';
+      document.getElementById('s3-error-msg').textContent = msg;
+      show('s3-error');
+      showEl('s3-retry-btn');
     }
   }
-  window.submitAccount=submitAccount;
+  window.submitAccount = submitAccount;
 
-  function retryAccountCreation(){ hide('s3-error');hideEl('s3-retry-btn');submitAccount(); }
-  window.retryAccountCreation=retryAccountCreation;
+  function retryAccountCreation() { hide('s3-error'); hideEl('s3-retry-btn'); submitAccount(); }
+  window.retryAccountCreation = retryAccountCreation;
 
-  /* ── Init: called on DOMContentLoaded ── */
-  async function init(){
-    const params=new URLSearchParams(window.location.search);
-    const pin=params.get('mipass_pin'), name=params.get('mipass_name'),
-          dob=params.get('mipass_dob'), user=params.get('mipass_user'),
-          email=params.get('mipass_email');
+  async function init() {
+    const params  = new URLSearchParams(window.location.search);
+    const pin     = params.get('mipass_pin');
+    const name    = params.get('mipass_name');
+    const dob     = params.get('mipass_dob');
+    const user    = params.get('mipass_user');
+    const mpEmail = params.get('mipass_email');
 
-    if(!pin||!name) return;
+    if (!pin || !name) return;
 
-    window.history.replaceState({},'',window.location.pathname);
-    mipassData={pin,name,dob,robloxUsername:user,email:email||null};
+    window.history.replaceState({}, '', window.location.pathname);
+    mipassData = { pin, name, dob, robloxUsername: user, email: mpEmail || '' };
 
-    document.getElementById('s0-btn').disabled=true;
-    document.getElementById('s0-provider').style.opacity='0.4';
-    document.getElementById('s0-provider').style.pointerEvents='none';
-    setLoading('s0-loading-title','s0-loading-msg','Verifying your MiPASS identity…','Please wait while we confirm your details.');
+    document.getElementById('s0-btn').disabled = true;
+    document.getElementById('s0-provider').style.opacity = '0.4';
+    document.getElementById('s0-provider').style.pointerEvents = 'none';
+    document.getElementById('s0-loading-title').textContent = 'Checking your MiCOURT account…';
+    document.getElementById('s0-loading-msg').textContent   = 'Looking up your identity in the portal registry.';
     show('s0-loading');
 
-    const existing=await checkExistingAccount(pin);
-    hide('s0-loading');
-    document.getElementById('s0-uc-name').textContent=name;
-    document.getElementById('s0-uc-pin').textContent='PIN: '+pin;
-    show('s0-user-card');
+    if (!window._fbReady) await new Promise(r => document.addEventListener('fbReady', r, {once:true}));
 
-    if(existing){
-      existingAccountData=existing;
-      setTimeout(()=>{
-        document.getElementById('sl-uc-name').textContent=existing.name||name;
-        document.getElementById('sl-uc-role').textContent=existing.role||'Portal User';
-        const autofillEmail=existing.email||email||'';
-        const emailInput=document.getElementById('sl-email');
-        emailInput.value=autofillEmail;
-        if(autofillEmail){ emailInput.classList.add('autofilled'); document.getElementById('sl-autofill-tag').style.display=''; }
-        goToStepLogin();
-      },600);
+    const existing = await checkExistingAccount(pin);
+
+    if (existing.found) {
+      await doAutoLogin(existing);
     } else {
-      setTimeout(()=>{
-        document.getElementById('s1-uc-name').textContent=name;
-        document.getElementById('s1-uc-pin').textContent='PIN: '+pin;
-        if(email){
-          const ef=document.getElementById('f-email');
-          ef.value=email; ef.classList.add('autofilled');
-          document.getElementById('f-email2').value=email;
-          document.getElementById('f-email-hint').classList.add('show');
-        }
-        goToStep(1);
-      },600);
+      hide('s0-loading');
+      document.getElementById('s0-uc-name').textContent = name;
+      document.getElementById('s0-uc-pin').textContent  = 'PIN: ' + pin;
+      show('s0-user-card');
+      document.getElementById('s1-uc-name').textContent = name;
+      document.getElementById('s1-uc-pin').textContent  = 'PIN: ' + pin;
+      if (mpEmail) {
+        document.getElementById('f-email').value  = mpEmail;
+        document.getElementById('f-email2').value = mpEmail;
+      }
+      setTimeout(() => { goToStep(1); }, 600);
     }
   }
 
-  window.addEventListener('DOMContentLoaded',init);
+  window.addEventListener('DOMContentLoaded', init);
 </script>
 </body>
 </html>
