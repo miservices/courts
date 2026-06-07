@@ -1,0 +1,308 @@
+<!--
+  ╔══════════════════════════════════════════════════════════════════╗
+  ║  MiCOURT  —  Shared Layout Partial  (layout.html)               ║
+  ║  Designed and maintained separately from page content.           ║
+  ║  Injected at runtime by micourt-layout-inject.js                 ║
+  ║                                                                  ║
+  ║  Slots populated by this file:                                   ║
+  ║    <div id="layout-header"></div>   ← banner + header + nav      ║
+  ║    <div id="layout-footer"></div>   ← footer                     ║
+  ╚══════════════════════════════════════════════════════════════════╝
+-->
+
+<!-- ═══════════════════════════════════════════════════
+     LAYOUT STYLES
+     All header/footer/nav CSS lives here exclusively.
+     Pages only need body, page-wrap, and their own
+     component styles — nothing from this block.
+     ═══════════════════════════════════════════════════ -->
+<style id="layout-styles">
+
+  /* ── Shared tokens (header/footer need these; pages inherit them) ── */
+  :root {
+    --layout-navy:       #0a1628;
+    --layout-navy-mid:   #0d1f3c;
+    --layout-navy-light: #112240;
+    --layout-border:     #1e3a5f;
+    --layout-gold:       #c8a84b;
+    --layout-gold-light: #d4b85e;
+    --layout-blue-muted: #7a9bbf;
+    --layout-cream:      #f4f1ec;
+    --layout-text:       #1a1a1a;
+  }
+
+  /* Map layout tokens → generic names so page CSS can reference either */
+  :root {
+    --navy:       var(--layout-navy);
+    --navy-mid:   var(--layout-navy-mid);
+    --navy-light: var(--layout-navy-light);
+    --border:     var(--layout-border);
+    --gold:       var(--layout-gold);
+    --gold-light: var(--layout-gold-light);
+    --blue-muted: var(--layout-blue-muted);
+    --cream:      var(--layout-cream);
+  }
+
+  /* ── Base reset (only what header/footer touch) ── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--layout-cream);
+    color: var(--layout-text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── RP disclaimer banner ── */
+  .rp-banner {
+    background: #071220;
+    color: var(--layout-blue-muted);
+    text-align: center;
+    padding: 8px 20px;
+    font-size: 11px;
+    letter-spacing: 0.01em;
+    border-bottom: 1px solid var(--layout-border);
+    line-height: 1.5;
+  }
+
+  /* ── Site header ── */
+  .layout-header { background: var(--layout-navy); }
+
+  .header-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 22px 40px 18px;
+    border-bottom: 1px solid var(--layout-border);
+  }
+
+  .logo-text h1 {
+    font-family: 'Merriweather', serif;
+    color: #fff;
+    font-size: 22px;
+    font-weight: 300;
+    letter-spacing: 0.01em;
+  }
+  .logo-text p {
+    color: var(--layout-blue-muted);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-top: 3px;
+  }
+
+  .header-right { text-align: right; }
+  .header-right p {
+    color: var(--layout-blue-muted);
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .header-right .layout-date {
+    color: var(--layout-gold);
+    font-size: 13px;
+    margin-top: 3px;
+  }
+
+  /* ── Navigation bar ── */
+  .layout-nav {
+    background: var(--layout-navy-mid);
+    display: flex;
+    align-items: center;
+    padding: 0 40px;
+    position: relative;
+    z-index: 100;
+  }
+
+  .layout-nav > a {
+    color: #a0b8d0;
+    font-size: 12.5px;
+    padding: 14px 18px;
+    text-decoration: none;
+    letter-spacing: 0.04em;
+    border-bottom: 3px solid transparent;
+    transition: color 0.15s, border-color 0.15s;
+    white-space: nowrap;
+  }
+  .layout-nav > a:hover { color: #fff; border-bottom-color: var(--layout-gold); }
+  .layout-nav > a.active { color: #fff; border-bottom-color: var(--layout-gold); }
+
+  .nav-right { margin-left: auto; display: flex; gap: 8px; align-items: center; }
+
+  .nav-btn {
+    background: var(--layout-gold);
+    color: var(--layout-navy);
+    padding: 8px 18px;
+    border-radius: 3px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-decoration: none;
+    border-bottom: none !important;
+    white-space: nowrap;
+    transition: background 0.15s;
+  }
+  .nav-btn:hover { background: var(--layout-gold-light) !important; }
+
+  /* ── Dropdown menus ── */
+  .nav-dropdown { position: relative; display: inline-block; }
+
+  .nav-dropdown > a {
+    color: #a0b8d0;
+    font-size: 12.5px;
+    padding: 14px 18px;
+    text-decoration: none;
+    letter-spacing: 0.04em;
+    border-bottom: 3px solid transparent;
+    transition: color 0.15s, border-color 0.15s;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+  }
+  .nav-dropdown > a::after {
+    content: '▾';
+    font-size: 9px;
+    color: var(--layout-blue-muted);
+    font-weight: 700;
+    margin-top: 1px;
+  }
+  .nav-dropdown:hover > a { color: #fff; }
+  .nav-dropdown:hover > a::after { color: var(--layout-gold); }
+
+  .dropdown-menu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background: var(--layout-navy-mid);
+    border: 1px solid var(--layout-border);
+    border-top: 2px solid var(--layout-gold);
+    min-width: 210px;
+    z-index: 200;
+    box-shadow: 0 8px 28px rgba(0,0,0,0.4);
+  }
+  .nav-dropdown:hover .dropdown-menu { display: block; }
+
+  .dropdown-menu a {
+    display: block;
+    padding: 10px 18px;
+    color: #a0b8d0;
+    font-size: 12px;
+    text-decoration: none;
+    border-bottom: 1px solid #1a2d48;
+    letter-spacing: 0.03em;
+    border-left: 3px solid transparent;
+    transition: color 0.12s, background 0.12s, border-color 0.12s;
+  }
+  .dropdown-menu a:last-child { border-bottom: none; }
+  .dropdown-menu a:hover {
+    color: #fff;
+    background: var(--layout-navy-light);
+    border-left-color: var(--layout-gold);
+  }
+
+  /* ── Footer ── */
+  .layout-footer {
+    background: var(--layout-navy);
+    padding: 20px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 3px solid var(--layout-gold);
+    margin-top: auto;
+  }
+  .layout-footer p { color: #3a5a7a; font-size: 11.5px; }
+  .layout-footer .footer-right { color: #2a4a6a; }
+
+  /* ── Responsive ── */
+  @media (max-width: 780px) {
+    .header-top { padding: 16px 20px; }
+    .layout-nav { padding: 0 20px; overflow-x: auto; }
+    .layout-footer {
+      padding: 16px 20px;
+      flex-direction: column;
+      gap: 6px;
+      text-align: center;
+    }
+  }
+
+</style>
+
+
+<!-- ═══════════════════════════════════════════════════
+     HEADER MARKUP
+     Injected into:  <div id="layout-header"></div>
+     ═══════════════════════════════════════════════════ -->
+<template id="tpl-header">
+  <div class="rp-banner">
+    This site is not a real court, does not have legal authority, and is not affiliated with or endorsed by any real court system or government agency.
+  </div>
+
+  <div class="layout-header">
+    <div class="header-top">
+      <div class="logo-text">
+        <h1>Michigan Courts</h1>
+        <p>One Court of Justice</p>
+      </div>
+      <div class="header-right">
+        <p>SCAO Maintained</p>
+        <div class="layout-date" id="layout-date-display"></div>
+      </div>
+    </div>
+
+    <nav class="layout-nav">
+      <a href="/courts/micourt/">Home</a>
+
+      <div class="nav-dropdown">
+        <a href="#">Directory</a>
+        <div class="dropdown-menu">
+          <a href="#">Supreme Court</a>
+          <a href="#">Genesee Co. District Court</a>
+        </div>
+      </div>
+
+      <div class="nav-dropdown">
+        <a href="#">Online Services</a>
+        <div class="dropdown-menu">
+          <a href="#">Online Portal (MiCOURT)</a>
+          <a href="#">Search Cases</a>
+          <a href="#">Pay Fines &amp; Fees</a>
+          <a href="#">Docket Calendar</a>
+          <a href="#">Jury Duty Portal</a>
+          <a href="#">Request Court Records</a>
+        </div>
+      </div>
+
+      <div class="nav-dropdown">
+        <a href="#">Forms &amp; Filing</a>
+        <div class="dropdown-menu">
+          <a href="#">Filing Information</a>
+          <a href="#">Court Forms</a>
+        </div>
+      </div>
+
+      <a href="#">Self Help</a>
+      <a href="#">Careers</a>
+
+      <div class="nav-right">
+        <a href="/courts/micourt/account/" class="nav-btn">Access MiCOURT ›</a>
+      </div>
+    </nav>
+  </div>
+</template>
+
+
+<!-- ═══════════════════════════════════════════════════
+     FOOTER MARKUP
+     Injected into:  <div id="layout-footer"></div>
+     ═══════════════════════════════════════════════════ -->
+<template id="tpl-footer">
+  <footer class="layout-footer">
+    <p>© 2026 Michigan Courts · State Court Administrative Office · P.O. Box 30048, Lansing, MI 48909</p>
+    <p class="footer-right">Portal v2.1 · Secured by MiPASS Identity Authentication</p>
+  </footer>
+</template>
