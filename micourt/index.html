@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sign In | MiCOURT Portal</title>
+<title>Sign In | MiCOURT</title>
 
 <!-- ★ MiCOURT Shell — injects banner, header/nav, footer automatically -->
 <script src="/courts/shell.js" data-active="home"></script>
@@ -99,17 +99,30 @@
   .form-group .field-error { font-size: 11.5px; color: var(--red); margin-top: 5px; display: none; }
   .form-group .field-error.show { display: block; }
 
-  .role-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
-  .role-card { border: 1.5px solid var(--line); border-radius: 4px; padding: 18px 16px 16px; cursor: pointer; transition: all 0.15s; position: relative; background: #faf9f7; display: flex; flex-direction: column; align-items: flex-start; }
-  .role-card:hover { border-color: var(--navy); background: #f0ede8; }
-  .role-card.selected { border-color: var(--navy); background: #f0f4fa; }
-  .role-card input[type=radio] { position: absolute; opacity: 0; width: 0; height: 0; }
-  .role-card .rc-icon { font-size: 24px; margin-bottom: 10px; display: block; }
-  .role-card .rc-title { font-size: 14px; font-weight: 700; color: var(--text); display: block; margin-bottom: 4px; line-height: 1.2; }
-  .role-card .rc-sub { font-size: 11.5px; color: var(--muted); line-height: 1.5; display: block; }
-  .role-badge { position: absolute; top: 10px; right: 10px; background: var(--gold); color: var(--navy); font-size: 9px; font-weight: 800; padding: 2px 7px; border-radius: 2px; letter-spacing: 0.06em; text-transform: uppercase; }
-  .role-card.selected .rc-title { color: var(--navy); }
-  .role-card.selected::after { content: '✓'; position: absolute; bottom: 10px; right: 10px; width: 18px; height: 18px; background: var(--navy); color: #fff; border-radius: 50%; font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+  /* Role selector — segmented pill toggle */
+  .role-toggle { display: flex; gap: 0; margin-bottom: 20px; border: 1.5px solid var(--line); border-radius: 6px; overflow: hidden; background: #faf9f7; }
+  .role-option { flex: 1; position: relative; cursor: pointer; }
+  .role-option input[type=radio] { position: absolute; opacity: 0; width: 0; height: 0; }
+  .role-option-inner {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 6px; padding: 18px 12px 16px; text-align: center;
+    transition: all 0.18s; border-right: 1.5px solid var(--line);
+    position: relative;
+  }
+  .role-option:last-child .role-option-inner { border-right: none; }
+  .role-option-inner:hover { background: #f0ede8; }
+  .role-option.selected .role-option-inner {
+    background: var(--navy);
+  }
+  .ro-icon { font-size: 26px; line-height: 1; display: block; transition: transform 0.18s; }
+  .role-option.selected .ro-icon { transform: scale(1.1); }
+  .ro-title { font-size: 13.5px; font-weight: 700; color: var(--text); display: block; line-height: 1.2; transition: color 0.18s; }
+  .ro-sub { font-size: 11px; color: var(--muted); line-height: 1.45; display: block; transition: color 0.18s; }
+  .role-option.selected .ro-title { color: #fff; }
+  .role-option.selected .ro-sub { color: #7a9bbf; }
+  /* Animated check dot */
+  .ro-check { width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--line); background: transparent; display: flex; align-items: center; justify-content: center; margin: 4px auto 0; transition: all 0.18s; font-size: 9px; color: transparent; }
+  .role-option.selected .ro-check { border-color: var(--gold); background: var(--gold); color: var(--navy); font-weight: 900; }
 
   .status-box { border-radius: 4px; padding: 13px 16px; margin-bottom: 16px; display: none; }
   .status-box.show { display: flex; align-items: flex-start; gap: 12px; }
@@ -354,20 +367,24 @@
           <p>Select the option that best describes how you'll be using MiCOURT.</p>
         </div>
 
-        <div class="role-grid">
-          <label class="role-card" id="rc-public" onclick="selectRole('public')">
+        <div class="role-toggle">
+          <label class="role-option" id="rc-public" onclick="selectRole('public')">
             <input type="radio" name="role" value="public">
-            <span class="role-badge">Common</span>
-            <span class="rc-icon">👤</span>
-            <span class="rc-title">Portal User</span>
-            <span class="rc-sub">Access your cases, pay fines, or file documents as an individual.</span>
+            <div class="role-option-inner">
+              <span class="ro-icon">👤</span>
+              <span class="ro-title">Portal User</span>
+              <span class="ro-sub">Individual access — cases, fines, filings</span>
+              <span class="ro-check">✓</span>
+            </div>
           </label>
-          <label class="role-card" id="rc-bar" onclick="selectRole('bar')">
+          <label class="role-option" id="rc-bar" onclick="selectRole('bar')">
             <input type="radio" name="role" value="bar">
-            <span class="role-badge">Professional</span>
-            <span class="rc-icon">⚖️</span>
-            <span class="rc-title">Bar Member</span>
-            <span class="rc-sub">Licensed attorney, judge, or court officer in the State Bar registry.</span>
+            <div class="role-option-inner">
+              <span class="ro-icon">⚖️</span>
+              <span class="ro-title">Bar Member</span>
+              <span class="ro-sub">Licensed attorney or court officer</span>
+              <span class="ro-check">✓</span>
+            </div>
           </label>
         </div>
 
@@ -625,7 +642,7 @@
 
   function selectRole(role) {
     selectedRole = role;
-    document.querySelectorAll('.role-card').forEach(c => c.classList.remove('selected'));
+    document.querySelectorAll('.role-option').forEach(c => c.classList.remove('selected'));
     const el = document.getElementById('rc-' + role);
     if (el) el.classList.add('selected');
     const panel = document.getElementById('bar-verify-panel');
