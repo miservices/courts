@@ -588,7 +588,7 @@ body { font-family:'DM Sans',sans-serif; background:var(--cream); color:var(--te
 <!-- ══════════ SIDEBAR ══════════ -->
 <aside class="sidebar" id="sidebar">
 
-  <a class="sb-brand" href="/micourt/">
+  <a class="sb-brand" href="/courts/micourt/">
     <div class="sb-brand-seal">⚖️</div>
     <div class="sb-brand-text">
       <span class="name">MiCOURT</span>
@@ -619,7 +619,7 @@ body { font-family:'DM Sans',sans-serif; background:var(--cream); color:var(--te
   <div id="sidebar-nav"></div>
 
   <div class="sb-bottom">
-    <button class="sb-sign-out" onclick="window.location.href='/micourt/account/'">
+    <button class="sb-sign-out" onclick="window.location.href='/courts/micourt/account/'">
       <span style="font-size:14px">←</span> Sign Out
     </button>
   </div>
@@ -1156,7 +1156,7 @@ function renderOverview(tier) {
                 <a class="qa-btn" onclick="navigateTo('financials')"><span class="qa-icon">💳</span><span class="qa-label">Pay Fines</span><span class="qa-sub">$505 outstanding</span></a>
                 <a class="qa-btn" onclick="navigateTo('filings')"><span class="qa-icon">📄</span><span class="qa-label">View Filings</span><span class="qa-sub">3 documents</span></a>
                 <a class="qa-btn" onclick="navigateTo('hearings')"><span class="qa-icon">📅</span><span class="qa-label">Hearings</span><span class="qa-sub">Next: Jun 18</span></a>
-                <a class="qa-btn" href="/micourt/cases/"><span class="qa-icon">🔎</span><span class="qa-label">Search Cases</span><span class="qa-sub">Public records</span></a>
+                <a class="qa-btn" href="/courts/micourt/cases/"><span class="qa-icon">🔎</span><span class="qa-label">Search Cases</span><span class="qa-sub">Public records</span></a>
               </div>
             </div>
           </div>
@@ -1210,7 +1210,7 @@ function renderOverview(tier) {
               <div class="qa-grid">
                 <a class="qa-btn"><span class="qa-icon">📝</span><span class="qa-label">E-File Document</span><span class="qa-sub">Submit to clerk</span></a>
                 <a class="qa-btn" onclick="navigateTo('hearings')"><span class="qa-icon">📅</span><span class="qa-label">Hearings</span><span class="qa-sub">4 upcoming</span></a>
-                <a class="qa-btn" href="/micourt/cases/"><span class="qa-icon">🔎</span><span class="qa-label">Search Cases</span><span class="qa-sub">All courts</span></a>
+                <a class="qa-btn" href="/courts/micourt/cases/"><span class="qa-icon">🔎</span><span class="qa-label">Search Cases</span><span class="qa-sub">All courts</span></a>
                 <a class="qa-btn"><span class="qa-icon">📋</span><span class="qa-label">Court Forms</span><span class="qa-sub">Standardized forms</span></a>
               </div>
             </div>
@@ -1674,7 +1674,7 @@ async function signOutUser() {
     if (window._micourtAuth) await window._micourtAuth.signOut();
   } catch(e) {}
   sessionStorage.removeItem('micourt_user');
-  window.location.href = '/micourt/account/';
+  window.location.href = '/courts/micourt/account/';
 }
 window.signOutUser = signOutUser;
 
@@ -1717,7 +1717,7 @@ onAuthStateChanged(auth, async (user) => {
   if (!user) {
     // Not signed in — bounce to login
     setOverlayMsg('Session expired. Redirecting…');
-    setTimeout(() => { window.location.href = '/micourt/account/'; }, 1200);
+    setTimeout(() => { window.location.href = '/courts/micourt/account/'; }, 1200);
     return;
   }
 
@@ -1729,7 +1729,7 @@ onAuthStateChanged(auth, async (user) => {
     if (!snap.exists()) {
       // Account doc missing — treat as new Portal User and redirect to finish onboarding
       setOverlayMsg('Account not found. Redirecting…');
-      setTimeout(() => { window.location.href = '/micourt/account/'; }, 1200);
+      setTimeout(() => { window.location.href = '/courts/micourt/account/'; }, 1200);
       return;
     }
 
