@@ -40,9 +40,7 @@
 * { margin:0; padding:0; box-sizing:border-box; }
 body { font-family:'DM Sans',sans-serif; background:var(--cream); color:var(--text); min-height:100vh; display:flex; overflow-x:hidden; }
 
-/* ══════════════════════════════
-   SIDEBAR
-══════════════════════════════ */
+/* ══ SIDEBAR ══ */
 .sidebar {
   width: var(--sidebar-w);
   min-height: 100vh;
@@ -57,537 +55,280 @@ body { font-family:'DM Sans',sans-serif; background:var(--cream); color:var(--te
   overflow-y: auto;
   overflow-x: hidden;
 }
-
 .sb-brand {
   padding: 22px 22px 18px;
   border-bottom: 1px solid var(--border);
   display: flex; align-items: center; gap: 12px;
   text-decoration: none;
 }
-.sb-brand-seal {
-  width: 34px; height: 34px;
-  background: var(--gold); border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 16px; flex-shrink: 0;
-}
-.sb-brand-text .name {
-  font-family: 'Merriweather', serif;
-  color: #fff; font-size: 14px; font-weight: 400; display: block; line-height: 1.2;
-}
-.sb-brand-text .sub {
-  color: var(--blue-muted); font-size: 10px;
-  letter-spacing: 0.08em; text-transform: uppercase; margin-top: 2px; display: block;
-}
+.sb-brand-seal { width:34px;height:34px;background:var(--gold);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0; }
+.sb-brand-text .name { font-family:'Merriweather',serif;color:#fff;font-size:14px;font-weight:400;display:block;line-height:1.2; }
+.sb-brand-text .sub  { color:var(--blue-muted);font-size:10px;letter-spacing:0.08em;text-transform:uppercase;margin-top:2px;display:block; }
 
-/* User block */
-.sb-user {
-  padding: 16px 20px;
-  border-bottom: 1px solid var(--border);
-  display: flex; align-items: center; gap: 11px;
-}
-.sb-avatar {
-  width: 36px; height: 36px; border-radius: 4px;
-  background: var(--navy-light); border: 1px solid var(--border);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 14px; flex-shrink: 0; color: var(--gold);
-  font-family: 'Merriweather', serif; font-weight: 700;
-}
-.sb-user-info { flex: 1; min-width: 0; }
-.sb-user-name {
-  font-size: 13px; font-weight: 700; color: #fff;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block;
-}
-.sb-user-role {
-  font-size: 10px; color: var(--gold); text-transform: uppercase;
-  letter-spacing: 0.08em; display: block; margin-top: 2px;
-}
+.sb-user { padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:11px; }
+.sb-avatar { width:36px;height:36px;border-radius:4px;background:var(--navy-light);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;color:var(--gold);font-family:'Merriweather',serif;font-weight:700; }
+.sb-user-info { flex:1;min-width:0; }
+.sb-user-name { font-size:13px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block; }
+.sb-user-role { font-size:10px;color:var(--gold);text-transform:uppercase;letter-spacing:0.08em;display:block;margin-top:2px; }
 
-/* Court switcher (for SC roles only) */
-.sb-court-switcher {
-  margin: 12px 14px;
-  background: var(--navy-light);
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  overflow: hidden;
-  display: none;
-}
-.sb-court-switcher.show { display: block; }
-.scs-label {
-  font-size: 9px; color: var(--blue-muted);
-  text-transform: uppercase; letter-spacing: 0.1em;
-  padding: 8px 12px 4px; display: block;
-}
-.scs-btn {
-  display: flex; align-items: center; gap: 8px;
-  padding: 8px 12px;
-  cursor: pointer;
-  border: none; background: none;
-  font-family: 'DM Sans', sans-serif;
-  color: #a0b8d0; font-size: 12px; width: 100%;
-  text-align: left; transition: background 0.12s;
-  border-top: 1px solid var(--border);
-}
-.scs-btn:first-of-type { border-top: none; }
-.scs-btn:hover { background: var(--navy-hover); }
-.scs-btn.active { background: var(--gold-dim); color: var(--gold); }
-.scs-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+.sb-court-switcher { margin:12px 14px;background:var(--navy-light);border:1px solid var(--border);border-radius:4px;overflow:hidden;display:none; }
+.sb-court-switcher.show { display:block; }
+.scs-label { font-size:9px;color:var(--blue-muted);text-transform:uppercase;letter-spacing:0.1em;padding:8px 12px 4px;display:block; }
+.scs-btn { display:flex;align-items:center;gap:8px;padding:8px 12px;cursor:pointer;border:none;background:none;font-family:'DM Sans',sans-serif;color:#a0b8d0;font-size:12px;width:100%;text-align:left;transition:background 0.12s;border-top:1px solid var(--border); }
+.scs-btn:first-of-type { border-top:none; }
+.scs-btn:hover { background:var(--navy-hover); }
+.scs-btn.active { background:var(--gold-dim);color:var(--gold); }
+.scs-dot { width:6px;height:6px;border-radius:50%;background:currentColor;flex-shrink:0; }
 
-/* Nav sections */
-.sb-section {
-  padding: 14px 14px 6px;
-}
-.sb-section-label {
-  font-size: 9px; color: #3a5a7a;
-  text-transform: uppercase; letter-spacing: 0.12em; font-weight: 700;
-  padding: 0 6px; margin-bottom: 4px; display: block;
-}
-.sb-nav-item {
-  display: flex; align-items: center; gap: 10px;
-  padding: 9px 10px;
-  border-radius: 4px;
-  cursor: pointer;
-  color: #7a9bbf; font-size: 12.5px;
-  text-decoration: none;
-  transition: all 0.12s;
-  border: none; background: none;
-  font-family: 'DM Sans', sans-serif;
-  width: 100%; text-align: left;
-  margin-bottom: 2px;
-  letter-spacing: 0.01em;
-  position: relative;
-}
-.sb-nav-item:hover { background: var(--navy-hover); color: #fff; }
-.sb-nav-item.active { background: var(--gold-dim); color: var(--gold); }
-.sb-nav-item.active::before {
-  content: ''; position: absolute; left: 0; top: 4px; bottom: 4px;
-  width: 3px; background: var(--gold); border-radius: 0 2px 2px 0;
-}
-.sb-nav-icon { font-size: 14px; flex-shrink: 0; width: 18px; text-align: center; }
-.sb-nav-badge {
-  margin-left: auto; background: var(--red);
-  color: #fff; font-size: 10px; font-weight: 700;
-  padding: 2px 6px; border-radius: 10px; min-width: 18px; text-align: center;
-}
-.sb-nav-badge.gold { background: var(--gold); color: var(--navy); }
-.sb-nav-badge.blue { background: #1d4ed8; }
+.sb-section { padding:14px 14px 6px; }
+.sb-section-label { font-size:9px;color:#3a5a7a;text-transform:uppercase;letter-spacing:0.12em;font-weight:700;padding:0 6px;margin-bottom:4px;display:block; }
+.sb-nav-item { display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:4px;cursor:pointer;color:#7a9bbf;font-size:12.5px;text-decoration:none;transition:all 0.12s;border:none;background:none;font-family:'DM Sans',sans-serif;width:100%;text-align:left;margin-bottom:2px;letter-spacing:0.01em;position:relative; }
+.sb-nav-item:hover { background:var(--navy-hover);color:#fff; }
+.sb-nav-item.active { background:var(--gold-dim);color:var(--gold); }
+.sb-nav-item.active::before { content:'';position:absolute;left:0;top:4px;bottom:4px;width:3px;background:var(--gold);border-radius:0 2px 2px 0; }
+.sb-nav-icon { font-size:14px;flex-shrink:0;width:18px;text-align:center; }
+.sb-nav-badge { margin-left:auto;background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:2px 6px;border-radius:10px;min-width:18px;text-align:center; }
+.sb-nav-badge.gold { background:var(--gold);color:var(--navy); }
+.sb-nav-badge.blue { background:#1d4ed8; }
+.sb-divider { border:none;border-top:1px solid var(--border);margin:8px 14px; }
+.sb-bottom { margin-top:auto;padding:14px;border-top:1px solid var(--border); }
+.sb-sign-out { display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:4px;color:#5a7a9a;font-size:12px;cursor:pointer;border:none;background:none;font-family:'DM Sans',sans-serif;width:100%;text-align:left;transition:all 0.12s; }
+.sb-sign-out:hover { color:var(--red-bg);background:rgba(220,38,38,0.1); }
 
-.sb-divider { border: none; border-top: 1px solid var(--border); margin: 8px 14px; }
+/* ══ MAIN ══ */
+.main { margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column;min-height:100vh; }
+.topbar { background:var(--white);border-bottom:1px solid var(--line);padding:0 36px;display:flex;align-items:center;justify-content:space-between;height:58px;position:sticky;top:0;z-index:100; }
+.topbar-left { display:flex;align-items:center;gap:12px; }
+.topbar-page-title { font-family:'Merriweather',serif;font-size:16px;font-weight:400;color:var(--text); }
+.topbar-right { display:flex;align-items:center;gap:14px; }
+.topbar-date { font-size:12px;color:var(--muted); }
+.topbar-notif { width:32px;height:32px;border-radius:4px;background:var(--cream);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:14px;cursor:pointer;position:relative;transition:background 0.12s; }
+.topbar-notif:hover { background:var(--cream-dark); }
+.notif-dot { position:absolute;top:5px;right:5px;width:7px;height:7px;border-radius:50%;background:var(--red);border:1.5px solid var(--white); }
+.court-badge { display:flex;align-items:center;gap:7px;padding:4px 12px;border-radius:3px;background:var(--navy);color:var(--gold);font-size:11px;font-weight:700;letter-spacing:0.04em;text-transform:uppercase; }
+.court-badge-dot { width:6px;height:6px;border-radius:50%;background:var(--gold); }
 
-.sb-bottom {
-  margin-top: auto;
-  padding: 14px;
-  border-top: 1px solid var(--border);
-}
-.sb-sign-out {
-  display: flex; align-items: center; gap: 10px;
-  padding: 9px 10px; border-radius: 4px;
-  color: #5a7a9a; font-size: 12px; cursor: pointer;
-  border: none; background: none; font-family: 'DM Sans', sans-serif;
-  width: 100%; text-align: left; transition: all 0.12s;
-}
-.sb-sign-out:hover { color: var(--red-bg); background: rgba(220,38,38,0.1); }
-
-/* ══════════════════════════════
-   MAIN CONTENT
-══════════════════════════════ */
-.main {
-  margin-left: var(--sidebar-w);
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-}
-
-/* Top bar */
-.topbar {
-  background: var(--white);
-  border-bottom: 1px solid var(--line);
-  padding: 0 36px;
-  display: flex; align-items: center; justify-content: space-between;
-  height: 58px;
-  position: sticky; top: 0; z-index: 100;
-}
-.topbar-left { display: flex; align-items: center; gap: 12px; }
-.topbar-page-title {
-  font-family: 'Merriweather', serif;
-  font-size: 16px; font-weight: 400; color: var(--text);
-}
-.topbar-breadcrumb { font-size: 11px; color: var(--muted); }
-.topbar-right { display: flex; align-items: center; gap: 14px; }
-.topbar-date { font-size: 12px; color: var(--muted); }
-.topbar-notif {
-  width: 32px; height: 32px; border-radius: 4px;
-  background: var(--cream); border: 1px solid var(--line);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 14px; cursor: pointer; position: relative;
-  transition: background 0.12s;
-}
-.topbar-notif:hover { background: var(--cream-dark); }
-.notif-dot {
-  position: absolute; top: 5px; right: 5px;
-  width: 7px; height: 7px; border-radius: 50%; background: var(--red);
-  border: 1.5px solid var(--white);
-}
-
-/* Court context badge */
-.court-badge {
-  display: flex; align-items: center; gap: 7px;
-  padding: 4px 12px; border-radius: 3px;
-  background: var(--navy); color: var(--gold);
-  font-size: 11px; font-weight: 700; letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-.court-badge-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--gold); }
-
-/* Page body */
-.page-body { padding: 32px 36px; flex: 1; }
-.page-section { display: none; }
-.page-section.active { display: block; }
-
-/* Section header */
-.section-hdr { margin-bottom: 28px; }
-.section-hdr h2 {
-  font-family: 'Merriweather', serif;
-  font-size: 22px; font-weight: 300; color: var(--text); margin-bottom: 5px;
-}
-.section-hdr p { font-size: 13px; color: var(--muted); line-height: 1.6; }
+.page-body { padding:32px 36px;flex:1; }
+.page-section { display:none; }
+.page-section.active { display:block; }
+.section-hdr { margin-bottom:28px; }
+.section-hdr h2 { font-family:'Merriweather',serif;font-size:22px;font-weight:300;color:var(--text);margin-bottom:5px; }
+.section-hdr p { font-size:13px;color:var(--muted);line-height:1.6; }
 
 /* ── Stat cards ── */
-.stat-row { display: grid; gap: 16px; margin-bottom: 28px; }
-.stat-row.cols-4 { grid-template-columns: repeat(4,1fr); }
-.stat-row.cols-3 { grid-template-columns: repeat(3,1fr); }
-.stat-row.cols-2 { grid-template-columns: repeat(2,1fr); }
-
-.stat-card {
-  background: var(--white);
-  border: 1px solid var(--line);
-  border-radius: 5px;
-  padding: 20px 22px;
-  position: relative;
-  overflow: hidden;
-  transition: box-shadow 0.15s;
-}
-.stat-card:hover { box-shadow: 0 4px 18px rgba(10,22,40,0.09); }
-.stat-card::after {
-  content: ''; position: absolute; top: 0; left: 0;
-  width: 100%; height: 3px; background: var(--line);
-}
-.stat-card.gold::after   { background: var(--gold); }
-.stat-card.green::after  { background: var(--green); }
-.stat-card.red::after    { background: var(--red); }
-.stat-card.blue::after   { background: var(--blue); }
-.stat-card.navy::after   { background: var(--navy); }
-.sc-label {
-  font-size: 10px; color: var(--muted);
-  text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 10px; display: block;
-}
-.sc-value {
-  font-family: 'Merriweather', serif;
-  font-size: 32px; color: var(--text); font-weight: 700; line-height: 1; display: block;
-}
-.sc-sub { font-size: 12px; color: var(--muted); margin-top: 5px; display: block; }
-.sc-icon {
-  position: absolute; right: 18px; top: 18px;
-  font-size: 22px; opacity: 0.15;
-}
+.stat-row { display:grid;gap:16px;margin-bottom:28px; }
+.stat-row.cols-4 { grid-template-columns:repeat(4,1fr); }
+.stat-row.cols-3 { grid-template-columns:repeat(3,1fr); }
+.stat-row.cols-2 { grid-template-columns:repeat(2,1fr); }
+.stat-card { background:var(--white);border:1px solid var(--line);border-radius:5px;padding:20px 22px;position:relative;overflow:hidden;transition:box-shadow 0.15s; }
+.stat-card:hover { box-shadow:0 4px 18px rgba(10,22,40,0.09); }
+.stat-card::after { content:'';position:absolute;top:0;left:0;width:100%;height:3px;background:var(--line); }
+.stat-card.gold::after  { background:var(--gold); }
+.stat-card.green::after { background:var(--green); }
+.stat-card.red::after   { background:var(--red); }
+.stat-card.blue::after  { background:var(--blue); }
+.stat-card.navy::after  { background:var(--navy); }
+.sc-label { font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:10px;display:block; }
+.sc-value { font-family:'Merriweather',serif;font-size:32px;color:var(--text);font-weight:700;line-height:1;display:block; }
+.sc-sub { font-size:12px;color:var(--muted);margin-top:5px;display:block; }
+.sc-icon { position:absolute;right:18px;top:18px;font-size:22px;opacity:0.15; }
 
 /* ── Cards ── */
-.card {
-  background: var(--white);
-  border: 1px solid var(--line);
-  border-radius: 5px;
-  overflow: hidden;
-  margin-bottom: 20px;
-}
-.card-hdr {
-  padding: 16px 22px;
-  border-bottom: 1px solid var(--line);
-  display: flex; align-items: center; justify-content: space-between;
-}
-.card-hdr h3 {
-  font-family: 'Merriweather', serif;
-  font-size: 14px; font-weight: 400; color: var(--text);
-}
-.card-hdr-right { display: flex; align-items: center; gap: 10px; }
-.card-tag { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
-.card-link { font-size: 12px; color: #1a4a7a; text-decoration: none; font-weight: 600; }
-.card-link:hover { text-decoration: underline; }
-.card-body { padding: 0; }
-.card-body-pad { padding: 20px 22px; }
+.card { background:var(--white);border:1px solid var(--line);border-radius:5px;overflow:hidden;margin-bottom:20px; }
+.card-hdr { padding:16px 22px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between; }
+.card-hdr h3 { font-family:'Merriweather',serif;font-size:14px;font-weight:400;color:var(--text); }
+.card-hdr-right { display:flex;align-items:center;gap:10px; }
+.card-tag { font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em; }
+.card-link { font-size:12px;color:#1a4a7a;text-decoration:none;font-weight:600;cursor:pointer; }
+.card-link:hover { text-decoration:underline; }
+.card-body { padding:0; }
+.card-body-pad { padding:20px 22px; }
 
-/* ── Two-col layout ── */
-.two-col { display: grid; grid-template-columns: 1fr 360px; gap: 20px; align-items: start; }
-.three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+/* ── Layouts ── */
+.two-col { display:grid;grid-template-columns:1fr 360px;gap:20px;align-items:start; }
+.three-col { display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px; }
 
-/* ── Case rows ── */
+/* ── Case rows — clickable link ── */
 .case-row {
-  padding: 15px 22px;
-  border-bottom: 1px solid #f8f5f0;
-  display: flex; align-items: flex-start; justify-content: space-between; gap: 16px;
-  transition: background 0.1s; cursor: pointer;
-  text-decoration: none; color: inherit;
+  padding:15px 22px;
+  border-bottom:1px solid #f8f5f0;
+  display:flex;align-items:flex-start;justify-content:space-between;gap:16px;
+  transition:background 0.1s;
+  text-decoration:none;color:inherit;
+  cursor:pointer;
+  position:relative;
 }
-.case-row:last-child { border-bottom: none; }
-.case-row:hover { background: #faf9f7; }
-.cr-left { flex: 1; min-width: 0; }
-.cr-num { font-size: 10.5px; color: var(--gold); font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 3px; }
-.cr-title { font-size: 13.5px; color: var(--text); font-weight: 600; margin-bottom: 4px; line-height: 1.3; }
-.cr-meta { font-size: 11.5px; color: var(--muted); }
-.cr-right { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; flex-shrink: 0; }
+.case-row:last-child { border-bottom:none; }
+.case-row:hover { background:#faf9f7; }
+.case-row:hover .cr-open-hint { opacity:1; }
+.cr-open-hint { position:absolute;right:20px;bottom:10px;font-size:10.5px;color:#1a4a7a;font-weight:700;opacity:0;transition:opacity 0.15s;letter-spacing:0.03em; }
+.cr-left { flex:1;min-width:0; }
+.cr-num { font-size:10.5px;color:var(--gold);font-weight:700;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:3px; }
+.cr-title { font-size:13.5px;color:var(--text);font-weight:600;margin-bottom:4px;line-height:1.3; }
+.cr-meta { font-size:11.5px;color:var(--muted); }
+.cr-right { display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex-shrink:0; }
 
-/* ── Badges / pills ── */
-.badge {
-  font-size: 10px; font-weight: 700; letter-spacing: 0.07em;
-  padding: 3px 9px; border-radius: 2px; text-transform: uppercase; white-space: nowrap;
-}
-.badge-criminal  { background: #fef2f2; color: #dc2626; border: 1px solid #fee2e2; }
-.badge-civil     { background: #eff6ff; color: #1d4ed8; border: 1px solid #dbeafe; }
-.badge-appellate { background: #f5f3ff; color: #6d28d9; border: 1px solid #ede9fe; }
-.badge-traffic   { background: #fff7ed; color: #c2410c; border: 1px solid #fed7aa; }
-.status-pill {
-  font-size: 10px; font-weight: 700; letter-spacing: 0.06em;
-  padding: 3px 9px; border-radius: 2px; text-transform: uppercase;
-}
-.sp-active    { background: var(--amber-bg); color: var(--amber); border: 1px solid var(--amber-bdr); }
-.sp-pretrial  { background: var(--amber-bg); color: var(--amber); border: 1px solid var(--amber-bdr); }
-.sp-pending   { background: var(--blue-bg);  color: var(--blue);  border: 1px solid var(--blue-bdr);  }
-.sp-closed    { background: #f8f5f0;         color: #9a8f82;      border: 1px solid var(--line);       }
-.sp-dismissed { background: #f8f5f0;         color: #9a8f82;      border: 1px solid var(--line);       }
+/* ── Badges ── */
+.badge { font-size:10px;font-weight:700;letter-spacing:0.07em;padding:3px 9px;border-radius:2px;text-transform:uppercase;white-space:nowrap; }
+.badge-criminal  { background:#fef2f2;color:#dc2626;border:1px solid #fee2e2; }
+.badge-civil     { background:#eff6ff;color:#1d4ed8;border:1px solid #dbeafe; }
+.badge-appellate { background:#f5f3ff;color:#6d28d9;border:1px solid #ede9fe; }
+.badge-traffic   { background:#fff7ed;color:#c2410c;border:1px solid #fed7aa; }
+.status-pill { font-size:10px;font-weight:700;letter-spacing:0.06em;padding:3px 9px;border-radius:2px;text-transform:uppercase; }
+.sp-active    { background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-bdr); }
+.sp-pretrial  { background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-bdr); }
+.sp-pending   { background:var(--blue-bg);color:var(--blue);border:1px solid var(--blue-bdr); }
+.sp-closed    { background:#f8f5f0;color:#9a8f82;border:1px solid var(--line); }
+.sp-dismissed { background:#f8f5f0;color:#9a8f82;border:1px solid var(--line); }
 
-/* ── Hearing rows ── */
-.hearing-row {
-  padding: 14px 22px;
-  border-bottom: 1px solid #f8f5f0;
-  display: flex; align-items: flex-start; gap: 16px;
-}
-.hearing-row:last-child { border-bottom: none; }
-.hr-date-box {
-  flex-shrink: 0; text-align: center;
-  background: var(--cream); border: 1px solid var(--line);
-  border-radius: 4px; padding: 8px 12px; min-width: 54px;
-}
-.hr-month { font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
-.hr-day   { font-family: 'Merriweather', serif; font-size: 22px; color: var(--text); line-height: 1; }
-.hr-year  { font-size: 9px; color: var(--muted); }
-.hr-info  { flex: 1; }
-.hr-type  { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 2px; }
-.hr-case  { font-size: 11.5px; color: #1a4a7a; margin-bottom: 2px; }
-.hr-meta  { font-size: 11px; color: var(--muted); }
-.hr-pill  {
-  flex-shrink: 0; align-self: center;
-  font-size: 10px; font-weight: 700; letter-spacing: 0.06em;
-  padding: 4px 10px; border-radius: 2px; text-transform: uppercase;
-}
-.hr-upcoming { background: var(--green-bg); color: var(--green); border: 1px solid var(--green-bdr); }
-.hr-today    { background: var(--amber-bg); color: var(--amber); border: 1px solid var(--amber-bdr); }
-.hr-past     { background: #f8f5f0;         color: #9a8f82;      border: 1px solid var(--line); }
+/* ── Hearing rows — clickable ── */
+.hearing-row { padding:14px 22px;border-bottom:1px solid #f8f5f0;display:flex;align-items:flex-start;gap:16px;text-decoration:none;color:inherit;cursor:pointer;transition:background 0.1s;position:relative; }
+.hearing-row:last-child { border-bottom:none; }
+.hearing-row:hover { background:#faf9f7; }
+.hearing-row:hover .hr-open-hint { opacity:1; }
+.hr-open-hint { position:absolute;right:20px;bottom:10px;font-size:10.5px;color:#1a4a7a;font-weight:700;opacity:0;transition:opacity 0.15s; }
+.hr-date-box { flex-shrink:0;text-align:center;background:var(--cream);border:1px solid var(--line);border-radius:4px;padding:8px 12px;min-width:54px; }
+.hr-month { font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em; }
+.hr-day   { font-family:'Merriweather',serif;font-size:22px;color:var(--text);line-height:1; }
+.hr-year  { font-size:9px;color:var(--muted); }
+.hr-info  { flex:1; }
+.hr-type  { font-size:13px;font-weight:700;color:var(--text);margin-bottom:2px; }
+.hr-case  { font-size:11.5px;color:#1a4a7a;margin-bottom:2px; }
+.hr-meta  { font-size:11px;color:var(--muted); }
+.hr-pill  { flex-shrink:0;align-self:center;font-size:10px;font-weight:700;letter-spacing:0.06em;padding:4px 10px;border-radius:2px;text-transform:uppercase; }
+.hr-upcoming { background:var(--green-bg);color:var(--green);border:1px solid var(--green-bdr); }
+.hr-today    { background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-bdr); }
+.hr-past     { background:#f8f5f0;color:#9a8f82;border:1px solid var(--line); }
 
-/* ── Financial rows ── */
-.fin-row {
-  padding: 14px 22px;
-  border-bottom: 1px solid #f8f5f0;
-  display: flex; align-items: center; gap: 16px; justify-content: space-between;
-}
-.fin-row:last-child { border-bottom: none; }
-.fin-type  { font-size: 13px; font-weight: 600; color: var(--text); }
-.fin-case  { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
-.fin-amount { font-family: 'Merriweather', serif; font-size: 18px; color: var(--text); white-space: nowrap; text-align: right; }
-.fin-status {
-  font-size: 10px; font-weight: 700; letter-spacing: 0.06em;
-  padding: 2px 8px; border-radius: 2px; text-transform: uppercase;
-  display: block; text-align: right; margin-top: 3px;
-}
-.fin-paid    { background: var(--green-bg); color: var(--green); border: 1px solid var(--green-bdr); }
-.fin-unpaid  { background: var(--red-bg);   color: var(--red);   border: 1px solid var(--red-bdr);   }
-.fin-partial { background: var(--amber-bg); color: var(--amber); border: 1px solid var(--amber-bdr); }
+/* ── Financial rows — clickable ── */
+.fin-row { padding:14px 22px;border-bottom:1px solid #f8f5f0;display:flex;align-items:center;gap:16px;justify-content:space-between;text-decoration:none;color:inherit;cursor:pointer;transition:background 0.1s;position:relative; }
+.fin-row:last-child { border-bottom:none; }
+.fin-row:hover { background:#faf9f7; }
+.fin-row:hover .fin-open-hint { opacity:1; }
+.fin-open-hint { position:absolute;right:20px;bottom:8px;font-size:10.5px;color:#1a4a7a;font-weight:700;opacity:0;transition:opacity 0.15s; }
+.fin-type   { font-size:13px;font-weight:600;color:var(--text); }
+.fin-case   { font-size:11.5px;color:var(--muted);margin-top:2px; }
+.fin-amount { font-family:'Merriweather',serif;font-size:18px;color:var(--text);white-space:nowrap;text-align:right; }
+.fin-status { font-size:10px;font-weight:700;letter-spacing:0.06em;padding:2px 8px;border-radius:2px;text-transform:uppercase;display:block;text-align:right;margin-top:3px; }
+.fin-paid    { background:var(--green-bg);color:var(--green);border:1px solid var(--green-bdr); }
+.fin-unpaid  { background:var(--red-bg);color:var(--red);border:1px solid var(--red-bdr); }
+.fin-partial { background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-bdr); }
 
-/* ── Filing rows ── */
-.filing-row {
-  padding: 14px 22px;
-  border-bottom: 1px solid #f8f5f0;
-  display: flex; align-items: flex-start; gap: 14px;
-}
-.filing-row:last-child { border-bottom: none; }
-.filing-icon {
-  width: 34px; height: 34px; background: var(--cream); border: 1px solid var(--line);
-  border-radius: 3px; display: flex; align-items: center; justify-content: center;
-  font-size: 15px; flex-shrink: 0; margin-top: 1px;
-}
-.filing-info { flex: 1; }
-.filing-title { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
-.filing-meta  { font-size: 11.5px; color: var(--muted); }
+/* ── Filing rows — clickable ── */
+.filing-row { padding:14px 22px;border-bottom:1px solid #f8f5f0;display:flex;align-items:flex-start;gap:14px;text-decoration:none;color:inherit;cursor:pointer;transition:background 0.1s;position:relative; }
+.filing-row:last-child { border-bottom:none; }
+.filing-row:hover { background:#faf9f7; }
+.filing-row:hover .filing-open-hint { opacity:1; }
+.filing-open-hint { position:absolute;right:20px;bottom:10px;font-size:10.5px;color:#1a4a7a;font-weight:700;opacity:0;transition:opacity 0.15s; }
+.filing-icon { width:34px;height:34px;background:var(--cream);border:1px solid var(--line);border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;margin-top:1px; }
+.filing-info { flex:1; }
+.filing-title { font-size:13px;font-weight:600;color:var(--text);margin-bottom:2px; }
+.filing-meta  { font-size:11.5px;color:var(--muted); }
 
-/* ── Activity / notice rows ── */
-.notice-row {
-  padding: 13px 22px;
-  border-bottom: 1px solid #f8f5f0;
-  display: flex; align-items: flex-start; gap: 12px;
-}
-.notice-row:last-child { border-bottom: none; }
-.notice-dot {
-  width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 4px;
-}
-.nd-red    { background: var(--red); }
-.nd-gold   { background: var(--gold); }
-.nd-green  { background: var(--green); }
-.nd-blue   { background: var(--blue); }
-.nd-gray   { background: #ccc; }
-.notice-text { flex: 1; }
-.notice-title { font-size: 12.5px; color: var(--text); line-height: 1.4; }
-.notice-time  { font-size: 11px; color: var(--muted); margin-top: 2px; }
+/* ── Activity rows ── */
+.notice-row { padding:13px 22px;border-bottom:1px solid #f8f5f0;display:flex;align-items:flex-start;gap:12px; }
+.notice-row:last-child { border-bottom:none; }
+.notice-dot { width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:4px; }
+.nd-red   { background:var(--red); }
+.nd-gold  { background:var(--gold); }
+.nd-green { background:var(--green); }
+.nd-blue  { background:var(--blue); }
+.nd-gray  { background:#ccc; }
+.notice-text { flex:1; }
+.notice-title { font-size:12.5px;color:var(--text);line-height:1.4; }
+.notice-time  { font-size:11px;color:var(--muted);margin-top:2px; }
 
 /* ── Quick actions ── */
-.qa-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 10px; }
-.qa-btn {
-  display: flex; flex-direction: column; align-items: flex-start; gap: 5px;
-  padding: 14px 16px; background: var(--cream);
-  border: 1px solid var(--line); border-radius: 4px;
-  cursor: pointer; transition: all 0.15s;
-  text-decoration: none; color: inherit;
-}
-.qa-btn:hover { border-color: var(--navy); background: #ece8e0; }
-.qa-icon { font-size: 18px; }
-.qa-label { font-size: 12.5px; font-weight: 700; color: var(--text); }
-.qa-sub   { font-size: 11px; color: var(--muted); line-height: 1.4; }
+.qa-grid { display:grid;grid-template-columns:repeat(2,1fr);gap:10px; }
+.qa-btn { display:flex;flex-direction:column;align-items:flex-start;gap:5px;padding:14px 16px;background:var(--cream);border:1px solid var(--line);border-radius:4px;cursor:pointer;transition:all 0.15s;text-decoration:none;color:inherit; }
+.qa-btn:hover { border-color:var(--navy);background:#ece8e0; }
+.qa-icon  { font-size:18px; }
+.qa-label { font-size:12.5px;font-weight:700;color:var(--text); }
+.qa-sub   { font-size:11px;color:var(--muted);line-height:1.4; }
 
 /* ── Welcome banner ── */
-.welcome-banner {
-  background: var(--navy);
-  border-radius: 5px;
-  padding: 26px 30px;
-  margin-bottom: 24px;
-  display: flex; align-items: center; justify-content: space-between; gap: 20px;
-  position: relative; overflow: hidden;
-}
-.welcome-banner::before {
-  content: ''; position: absolute;
-  right: -40px; top: -40px;
-  width: 200px; height: 200px; border-radius: 50%;
-  background: rgba(200,168,75,0.08); pointer-events: none;
-}
-.wb-title {
-  font-family: 'Merriweather', serif;
-  color: #fff; font-size: 20px; font-weight: 300; margin-bottom: 6px;
-}
-.wb-title em { color: var(--gold); font-style: italic; }
-.wb-sub { color: var(--blue-muted); font-size: 13px; line-height: 1.6; max-width: 520px; }
-.wb-right { flex-shrink: 0; text-align: right; }
-.wb-role-badge {
-  background: var(--gold-dim); border: 1px solid rgba(200,168,75,0.3);
-  color: var(--gold); font-size: 11px; font-weight: 700;
-  padding: 6px 14px; border-radius: 3px; letter-spacing: 0.06em; text-transform: uppercase;
-  display: inline-block; margin-bottom: 8px;
-}
-.wb-date { font-size: 12px; color: var(--blue-muted); }
+.welcome-banner { background:var(--navy);border-radius:5px;padding:26px 30px;margin-bottom:24px;display:flex;align-items:center;justify-content:space-between;gap:20px;position:relative;overflow:hidden; }
+.welcome-banner::before { content:'';position:absolute;right:-40px;top:-40px;width:200px;height:200px;border-radius:50%;background:rgba(200,168,75,0.08);pointer-events:none; }
+.wb-title { font-family:'Merriweather',serif;color:#fff;font-size:20px;font-weight:300;margin-bottom:6px; }
+.wb-title em { color:var(--gold);font-style:italic; }
+.wb-sub { color:var(--blue-muted);font-size:13px;line-height:1.6;max-width:520px; }
+.wb-right { flex-shrink:0;text-align:right; }
+.wb-role-badge { background:var(--gold-dim);border:1px solid rgba(200,168,75,0.3);color:var(--gold);font-size:11px;font-weight:700;padding:6px 14px;border-radius:3px;letter-spacing:0.06em;text-transform:uppercase;display:inline-block;margin-bottom:8px; }
+.wb-date { font-size:12px;color:var(--blue-muted); }
 
-/* ── Admin tools (staff roles) ── */
-.admin-tool-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin-bottom: 20px; }
+/* ── Admin tools — now real links ── */
+.admin-tool-grid { display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px; }
 .admin-tool {
-  background: var(--white); border: 1px solid var(--line); border-radius: 4px;
-  padding: 18px 18px; cursor: pointer; transition: all 0.15s;
-  text-decoration: none; display: flex; flex-direction: column; gap: 8px;
+  background:var(--white);border:1px solid var(--line);border-radius:4px;
+  padding:18px 18px;cursor:pointer;transition:all 0.15s;
+  text-decoration:none;display:flex;flex-direction:column;gap:8px;
+  color:inherit;
+  position:relative;overflow:hidden;
 }
-.admin-tool:hover { border-color: var(--navy); box-shadow: 0 4px 14px rgba(10,22,40,0.09); }
-.at-icon { font-size: 22px; }
-.at-title { font-size: 13px; font-weight: 700; color: var(--text); }
-.at-sub   { font-size: 11.5px; color: var(--muted); line-height: 1.45; }
+.admin-tool::after { content:'↗';position:absolute;top:12px;right:14px;font-size:11px;color:var(--muted);opacity:0;transition:opacity 0.15s; }
+.admin-tool:hover { border-color:var(--navy);box-shadow:0 4px 14px rgba(10,22,40,0.09); }
+.admin-tool:hover::after { opacity:1; }
+.at-icon  { font-size:22px; }
+.at-title { font-size:13px;font-weight:700;color:var(--text); }
+.at-sub   { font-size:11.5px;color:var(--muted);line-height:1.45; }
 
-/* ── Docket table (staff) ── */
-.docket-table { width: 100%; border-collapse: collapse; }
-.docket-table th {
-  font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em;
-  padding: 10px 18px; border-bottom: 2px solid var(--line); text-align: left;
-  font-weight: 700; background: #faf9f7;
-}
-.docket-table td {
-  padding: 12px 18px; border-bottom: 1px solid #f8f5f0;
-  font-size: 13px; color: var(--text); vertical-align: top;
-}
-.docket-table tr:last-child td { border-bottom: none; }
-.docket-table tr:hover td { background: #faf9f7; }
-.dt-case-num { font-size: 11px; color: var(--gold); font-weight: 700; letter-spacing: 0.06em; display: block; margin-bottom: 2px; }
-.dt-title    { font-weight: 600; }
-.dt-time     { font-size: 11.5px; font-weight: 700; color: var(--navy); white-space: nowrap; }
-.dt-type     { font-size: 11px; color: var(--muted); white-space: nowrap; }
+/* ── Docket table ── */
+.docket-table { width:100%;border-collapse:collapse; }
+.docket-table th { font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;padding:10px 18px;border-bottom:2px solid var(--line);text-align:left;font-weight:700;background:#faf9f7; }
+.docket-table td { padding:12px 18px;border-bottom:1px solid #f8f5f0;font-size:13px;color:var(--text);vertical-align:top; }
+.docket-table tr:last-child td { border-bottom:none; }
+.docket-table tr:hover td { background:#faf9f7;cursor:pointer; }
+.dt-case-num { font-size:11px;color:var(--gold);font-weight:700;letter-spacing:0.06em;display:block;margin-bottom:2px; }
+.dt-title    { font-weight:600; }
+.dt-time     { font-size:11.5px;font-weight:700;color:var(--navy);white-space:nowrap; }
+.dt-type     { font-size:11px;color:var(--muted);white-space:nowrap; }
 
-/* ── Clerks queue table ── */
-.queue-row {
-  padding: 13px 22px;
-  border-bottom: 1px solid #f8f5f0;
-  display: flex; align-items: center; gap: 14px;
-}
-.queue-row:last-child { border-bottom: none; }
-.queue-priority {
-  width: 6px; align-self: stretch; border-radius: 2px; flex-shrink: 0;
-}
-.qp-high { background: var(--red); }
-.qp-med  { background: var(--gold); }
-.qp-low  { background: var(--green); }
-.queue-info { flex: 1; }
-.queue-title { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
-.queue-meta  { font-size: 11.5px; color: var(--muted); }
-.queue-action {
-  background: var(--navy); color: #fff;
-  border: none; border-radius: 3px;
-  padding: 6px 14px; font-size: 11.5px; font-weight: 700;
-  cursor: pointer; font-family: 'DM Sans', sans-serif;
-  transition: background 0.12s; white-space: nowrap;
-}
-.queue-action:hover { background: var(--navy-mid); }
+/* ── Queue rows ── */
+.queue-row { padding:13px 22px;border-bottom:1px solid #f8f5f0;display:flex;align-items:center;gap:14px; }
+.queue-row:last-child { border-bottom:none; }
+.queue-priority { width:6px;align-self:stretch;border-radius:2px;flex-shrink:0; }
+.qp-high { background:var(--red); }
+.qp-med  { background:var(--gold); }
+.qp-low  { background:var(--green); }
+.queue-info { flex:1; }
+.queue-title  { font-size:13px;font-weight:600;color:var(--text);margin-bottom:2px; }
+.queue-meta   { font-size:11.5px;color:var(--muted); }
+.queue-action { background:var(--navy);color:#fff;border:none;border-radius:3px;padding:6px 14px;font-size:11.5px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background 0.12s;white-space:nowrap;text-decoration:none;display:inline-block; }
+.queue-action:hover { background:var(--navy-mid); }
 
-/* ── Info / empty states ── */
-.empty-state { padding: 40px 22px; text-align: center; }
-.empty-state .ei { font-size: 32px; margin-bottom: 10px; }
-.empty-state h4 { font-family:'Merriweather',serif; font-size:16px;font-weight:300;margin-bottom:6px; }
+/* ── Empty states ── */
+.empty-state { padding:40px 22px;text-align:center; }
+.empty-state .ei { font-size:32px;margin-bottom:10px; }
+.empty-state h4 { font-family:'Merriweather',serif;font-size:16px;font-weight:300;margin-bottom:6px; }
 .empty-state p  { font-size:12.5px;color:var(--muted);line-height:1.6; }
 
-/* Role visibility helpers */
-.role-public, .role-attorney, .role-state-atty,
-.role-clerk, .role-judge, .role-chief-judge,
-.role-sc-clerk, .role-sc-asst-clerk,
-.role-justice, .role-chief-justice,
-.role-magistrate { display: none; }
+/* ── Loading overlay ── */
+.auth-loading-overlay { position:fixed;inset:0;background:var(--navy);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;gap:18px; }
+.auth-loading-overlay.hidden { display:none; }
+.alo-seal  { width:56px;height:56px;background:var(--gold);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:26px; }
+.alo-title { font-family:'Merriweather',serif;color:#fff;font-size:18px;font-weight:300; }
+.alo-sub   { color:var(--blue-muted);font-size:12px; }
+.alo-spin  { width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin 0.8s linear infinite; }
+@keyframes spin { to { transform:rotate(360deg); } }
+@keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+.page-section.active { animation:fadeUp 0.22s ease; }
 
-/* Animations */
-@keyframes fadeUp {
-  from { opacity:0; transform:translateY(12px); }
-  to   { opacity:1; transform:translateY(0); }
-}
-.page-section.active { animation: fadeUp 0.22s ease; }
-
-/* Scrollbar */
-.sidebar::-webkit-scrollbar { width: 4px; }
-.sidebar::-webkit-scrollbar-track { background: transparent; }
-.sidebar::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
-
-/* Loading overlay */
-.auth-loading-overlay {
-  position: fixed; inset: 0; background: var(--navy);
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  z-index: 9999; gap: 18px;
-}
-.auth-loading-overlay.hidden { display: none; }
-.alo-seal { width: 56px; height: 56px; background: var(--gold); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 26px; }
-.alo-title { font-family: 'Merriweather', serif; color: #fff; font-size: 18px; font-weight: 300; }
-.alo-sub { color: var(--blue-muted); font-size: 12px; }
-.alo-spin { width: 32px; height: 32px; border: 3px solid var(--border); border-top-color: var(--gold); border-radius: 50%; animation: spin 0.8s linear infinite; }
-@keyframes spin { to { transform: rotate(360deg); } }
+.sidebar::-webkit-scrollbar { width:4px; }
+.sidebar::-webkit-scrollbar-track { background:transparent; }
+.sidebar::-webkit-scrollbar-thumb { background:var(--border);border-radius:2px; }
 
 @media(max-width:900px) {
-  .sidebar { width: 220px; }
-  .main { margin-left: 220px; }
-  .two-col { grid-template-columns: 1fr; }
-  .stat-row.cols-4 { grid-template-columns: repeat(2,1fr); }
-  .admin-tool-grid { grid-template-columns: repeat(2,1fr); }
-
+  .sidebar { width:220px; }
+  .main { margin-left:220px; }
+  .two-col { grid-template-columns:1fr; }
+  .stat-row.cols-4 { grid-template-columns:repeat(2,1fr); }
+  .admin-tool-grid { grid-template-columns:repeat(2,1fr); }
 }
 </style>
 </head>
 <body>
 
-<!-- ══════════ SIDEBAR ══════════ -->
 <aside class="sidebar" id="sidebar">
-
   <a class="sb-brand" href="/courts/micourt/">
     <div class="sb-brand-seal">⚖️</div>
     <div class="sb-brand-text">
@@ -604,7 +345,6 @@ body { font-family:'DM Sans',sans-serif; background:var(--cream); color:var(--te
     </div>
   </div>
 
-  <!-- Court switcher — SC roles only -->
   <div class="sb-court-switcher" id="court-switcher">
     <span class="scs-label">Court Context</span>
     <button class="scs-btn active" data-court="sc" onclick="switchCourt('sc',this)">
@@ -615,20 +355,16 @@ body { font-family:'DM Sans',sans-serif; background:var(--cream); color:var(--te
     </button>
   </div>
 
-  <!-- Nav built by JS -->
   <div id="sidebar-nav"></div>
 
   <div class="sb-bottom">
-    <button class="sb-sign-out" onclick="window.location.href='/courts/micourt/'">
+    <button class="sb-sign-out" onclick="signOutUser()">
       <span style="font-size:14px">←</span> Sign Out
     </button>
   </div>
 </aside>
 
-<!-- ══════════ MAIN ══════════ -->
 <div class="main">
-
-  <!-- Top bar -->
   <div class="topbar">
     <div class="topbar-left">
       <span class="topbar-page-title" id="topbar-title">Dashboard</span>
@@ -639,16 +375,12 @@ body { font-family:'DM Sans',sans-serif; background:var(--cream); color:var(--te
         <span id="topbar-court-name">Loading…</span>
       </div>
       <span class="topbar-date" id="topbar-date"></span>
-      <div class="topbar-notif" title="Notifications">
-        🔔<div class="notif-dot"></div>
-      </div>
+      <div class="topbar-notif" title="Notifications">🔔<div class="notif-dot"></div></div>
     </div>
   </div>
 
-  <!-- Pages -->
   <div class="page-body" id="page-body">
 
-    <!-- ══ HOME / OVERVIEW ══ -->
     <div class="page-section active" id="page-overview">
       <div class="welcome-banner">
         <div>
@@ -663,7 +395,6 @@ body { font-family:'DM Sans',sans-serif; background:var(--cream); color:var(--te
       <div id="overview-content"></div>
     </div>
 
-    <!-- ══ MY CASES ══ -->
     <div class="page-section" id="page-cases">
       <div class="section-hdr">
         <h2>My Cases</h2>
@@ -672,7 +403,6 @@ body { font-family:'DM Sans',sans-serif; background:var(--cream); color:var(--te
       <div id="cases-content"></div>
     </div>
 
-    <!-- ══ HEARINGS ══ -->
     <div class="page-section" id="page-hearings">
       <div class="section-hdr">
         <h2>Upcoming Hearings</h2>
@@ -681,7 +411,6 @@ body { font-family:'DM Sans',sans-serif; background:var(--cream); color:var(--te
       <div id="hearings-content"></div>
     </div>
 
-    <!-- ══ FILINGS ══ -->
     <div class="page-section" id="page-filings">
       <div class="section-hdr">
         <h2>Filings &amp; Documents</h2>
@@ -690,7 +419,6 @@ body { font-family:'DM Sans',sans-serif; background:var(--cream); color:var(--te
       <div id="filings-content"></div>
     </div>
 
-    <!-- ══ FINANCIALS ══ -->
     <div class="page-section" id="page-financials">
       <div class="section-hdr">
         <h2>Fines &amp; Fees</h2>
@@ -699,7 +427,6 @@ body { font-family:'DM Sans',sans-serif; background:var(--cream); color:var(--te
       <div id="financials-content"></div>
     </div>
 
-    <!-- ══ DOCKET (staff) ══ -->
     <div class="page-section" id="page-docket">
       <div class="section-hdr">
         <h2 id="docket-title">My Docket</h2>
@@ -708,7 +435,6 @@ body { font-family:'DM Sans',sans-serif; background:var(--cream); color:var(--te
       <div id="docket-content"></div>
     </div>
 
-    <!-- ══ ALL CASES (staff) ══ -->
     <div class="page-section" id="page-all-cases">
       <div class="section-hdr">
         <h2>All Cases</h2>
@@ -717,7 +443,6 @@ body { font-family:'DM Sans',sans-serif; background:var(--cream); color:var(--te
       <div id="all-cases-content"></div>
     </div>
 
-    <!-- ══ QUEUE (clerks) ══ -->
     <div class="page-section" id="page-queue">
       <div class="section-hdr">
         <h2>Processing Queue</h2>
@@ -726,7 +451,6 @@ body { font-family:'DM Sans',sans-serif; background:var(--cream); color:var(--te
       <div id="queue-content"></div>
     </div>
 
-    <!-- ══ ADMIN TOOLS ══ -->
     <div class="page-section" id="page-admin">
       <div class="section-hdr">
         <h2>Administrative Tools</h2>
@@ -735,7 +459,6 @@ body { font-family:'DM Sans',sans-serif; background:var(--cream); color:var(--te
       <div id="admin-content"></div>
     </div>
 
-    <!-- ══ OPINIONS (justices) ══ -->
     <div class="page-section" id="page-opinions">
       <div class="section-hdr">
         <h2>Opinions &amp; Orders</h2>
@@ -744,7 +467,6 @@ body { font-family:'DM Sans',sans-serif; background:var(--cream); color:var(--te
       <div id="opinions-content"></div>
     </div>
 
-    <!-- ══ SETTINGS ══ -->
     <div class="page-section" id="page-settings">
       <div class="section-hdr">
         <h2>Account Settings</h2>
@@ -753,10 +475,9 @@ body { font-family:'DM Sans',sans-serif; background:var(--cream); color:var(--te
       <div id="settings-content"></div>
     </div>
 
-  </div><!-- /page-body -->
-</div><!-- /main -->
+  </div>
+</div>
 
-<!-- Auth loading overlay -->
 <div class="auth-loading-overlay" id="auth-overlay">
   <div class="alo-seal">⚖️</div>
   <div class="alo-title">MiCOURT</div>
@@ -765,65 +486,56 @@ body { font-family:'DM Sans',sans-serif; background:var(--cream); color:var(--te
 </div>
 
 <script>
-/* ═══════════════════════════════════════════════════════
+/* ═══════════════════════════════════════════
    MOCK DATA
-═══════════════════════════════════════════════════════ */
-
-// Live user — populated from Firestore on load
-const CURRENT_USER = {
-  name:      '—',
-  email:     '—',
-  pin:       '—',
-  role:      'Portal User',
-  barNumber: null,
-  uid:       null,
-};
+═══════════════════════════════════════════ */
+const CURRENT_USER = { name:'—', email:'—', pin:'—', role:'Portal User', barNumber:null, uid:null };
 
 const MOCK_CASES = [
-  { id: '26-DC-1042', type: 'Criminal', title: 'State of Michigan v. Calloway', court: 'Genesee Co. District Court', status: 'Pre-Trial', judge: 'Hon. Patricia L. Nguyen', filed: 'Mar 4, 2026', next: 'Jun 18, 2026', role: 'Defendant' },
-  { id: '25-DC-0877', type: 'Traffic',  title: 'State of Michigan v. Calloway', court: 'Genesee Co. District Court', status: 'Active',    judge: 'Hon. Marcus T. Webb',    filed: 'Nov 12, 2025', next: 'Jul 2, 2026',  role: 'Defendant' },
-  { id: '24-DC-0310', type: 'Civil',    title: 'Calloway v. Meridian Prop. LLC', court: 'Genesee Co. District Court', status: 'Closed',    judge: 'Hon. Sandra F. Okafor',  filed: 'Feb 2, 2024',  next: null, role: 'Plaintiff' },
+  { id:'26-DC-1042', type:'Criminal', title:'State of Michigan v. Calloway',       court:'Genesee Co. District Court', status:'Pre-Trial', judge:'Hon. Patricia L. Nguyen', filed:'Mar 4, 2026',  next:'Jun 18, 2026', role:'Defendant' },
+  { id:'25-DC-0877', type:'Traffic',  title:'State of Michigan v. Calloway',       court:'Genesee Co. District Court', status:'Active',    judge:'Hon. Marcus T. Webb',    filed:'Nov 12, 2025', next:'Jul 2, 2026',  role:'Defendant' },
+  { id:'24-DC-0310', type:'Civil',    title:'Calloway v. Meridian Prop. LLC',      court:'Genesee Co. District Court', status:'Closed',    judge:'Hon. Sandra F. Okafor',  filed:'Feb 2, 2024',  next:null,            role:'Plaintiff' },
 ];
 
 const MOCK_DOCKET = [
-  { id: '26-DC-1042', type: 'Criminal', title: 'State of Michigan v. Calloway',          court: 'Genesee Co. District Court', status: 'Pre-Trial', next: 'Jun 18, 2026 · 9:00 AM', room: 'Courtroom 4A' },
-  { id: '26-DC-1055', type: 'Criminal', title: 'State of Michigan v. Torres',             court: 'Genesee Co. District Court', status: 'Active',    next: 'Jun 19, 2026 · 10:30 AM', room: 'Courtroom 4A' },
-  { id: '26-DC-0991', type: 'Civil',    title: 'Brennan v. Flint Water Authority',        court: 'Genesee Co. District Court', status: 'Pending',   next: 'Jun 25, 2026 · 2:00 PM', room: 'Courtroom 4A' },
-  { id: '25-DC-0988', type: 'Criminal', title: 'State of Michigan v. Morrison',           court: 'Genesee Co. District Court', status: 'Active',    next: 'Jul 8, 2026 · 9:30 AM', room: 'Courtroom 4A' },
-  { id: '26-SC-0022', type: 'Appellate','title': 'In re Sentencing Guidelines Reform',   court: 'Michigan Supreme Court',     status: 'Pending',   next: 'Sep 10, 2026 · 10:00 AM', room: 'Chamber 1' },
+  { id:'26-DC-1042', type:'Criminal',  title:'State of Michigan v. Calloway',         court:'Genesee Co. District Court', status:'Pre-Trial', next:'Jun 18, 2026 · 9:00 AM',   room:'Courtroom 4A', filed:'Mar 4, 2026' },
+  { id:'26-DC-1055', type:'Criminal',  title:'State of Michigan v. Torres',            court:'Genesee Co. District Court', status:'Active',    next:'Jun 19, 2026 · 10:30 AM',  room:'Courtroom 4A', filed:'Mar 14, 2026' },
+  { id:'26-DC-0991', type:'Civil',     title:'Brennan v. Flint Water Authority',       court:'Genesee Co. District Court', status:'Pending',   next:'Jun 25, 2026 · 2:00 PM',   room:'Courtroom 4A', filed:'Feb 20, 2026' },
+  { id:'25-DC-0988', type:'Criminal',  title:'State of Michigan v. Morrison',          court:'Genesee Co. District Court', status:'Active',    next:'Jul 8, 2026 · 9:30 AM',    room:'Courtroom 4A', filed:'Dec 3, 2025' },
+  { id:'26-SC-0022', type:'Appellate', title:'In re Sentencing Guidelines Reform',     court:'Michigan Supreme Court',     status:'Pending',   next:'Sep 10, 2026 · 10:00 AM',  room:'Chamber 1',    filed:'Jan 15, 2026' },
 ];
 
 const MOCK_SC_DOCKET = [
-  { id: '26-SC-0022', type: 'Appellate', title: 'In re Sentencing Guidelines Reform',      court: 'Michigan Supreme Court', status: 'Pending',  next: 'Sep 10, 2026 · 10:00 AM', room: 'Chamber 1' },
-  { id: '26-SC-0018', type: 'Appellate', title: 'People v. Monroe — Fourth Amendment',     court: 'Michigan Supreme Court', status: 'Pending',  next: 'Sep 12, 2026 · 9:00 AM',  room: 'Chamber 1' },
-  { id: '26-SC-0015', type: 'Appellate', title: 'Genesee Co. v. State — Budget Dispute',   court: 'Michigan Supreme Court', status: 'Active',   next: 'Sep 25, 2026 · 2:00 PM',  room: 'Chamber 1' },
-  { id: '25-SC-0044', type: 'Appellate', title: 'Torres v. State — Ineffective Counsel',   court: 'Michigan Supreme Court', status: 'Closed',   next: null, room: 'Chamber 1' },
+  { id:'26-SC-0022', type:'Appellate', title:'In re Sentencing Guidelines Reform',      court:'Michigan Supreme Court', status:'Pending',  next:'Sep 10, 2026 · 10:00 AM', room:'Chamber 1', filed:'Jan 15, 2026' },
+  { id:'26-SC-0018', type:'Appellate', title:'People v. Monroe — Fourth Amendment',     court:'Michigan Supreme Court', status:'Pending',  next:'Sep 12, 2026 · 9:00 AM',  room:'Chamber 1', filed:'Dec 12, 2025' },
+  { id:'26-SC-0015', type:'Appellate', title:'Genesee Co. v. State — Budget Dispute',   court:'Michigan Supreme Court', status:'Active',   next:'Sep 25, 2026 · 2:00 PM',  room:'Chamber 1', filed:'Nov 5, 2025' },
+  { id:'25-SC-0044', type:'Appellate', title:'Torres v. State — Ineffective Counsel',   court:'Michigan Supreme Court', status:'Closed',   next:null,                       room:'Chamber 1', filed:'Aug 1, 2025' },
 ];
 
 const MOCK_HEARINGS = [
-  { date: '2026-06-18', type: 'Pre-Trial Conference',     case: '26-DC-1042 · State v. Calloway',    officer: 'Hon. Patricia L. Nguyen', room: 'Courtroom 4A', status: 'upcoming' },
-  { date: '2026-07-02', type: 'Traffic Arraignment',      case: '25-DC-0877 · State v. Calloway',    officer: 'Hon. Marcus T. Webb',     room: 'Courtroom 2B', status: 'upcoming' },
-  { date: '2026-03-12', type: 'Preliminary Hearing',      case: '26-DC-1042 · State v. Calloway',    officer: 'Hon. Patricia L. Nguyen', room: 'Courtroom 4A', status: 'past' },
+  { id:'H-001', date:'2026-06-18', type:'Pre-Trial Conference',  case:'26-DC-1042 · State v. Calloway', caseId:'26-DC-1042', officer:'Hon. Patricia L. Nguyen', room:'Courtroom 4A', time:'9:00 AM',  status:'upcoming' },
+  { id:'H-002', date:'2026-07-02', type:'Traffic Arraignment',   case:'25-DC-0877 · State v. Calloway', caseId:'25-DC-0877', officer:'Hon. Marcus T. Webb',    room:'Courtroom 2B', time:'11:00 AM', status:'upcoming' },
+  { id:'H-003', date:'2026-03-12', type:'Preliminary Hearing',   case:'26-DC-1042 · State v. Calloway', caseId:'26-DC-1042', officer:'Hon. Patricia L. Nguyen', room:'Courtroom 4A', time:'9:00 AM',  status:'past' },
 ];
 
 const MOCK_FILINGS = [
-  { icon:'📄', title:'Motion to Suppress Evidence', by:'Calloway Defense — R. Elmore, Esq.', date:'Apr 14, 2026', case:'26-DC-1042' },
-  { icon:'📋', title:'Answer to Civil Complaint',   by:'Calloway — Pro Se',                  date:'Mar 2, 2024',  case:'24-DC-0310' },
-  { icon:'📄', title:'Discovery Request',            by:'Calloway Defense — R. Elmore, Esq.', date:'Mar 28, 2026', case:'26-DC-1042' },
+  { id:'F-001', icon:'📄', title:'Motion to Suppress Evidence',  by:'Calloway Defense — R. Elmore, Esq.', date:'Apr 14, 2026', case:'26-DC-1042', type:'Motion' },
+  { id:'F-002', icon:'📋', title:'Answer to Civil Complaint',    by:'Calloway — Pro Se',                  date:'Mar 2, 2024',  case:'24-DC-0310', type:'Response' },
+  { id:'F-003', icon:'📄', title:'Discovery Request',             by:'Calloway Defense — R. Elmore, Esq.', date:'Mar 28, 2026', case:'26-DC-1042', type:'Discovery' },
 ];
 
 const MOCK_FINANCIALS = [
-  { type: 'Court Costs',       case:'26-DC-1042', amount: 420.00,  status:'Unpaid', paid: 0 },
-  { type: 'Traffic Fine',      case:'25-DC-0877', amount: 185.00,  status:'Partial', paid: 100 },
-  { type: 'Civil Filing Fee',  case:'24-DC-0310', amount: 150.00,  status:'Paid', paid: 150 },
+  { id:'FIN-001', type:'Court Costs',       case:'26-DC-1042', amount:420.00,  status:'Unpaid',  paid:0 },
+  { id:'FIN-002', type:'Traffic Fine',      case:'25-DC-0877', amount:185.00,  status:'Partial', paid:100 },
+  { id:'FIN-003', type:'Civil Filing Fee',  case:'24-DC-0310', amount:150.00,  status:'Paid',    paid:150 },
 ];
 
 const MOCK_QUEUE = [
-  { title: 'Motion to Suppress — 26-DC-1042',    by: 'R. Elmore, Esq.',    received: '2 hours ago',   priority: 'high' },
-  { title: 'E-Filing: Answer — 26-DC-1055',      by: 'Torres Defense',     received: '4 hours ago',   priority: 'high' },
-  { title: 'Subpoena Request — 26-DC-0991',      by: 'Brennan v. Flint',   received: 'Yesterday',     priority: 'med'  },
-  { title: 'FOIA Request — Case 25-DC-0988',     by: 'M. Graves (Public)', received: 'Yesterday',     priority: 'med'  },
-  { title: 'Fee Waiver Application — 26-DC-1061',by: 'Pro Se Litigant',    received: '2 days ago',    priority: 'low'  },
+  { id:'Q-001', title:'Motion to Suppress — 26-DC-1042',    by:'R. Elmore, Esq.',    received:'2 hours ago',  priority:'high' },
+  { id:'Q-002', title:'E-Filing: Answer — 26-DC-1055',      by:'Torres Defense',     received:'4 hours ago',  priority:'high' },
+  { id:'Q-003', title:'Subpoena Request — 26-DC-0991',      by:'Brennan v. Flint',   received:'Yesterday',    priority:'med'  },
+  { id:'Q-004', title:'FOIA Request — Case 25-DC-0988',     by:'M. Graves (Public)', received:'Yesterday',    priority:'med'  },
+  { id:'Q-005', title:'Fee Waiver Application — 26-DC-1061',by:'Pro Se Litigant',    received:'2 days ago',   priority:'low'  },
 ];
 
 const MOCK_ACTIVITY = [
@@ -834,32 +546,56 @@ const MOCK_ACTIVITY = [
   { dot:'nd-gray',  title:'Case 24-DC-0310 closed — Judgment for Plaintiff',            time:'Feb 2026'    },
 ];
 
-/* ═══════════════════════════════════════════════════════
-   ROLE DEFINITIONS
-═══════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════
+   ADMIN TOOL LINKS
+   href is the actual URL for that admin tool
+═══════════════════════════════════════════ */
+const ADMIN_TOOLS_DISTRICT = [
+  { icon:'📋', title:'Case Management',      sub:'Open, assign, close, and merge cases.',              href:'/courts/micourt/admin/cases/' },
+  { icon:'📅', title:'Schedule Hearing',     sub:'Add or modify court proceedings.',                   href:'/courts/micourt/admin/hearings/' },
+  { icon:'👨‍⚖️', title:'Judicial Assignments', sub:'Assign judges and magistrates to cases.',           href:'/courts/micourt/admin/assignments/' },
+  { icon:'📄', title:'Manage Filings',       sub:'Review, accept, or reject submitted documents.',     href:'/courts/micourt/admin/filings/' },
+  { icon:'💳', title:'Financial Orders',     sub:'Issue, modify, or waive fines and fees.',            href:'/courts/micourt/admin/financials/' },
+  { icon:'📬', title:'Notices & Service',    sub:'Issue summons, subpoenas, and notices.',             href:'/courts/micourt/admin/notices/' },
+  { icon:'🏛️', title:'Courtroom Calendar',   sub:'View and manage all courtroom schedules.',           href:'/courts/micourt/admin/calendar/' },
+  { icon:'📊', title:'Court Reports',        sub:'Generate statistical and docket reports.',           href:'/courts/micourt/admin/reports/' },
+  { icon:'🔎', title:'Search All Records',   sub:'Full access to the court record system.',            href:'/courts/micourt/admin/records/' },
+];
 
+const ADMIN_TOOLS_SC = [
+  { icon:'📜', title:'Opinion Management',   sub:'Draft, circulate, and publish SC opinions.',        href:'/courts/micourt/admin/opinions/' },
+  { icon:'📋', title:'Petition Review',      sub:'Review petitions for leave to appeal.',             href:'/courts/micourt/admin/petitions/' },
+  { icon:'📅', title:'Oral Argument Schedule',sub:'Schedule and manage oral arguments.',              href:'/courts/micourt/admin/oral-arguments/' },
+  { icon:'📊', title:'SC Reports',           sub:'Supreme Court statistics and docket reports.',      href:'/courts/micourt/admin/sc-reports/' },
+  { icon:'🏛️', title:'Justice Assignments',  sub:'Assign justices to matters.',                       href:'/courts/micourt/admin/justice-assignments/' },
+  { icon:'📁', title:'Record Requests',      sub:'Manage FOIA and public records requests.',          href:'/courts/micourt/admin/record-requests/' },
+];
+
+/* ═══════════════════════════════════════════
+   ROLE / NAV CONFIG
+═══════════════════════════════════════════ */
 const ROLE_META = {
-  'Portal User':                          { tier:'public',   court:'Genesee Co. District Court', sc: false },
-  'Licensed Attorney':                    { tier:'attorney', court:'Genesee Co. District Court', sc: false },
-  'State Attorney':                       { tier:'state-atty', court:'Genesee Co. District Court', sc: false },
-  'Clerk':                                { tier:'clerk',    court:'Genesee Co. District Court', sc: false },
-  'Magistrate Judge':                     { tier:'magistrate', court:'Genesee Co. District Court', sc: false },
-  'Judge':                                { tier:'judge',    court:'Genesee Co. District Court', sc: false },
-  'Chief Judge':                          { tier:'chief-judge', court:'Genesee Co. District Court', sc: false },
-  'Clerk of the Supreme Court':           { tier:'sc-clerk',      court:'Michigan Supreme Court', sc: true },
-  'Assistant Clerk of the Supreme Court': { tier:'sc-asst-clerk', court:'Michigan Supreme Court', sc: true },
-  'Justice':                              { tier:'justice',       court:'Michigan Supreme Court', sc: true },
-  'Chief Justice':                        { tier:'chief-justice', court:'Michigan Supreme Court', sc: true },
+  'Portal User':                          { tier:'public',         court:'Genesee Co. District Court', sc:false },
+  'Licensed Attorney':                    { tier:'attorney',       court:'Genesee Co. District Court', sc:false },
+  'State Attorney':                       { tier:'state-atty',     court:'Genesee Co. District Court', sc:false },
+  'Clerk':                                { tier:'clerk',          court:'Genesee Co. District Court', sc:false },
+  'Magistrate Judge':                     { tier:'magistrate',     court:'Genesee Co. District Court', sc:false },
+  'Judge':                                { tier:'judge',          court:'Genesee Co. District Court', sc:false },
+  'Chief Judge':                          { tier:'chief-judge',    court:'Genesee Co. District Court', sc:false },
+  'Clerk of the Supreme Court':           { tier:'sc-clerk',       court:'Michigan Supreme Court',     sc:true  },
+  'Assistant Clerk of the Supreme Court': { tier:'sc-asst-clerk',  court:'Michigan Supreme Court',     sc:true  },
+  'Justice':                              { tier:'justice',        court:'Michigan Supreme Court',     sc:true  },
+  'Chief Justice':                        { tier:'chief-justice',  court:'Michigan Supreme Court',     sc:true  },
 };
 
 const NAV_CONFIG = {
   public: [
     { section:'main', items:[
       { id:'overview',   icon:'🏠', label:'Overview' },
-      { id:'cases',      icon:'📋', label:'My Cases', badge:'2', badgeCls:'gold' },
-      { id:'hearings',   icon:'📅', label:'Hearings', badge:'2', badgeCls:'' },
+      { id:'cases',      icon:'📋', label:'My Cases',           badge:'2', badgeCls:'gold' },
+      { id:'hearings',   icon:'📅', label:'Hearings',           badge:'2', badgeCls:'' },
       { id:'filings',    icon:'📄', label:'Filings & Documents' },
-      { id:'financials', icon:'💳', label:'Fines & Fees', badge:'!', badgeCls:'red' },
+      { id:'financials', icon:'💳', label:'Fines & Fees',       badge:'!', badgeCls:'red' },
     ]},
     { section:'account', items:[
       { id:'settings', icon:'⚙️', label:'Account Settings' },
@@ -868,8 +604,8 @@ const NAV_CONFIG = {
   attorney: [
     { section:'main', items:[
       { id:'overview',   icon:'🏠', label:'Overview' },
-      { id:'cases',      icon:'📋', label:'Client Cases', badge:'3', badgeCls:'gold' },
-      { id:'hearings',   icon:'📅', label:'Hearings', badge:'2', badgeCls:'' },
+      { id:'cases',      icon:'📋', label:'Client Cases',       badge:'3', badgeCls:'gold' },
+      { id:'hearings',   icon:'📅', label:'Hearings',           badge:'2', badgeCls:'' },
       { id:'filings',    icon:'📄', label:'Filings & Documents' },
       { id:'financials', icon:'💳', label:'Financials' },
     ]},
@@ -891,10 +627,10 @@ const NAV_CONFIG = {
   ],
   clerk: [
     { section:'main', items:[
-      { id:'overview',   icon:'🏠', label:'Overview' },
-      { id:'queue',      icon:'📥', label:'Processing Queue', badge:'5', badgeCls:'red' },
-      { id:'all-cases',  icon:'🔎', label:'All Cases' },
-      { id:'filings',    icon:'📄', label:'Filings' },
+      { id:'overview',  icon:'🏠', label:'Overview' },
+      { id:'queue',     icon:'📥', label:'Processing Queue', badge:'5', badgeCls:'red' },
+      { id:'all-cases', icon:'🔎', label:'All Cases' },
+      { id:'filings',   icon:'📄', label:'Filings' },
     ]},
     { section:'tools', items:[
       { id:'admin', icon:'🛠️', label:'Admin Tools' },
@@ -905,11 +641,11 @@ const NAV_CONFIG = {
   ],
   magistrate: [
     { section:'main', items:[
-      { id:'overview',   icon:'🏠', label:'Overview' },
-      { id:'docket',     icon:'⚖️', label:'My Docket', badge:'4', badgeCls:'gold' },
-      { id:'hearings',   icon:'📅', label:'Hearings' },
-      { id:'all-cases',  icon:'🔎', label:'All Cases' },
-      { id:'filings',    icon:'📄', label:'Filings' },
+      { id:'overview',  icon:'🏠', label:'Overview' },
+      { id:'docket',    icon:'⚖️', label:'My Docket',  badge:'4', badgeCls:'gold' },
+      { id:'hearings',  icon:'📅', label:'Hearings' },
+      { id:'all-cases', icon:'🔎', label:'All Cases' },
+      { id:'filings',   icon:'📄', label:'Filings' },
     ]},
     { section:'tools', items:[
       { id:'admin', icon:'🛠️', label:'Admin Tools' },
@@ -920,11 +656,11 @@ const NAV_CONFIG = {
   ],
   judge: [
     { section:'main', items:[
-      { id:'overview',   icon:'🏠', label:'Overview' },
-      { id:'docket',     icon:'⚖️', label:'My Docket', badge:'5', badgeCls:'gold' },
-      { id:'hearings',   icon:'📅', label:'Hearings' },
-      { id:'all-cases',  icon:'🔎', label:'All Cases' },
-      { id:'filings',    icon:'📄', label:'Filings' },
+      { id:'overview',  icon:'🏠', label:'Overview' },
+      { id:'docket',    icon:'⚖️', label:'My Docket',  badge:'5', badgeCls:'gold' },
+      { id:'hearings',  icon:'📅', label:'Hearings' },
+      { id:'all-cases', icon:'🔎', label:'All Cases' },
+      { id:'filings',   icon:'📄', label:'Filings' },
     ]},
     { section:'tools', items:[
       { id:'admin', icon:'🛠️', label:'Admin Tools' },
@@ -935,15 +671,15 @@ const NAV_CONFIG = {
   ],
   'chief-judge': [
     { section:'main', items:[
-      { id:'overview',   icon:'🏠', label:'Overview' },
-      { id:'docket',     icon:'⚖️', label:'My Docket', badge:'6', badgeCls:'gold' },
-      { id:'hearings',   icon:'📅', label:'Hearings' },
-      { id:'all-cases',  icon:'🔎', label:'All Cases' },
-      { id:'filings',    icon:'📄', label:'Filings' },
+      { id:'overview',  icon:'🏠', label:'Overview' },
+      { id:'docket',    icon:'⚖️', label:'My Docket',     badge:'6', badgeCls:'gold' },
+      { id:'hearings',  icon:'📅', label:'Hearings' },
+      { id:'all-cases', icon:'🔎', label:'All Cases' },
+      { id:'filings',   icon:'📄', label:'Filings' },
     ]},
     { section:'tools', items:[
       { id:'admin', icon:'🛠️', label:'Admin Tools' },
-      { id:'queue', icon:'📥', label:'Filing Queue', badge:'3', badgeCls:'red' },
+      { id:'queue', icon:'📥', label:'Filing Queue',    badge:'3', badgeCls:'red' },
     ]},
     { section:'account', items:[
       { id:'settings', icon:'⚙️', label:'Settings' },
@@ -951,10 +687,10 @@ const NAV_CONFIG = {
   ],
   'sc-clerk': [
     { section:'main', items:[
-      { id:'overview',   icon:'🏠', label:'Overview' },
-      { id:'queue',      icon:'📥', label:'Processing Queue', badge:'7', badgeCls:'red' },
-      { id:'all-cases',  icon:'🔎', label:'All SC Cases' },
-      { id:'filings',    icon:'📄', label:'Filings' },
+      { id:'overview',  icon:'🏠', label:'Overview' },
+      { id:'queue',     icon:'📥', label:'Processing Queue', badge:'7', badgeCls:'red' },
+      { id:'all-cases', icon:'🔎', label:'All SC Cases' },
+      { id:'filings',   icon:'📄', label:'Filings' },
     ]},
     { section:'tools', items:[
       { id:'admin', icon:'🛠️', label:'Admin Tools' },
@@ -965,10 +701,10 @@ const NAV_CONFIG = {
   ],
   'sc-asst-clerk': [
     { section:'main', items:[
-      { id:'overview',   icon:'🏠', label:'Overview' },
-      { id:'queue',      icon:'📥', label:'Processing Queue', badge:'4', badgeCls:'red' },
-      { id:'all-cases',  icon:'🔎', label:'All SC Cases' },
-      { id:'filings',    icon:'📄', label:'Filings' },
+      { id:'overview',  icon:'🏠', label:'Overview' },
+      { id:'queue',     icon:'📥', label:'Processing Queue', badge:'4', badgeCls:'red' },
+      { id:'all-cases', icon:'🔎', label:'All SC Cases' },
+      { id:'filings',   icon:'📄', label:'Filings' },
     ]},
     { section:'account', items:[
       { id:'settings', icon:'⚙️', label:'Settings' },
@@ -976,11 +712,11 @@ const NAV_CONFIG = {
   ],
   justice: [
     { section:'main', items:[
-      { id:'overview',   icon:'🏠', label:'Overview' },
-      { id:'docket',     icon:'⚖️', label:'My Docket', badge:'3', badgeCls:'gold' },
-      { id:'opinions',   icon:'📜', label:'Opinions & Orders' },
-      { id:'hearings',   icon:'📅', label:'Oral Arguments' },
-      { id:'all-cases',  icon:'🔎', label:'All SC Cases' },
+      { id:'overview',  icon:'🏠', label:'Overview' },
+      { id:'docket',    icon:'⚖️', label:'My Docket',         badge:'3', badgeCls:'gold' },
+      { id:'opinions',  icon:'📜', label:'Opinions & Orders' },
+      { id:'hearings',  icon:'📅', label:'Oral Arguments' },
+      { id:'all-cases', icon:'🔎', label:'All SC Cases' },
     ]},
     { section:'tools', items:[
       { id:'admin', icon:'🛠️', label:'Admin Tools' },
@@ -991,15 +727,15 @@ const NAV_CONFIG = {
   ],
   'chief-justice': [
     { section:'main', items:[
-      { id:'overview',   icon:'🏠', label:'Overview' },
-      { id:'docket',     icon:'⚖️', label:'My Docket', badge:'4', badgeCls:'gold' },
-      { id:'opinions',   icon:'📜', label:'Opinions & Orders', badge:'2', badgeCls:'blue' },
-      { id:'hearings',   icon:'📅', label:'Oral Arguments' },
-      { id:'all-cases',  icon:'🔎', label:'All SC Cases' },
+      { id:'overview',  icon:'🏠', label:'Overview' },
+      { id:'docket',    icon:'⚖️', label:'My Docket',         badge:'4', badgeCls:'gold' },
+      { id:'opinions',  icon:'📜', label:'Opinions & Orders', badge:'2', badgeCls:'blue' },
+      { id:'hearings',  icon:'📅', label:'Oral Arguments' },
+      { id:'all-cases', icon:'🔎', label:'All SC Cases' },
     ]},
     { section:'tools', items:[
-      { id:'admin',  icon:'🛠️', label:'Admin Tools' },
-      { id:'queue',  icon:'📥', label:'Filing Queue', badge:'7', badgeCls:'red' },
+      { id:'admin', icon:'🛠️', label:'Admin Tools' },
+      { id:'queue', icon:'📥', label:'Filing Queue',          badge:'7', badgeCls:'red' },
     ]},
     { section:'account', items:[
       { id:'settings', icon:'⚙️', label:'Settings' },
@@ -1007,63 +743,66 @@ const NAV_CONFIG = {
   ],
 };
 
-/* ═══════════════════════════════════════════════════════
+/* ═══════════════════════════════════════════
    STATE
-═══════════════════════════════════════════════════════ */
-let currentRole = 'Portal User';
+═══════════════════════════════════════════ */
+let currentRole  = 'Portal User';
 let currentCourt = 'Genesee Co. District Court';
-let activePage = 'overview';
+let activePage   = 'overview';
 
-/* ═══════════════════════════════════════════════════════
+/* ═══════════════════════════════════════════
    HELPERS
-═══════════════════════════════════════════════════════ */
+═══════════════════════════════════════════ */
 function getTier(role) { return (ROLE_META[role] || ROLE_META['Portal User']).tier; }
-function isScRole(role) { return (ROLE_META[role] || {}).sc === true; }
-function isStaffRole(role) { const t=getTier(role); return !['public','attorney','state-atty'].includes(t); }
-
-function fmtMoney(n) { return '$'+Number(n).toLocaleString('en-US',{minimumFractionDigits:2}); }
+function isScRole(role) { return !!(ROLE_META[role] || {}).sc; }
+function isStaffRole(role) { return !['public','attorney','state-atty'].includes(getTier(role)); }
+function fmtMoney(n) { return '$' + Number(n).toLocaleString('en-US',{minimumFractionDigits:2}); }
 function initials(name) { return name.split(' ').filter(Boolean).map(w=>w[0]).slice(0,2).join(''); }
 
 function statusPill(status) {
   const s = (status||'').toLowerCase().replace(/[-\s]/g,'');
   let cls = 'sp-active';
-  if (s.includes('pretrial')) cls = 'sp-pretrial';
-  else if (s.includes('pending')) cls = 'sp-pending';
-  else if (s.includes('closed')) cls = 'sp-closed';
-  else if (s.includes('dismissed')) cls = 'sp-dismissed';
+  if (s.includes('pretrial')) cls='sp-pretrial';
+  else if (s.includes('pending')) cls='sp-pending';
+  else if (s.includes('closed')) cls='sp-closed';
+  else if (s.includes('dismissed')) cls='sp-dismissed';
   return `<span class="status-pill ${cls}">${status}</span>`;
 }
 function typeBadge(type) {
-  const t=(type||'').toLowerCase();
-  let cls='badge-civil';
-  if(t==='criminal') cls='badge-criminal';
-  else if(t==='appellate'||t==='appeal') cls='badge-appellate';
-  else if(t==='traffic') cls='badge-traffic';
+  const t = (type||'').toLowerCase();
+  let cls = 'badge-civil';
+  if (t==='criminal') cls='badge-criminal';
+  else if (t==='appellate'||t==='appeal') cls='badge-appellate';
+  else if (t==='traffic') cls='badge-traffic';
   return `<span class="badge ${cls}">${type}</span>`;
 }
 
-/* ═══════════════════════════════════════════════════════
+/* URL builders — all clickable rows link here */
+function caseUrl(id)     { return `/courts/micourt/cases/${encodeURIComponent(id)}/`; }
+function hearingUrl(id)  { return `/courts/micourt/hearings/${encodeURIComponent(id)}/`; }
+function filingUrl(id)   { return `/courts/micourt/filings/${encodeURIComponent(id)}/`; }
+function finUrl(id)      { return `/courts/micourt/financials/${encodeURIComponent(id)}/`; }
+function queueUrl(id)    { return `/courts/micourt/queue/${encodeURIComponent(id)}/`; }
+
+/* ═══════════════════════════════════════════
    NAV
-═══════════════════════════════════════════════════════ */
+═══════════════════════════════════════════ */
+const SECTION_LABELS = { main:'Navigation', tools:'Court Tools', account:'Account' };
+
 function buildNav(role) {
-  const tier = getTier(role);
+  const tier   = getTier(role);
   const config = NAV_CONFIG[tier] || NAV_CONFIG['public'];
-  const SECTION_LABELS = { main:'Navigation', tools:'Court Tools', account:'Account' };
   let html = '';
   config.forEach(sec => {
-    html += `<div class="sb-section">
-      <span class="sb-section-label">${SECTION_LABELS[sec.section]||sec.section}</span>`;
+    html += `<div class="sb-section"><span class="sb-section-label">${SECTION_LABELS[sec.section]||sec.section}</span>`;
     sec.items.forEach(item => {
-      const badge = item.badge ? `<span class="sb-nav-badge ${item.badgeCls||''}">${item.badge}</span>` : '';
+      const badge  = item.badge ? `<span class="sb-nav-badge ${item.badgeCls||''}">${item.badge}</span>` : '';
       const active = item.id === activePage ? ' active' : '';
       html += `<button class="sb-nav-item${active}" onclick="navigateTo('${item.id}')">
-        <span class="sb-nav-icon">${item.icon}</span>
-        ${item.label}
-        ${badge}
+        <span class="sb-nav-icon">${item.icon}</span>${item.label}${badge}
       </button>`;
     });
-    html += `</div>`;
-    html += `<hr class="sb-divider">`;
+    html += `</div><hr class="sb-divider">`;
   });
   document.getElementById('sidebar-nav').innerHTML = html;
 }
@@ -1072,48 +811,132 @@ function navigateTo(pageId) {
   activePage = pageId;
   document.querySelectorAll('.page-section').forEach(p => p.classList.remove('active'));
   const target = document.getElementById('page-' + pageId);
-  if(target) target.classList.add('active');
-
-  // page title
+  if (target) target.classList.add('active');
   const labels = {
     overview:'Dashboard', cases:'My Cases', hearings:'Hearings', filings:'Filings & Documents',
     financials:'Fines & Fees', docket:'My Docket', 'all-cases':'All Cases', queue:'Processing Queue',
     admin:'Administrative Tools', opinions:'Opinions & Orders', settings:'Account Settings'
   };
   document.getElementById('topbar-title').textContent = labels[pageId] || 'MiCOURT';
-
-  // rebuild nav to update active
   buildNav(currentRole);
-
-  // render content if needed
   renderPage(pageId);
 }
+window.navigateTo = navigateTo;
 
-/* ═══════════════════════════════════════════════════════
+/* ═══════════════════════════════════════════
    PAGE RENDERERS
-═══════════════════════════════════════════════════════ */
+═══════════════════════════════════════════ */
 function renderPage(pageId) {
   const tier = getTier(currentRole);
-  if (pageId === 'overview')    renderOverview(tier);
-  if (pageId === 'cases')       renderCases(tier);
-  if (pageId === 'hearings')    renderHearings(tier);
-  if (pageId === 'filings')     renderFilings(tier);
-  if (pageId === 'financials')  renderFinancials(tier);
-  if (pageId === 'docket')      renderDocket(tier);
-  if (pageId === 'all-cases')   renderAllCases(tier);
-  if (pageId === 'queue')       renderQueue(tier);
-  if (pageId === 'admin')       renderAdmin(tier);
-  if (pageId === 'opinions')    renderOpinions(tier);
-  if (pageId === 'settings')    renderSettings();
+  if (pageId==='overview')   renderOverview(tier);
+  if (pageId==='cases')      renderCases(tier);
+  if (pageId==='hearings')   renderHearings(tier);
+  if (pageId==='filings')    renderFilings(tier);
+  if (pageId==='financials') renderFinancials(tier);
+  if (pageId==='docket')     renderDocket(tier);
+  if (pageId==='all-cases')  renderAllCases(tier);
+  if (pageId==='queue')      renderQueue(tier);
+  if (pageId==='admin')      renderAdmin(tier);
+  if (pageId==='opinions')   renderOpinions(tier);
+  if (pageId==='settings')   renderSettings();
+}
+
+/* ── Shared row builders (data shown inline, row is a link) ── */
+
+function caseRow(c) {
+  return `<a class="case-row" href="${caseUrl(c.id)}">
+    <div class="cr-left">
+      <div class="cr-num">${c.id}</div>
+      <div class="cr-title">${c.title}</div>
+      <div class="cr-meta">${c.court||'—'} · Filed ${c.filed||'—'} · ${c.judge||c.room||c.role||'—'}</div>
+    </div>
+    <div class="cr-right">
+      ${typeBadge(c.type)}
+      ${statusPill(c.status)}
+      ${c.next ? `<span style="font-size:11px;color:var(--muted)">${c.next}</span>` : ''}
+    </div>
+    <span class="cr-open-hint">Open case ›</span>
+  </a>`;
+}
+
+function hearingRow(h) {
+  const d     = new Date(h.date);
+  const month = d.toLocaleDateString('en-US',{month:'short'});
+  const day   = d.getDate();
+  const year  = d.getFullYear();
+  const cls   = h.status==='today'?'hr-today':h.status==='past'?'hr-past':'hr-upcoming';
+  const label = h.status==='today'?'Today':h.status==='past'?'Completed':'Upcoming';
+  return `<a class="hearing-row" href="${hearingUrl(h.id||h.date)}">
+    <div class="hr-date-box">
+      <div class="hr-month">${month}</div>
+      <div class="hr-day">${day}</div>
+      <div class="hr-year">${year}</div>
+    </div>
+    <div class="hr-info">
+      <div class="hr-type">${h.type}</div>
+      <div class="hr-case">${h.case}</div>
+      <div class="hr-meta">${h.officer} · ${h.room}${h.time?' · '+h.time:''}</div>
+    </div>
+    <span class="hr-pill ${cls}">${label}</span>
+    <span class="hr-open-hint">View ›</span>
+  </a>`;
+}
+
+function filingRow(f) {
+  return `<a class="filing-row" href="${filingUrl(f.id)}">
+    <div class="filing-icon">${f.icon}</div>
+    <div class="filing-info">
+      <div class="filing-title">${f.title}</div>
+      <div class="filing-meta">Filed by: ${f.by} · ${f.date} · Case ${f.case}${f.type?' · '+f.type:''}</div>
+    </div>
+    <span class="filing-open-hint">View document ›</span>
+  </a>`;
+}
+
+function finRow(f) {
+  return `<a class="fin-row" href="${finUrl(f.id)}">
+    <div><div class="fin-type">${f.type}</div><div class="fin-case">Case ${f.case}</div></div>
+    <div style="text-align:right">
+      <div class="fin-amount">${fmtMoney(f.amount)}</div>
+      <span class="fin-status fin-${f.status.toLowerCase()}">${f.status}</span>
+      ${f.paid>0&&f.paid<f.amount?`<div style="font-size:10.5px;color:var(--muted);margin-top:2px">${fmtMoney(f.paid)} paid</div>`:''}
+    </div>
+    <span class="fin-open-hint">Details ›</span>
+  </a>`;
+}
+
+function queueRow(q) {
+  const pCls  = {high:'qp-high',med:'qp-med',low:'qp-low'}[q.priority]||'qp-low';
+  const label = {high:'High Priority',med:'Standard',low:'Low Priority'}[q.priority];
+  return `<div class="queue-row">
+    <div class="queue-priority ${pCls}"></div>
+    <div class="queue-info">
+      <div class="queue-title">${q.title}</div>
+      <div class="queue-meta">From: ${q.by} · Received: ${q.received} ·
+        <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:${q.priority==='high'?'var(--red)':q.priority==='med'?'var(--amber)':'var(--green)'}">${label}</span>
+      </div>
+    </div>
+    <a class="queue-action" href="${queueUrl(q.id)}">Review →</a>
+  </div>`;
+}
+
+function docketTableRow(c) {
+  return `<tr onclick="window.location.href='${caseUrl(c.id)}'" style="cursor:pointer">
+    <td><span class="dt-case-num">${c.id}</span></td>
+    <td style="font-weight:600">${c.title}</td>
+    <td>${typeBadge(c.type)}</td>
+    <td><div class="dt-time">${c.next||'—'}</div><div class="dt-type">${c.room}</div></td>
+    <td>${statusPill(c.status)}</td>
+  </tr>`;
 }
 
 /* ── Overview ── */
 function renderOverview(tier) {
-  const el = document.getElementById('overview-content');
-  const isPublic   = tier === 'public';
-  const isAtty     = tier === 'attorney' || tier === 'state-atty';
-  const isClerk    = tier === 'clerk' || tier === 'sc-clerk' || tier === 'sc-asst-clerk';
-  const isJudge    = ['magistrate','judge','chief-judge','justice','chief-justice'].includes(tier);
+  const el       = document.getElementById('overview-content');
+  const isPublic = tier==='public';
+  const isAtty   = tier==='attorney'||tier==='state-atty';
+  const isClerk  = ['clerk','sc-clerk','sc-asst-clerk'].includes(tier);
+  const isJudge  = ['magistrate','judge','chief-judge','justice','chief-justice'].includes(tier);
 
   if (isPublic) {
     el.innerHTML = `
@@ -1126,17 +949,8 @@ function renderOverview(tier) {
       <div class="two-col">
         <div>
           <div class="card">
-            <div class="card-hdr"><h3>My Cases</h3><a class="card-link" onclick="navigateTo('cases')">View All →</a></div>
-            <div class="card-body">
-              ${MOCK_CASES.map(c=>`<div class="case-row">
-                <div class="cr-left">
-                  <div class="cr-num">${c.id}</div>
-                  <div class="cr-title">${c.title}</div>
-                  <div class="cr-meta">${c.court} · Filed ${c.filed}</div>
-                </div>
-                <div class="cr-right">${typeBadge(c.type)}${statusPill(c.status)}</div>
-              </div>`).join('')}
-            </div>
+            <div class="card-hdr"><h3>My Cases</h3><span class="card-link" onclick="navigateTo('cases')">View All →</span></div>
+            <div class="card-body">${MOCK_CASES.map(c=>caseRow(c)).join('')}</div>
           </div>
           <div class="card">
             <div class="card-hdr"><h3>Recent Activity</h3></div>
@@ -1161,19 +975,12 @@ function renderOverview(tier) {
             </div>
           </div>
           <div class="card">
-            <div class="card-hdr"><h3>Upcoming Hearings</h3></div>
-            <div class="card-body">
-              ${MOCK_HEARINGS.filter(h=>h.status!=='past').map(h=>hearingRow(h)).join('')}
-            </div>
+            <div class="card-hdr"><h3>Upcoming Hearings</h3><span class="card-link" onclick="navigateTo('hearings')">View All →</span></div>
+            <div class="card-body">${MOCK_HEARINGS.filter(h=>h.status!=='past').map(h=>hearingRow(h)).join('')}</div>
           </div>
           <div class="card">
-            <div class="card-hdr"><h3>Fines &amp; Fees</h3><a class="card-link" onclick="navigateTo('financials')">Pay →</a></div>
-            <div class="card-body">
-              ${MOCK_FINANCIALS.map(f=>`<div class="fin-row">
-                <div><div class="fin-type">${f.type}</div><div class="fin-case">${f.case}</div></div>
-                <div style="text-align:right"><div class="fin-amount">${fmtMoney(f.amount)}</div><span class="fin-status fin-${f.status.toLowerCase()}">${f.status}</span></div>
-              </div>`).join('')}
-            </div>
+            <div class="card-hdr"><h3>Fines &amp; Fees</h3><span class="card-link" onclick="navigateTo('financials')">Pay →</span></div>
+            <div class="card-body">${MOCK_FINANCIALS.map(f=>finRow(f)).join('')}</div>
           </div>
         </div>
       </div>`;
@@ -1190,17 +997,12 @@ function renderOverview(tier) {
       <div class="two-col">
         <div>
           <div class="card">
-            <div class="card-hdr"><h3>Client Cases</h3><a class="card-link" onclick="navigateTo('cases')">View All →</a></div>
-            <div class="card-body">
-              ${MOCK_CASES.map(c=>`<div class="case-row">
-                <div class="cr-left">
-                  <div class="cr-num">${c.id}</div>
-                  <div class="cr-title">${c.title}</div>
-                  <div class="cr-meta">${c.court} · ${c.role}</div>
-                </div>
-                <div class="cr-right">${typeBadge(c.type)}${statusPill(c.status)}</div>
-              </div>`).join('')}
-            </div>
+            <div class="card-hdr"><h3>Client Cases</h3><span class="card-link" onclick="navigateTo('cases')">View All →</span></div>
+            <div class="card-body">${MOCK_CASES.map(c=>caseRow(c)).join('')}</div>
+          </div>
+          <div class="card">
+            <div class="card-hdr"><h3>Recent Filings</h3><span class="card-link" onclick="navigateTo('filings')">All Filings →</span></div>
+            <div class="card-body">${MOCK_FILINGS.map(f=>filingRow(f)).join('')}</div>
           </div>
         </div>
         <div>
@@ -1208,18 +1010,16 @@ function renderOverview(tier) {
             <div class="card-hdr"><h3>Quick Actions</h3></div>
             <div class="card-body-pad">
               <div class="qa-grid">
-                <a class="qa-btn"><span class="qa-icon">📝</span><span class="qa-label">E-File Document</span><span class="qa-sub">Submit to clerk</span></a>
+                <a class="qa-btn" href="/courts/micourt/e-file/"><span class="qa-icon">📝</span><span class="qa-label">E-File Document</span><span class="qa-sub">Submit to clerk</span></a>
                 <a class="qa-btn" onclick="navigateTo('hearings')"><span class="qa-icon">📅</span><span class="qa-label">Hearings</span><span class="qa-sub">4 upcoming</span></a>
                 <a class="qa-btn" href="/courts/micourt/cases/"><span class="qa-icon">🔎</span><span class="qa-label">Search Cases</span><span class="qa-sub">All courts</span></a>
-                <a class="qa-btn"><span class="qa-icon">📋</span><span class="qa-label">Court Forms</span><span class="qa-sub">Standardized forms</span></a>
+                <a class="qa-btn" href="/courts/micourt/forms/"><span class="qa-icon">📋</span><span class="qa-label">Court Forms</span><span class="qa-sub">Standardized forms</span></a>
               </div>
             </div>
           </div>
           <div class="card">
-            <div class="card-hdr"><h3>Upcoming Hearings</h3></div>
-            <div class="card-body">
-              ${MOCK_HEARINGS.filter(h=>h.status!=='past').map(h=>hearingRow(h)).join('')}
-            </div>
+            <div class="card-hdr"><h3>Upcoming Hearings</h3><span class="card-link" onclick="navigateTo('hearings')">View All →</span></div>
+            <div class="card-body">${MOCK_HEARINGS.filter(h=>h.status!=='past').map(h=>hearingRow(h)).join('')}</div>
           </div>
         </div>
       </div>`;
@@ -1236,10 +1036,8 @@ function renderOverview(tier) {
       <div class="two-col">
         <div>
           <div class="card">
-            <div class="card-hdr"><h3>Processing Queue</h3><a class="card-link" onclick="navigateTo('queue')">View All →</a></div>
-            <div class="card-body">
-              ${MOCK_QUEUE.slice(0,4).map(q=>queueRow(q)).join('')}
-            </div>
+            <div class="card-hdr"><h3>Processing Queue</h3><span class="card-link" onclick="navigateTo('queue')">View All →</span></div>
+            <div class="card-body">${MOCK_QUEUE.slice(0,4).map(q=>queueRow(q)).join('')}</div>
           </div>
         </div>
         <div>
@@ -1249,8 +1047,8 @@ function renderOverview(tier) {
               <div class="qa-grid">
                 <a class="qa-btn" onclick="navigateTo('all-cases')"><span class="qa-icon">🔎</span><span class="qa-label">Search Cases</span><span class="qa-sub">All records</span></a>
                 <a class="qa-btn" onclick="navigateTo('admin')"><span class="qa-icon">🛠️</span><span class="qa-label">Admin Tools</span><span class="qa-sub">Court management</span></a>
-                <a class="qa-btn"><span class="qa-icon">📋</span><span class="qa-label">Open New Case</span><span class="qa-sub">File complaint</span></a>
-                <a class="qa-btn"><span class="qa-icon">📅</span><span class="qa-label">Schedule Hearing</span><span class="qa-sub">Add to calendar</span></a>
+                <a class="qa-btn" href="/courts/micourt/admin/cases/new/"><span class="qa-icon">📋</span><span class="qa-label">Open New Case</span><span class="qa-sub">File complaint</span></a>
+                <a class="qa-btn" href="/courts/micourt/admin/hearings/new/"><span class="qa-icon">📅</span><span class="qa-label">Schedule Hearing</span><span class="qa-sub">Add to calendar</span></a>
               </div>
             </div>
           </div>
@@ -1270,17 +1068,11 @@ function renderOverview(tier) {
       <div class="two-col">
         <div>
           <div class="card">
-            <div class="card-hdr"><h3>My Docket</h3><a class="card-link" onclick="navigateTo('docket')">View Full Docket →</a></div>
+            <div class="card-hdr"><h3>My Docket</h3><span class="card-link" onclick="navigateTo('docket')">Full Docket →</span></div>
             <div class="card-body"><div style="overflow-x:auto">
               <table class="docket-table">
-                <thead><tr><th>Case</th><th>Next Proceeding</th><th>Status</th></tr></thead>
-                <tbody>
-                  ${docket.map(c=>`<tr>
-                    <td><span class="dt-case-num">${c.id}</span><span class="dt-title">${c.title}</span></td>
-                    <td><div class="dt-time">${c.next||'—'}</div><div class="dt-type">${c.room}</div></td>
-                    <td>${statusPill(c.status)}</td>
-                  </tr>`).join('')}
-                </tbody>
+                <thead><tr><th>Case No.</th><th>Title</th><th>Type</th><th>Next Proceeding</th><th>Status</th></tr></thead>
+                <tbody>${docket.map(c=>docketTableRow(c)).join('')}</tbody>
               </table>
             </div></div>
           </div>
@@ -1293,15 +1085,13 @@ function renderOverview(tier) {
                 <a class="qa-btn" onclick="navigateTo('all-cases')"><span class="qa-icon">🔎</span><span class="qa-label">All Cases</span><span class="qa-sub">Full court record</span></a>
                 <a class="qa-btn" onclick="navigateTo('admin')"><span class="qa-icon">🛠️</span><span class="qa-label">Admin Tools</span></a>
                 ${(tier==='justice'||tier==='chief-justice')?`<a class="qa-btn" onclick="navigateTo('opinions')"><span class="qa-icon">📜</span><span class="qa-label">Draft Opinion</span><span class="qa-sub">Pending: 2</span></a>`:''}
-                <a class="qa-btn"><span class="qa-icon">📅</span><span class="qa-label">Court Calendar</span></a>
+                <a class="qa-btn" href="/courts/micourt/admin/calendar/"><span class="qa-icon">📅</span><span class="qa-label">Court Calendar</span></a>
               </div>
             </div>
           </div>
           <div class="card">
-            <div class="card-hdr"><h3>Upcoming Proceedings</h3></div>
-            <div class="card-body">
-              ${MOCK_HEARINGS.filter(h=>h.status!=='past').map(h=>hearingRow(h)).join('')}
-            </div>
+            <div class="card-hdr"><h3>Upcoming Proceedings</h3><span class="card-link" onclick="navigateTo('hearings')">View All →</span></div>
+            <div class="card-body">${MOCK_HEARINGS.filter(h=>h.status!=='past').map(h=>hearingRow(h)).join('')}</div>
           </div>
         </div>
       </div>`;
@@ -1310,28 +1100,14 @@ function renderOverview(tier) {
 
 /* ── Cases ── */
 function renderCases(tier) {
-  const el = document.getElementById('cases-content');
   const isStaff = isStaffRole(currentRole);
-  const data = isStaff ? (isScRole(currentRole) ? MOCK_SC_DOCKET : MOCK_DOCKET) : MOCK_CASES;
-
-  if (tier==='attorney') document.getElementById('cases-sub').textContent = 'Cases in which you are counsel of record.';
+  const data    = isStaff ? (isScRole(currentRole) ? MOCK_SC_DOCKET : MOCK_DOCKET) : MOCK_CASES;
+  if (tier==='attorney')   document.getElementById('cases-sub').textContent = 'Cases in which you are counsel of record.';
   else if (tier==='state-atty') document.getElementById('cases-sub').textContent = 'Active prosecutions you are assigned to.';
-
-  el.innerHTML = `
+  document.getElementById('cases-content').innerHTML = `
     <div class="card">
       <div class="card-hdr"><h3>${isStaff?'Docket Cases':'My Cases'}</h3><span class="card-tag">${data.length} cases</span></div>
-      <div class="card-body">
-        ${data.map(c=>`<div class="case-row">
-          <div class="cr-left">
-            <div class="cr-num">${c.id}</div>
-            <div class="cr-title">${c.title}</div>
-            <div class="cr-meta">${c.court} · Filed ${c.filed||'—'} · ${c.judge||c.room||'—'}</div>
-          </div>
-          <div class="cr-right">${typeBadge(c.type)}${statusPill(c.status)}
-            ${c.next?`<span style="font-size:11px;color:var(--muted)">${c.next}</span>`:''}
-          </div>
-        </div>`).join('')}
-      </div>
+      <div class="card-body">${data.map(c=>caseRow(c)).join('')}</div>
     </div>`;
 }
 
@@ -1340,32 +1116,8 @@ function renderHearings(tier) {
   document.getElementById('hearings-content').innerHTML = `
     <div class="card">
       <div class="card-hdr"><h3>Scheduled Proceedings</h3><span class="card-tag">${MOCK_HEARINGS.length} total</span></div>
-      <div class="card-body">
-        ${MOCK_HEARINGS.map(h=>hearingRow(h)).join('')}
-      </div>
+      <div class="card-body">${MOCK_HEARINGS.map(h=>hearingRow(h)).join('')}</div>
     </div>`;
-}
-
-function hearingRow(h) {
-  const d = new Date(h.date);
-  const month = d.toLocaleDateString('en-US',{month:'short'});
-  const day = d.getDate();
-  const year = d.getFullYear();
-  const cls = h.status==='today'?'hr-today':h.status==='past'?'hr-past':'hr-upcoming';
-  const label = h.status==='today'?'Today':h.status==='past'?'Completed':'Upcoming';
-  return `<div class="hearing-row">
-    <div class="hr-date-box">
-      <div class="hr-month">${month}</div>
-      <div class="hr-day">${day}</div>
-      <div class="hr-year">${year}</div>
-    </div>
-    <div class="hr-info">
-      <div class="hr-type">${h.type}</div>
-      <div class="hr-case">${h.case}</div>
-      <div class="hr-meta">${h.officer} · ${h.room}</div>
-    </div>
-    <span class="hr-pill ${cls}">${label}</span>
-  </div>`;
 }
 
 /* ── Filings ── */
@@ -1373,23 +1125,14 @@ function renderFilings(tier) {
   document.getElementById('filings-content').innerHTML = `
     <div class="card">
       <div class="card-hdr"><h3>Case Filings</h3><span class="card-tag">${MOCK_FILINGS.length} documents</span></div>
-      <div class="card-body">
-        ${MOCK_FILINGS.map(f=>`<div class="filing-row">
-          <div class="filing-icon">${f.icon}</div>
-          <div class="filing-info">
-            <div class="filing-title">${f.title}</div>
-            <div class="filing-meta">Filed by: ${f.by} · ${f.date} · Case ${f.case}</div>
-          </div>
-          <span style="font-size:12px;color:#1a4a7a;font-weight:700;cursor:pointer;white-space:nowrap">View ›</span>
-        </div>`).join('')}
-      </div>
+      <div class="card-body">${MOCK_FILINGS.map(f=>filingRow(f)).join('')}</div>
     </div>`;
 }
 
 /* ── Financials ── */
 function renderFinancials(tier) {
-  const total = MOCK_FINANCIALS.reduce((s,f)=>s+f.amount,0);
-  const paid  = MOCK_FINANCIALS.reduce((s,f)=>s+f.paid,0);
+  const total   = MOCK_FINANCIALS.reduce((s,f)=>s+f.amount,0);
+  const paid    = MOCK_FINANCIALS.reduce((s,f)=>s+f.paid,0);
   const balance = total - paid;
   document.getElementById('financials-content').innerHTML = `
     <div class="stat-row cols-3">
@@ -1399,40 +1142,25 @@ function renderFinancials(tier) {
     </div>
     <div class="card">
       <div class="card-hdr"><h3>Financial Orders</h3></div>
-      <div class="card-body">
-        ${MOCK_FINANCIALS.map(f=>`<div class="fin-row">
-          <div><div class="fin-type">${f.type}</div><div class="fin-case">Case ${f.case}</div></div>
-          <div style="text-align:right"><div class="fin-amount">${fmtMoney(f.amount)}</div><span class="fin-status fin-${f.status.toLowerCase()}">${f.status}</span></div>
-        </div>`).join('')}
-      </div>
+      <div class="card-body">${MOCK_FINANCIALS.map(f=>finRow(f)).join('')}</div>
     </div>
     ${balance>0?`<div style="text-align:right;margin-top:4px">
-      <button style="background:var(--navy);color:#fff;border:none;padding:12px 28px;border-radius:4px;font-size:14px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:0.02em">
+      <a href="/courts/micourt/pay/" style="background:var(--navy);color:#fff;border:none;padding:12px 28px;border-radius:4px;font-size:14px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:0.02em;text-decoration:none;display:inline-block">
         Pay Balance (${fmtMoney(balance)}) →
-      </button>
+      </a>
     </div>`:''}`;
 }
 
 /* ── Docket (staff) ── */
 function renderDocket(tier) {
   const data = isScRole(currentRole) ? MOCK_SC_DOCKET : MOCK_DOCKET;
-  document.getElementById('docket-title').textContent = 'My Docket';
   document.getElementById('docket-content').innerHTML = `
     <div class="card">
       <div class="card-hdr"><h3>Assigned Cases</h3><span class="card-tag">${data.length} matters</span></div>
       <div class="card-body"><div style="overflow-x:auto">
         <table class="docket-table">
           <thead><tr><th>Case No.</th><th>Title</th><th>Type</th><th>Next Proceeding</th><th>Courtroom</th><th>Status</th></tr></thead>
-          <tbody>
-            ${data.map(c=>`<tr>
-              <td><span style="font-size:11.5px;font-weight:700;color:var(--gold)">${c.id}</span></td>
-              <td style="font-weight:600">${c.title}</td>
-              <td>${typeBadge(c.type)}</td>
-              <td><span class="dt-time">${c.next||'—'}</span></td>
-              <td style="font-size:12px;color:var(--muted)">${c.room}</td>
-              <td>${statusPill(c.status)}</td>
-            </tr>`).join('')}
-          </tbody>
+          <tbody>${data.map(c=>docketTableRow(c)).join('')}</tbody>
         </table>
       </div></div>
     </div>`;
@@ -1440,9 +1168,9 @@ function renderDocket(tier) {
 
 /* ── All Cases (staff) ── */
 function renderAllCases(tier) {
-  const sc = isScRole(currentRole);
+  const sc  = isScRole(currentRole);
   document.getElementById('all-cases-sub').textContent = sc
-    ? `All cases filed with the Michigan Supreme Court${currentCourt==='Genesee Co. District Court' ? ' — viewing District Court records' : ''}.`
+    ? 'All cases filed with the Michigan Supreme Court.'
     : 'All cases on record at the Genesee County District Court.';
   const all = [...MOCK_DOCKET, ...MOCK_CASES].filter((v,i,a)=>a.findIndex(x=>x.id===v.id)===i);
   document.getElementById('all-cases-content').innerHTML = `
@@ -1452,20 +1180,11 @@ function renderAllCases(tier) {
     </div>
     <div class="card">
       <div class="card-hdr"><h3>Case Records</h3><span class="card-tag">${all.length} results</span></div>
-      <div class="card-body">
-        ${all.map(c=>`<div class="case-row">
-          <div class="cr-left">
-            <div class="cr-num">${c.id}</div>
-            <div class="cr-title">${c.title}</div>
-            <div class="cr-meta">${c.court||'—'}</div>
-          </div>
-          <div class="cr-right">${typeBadge(c.type)}${statusPill(c.status)}</div>
-        </div>`).join('')}
-      </div>
+      <div class="card-body">${all.map(c=>caseRow(c)).join('')}</div>
     </div>`;
 }
 
-/* ── Queue (clerks) ── */
+/* ── Queue ── */
 function renderQueue(tier) {
   document.getElementById('queue-content').innerHTML = `
     <div class="stat-row cols-3">
@@ -1475,51 +1194,17 @@ function renderQueue(tier) {
     </div>
     <div class="card">
       <div class="card-hdr"><h3>Processing Queue</h3><span class="card-tag">${MOCK_QUEUE.length} items</span></div>
-      <div class="card-body">
-        ${MOCK_QUEUE.map(q=>queueRow(q)).join('')}
-      </div>
+      <div class="card-body">${MOCK_QUEUE.map(q=>queueRow(q)).join('')}</div>
     </div>`;
 }
 
-function queueRow(q) {
-  const pCls = {high:'qp-high',med:'qp-med',low:'qp-low'}[q.priority]||'qp-low';
-  const label = {high:'High Priority',med:'Standard',low:'Low Priority'}[q.priority];
-  return `<div class="queue-row">
-    <div class="queue-priority ${pCls}"></div>
-    <div class="queue-info">
-      <div class="queue-title">${q.title}</div>
-      <div class="queue-meta">From: ${q.by} · Received: ${q.received} · <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:${q.priority==='high'?'var(--red)':q.priority==='med'?'var(--amber)':'var(--green)'}">${label}</span></div>
-    </div>
-    <button class="queue-action">Review →</button>
-  </div>`;
-}
-
-/* ── Admin Tools ── */
+/* ── Admin Tools — all real <a> links ── */
 function renderAdmin(tier) {
-  const sc = isScRole(currentRole);
-  const tools_district = [
-    { icon:'📋', title:'Case Management', sub:'Open, assign, close, and merge cases.' },
-    { icon:'📅', title:'Schedule Hearing', sub:'Add or modify court proceedings.' },
-    { icon:'👨‍⚖️', title:'Judicial Assignments', sub:'Assign judges and magistrates to cases.' },
-    { icon:'📄', title:'Manage Filings', sub:'Review, accept, or reject submitted documents.' },
-    { icon:'💳', title:'Financial Orders', sub:'Issue, modify, or waive fines and fees.' },
-    { icon:'📬', title:'Notices & Service', sub:'Issue summons, subpoenas, and notices.' },
-    { icon:'🏛️', title:'Courtroom Calendar', sub:'View and manage all courtroom schedules.' },
-    { icon:'📊', title:'Court Reports', sub:'Generate statistical and docket reports.' },
-    { icon:'🔎', title:'Search All Records', sub:'Full access to court record system.' },
-  ];
-  const tools_sc = [
-    { icon:'📜', title:'Opinion Management', sub:'Draft, circulate, and publish SC opinions.' },
-    { icon:'📋', title:'Petition Review', sub:'Review petitions for leave to appeal.' },
-    { icon:'📅', title:'Oral Argument Schedule', sub:'Schedule and manage oral arguments.' },
-    { icon:'📊', title:'SC Reports', sub:'Supreme Court statistics and docket reports.' },
-    { icon:'🏛️', title:'Justice Assignments', sub:'Assign justices to matters.' },
-    { icon:'📁', title:'Record Requests', sub:'Manage FOIA and public records requests.' },
-  ];
-  const tools = (sc && currentCourt === 'Michigan Supreme Court') ? tools_sc : tools_district;
+  const sc    = isScRole(currentRole) && currentCourt==='Michigan Supreme Court';
+  const tools = sc ? ADMIN_TOOLS_SC : ADMIN_TOOLS_DISTRICT;
   document.getElementById('admin-content').innerHTML = `
     <div class="admin-tool-grid">
-      ${tools.map(t=>`<a class="admin-tool">
+      ${tools.map(t=>`<a class="admin-tool" href="${t.href}">
         <span class="at-icon">${t.icon}</span>
         <span class="at-title">${t.title}</span>
         <span class="at-sub">${t.sub}</span>
@@ -1527,7 +1212,7 @@ function renderAdmin(tier) {
     </div>`;
 }
 
-/* ── Opinions (justices) ── */
+/* ── Opinions ── */
 function renderOpinions(tier) {
   document.getElementById('opinions-content').innerHTML = `
     <div class="stat-row cols-3">
@@ -1538,28 +1223,26 @@ function renderOpinions(tier) {
     <div class="card">
       <div class="card-hdr"><h3>Pending Opinions</h3><span class="card-tag">2 drafts</span></div>
       <div class="card-body">
-        <div class="case-row">
-          <div class="cr-left">
-            <div class="cr-num">26-SC-0022</div>
-            <div class="cr-title">In re Sentencing Guidelines Reform</div>
-            <div class="cr-meta">Majority opinion · Assigned: Chief Justice · Argued Sep 10</div>
-          </div>
+        <a class="case-row" href="/courts/micourt/opinions/26-SC-0022/">
+          <div class="cr-left"><div class="cr-num">26-SC-0022</div><div class="cr-title">In re Sentencing Guidelines Reform</div><div class="cr-meta">Majority opinion · Assigned: Chief Justice · Argued Sep 10</div></div>
           <div class="cr-right"><span class="status-pill sp-pending">Draft</span><span style="font-size:11px;color:var(--muted)">Due: Oct 1, 2026</span></div>
-        </div>
-        <div class="case-row">
-          <div class="cr-left">
-            <div class="cr-num">26-SC-0018</div>
-            <div class="cr-title">People v. Monroe — Fourth Amendment</div>
-            <div class="cr-meta">Concurrence · Assigned: Justice Chen · Argued Sep 12</div>
-          </div>
+          <span class="cr-open-hint">Open ›</span>
+        </a>
+        <a class="case-row" href="/courts/micourt/opinions/26-SC-0018/">
+          <div class="cr-left"><div class="cr-num">26-SC-0018</div><div class="cr-title">People v. Monroe — Fourth Amendment</div><div class="cr-meta">Concurrence · Assigned: Justice Chen · Argued Sep 12</div></div>
           <div class="cr-right"><span class="status-pill sp-active">In Progress</span></div>
-        </div>
+          <span class="cr-open-hint">Open ›</span>
+        </a>
       </div>
     </div>
     <div class="card">
       <div class="card-hdr"><h3>Recently Published</h3></div>
       <div class="card-body">
-        <div class="case-row"><div class="cr-left"><div class="cr-num">25-SC-0044</div><div class="cr-title">Torres v. State — Ineffective Counsel</div><div class="cr-meta">Published May 15, 2026 · Unanimous</div></div><div class="cr-right"><span class="status-pill sp-closed">Published</span></div></div>
+        <a class="case-row" href="/courts/micourt/opinions/25-SC-0044/">
+          <div class="cr-left"><div class="cr-num">25-SC-0044</div><div class="cr-title">Torres v. State — Ineffective Counsel</div><div class="cr-meta">Published May 15, 2026 · Unanimous</div></div>
+          <div class="cr-right"><span class="status-pill sp-closed">Published</span></div>
+          <span class="cr-open-hint">Open ›</span>
+        </a>
       </div>
     </div>`;
 }
@@ -1568,11 +1251,11 @@ function renderOpinions(tier) {
 function renderSettings() {
   const showBar = ['Licensed Attorney','State Attorney'].includes(currentRole);
   const fields = [
-    { label: 'Full Name',      value: CURRENT_USER.name },
-    { label: 'Email Address',  value: CURRENT_USER.email },
-    { label: 'MiPASS PIN',     value: CURRENT_USER.pin || '—' },
-    { label: 'Role',           value: currentRole },
-    ...(showBar ? [{ label: 'Bar Number', value: CURRENT_USER.barNumber || '—' }] : []),
+    { label:'Full Name',     value:CURRENT_USER.name },
+    { label:'Email Address', value:CURRENT_USER.email },
+    { label:'MiPASS PIN',    value:CURRENT_USER.pin||'—' },
+    { label:'Role',          value:currentRole },
+    ...(showBar?[{ label:'Bar Number', value:CURRENT_USER.barNumber||'—' }]:[]),
   ];
   document.getElementById('settings-content').innerHTML = `
     <div class="two-col">
@@ -1591,15 +1274,16 @@ function renderSettings() {
         <div class="card">
           <div class="card-hdr"><h3>Notifications</h3></div>
           <div class="card-body-pad">
-            ${['Case updates by email','Hearing reminders','Filing confirmations','Payment receipts'].map(n=>`<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f8f5f0">
-              <span style="font-size:13px">${n}</span>
-              <div style="width:38px;height:22px;background:var(--navy);border-radius:11px;position:relative;cursor:pointer">
-                <div style="position:absolute;right:3px;top:3px;width:16px;height:16px;background:#fff;border-radius:50%"></div>
-              </div>
-            </div>`).join('')}
+            ${['Case updates by email','Hearing reminders','Filing confirmations','Payment receipts'].map(n=>`
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f8f5f0">
+                <span style="font-size:13px">${n}</span>
+                <div style="width:38px;height:22px;background:var(--navy);border-radius:11px;position:relative;cursor:pointer">
+                  <div style="position:absolute;right:3px;top:3px;width:16px;height:16px;background:#fff;border-radius:50%"></div>
+                </div>
+              </div>`).join('')}
           </div>
         </div>
-        <div class="card" style="margin-top:0">
+        <div class="card">
           <div class="card-hdr"><h3>Account</h3></div>
           <div class="card-body-pad">
             <button onclick="signOutUser()" style="width:100%;padding:11px;background:var(--red-bg);color:var(--red);border:1px solid var(--red-bdr);border-radius:4px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:700;cursor:pointer">Sign Out of MiCOURT</button>
@@ -1609,27 +1293,26 @@ function renderSettings() {
     </div>`;
 }
 
-/* ═══════════════════════════════════════════════════════
-   ROLE APPLICATION  (called once after Firestore load)
-═══════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════
+   ROLE APPLICATION
+═══════════════════════════════════════════ */
 function applyRole(role) {
-  currentRole = role;
-  const meta  = ROLE_META[role] || ROLE_META['Portal User'];
+  currentRole  = role;
+  const meta   = ROLE_META[role] || ROLE_META['Portal User'];
   currentCourt = meta.court;
   activePage   = 'overview';
 
-  // Sidebar user block
-  document.getElementById('sb-username').textContent     = CURRENT_USER.name;
-  document.getElementById('sb-role-label').textContent   = role;
+  // Sidebar
+  document.getElementById('sb-username').textContent       = CURRENT_USER.name;
+  document.getElementById('sb-role-label').textContent     = role;
   document.getElementById('sb-avatar-initials').textContent = initials(CURRENT_USER.name);
 
-  // Welcome banner
-  const first = CURRENT_USER.name.split(' ')[0] || 'there';
-  document.getElementById('wb-name').textContent      = first;
+  // Welcome banner — FULL name
+  document.getElementById('wb-name').textContent      = CURRENT_USER.name;
   document.getElementById('wb-role-badge').textContent = role;
   document.getElementById('wb-date-full').textContent  = new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
 
-  // Topbar court badge
+  // Court badge
   document.getElementById('topbar-court-name').textContent = currentCourt;
 
   // Welcome sub-text
@@ -1648,47 +1331,41 @@ function applyRole(role) {
   };
   document.getElementById('wb-sub').textContent = subs[role] || 'Welcome to MiCOURT.';
 
-  // Court switcher — SC roles only
+  // Court switcher (SC roles only)
   const switcher = document.getElementById('court-switcher');
   meta.sc ? switcher.classList.add('show') : switcher.classList.remove('show');
 
-  // Build nav + show overview
   buildNav(role);
-  document.querySelectorAll('.page-section').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.page-section').forEach(p=>p.classList.remove('active'));
   document.getElementById('page-overview').classList.add('active');
   document.getElementById('topbar-title').textContent = 'Dashboard';
   renderOverview(meta.tier);
 }
 
 function switchCourt(court, btn) {
-  document.querySelectorAll('.scs-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.scs-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
-  currentCourt = court === 'sc' ? 'Michigan Supreme Court' : 'Genesee Co. District Court';
+  currentCourt = court==='sc' ? 'Michigan Supreme Court' : 'Genesee Co. District Court';
   document.getElementById('topbar-court-name').textContent = currentCourt;
   renderPage(activePage);
 }
 window.switchCourt = switchCourt;
 
 async function signOutUser() {
-  try {
-    if (window._micourtAuth) await window._micourtAuth.signOut();
-  } catch(e) {}
+  try { if (window._micourtAuth) await window._micourtAuth.signOut(); } catch(e) {}
   sessionStorage.removeItem('micourt_user');
   window.location.href = '/courts/micourt/';
 }
 window.signOutUser = signOutUser;
-
-/* ═══════════════════════════════════════════════════════
-   FIREBASE + INIT
-═══════════════════════════════════════════════════════ */
 </script>
 
+<!-- Firebase Auth -->
 <script type="module">
-import { initializeApp }    from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
+import { initializeApp }   from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut }
-                            from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
+                           from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
 import { getFirestore, doc, getDoc, updateDoc, serverTimestamp }
-                            from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+                           from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 
 const micourtConfig = {
   apiKey:            "AIzaSyA8sUFIq81cs6uQvqduardpGJ4R2DxO8NQ",
@@ -1699,61 +1376,36 @@ const micourtConfig = {
   appId:             "1:1013564619997:web:8f259dab457915758f6f34"
 };
 
-const app  = initializeApp(micourtConfig, 'micourt-main');
+// Use default (unnamed) app so auth state is shared with the login page
+const app  = initializeApp(micourtConfig);
 const auth = getAuth(app);
 const db   = getFirestore(app);
-
-// Expose signOut for the settings button
 window._micourtAuth = auth;
 
 document.getElementById('topbar-date').textContent = new Date()
   .toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
 
-function setOverlayMsg(msg) {
-  document.getElementById('auth-overlay-msg').textContent = msg;
-}
+function setMsg(msg) { document.getElementById('auth-overlay-msg').textContent = msg; }
 
 onAuthStateChanged(auth, async (user) => {
-  if (!user) {
-    // Not signed in — bounce to login
-    setOverlayMsg('Session expired. Redirecting…');
-    setTimeout(() => { window.location.href = '/courts/micourt/'; }, 1200);
-    return;
-  }
-
-  setOverlayMsg('Loading your profile…');
-
+  if (!user) { setMsg('Session expired. Redirecting…'); setTimeout(()=>{ window.location.href='/courts/micourt/'; }, 1200); return; }
+  setMsg('Loading your profile…');
   try {
     const snap = await getDoc(doc(db, 'accounts', user.uid));
-
-    if (!snap.exists()) {
-      // Account doc missing — treat as new Portal User and redirect to finish onboarding
-      setOverlayMsg('Account not found. Redirecting…');
-      setTimeout(() => { window.location.href = '/courts/micourt/'; }, 1200);
-      return;
-    }
-
+    if (!snap.exists()) { setMsg('Account not found. Redirecting…'); setTimeout(()=>{ window.location.href='/courts/micourt/'; }, 1200); return; }
     const data = snap.data();
-
-    // Populate live user object
     CURRENT_USER.uid       = user.uid;
     CURRENT_USER.name      = data.name      || user.displayName || 'Unknown User';
     CURRENT_USER.email     = data.email     || user.email       || '—';
     CURRENT_USER.pin       = data.pin       || data.mipassPin   || '—';
     CURRENT_USER.role      = data.role      || 'Portal User';
     CURRENT_USER.barNumber = data.barNumber || null;
-
-    // Update lastLogin timestamp silently
-    updateDoc(doc(db, 'accounts', user.uid), { lastLogin: serverTimestamp() }).catch(() => {});
-
-    // Dismiss overlay and render dashboard
+    updateDoc(doc(db,'accounts',user.uid),{ lastLogin:serverTimestamp() }).catch(()=>{});
     document.getElementById('auth-overlay').classList.add('hidden');
     applyRole(CURRENT_USER.role);
-
-  } catch (err) {
-    setOverlayMsg('Error loading profile: ' + err.message);
-    // Retry button fallback
-    setTimeout(() => { window.location.reload(); }, 3000);
+  } catch(err) {
+    setMsg('Error loading profile: ' + err.message);
+    setTimeout(()=>{ window.location.reload(); }, 3000);
   }
 });
 </script>
