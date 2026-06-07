@@ -116,28 +116,39 @@
   .uc-info span { font-size: 11px; color: #15803d; }
   .uc-verified { background: #dcfce7; border: 1px solid #86efac; border-radius: 20px; padding: 3px 10px; font-size: 10px; font-weight: 700; color: var(--green); letter-spacing: 0.06em; text-transform: uppercase; flex-shrink: 0; }
 
+  /* Existing account banner shown on step 0 after MiPASS check */
+  .existing-account-banner { display: none; border: 1.5px solid var(--gold); border-radius: 4px; padding: 14px 16px; background: var(--amber-bg); margin-bottom: 16px; }
+  .existing-account-banner.show { display: flex; align-items: center; gap: 12px; }
+  .eab-icon { font-size: 20px; flex-shrink: 0; }
+  .eab-body { flex: 1; }
+  .eab-body strong { font-size: 13px; color: #78350f; font-weight: 700; display: block; margin-bottom: 2px; }
+  .eab-body span { font-size: 12px; color: #92400e; }
+
   .form-group { margin-bottom: 16px; }
   .form-group label { display: block; font-size: 11px; color: #9a8f82; text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700; margin-bottom: 6px; }
   .form-group input, .form-group select { width: 100%; padding: 11px 14px; border: 1.5px solid var(--line); border-radius: 4px; font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--text); background: #faf9f7; transition: border 0.15s; outline: none; }
   .form-group input:focus, .form-group select:focus { border-color: var(--navy); background: #fff; }
   .form-group input.error, .form-group select.error { border-color: var(--red); }
+  .form-group input.autofilled { border-color: var(--green); background: #f0fdf4; }
   .form-group .field-error { font-size: 11.5px; color: var(--red); margin-top: 5px; display: none; }
   .form-group .field-error.show { display: block; }
-  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-  .form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+  .form-group .field-hint { font-size: 11px; color: var(--green); margin-top: 4px; display: none; }
+  .form-group .field-hint.show { display: block; }
 
+  /* Role cards — clean, no badges */
   .role-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
-  .role-card { border: 1.5px solid var(--line); border-radius: 4px; padding: 14px 16px; cursor: pointer; transition: all 0.15s; position: relative; background: #faf9f7; }
+  .role-card { border: 1.5px solid var(--line); border-radius: 4px; padding: 18px 16px; cursor: pointer; transition: all 0.15s; position: relative; background: #faf9f7; text-align: center; }
   .role-card:hover { border-color: var(--navy); background: #f0ede8; }
-  .role-card.selected { border-color: var(--navy); background: #f0f4fa; }
+  .role-card.selected { border-color: var(--navy); background: #f0f4fa; box-shadow: 0 0 0 2px rgba(10,22,40,0.08); }
   .role-card input[type=radio] { position: absolute; opacity: 0; width: 0; height: 0; }
-  .role-card .rc-icon { font-size: 22px; margin-bottom: 8px; display: block; }
-  .role-card .rc-title { font-size: 13px; font-weight: 700; color: var(--text); display: block; margin-bottom: 3px; }
+  .role-card .rc-icon { font-size: 26px; margin-bottom: 8px; display: block; }
+  .role-card .rc-title { font-size: 13.5px; font-weight: 700; color: var(--text); display: block; margin-bottom: 3px; }
   .role-card .rc-sub { font-size: 11px; color: var(--muted); line-height: 1.45; display: block; }
-  .role-card.featured { border-color: var(--gold); }
-  .role-card.featured .rc-title { color: var(--navy); }
-  .role-badge { position: absolute; top: 10px; right: 10px; background: var(--gold); color: var(--navy); font-size: 9px; font-weight: 800; padding: 2px 7px; border-radius: 2px; letter-spacing: 0.06em; text-transform: uppercase; }
-  .role-card.disabled { opacity: 0.45; cursor: not-allowed; pointer-events: none; }
+  .role-card.selected .rc-title { color: var(--navy); }
+  /* Selected checkmark */
+  .role-card .rc-check { position: absolute; top: 10px; right: 10px; width: 18px; height: 18px; border-radius: 50%; background: var(--navy); display: none; align-items: center; justify-content: center; }
+  .role-card .rc-check::after { content: '✓'; font-size: 10px; color: #fff; font-weight: 800; }
+  .role-card.selected .rc-check { display: flex; }
 
   .status-box { border-radius: 4px; padding: 13px 16px; margin-bottom: 16px; display: none; }
   .status-box.show { display: flex; align-items: flex-start; gap: 12px; }
@@ -172,6 +183,10 @@
 
   .note-box { background: var(--amber-bg); border: 1px solid var(--amber-bdr); border-radius: 4px; padding: 12px 16px; margin-bottom: 16px; font-size: 12px; color: #78350f; line-height: 1.6; }
 
+  /* Login step — shown when existing account found */
+  .login-email-row { position: relative; }
+  .login-email-row .autofill-tag { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); font-size: 10px; font-weight: 700; color: var(--green); letter-spacing: 0.06em; text-transform: uppercase; background: #dcfce7; border: 1px solid #86efac; border-radius: 20px; padding: 2px 8px; pointer-events: none; }
+
   .lr-footer { margin-top: auto; padding-top: 24px; border-top: 1px solid var(--line); }
   .lr-footer p { font-size: 11px; color: #9a8f82; line-height: 1.6; }
   .lr-footer a { color: var(--muted); }
@@ -186,7 +201,6 @@
     .header-top { padding: 16px 20px; }
     nav { padding: 0 20px; }
     footer { padding: 16px 20px; flex-direction: column; gap: 6px; text-align: center; }
-    .form-row, .form-row-3 { grid-template-columns: 1fr; }
     .role-grid { grid-template-columns: 1fr; }
   }
 </style>
@@ -346,7 +360,69 @@
         </div>
       </div>
 
-      <!-- STEP 1 — Email -->
+      <!-- STEP-LOGIN — Existing account found, autofill login -->
+      <div class="step" id="step-login">
+        <div class="step-header">
+          <h2>Welcome Back</h2>
+          <p>We found an existing MiCOURT account linked to your MiPASS identity. Sign in below.</p>
+        </div>
+
+        <div class="user-card show" id="sl-user-card">
+          <div class="uc-avatar"><div class="uc-avatar-inner"><span>MI</span></div></div>
+          <div class="uc-info">
+            <strong id="sl-uc-name">—</strong>
+            <span id="sl-uc-role">—</span>
+          </div>
+          <span class="uc-verified">MiPASS Verified</span>
+        </div>
+
+        <div class="form-group">
+          <label>Email Address</label>
+          <div class="login-email-row">
+            <input type="email" id="sl-email" placeholder="Loading…" readonly style="cursor:default;">
+            <span class="autofill-tag" id="sl-autofill-tag" style="display:none;">Autofilled</span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" id="sl-password" placeholder="Enter your MiCOURT password" autocomplete="current-password">
+          <div class="field-error" id="sl-password-err">Password is required.</div>
+        </div>
+
+        <div class="status-box error" id="sl-error">
+          <span class="sb-icon">⚠️</span>
+          <div class="sb-body"><strong>Sign-In Failed</strong><p id="sl-error-msg"></p></div>
+        </div>
+
+        <div class="status-box loading" id="sl-loading">
+          <div class="spin-sm"></div>
+          <div class="sb-body">
+            <strong>Signing you in…</strong>
+            <p>Verifying your credentials. Please wait.</p>
+          </div>
+        </div>
+
+        <div class="redirect-bar-wrap" id="sl-redirect-bar">
+          <p>Signing you in to MiCOURT…</p>
+          <div class="redirect-bar"><div class="redirect-fill" id="sl-redirect-fill"></div></div>
+        </div>
+
+        <button class="btn-primary" id="sl-btn" onclick="submitLogin()">Sign In to MiCOURT →</button>
+
+        <p style="text-align:center;font-size:12px;color:var(--muted);margin-top:14px;">
+          Not you? <a href="#" onclick="resetToStart();return false;" style="color:var(--navy);font-weight:600;">Sign in with a different account</a>
+        </p>
+
+        <div class="lr-footer">
+          <p>
+            <a href="/courts/micourt/help/">Forgot your password?</a> &nbsp;·&nbsp;
+            <a href="/courts/micourt/privacy/">Privacy Policy</a>
+          </p>
+        </div>
+      </div>
+
+      <!-- STEP 1 — Email (new account) -->
       <div class="step" id="step-1">
         <div class="step-indicator" id="step-indicator"></div>
 
@@ -367,6 +443,7 @@
         <div class="form-group">
           <label>Email Address</label>
           <input type="email" id="f-email" placeholder="you@example.com" autocomplete="email">
+          <div class="field-hint" id="f-email-hint">✓ Autofilled from your MiPASS profile</div>
           <div class="field-error" id="f-email-err">Please enter a valid email address.</div>
         </div>
         <div class="form-group">
@@ -392,26 +469,26 @@
           <p>Select the option that best describes how you'll be using MiCOURT.</p>
         </div>
 
-        <div class="role-grid" style="grid-template-columns:1fr 1fr;">
-          <label class="role-card featured" id="rc-public" onclick="selectRole('public')">
+        <div class="role-grid">
+          <label class="role-card" id="rc-public" onclick="selectRole('public')">
             <input type="radio" name="role" value="public">
-            <span class="role-badge">Most Common</span>
+            <div class="rc-check"></div>
             <span class="rc-icon">👤</span>
             <span class="rc-title">Portal User</span>
             <span class="rc-sub">Access your cases, pay fines, or file documents.</span>
           </label>
-          <label class="role-card featured" id="rc-bar" onclick="selectRole('bar')">
+          <label class="role-card" id="rc-bar" onclick="selectRole('bar')">
             <input type="radio" name="role" value="bar">
-            <span class="role-badge">Professional</span>
+            <div class="rc-check"></div>
             <span class="rc-icon">⚖️</span>
             <span class="rc-title">Bar Member</span>
-            <span class="rc-sub">Licensed attorney, judge, or court officer listed in the State Bar registry.</span>
+            <span class="rc-sub">Licensed attorney, judge, or court officer in the State Bar registry.</span>
           </label>
         </div>
 
-        <!-- Bar verification panel — shown when 'bar' selected -->
+        <!-- Bar verification panel -->
         <div id="bar-verify-panel" style="display:none;">
-          <div class="note-box" id="bar-processing-note">
+          <div class="note-box">
             Your bar number will be looked up against the Michigan State Bar Member registry. Your PIN must match the record on file.
           </div>
 
@@ -421,7 +498,6 @@
             <div class="field-error" id="f-bar-err"></div>
           </div>
 
-          <!-- Loading state -->
           <div class="status-box loading" id="bar-loading">
             <div class="spin-sm"></div>
             <div class="sb-body">
@@ -430,7 +506,6 @@
             </div>
           </div>
 
-          <!-- Success state -->
           <div class="status-box success" id="bar-success">
             <span class="sb-icon">✅</span>
             <div class="sb-body">
@@ -439,7 +514,6 @@
             </div>
           </div>
 
-          <!-- Error state -->
           <div class="status-box error" id="bar-error">
             <span class="sb-icon">⚠️</span>
             <div class="sb-body">
@@ -514,7 +588,7 @@
   import { initializeApp }         from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
   import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword }
                                    from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
-  import { getFirestore, doc, getDoc, setDoc, serverTimestamp }
+  import { getFirestore, doc, getDoc, setDoc, query, collection, where, getDocs, serverTimestamp }
                                    from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 
   const micourtConfig = {
@@ -533,9 +607,13 @@
   window._micourtAuth = auth;
   window._micourtDb   = db;
   window._serverTimestamp = serverTimestamp;
-  window._doc    = doc;
-  window._getDoc = getDoc;
-  window._setDoc = setDoc;
+  window._doc       = doc;
+  window._getDoc    = getDoc;
+  window._setDoc    = setDoc;
+  window._query     = query;
+  window._collection = collection;
+  window._where     = where;
+  window._getDocs   = getDocs;
   window._createUser = createUserWithEmailAndPassword;
   window._signIn     = signInWithEmailAndPassword;
   window._fbReady    = true;
@@ -547,8 +625,9 @@
   const THIS_URL         = window.location.href.split('?')[0];
   const SITE_NAME        = 'MiCOURT — Michigan Court Online Portal';
 
-  let mipassData   = null; // { pin, name, dob, robloxUsername }
+  let mipassData   = null; // { pin, name, dob, robloxUsername, email }
   let selectedRole = null;
+  let existingAccountData = null; // populated if an account was found by PIN
 
   function show(id)   { const el=document.getElementById(id); if(el) el.classList.add('show'); }
   function hide(id)   { const el=document.getElementById(id); if(el) el.classList.remove('show'); }
@@ -592,12 +671,17 @@
     document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
     const target = document.getElementById('step-' + n);
     if (target) target.classList.add('active');
-    if (n >= 1) {
+    if (typeof n === 'number' && n >= 1) {
       buildIndicator('step-indicator',   n);
       buildIndicator('step-indicator-2', n);
     }
   }
   window.goToStep = goToStep;
+
+  function goToStepLogin() {
+    document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+    document.getElementById('step-login').classList.add('active');
+  }
 
   function goMipass() {
     const url = MIPASS_LOGIN_URL
@@ -606,6 +690,38 @@
     window.location.href = url;
   }
   window.goMipass = goMipass;
+
+  function resetToStart() {
+    mipassData = null;
+    existingAccountData = null;
+    document.getElementById('s0-btn').disabled = false;
+    document.getElementById('s0-provider').style.opacity = '';
+    document.getElementById('s0-provider').style.pointerEvents = '';
+    hide('s0-loading'); hide('s0-user-card'); hide('s0-error');
+    goToStep(0);
+  }
+  window.resetToStart = resetToStart;
+
+  // ── After MiPASS return: look up existing account by PIN ──────────────────
+  async function checkExistingAccount(pin) {
+    if (!window._fbReady) {
+      await new Promise(r => document.addEventListener('fbReady', r, {once:true}));
+    }
+    try {
+      const q = window._query(
+        window._collection(window._micourtDb, 'accounts'),
+        window._where('mipassPin', '==', String(pin))
+      );
+      const snap = await window._getDocs(q);
+      if (!snap.empty) {
+        const docData = snap.docs[0].data();
+        return { uid: snap.docs[0].id, ...docData };
+      }
+    } catch(e) {
+      console.warn('Account lookup failed:', e);
+    }
+    return null;
+  }
 
   function stepEmailNext() {
     const email  = document.getElementById('f-email').value.trim();
@@ -625,7 +741,7 @@
   }
   window.stepEmailNext = stepEmailNext;
 
-  let verifiedBarData = null; // { barNumber, name, role, status } from sbm doc
+  let verifiedBarData = null;
 
   function selectRole(role) {
     selectedRole = role;
@@ -636,7 +752,6 @@
     const panel = document.getElementById('bar-verify-panel');
     if (role === 'bar') {
       panel.style.display = 'block';
-      // Reset any previous verification
       verifiedBarData = null;
       hide('bar-loading'); hide('bar-success'); hide('bar-error');
     } else {
@@ -658,24 +773,16 @@
     fieldErr('f-bar', 'f-bar-err', null);
     hide('bar-success'); hide('bar-error');
 
-    if (!barInput) {
-      fieldErr('f-bar', 'f-bar-err', 'Please enter your bar number.');
-      return;
-    }
+    if (!barInput) { fieldErr('f-bar', 'f-bar-err', 'Please enter your bar number.'); return; }
 
     const btn = document.getElementById('bar-verify-btn');
     btn.disabled = true;
     show('bar-loading');
 
-    if (!window._fbReady) {
-      await new Promise(r => document.addEventListener('fbReady', r, {once:true}));
-    }
+    if (!window._fbReady) await new Promise(r => document.addEventListener('fbReady', r, {once:true}));
 
     try {
-      const docSnap = await window._getDoc(
-        window._doc(window._micourtDb, 'sbm', barInput)
-      );
-
+      const docSnap = await window._getDoc(window._doc(window._micourtDb, 'sbm', barInput));
       hide('bar-loading');
 
       if (!docSnap.exists()) {
@@ -687,8 +794,6 @@
       }
 
       const d = docSnap.data();
-
-      // PIN must match the logged-in MiPASS user
       if (String(d.pin) !== String(mipassData.pin)) {
         show('bar-error');
         document.getElementById('bar-error-msg').textContent =
@@ -697,24 +802,15 @@
         return;
       }
 
-      // All good
-      verifiedBarData = {
-        barNumber: barInput,
-        name:      d.name   || mipassData.name,
-        role:      d.role   || 'Bar Member',
-        status:    d.status || 'Unknown',
-      };
-
-      document.getElementById('bar-success-name').textContent = d.name + ' — ' + verifiedBarData.role;
-      document.getElementById('bar-success-detail').textContent =
-        'Status: ' + verifiedBarData.status + ' · Bar No. ' + barInput;
+      verifiedBarData = { barNumber: barInput, name: d.name||mipassData.name, role: d.role||'Bar Member', status: d.status||'Unknown' };
+      document.getElementById('bar-success-name').textContent   = d.name + ' — ' + verifiedBarData.role;
+      document.getElementById('bar-success-detail').textContent = 'Status: ' + verifiedBarData.status + ' · Bar No. ' + barInput;
       show('bar-success');
       btn.disabled = false;
-
     } catch(err) {
       hide('bar-loading');
       show('bar-error');
-      document.getElementById('bar-error-msg').textContent = 'Lookup failed: ' + (err.message || 'Unknown error.');
+      document.getElementById('bar-error-msg').textContent = 'Lookup failed: ' + (err.message||'Unknown error.');
       btn.disabled = false;
     }
   }
@@ -726,16 +822,62 @@
       document.getElementById('s2-error-msg').textContent = 'Please select your role to continue.';
       show('s2-error'); return;
     }
-    if (selectedRole === 'bar') {
-      if (!verifiedBarData) {
-        document.getElementById('s2-error-msg').textContent = 'Please verify your bar number before continuing.';
-        show('s2-error'); return;
-      }
+    if (selectedRole === 'bar' && !verifiedBarData) {
+      document.getElementById('s2-error-msg').textContent = 'Please verify your bar number before continuing.';
+      show('s2-error'); return;
     }
     submitAccount();
   }
   window.stepRoleNext = stepRoleNext;
 
+  // ── Login with existing account ────────────────────────────────────────────
+  async function submitLogin() {
+    const password = document.getElementById('sl-password').value;
+    const email    = document.getElementById('sl-email').value;
+    hide('sl-error');
+    fieldErr('sl-password', 'sl-password-err', null);
+
+    if (!password) { fieldErr('sl-password', 'sl-password-err', 'Password is required.'); return; }
+
+    document.getElementById('sl-btn').disabled = true;
+    show('sl-loading');
+
+    if (!window._fbReady) await new Promise(r => document.addEventListener('fbReady', r, {once:true}));
+
+    try {
+      const cred = await window._signIn(window._micourtAuth, email, password);
+      const uid  = cred.user.uid;
+
+      hide('sl-loading');
+      sessionStorage.setItem('micourt_user', JSON.stringify({
+        uid,
+        pin:      mipassData?.pin,
+        name:     existingAccountData?.name,
+        email,
+        role:     existingAccountData?.role,
+        barNumber: existingAccountData?.barNumber || null,
+        loginAt:  new Date().toISOString()
+      }));
+
+      document.getElementById('sl-redirect-bar').style.display = 'block';
+      setTimeout(() => { document.getElementById('sl-redirect-fill').style.width = '100%'; }, 50);
+      setTimeout(() => { window.location.href = '/courts/micourt/dashboard/'; }, 2700);
+    } catch(err) {
+      hide('sl-loading');
+      document.getElementById('sl-btn').disabled = false;
+      let msg = 'Sign-in failed. Please check your password and try again.';
+      if (err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
+        msg = 'Incorrect password. Please try again.';
+      } else if (err.code === 'auth/too-many-requests') {
+        msg = 'Too many failed attempts. Please wait a moment before trying again.';
+      }
+      document.getElementById('sl-error-msg').textContent = msg;
+      show('sl-error');
+    }
+  }
+  window.submitLogin = submitLogin;
+
+  // ── Create new account ────────────────────────────────────────────────────
   async function submitAccount() {
     goToStep(3);
     hide('s3-error'); hide('s3-success');
@@ -747,16 +889,13 @@
     const pin      = mipassData?.pin  || null;
     const dob      = mipassData?.dob  || null;
 
-    // Role comes from bar registry if bar member, otherwise Portal User
     const isBar    = selectedRole === 'bar' && verifiedBarData;
     const name     = isBar ? verifiedBarData.name : (mipassData?.name || '—');
     const roleLabel = isBar ? verifiedBarData.role : 'Portal User';
     const barNumber = isBar ? verifiedBarData.barNumber : null;
     const barStatus = isBar ? verifiedBarData.status : null;
 
-    if (!window._fbReady) {
-      await new Promise(r => document.addEventListener('fbReady', r, {once:true}));
-    }
+    if (!window._fbReady) await new Promise(r => document.addEventListener('fbReady', r, {once:true}));
 
     try {
       setLoading('s3-loading-title','s3-loading-msg','Creating your account…','Registering your MiCOURT credentials.');
@@ -767,24 +906,17 @@
       await window._setDoc(
         window._doc(window._micourtDb, 'accounts', uid),
         {
-          name:        name,
-          email:       email,
-          role:        roleLabel,
-          pin:         pin,
-          dob:         dob,
-          barNumber:   barNumber,
-          barStatus:   barStatus,
-          createdAt:   window._serverTimestamp(),
-          lastLogin:   window._serverTimestamp(),
-          mipassPin:   pin,
-          robloxUser:  mipassData?.robloxUsername || null,
+          name, email, role: roleLabel, pin, dob,
+          barNumber, barStatus,
+          createdAt:  window._serverTimestamp(),
+          lastLogin:  window._serverTimestamp(),
+          mipassPin:  pin,
+          robloxUser: mipassData?.robloxUsername || null,
         }
       );
 
       sessionStorage.setItem('micourt_user', JSON.stringify({
-        uid, pin, name, email,
-        role: roleLabel, barNumber,
-        loginAt: new Date().toISOString()
+        uid, pin, name, email, role: roleLabel, barNumber, loginAt: new Date().toISOString()
       }));
 
       hide('s3-loading');
@@ -792,7 +924,6 @@
       document.getElementById('s3-redirect-bar').style.display = 'block';
       setTimeout(() => { document.getElementById('s3-redirect-fill').style.width = '100%'; }, 50);
       setTimeout(() => { window.location.href = '/courts/micourt/dashboard/'; }, 2700);
-
     } catch(err) {
       hide('s3-loading');
       let msg = err.message || 'An unexpected error occurred.';
@@ -811,7 +942,8 @@
   function retryAccountCreation() { hide('s3-error'); hideEl('s3-retry-btn'); submitAccount(); }
   window.retryAccountCreation = retryAccountCreation;
 
-  function init() {
+  // ── Init ──────────────────────────────────────────────────────────────────
+  async function init() {
     document.getElementById('today').textContent = new Date()
       .toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
 
@@ -820,28 +952,66 @@
     const name = params.get('mipass_name');
     const dob  = params.get('mipass_dob');
     const user = params.get('mipass_user');
+    const email = params.get('mipass_email'); // MiPASS email field
 
     if (!pin || !name) return;
 
     window.history.replaceState({}, '', window.location.pathname);
-    mipassData = { pin, name, dob, robloxUsername: user };
+    mipassData = { pin, name, dob, robloxUsername: user, email: email || null };
 
+    // Disable sign-in button while checking
     document.getElementById('s0-btn').disabled = true;
     document.getElementById('s0-provider').style.opacity = '0.4';
     document.getElementById('s0-provider').style.pointerEvents = 'none';
+
+    setLoading('s0-loading-title','s0-loading-msg','Verifying your MiPASS identity…','Please wait while we confirm your details.');
     show('s0-loading');
 
-    setTimeout(() => {
-      hide('s0-loading');
-      document.getElementById('s0-uc-name').textContent = name;
-      document.getElementById('s0-uc-pin').textContent  = 'PIN: ' + pin;
-      show('s0-user-card');
+    // Check for existing account
+    const existing = await checkExistingAccount(pin);
 
-      document.getElementById('s1-uc-name').textContent = name;
-      document.getElementById('s1-uc-pin').textContent  = 'PIN: ' + pin;
+    hide('s0-loading');
+    document.getElementById('s0-uc-name').textContent = name;
+    document.getElementById('s0-uc-pin').textContent  = 'PIN: ' + pin;
+    show('s0-user-card');
 
-      setTimeout(() => { goToStep(1); }, 600);
-    }, 900);
+    if (existing) {
+      // Existing account found — go to login step
+      existingAccountData = existing;
+      setTimeout(() => {
+        document.getElementById('sl-uc-name').textContent = existing.name || name;
+        document.getElementById('sl-uc-role').textContent = existing.role || 'Portal User';
+
+        // Autofill email from existing account record, fall back to MiPASS email
+        const autofillEmail = existing.email || email || '';
+        const emailInput = document.getElementById('sl-email');
+        emailInput.value = autofillEmail;
+        if (autofillEmail) {
+          emailInput.classList.add('autofilled');
+          document.getElementById('sl-autofill-tag').style.display = '';
+        }
+
+        goToStepLogin();
+      }, 600);
+    } else {
+      // No account — go to registration flow
+      setTimeout(() => {
+        document.getElementById('s1-uc-name').textContent = name;
+        document.getElementById('s1-uc-pin').textContent  = 'PIN: ' + pin;
+
+        // Autofill email from MiPASS profile if available
+        if (email) {
+          const emailField = document.getElementById('f-email');
+          emailField.value = email;
+          emailField.classList.add('autofilled');
+          // Also fill the confirm field
+          document.getElementById('f-email2').value = email;
+          document.getElementById('f-email-hint').classList.add('show');
+        }
+
+        goToStep(1);
+      }, 600);
+    }
   }
 
   window.addEventListener('DOMContentLoaded', init);
