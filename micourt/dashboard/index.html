@@ -1357,9 +1357,6 @@ async function signOutUser() {
   window.location.href = '/courts/micourt/';
 }
 window.signOutUser = signOutUser;
-</script>
-
-<!-- Firebase Auth -->
 <script type="module">
 import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
@@ -1374,23 +1371,36 @@ const micourtConfig = {
   appId:             "1:1013564619997:web:8f259dab457915758f6f34"
 };
 
-
 const app  = getApps().length ? getApp() : initializeApp(micourtConfig);
 const auth = getAuth(app);
 const db   = getFirestore(app);
 window._micourtAuth = auth;
 
 document.getElementById('topbar-date').textContent = new Date()
-  .toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+  .toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'});
 
 function setMsg(msg) { document.getElementById('auth-overlay-msg').textContent = msg; }
 
-onAuthStateChanged(auth, async (user) => {
-  if (!user) { setMsg('Session expired. Redirecting…'); setTimeout(()=>{ window.location.href='/courts/micourt/'; }, 1200); return; }
+let authSettled = false;
+
+const unsubscribe = onAuthStateChanged(auth, async (user) => {
+  authSettled = true;
+  unsubscribe();
+
+  if (!user) {
+    setMsg('Session expired. Redirecting…');
+    setTimeout(() => { window.location.href = '/courts/micourt/'; }, 1200);
+    return;
+  }
+
   setMsg('Loading your profile…');
   try {
     const snap = await getDoc(doc(db, 'accounts', user.uid));
-    if (!snap.exists()) { setMsg('Account not found. Redirecting…'); setTimeout(()=>{ window.location.href='/courts/micourt/'; }, 1200); return; }
+    if (!snap.exists()) {
+      setMsg('Account not found. Redirecting…');
+      setTimeout(() => { window.location.href = '/courts/micourt/'; }, 1200);
+      return;
+    }
     const data = snap.data();
     CURRENT_USER.uid       = user.uid;
     CURRENT_USER.name      = data.name      || user.displayName || 'Unknown User';
@@ -1398,14 +1408,18 @@ onAuthStateChanged(auth, async (user) => {
     CURRENT_USER.pin       = data.pin       || data.mipassPin   || '—';
     CURRENT_USER.role      = data.role      || 'Portal User';
     CURRENT_USER.barNumber = data.barNumber || null;
-    updateDoc(doc(db,'accounts',user.uid),{ lastLogin:serverTimestamp() }).catch(()=>{});
+    updateDoc(doc(db, 'accounts', user.uid), { lastLogin: serverTimestamp() }).catch(() => {});
     document.getElementById('auth-overlay').classList.add('hidden');
     applyRole(CURRENT_USER.role);
-  } catch(err) {
+  } catch (err) {
     setMsg('Error loading profile: ' + err.message);
-    setTimeout(()=>{ window.location.reload(); }, 3000);
+    setTimeout(() => { window.location.reload(); }, 3000);
   }
 });
+
+setTimeout(() => {
+  if (!authSettled) window.location.reload();
+}, 8000);
 </script>
 </body>
 </html>
