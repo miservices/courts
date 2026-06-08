@@ -40,7 +40,6 @@
 * { margin:0; padding:0; box-sizing:border-box; }
 body { font-family:'DM Sans',sans-serif; background:var(--cream); color:var(--text); min-height:100vh; display:flex; overflow-x:hidden; }
 
-/* ══ SIDEBAR ══ */
 .sidebar {
   width: var(--sidebar-w);
   min-height: 100vh;
@@ -55,12 +54,7 @@ body { font-family:'DM Sans',sans-serif; background:var(--cream); color:var(--te
   overflow-y: auto;
   overflow-x: hidden;
 }
-.sb-brand {
-  padding: 22px 22px 18px;
-  border-bottom: 1px solid var(--border);
-  display: flex; align-items: center; gap: 12px;
-  text-decoration: none;
-}
+.sb-brand { padding:22px 22px 18px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:12px; text-decoration:none; }
 .sb-brand-seal { width:34px;height:34px;background:var(--gold);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0; }
 .sb-brand-text .name { font-family:'Merriweather',serif;color:#fff;font-size:14px;font-weight:400;display:block;line-height:1.2; }
 .sb-brand-text .sub  { color:var(--blue-muted);font-size:10px;letter-spacing:0.08em;text-transform:uppercase;margin-top:2px;display:block; }
@@ -95,7 +89,6 @@ body { font-family:'DM Sans',sans-serif; background:var(--cream); color:var(--te
 .sb-sign-out { display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:4px;color:#5a7a9a;font-size:12px;cursor:pointer;border:none;background:none;font-family:'DM Sans',sans-serif;width:100%;text-align:left;transition:all 0.12s; }
 .sb-sign-out:hover { color:var(--red-bg);background:rgba(220,38,38,0.1); }
 
-/* ══ MAIN ══ */
 .main { margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column;min-height:100vh; }
 .topbar { background:var(--white);border-bottom:1px solid var(--line);padding:0 36px;display:flex;align-items:center;justify-content:space-between;height:58px;position:sticky;top:0;z-index:100; }
 .topbar-left { display:flex;align-items:center;gap:12px; }
@@ -115,7 +108,6 @@ body { font-family:'DM Sans',sans-serif; background:var(--cream); color:var(--te
 .section-hdr h2 { font-family:'Merriweather',serif;font-size:22px;font-weight:300;color:var(--text);margin-bottom:5px; }
 .section-hdr p { font-size:13px;color:var(--muted);line-height:1.6; }
 
-/* ── Stat cards ── */
 .stat-row { display:grid;gap:16px;margin-bottom:28px; }
 .stat-row.cols-4 { grid-template-columns:repeat(4,1fr); }
 .stat-row.cols-3 { grid-template-columns:repeat(3,1fr); }
@@ -133,7 +125,6 @@ body { font-family:'DM Sans',sans-serif; background:var(--cream); color:var(--te
 .sc-sub { font-size:12px;color:var(--muted);margin-top:5px;display:block; }
 .sc-icon { position:absolute;right:18px;top:18px;font-size:22px;opacity:0.15; }
 
-/* ── Cards ── */
 .card { background:var(--white);border:1px solid var(--line);border-radius:5px;overflow:hidden;margin-bottom:20px; }
 .card-hdr { padding:16px 22px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between; }
 .card-hdr h3 { font-family:'Merriweather',serif;font-size:14px;font-weight:400;color:var(--text); }
@@ -144,20 +135,10 @@ body { font-family:'DM Sans',sans-serif; background:var(--cream); color:var(--te
 .card-body { padding:0; }
 .card-body-pad { padding:20px 22px; }
 
-/* ── Layouts ── */
 .two-col { display:grid;grid-template-columns:1fr 360px;gap:20px;align-items:start; }
 .three-col { display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px; }
 
-/* ── Case rows — clickable link ── */
-.case-row {
-  padding:15px 22px;
-  border-bottom:1px solid #f8f5f0;
-  display:flex;align-items:flex-start;justify-content:space-between;gap:16px;
-  transition:background 0.1s;
-  text-decoration:none;color:inherit;
-  cursor:pointer;
-  position:relative;
-}
+.case-row { padding:15px 22px;border-bottom:1px solid #f8f5f0;display:flex;align-items:flex-start;justify-content:space-between;gap:16px;transition:background 0.1s;text-decoration:none;color:inherit;cursor:pointer;position:relative; }
 .case-row:last-child { border-bottom:none; }
 .case-row:hover { background:#faf9f7; }
 .case-row:hover .cr-open-hint { opacity:1; }
@@ -168,7 +149,6 @@ body { font-family:'DM Sans',sans-serif; background:var(--cream); color:var(--te
 .cr-meta { font-size:11.5px;color:var(--muted); }
 .cr-right { display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex-shrink:0; }
 
-/* ── Badges ── */
 .badge { font-size:10px;font-weight:700;letter-spacing:0.07em;padding:3px 9px;border-radius:2px;text-transform:uppercase;white-space:nowrap; }
 .badge-criminal  { background:#fef2f2;color:#dc2626;border:1px solid #fee2e2; }
 .badge-civil     { background:#eff6ff;color:#1d4ed8;border:1px solid #dbeafe; }
@@ -181,7 +161,6 @@ body { font-family:'DM Sans',sans-serif; background:var(--cream); color:var(--te
 .sp-closed    { background:#f8f5f0;color:#9a8f82;border:1px solid var(--line); }
 .sp-dismissed { background:#f8f5f0;color:#9a8f82;border:1px solid var(--line); }
 
-/* ── Hearing rows — clickable ── */
 .hearing-row { padding:14px 22px;border-bottom:1px solid #f8f5f0;display:flex;align-items:flex-start;gap:16px;text-decoration:none;color:inherit;cursor:pointer;transition:background 0.1s;position:relative; }
 .hearing-row:last-child { border-bottom:none; }
 .hearing-row:hover { background:#faf9f7; }
@@ -200,7 +179,6 @@ body { font-family:'DM Sans',sans-serif; background:var(--cream); color:var(--te
 .hr-today    { background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-bdr); }
 .hr-past     { background:#f8f5f0;color:#9a8f82;border:1px solid var(--line); }
 
-/* ── Financial rows — clickable ── */
 .fin-row { padding:14px 22px;border-bottom:1px solid #f8f5f0;display:flex;align-items:center;gap:16px;justify-content:space-between;text-decoration:none;color:inherit;cursor:pointer;transition:background 0.1s;position:relative; }
 .fin-row:last-child { border-bottom:none; }
 .fin-row:hover { background:#faf9f7; }
@@ -214,7 +192,6 @@ body { font-family:'DM Sans',sans-serif; background:var(--cream); color:var(--te
 .fin-unpaid  { background:var(--red-bg);color:var(--red);border:1px solid var(--red-bdr); }
 .fin-partial { background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-bdr); }
 
-/* ── Filing rows — clickable ── */
 .filing-row { padding:14px 22px;border-bottom:1px solid #f8f5f0;display:flex;align-items:flex-start;gap:14px;text-decoration:none;color:inherit;cursor:pointer;transition:background 0.1s;position:relative; }
 .filing-row:last-child { border-bottom:none; }
 .filing-row:hover { background:#faf9f7; }
@@ -225,7 +202,6 @@ body { font-family:'DM Sans',sans-serif; background:var(--cream); color:var(--te
 .filing-title { font-size:13px;font-weight:600;color:var(--text);margin-bottom:2px; }
 .filing-meta  { font-size:11.5px;color:var(--muted); }
 
-/* ── Activity rows ── */
 .notice-row { padding:13px 22px;border-bottom:1px solid #f8f5f0;display:flex;align-items:flex-start;gap:12px; }
 .notice-row:last-child { border-bottom:none; }
 .notice-dot { width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:4px; }
@@ -238,7 +214,6 @@ body { font-family:'DM Sans',sans-serif; background:var(--cream); color:var(--te
 .notice-title { font-size:12.5px;color:var(--text);line-height:1.4; }
 .notice-time  { font-size:11px;color:var(--muted);margin-top:2px; }
 
-/* ── Quick actions ── */
 .qa-grid { display:grid;grid-template-columns:repeat(2,1fr);gap:10px; }
 .qa-btn { display:flex;flex-direction:column;align-items:flex-start;gap:5px;padding:14px 16px;background:var(--cream);border:1px solid var(--line);border-radius:4px;cursor:pointer;transition:all 0.15s;text-decoration:none;color:inherit; }
 .qa-btn:hover { border-color:var(--navy);background:#ece8e0; }
@@ -246,7 +221,6 @@ body { font-family:'DM Sans',sans-serif; background:var(--cream); color:var(--te
 .qa-label { font-size:12.5px;font-weight:700;color:var(--text); }
 .qa-sub   { font-size:11px;color:var(--muted);line-height:1.4; }
 
-/* ── Welcome banner ── */
 .welcome-banner { background:var(--navy);border-radius:5px;padding:26px 30px;margin-bottom:24px;display:flex;align-items:center;justify-content:space-between;gap:20px;position:relative;overflow:hidden; }
 .welcome-banner::before { content:'';position:absolute;right:-40px;top:-40px;width:200px;height:200px;border-radius:50%;background:rgba(200,168,75,0.08);pointer-events:none; }
 .wb-title { font-family:'Merriweather',serif;color:#fff;font-size:20px;font-weight:300;margin-bottom:6px; }
@@ -256,15 +230,8 @@ body { font-family:'DM Sans',sans-serif; background:var(--cream); color:var(--te
 .wb-role-badge { background:var(--gold-dim);border:1px solid rgba(200,168,75,0.3);color:var(--gold);font-size:11px;font-weight:700;padding:6px 14px;border-radius:3px;letter-spacing:0.06em;text-transform:uppercase;display:inline-block;margin-bottom:8px; }
 .wb-date { font-size:12px;color:var(--blue-muted); }
 
-/* ── Admin tools — now real links ── */
 .admin-tool-grid { display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px; }
-.admin-tool {
-  background:var(--white);border:1px solid var(--line);border-radius:4px;
-  padding:18px 18px;cursor:pointer;transition:all 0.15s;
-  text-decoration:none;display:flex;flex-direction:column;gap:8px;
-  color:inherit;
-  position:relative;overflow:hidden;
-}
+.admin-tool { background:var(--white);border:1px solid var(--line);border-radius:4px;padding:18px 18px;cursor:pointer;transition:all 0.15s;text-decoration:none;display:flex;flex-direction:column;gap:8px;color:inherit;position:relative;overflow:hidden; }
 .admin-tool::after { content:'↗';position:absolute;top:12px;right:14px;font-size:11px;color:var(--muted);opacity:0;transition:opacity 0.15s; }
 .admin-tool:hover { border-color:var(--navy);box-shadow:0 4px 14px rgba(10,22,40,0.09); }
 .admin-tool:hover::after { opacity:1; }
@@ -272,7 +239,6 @@ body { font-family:'DM Sans',sans-serif; background:var(--cream); color:var(--te
 .at-title { font-size:13px;font-weight:700;color:var(--text); }
 .at-sub   { font-size:11.5px;color:var(--muted);line-height:1.45; }
 
-/* ── Docket table ── */
 .docket-table { width:100%;border-collapse:collapse; }
 .docket-table th { font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;padding:10px 18px;border-bottom:2px solid var(--line);text-align:left;font-weight:700;background:#faf9f7; }
 .docket-table td { padding:12px 18px;border-bottom:1px solid #f8f5f0;font-size:13px;color:var(--text);vertical-align:top; }
@@ -283,7 +249,6 @@ body { font-family:'DM Sans',sans-serif; background:var(--cream); color:var(--te
 .dt-time     { font-size:11.5px;font-weight:700;color:var(--navy);white-space:nowrap; }
 .dt-type     { font-size:11px;color:var(--muted);white-space:nowrap; }
 
-/* ── Queue rows ── */
 .queue-row { padding:13px 22px;border-bottom:1px solid #f8f5f0;display:flex;align-items:center;gap:14px; }
 .queue-row:last-child { border-bottom:none; }
 .queue-priority { width:6px;align-self:stretch;border-radius:2px;flex-shrink:0; }
@@ -296,13 +261,11 @@ body { font-family:'DM Sans',sans-serif; background:var(--cream); color:var(--te
 .queue-action { background:var(--navy);color:#fff;border:none;border-radius:3px;padding:6px 14px;font-size:11.5px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background 0.12s;white-space:nowrap;text-decoration:none;display:inline-block; }
 .queue-action:hover { background:var(--navy-mid); }
 
-/* ── Empty states ── */
 .empty-state { padding:40px 22px;text-align:center; }
 .empty-state .ei { font-size:32px;margin-bottom:10px; }
 .empty-state h4 { font-family:'Merriweather',serif;font-size:16px;font-weight:300;margin-bottom:6px; }
 .empty-state p  { font-size:12.5px;color:var(--muted);line-height:1.6; }
 
-/* ── Loading overlay ── */
 .auth-loading-overlay { position:fixed;inset:0;background:var(--navy);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;gap:18px; }
 .auth-loading-overlay.hidden { display:none; }
 .alo-seal  { width:56px;height:56px;background:var(--gold);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:26px; }
@@ -380,7 +343,6 @@ body { font-family:'DM Sans',sans-serif; background:var(--cream); color:var(--te
   </div>
 
   <div class="page-body" id="page-body">
-
     <div class="page-section active" id="page-overview">
       <div class="welcome-banner">
         <div>
@@ -396,85 +358,45 @@ body { font-family:'DM Sans',sans-serif; background:var(--cream); color:var(--te
     </div>
 
     <div class="page-section" id="page-cases">
-      <div class="section-hdr">
-        <h2>My Cases</h2>
-        <p id="cases-sub">Cases in which you are a named party.</p>
-      </div>
+      <div class="section-hdr"><h2>My Cases</h2><p id="cases-sub">Cases in which you are a named party.</p></div>
       <div id="cases-content"></div>
     </div>
-
     <div class="page-section" id="page-hearings">
-      <div class="section-hdr">
-        <h2>Upcoming Hearings</h2>
-        <p>Scheduled court dates and proceedings.</p>
-      </div>
+      <div class="section-hdr"><h2>Upcoming Hearings</h2><p>Scheduled court dates and proceedings.</p></div>
       <div id="hearings-content"></div>
     </div>
-
     <div class="page-section" id="page-filings">
-      <div class="section-hdr">
-        <h2>Filings &amp; Documents</h2>
-        <p>Documents filed with the court on your behalf.</p>
-      </div>
+      <div class="section-hdr"><h2>Filings &amp; Documents</h2><p>Documents filed with the court on your behalf.</p></div>
       <div id="filings-content"></div>
     </div>
-
     <div class="page-section" id="page-financials">
-      <div class="section-hdr">
-        <h2>Fines &amp; Fees</h2>
-        <p>Outstanding balances, payment history, and financial orders.</p>
-      </div>
+      <div class="section-hdr"><h2>Fines &amp; Fees</h2><p>Outstanding balances, payment history, and financial orders.</p></div>
       <div id="financials-content"></div>
     </div>
-
     <div class="page-section" id="page-docket">
-      <div class="section-hdr">
-        <h2 id="docket-title">My Docket</h2>
-        <p id="docket-sub">Cases currently assigned to you.</p>
-      </div>
+      <div class="section-hdr"><h2 id="docket-title">My Docket</h2><p id="docket-sub">Cases currently assigned to you.</p></div>
       <div id="docket-content"></div>
     </div>
-
     <div class="page-section" id="page-all-cases">
-      <div class="section-hdr">
-        <h2>All Cases</h2>
-        <p id="all-cases-sub">Browse all cases in the court record.</p>
-      </div>
+      <div class="section-hdr"><h2>All Cases</h2><p id="all-cases-sub">Browse all cases in the court record.</p></div>
       <div id="all-cases-content"></div>
     </div>
-
     <div class="page-section" id="page-queue">
-      <div class="section-hdr">
-        <h2>Processing Queue</h2>
-        <p>Incoming filings and items awaiting review or action.</p>
-      </div>
+      <div class="section-hdr"><h2>Processing Queue</h2><p>Incoming filings and items awaiting review or action.</p></div>
       <div id="queue-content"></div>
     </div>
-
     <div class="page-section" id="page-admin">
-      <div class="section-hdr">
-        <h2>Administrative Tools</h2>
-        <p>Court management, scheduling, records, and system access.</p>
-      </div>
+      <div class="section-hdr"><h2>Administrative Tools</h2><p>Court management, scheduling, records, and system access.</p></div>
       <div id="admin-content"></div>
     </div>
-
     <div class="page-section" id="page-opinions">
-      <div class="section-hdr">
-        <h2>Opinions &amp; Orders</h2>
-        <p>Draft and publish opinions, issue orders, and manage appellate decisions.</p>
-      </div>
+      <div class="section-hdr"><h2>Opinions &amp; Orders</h2><p>Draft and publish opinions, issue orders, and manage appellate decisions.</p></div>
       <div id="opinions-content"></div>
     </div>
-
     <div class="page-section" id="page-settings">
-      <div class="section-hdr">
-        <h2>Account Settings</h2>
-        <p>Manage your MiCOURT account preferences and profile.</p>
-      </div>
+      <div class="section-hdr"><h2>Account Settings</h2><p>Manage your MiCOURT account preferences and profile.</p></div>
       <div id="settings-content"></div>
     </div>
-
   </div>
 </div>
 
@@ -486,9 +408,6 @@ body { font-family:'DM Sans',sans-serif; background:var(--cream); color:var(--te
 </div>
 
 <script>
-/* ═══════════════════════════════════════════
-   MOCK DATA
-═══════════════════════════════════════════ */
 const CURRENT_USER = { name:'—', email:'—', pin:'—', role:'Portal User', barNumber:null, uid:null };
 
 const MOCK_CASES = [
@@ -546,10 +465,6 @@ const MOCK_ACTIVITY = [
   { dot:'nd-gray',  title:'Case 24-DC-0310 closed — Judgment for Plaintiff',            time:'Feb 2026'    },
 ];
 
-/* ═══════════════════════════════════════════
-   ADMIN TOOL LINKS
-   href is the actual URL for that admin tool
-═══════════════════════════════════════════ */
 const ADMIN_TOOLS_DISTRICT = [
   { icon:'📋', title:'Case Management',      sub:'Open, assign, close, and merge cases.',              href:'/courts/micourt/admin/cases/' },
   { icon:'📅', title:'Schedule Hearing',     sub:'Add or modify court proceedings.',                   href:'/courts/micourt/admin/hearings/' },
@@ -563,17 +478,14 @@ const ADMIN_TOOLS_DISTRICT = [
 ];
 
 const ADMIN_TOOLS_SC = [
-  { icon:'📜', title:'Opinion Management',   sub:'Draft, circulate, and publish SC opinions.',        href:'/courts/micourt/admin/opinions/' },
-  { icon:'📋', title:'Petition Review',      sub:'Review petitions for leave to appeal.',             href:'/courts/micourt/admin/petitions/' },
-  { icon:'📅', title:'Oral Argument Schedule',sub:'Schedule and manage oral arguments.',              href:'/courts/micourt/admin/oral-arguments/' },
-  { icon:'📊', title:'SC Reports',           sub:'Supreme Court statistics and docket reports.',      href:'/courts/micourt/admin/sc-reports/' },
-  { icon:'🏛️', title:'Justice Assignments',  sub:'Assign justices to matters.',                       href:'/courts/micourt/admin/justice-assignments/' },
-  { icon:'📁', title:'Record Requests',      sub:'Manage FOIA and public records requests.',          href:'/courts/micourt/admin/record-requests/' },
+  { icon:'📜', title:'Opinion Management',    sub:'Draft, circulate, and publish SC opinions.',        href:'/courts/micourt/admin/opinions/' },
+  { icon:'📋', title:'Petition Review',       sub:'Review petitions for leave to appeal.',             href:'/courts/micourt/admin/petitions/' },
+  { icon:'📅', title:'Oral Argument Schedule',sub:'Schedule and manage oral arguments.',               href:'/courts/micourt/admin/oral-arguments/' },
+  { icon:'📊', title:'SC Reports',            sub:'Supreme Court statistics and docket reports.',      href:'/courts/micourt/admin/sc-reports/' },
+  { icon:'🏛️', title:'Justice Assignments',   sub:'Assign justices to matters.',                       href:'/courts/micourt/admin/justice-assignments/' },
+  { icon:'📁', title:'Record Requests',       sub:'Manage FOIA and public records requests.',          href:'/courts/micourt/admin/record-requests/' },
 ];
 
-/* ═══════════════════════════════════════════
-   ROLE / NAV CONFIG
-═══════════════════════════════════════════ */
 const ROLE_META = {
   'Portal User':                          { tier:'public',         court:'Genesee Co. District Court', sc:false },
   'Licensed Attorney':                    { tier:'attorney',       court:'Genesee Co. District Court', sc:false },
@@ -743,16 +655,10 @@ const NAV_CONFIG = {
   ],
 };
 
-/* ═══════════════════════════════════════════
-   STATE
-═══════════════════════════════════════════ */
 let currentRole  = 'Portal User';
 let currentCourt = 'Genesee Co. District Court';
 let activePage   = 'overview';
 
-/* ═══════════════════════════════════════════
-   HELPERS
-═══════════════════════════════════════════ */
 function getTier(role) { return (ROLE_META[role] || ROLE_META['Portal User']).tier; }
 function isScRole(role) { return !!(ROLE_META[role] || {}).sc; }
 function isStaffRole(role) { return !['public','attorney','state-atty'].includes(getTier(role)); }
@@ -777,16 +683,12 @@ function typeBadge(type) {
   return `<span class="badge ${cls}">${type}</span>`;
 }
 
-/* URL builders — all clickable rows link here */
-function caseUrl(id)     { return `/courts/micourt/cases/${encodeURIComponent(id)}/`; }
-function hearingUrl(id)  { return `/courts/micourt/hearings/${encodeURIComponent(id)}/`; }
-function filingUrl(id)   { return `/courts/micourt/filings/${encodeURIComponent(id)}/`; }
-function finUrl(id)      { return `/courts/micourt/financials/${encodeURIComponent(id)}/`; }
-function queueUrl(id)    { return `/courts/micourt/queue/${encodeURIComponent(id)}/`; }
+function caseUrl(id)    { return `/courts/micourt/cases/${encodeURIComponent(id)}/`; }
+function hearingUrl(id) { return `/courts/micourt/hearings/${encodeURIComponent(id)}/`; }
+function filingUrl(id)  { return `/courts/micourt/filings/${encodeURIComponent(id)}/`; }
+function finUrl(id)     { return `/courts/micourt/financials/${encodeURIComponent(id)}/`; }
+function queueUrl(id)   { return `/courts/micourt/queue/${encodeURIComponent(id)}/`; }
 
-/* ═══════════════════════════════════════════
-   NAV
-═══════════════════════════════════════════ */
 const SECTION_LABELS = { main:'Navigation', tools:'Court Tools', account:'Account' };
 
 function buildNav(role) {
@@ -823,9 +725,6 @@ function navigateTo(pageId) {
 }
 window.navigateTo = navigateTo;
 
-/* ═══════════════════════════════════════════
-   PAGE RENDERERS
-═══════════════════════════════════════════ */
 function renderPage(pageId) {
   const tier = getTier(currentRole);
   if (pageId==='overview')   renderOverview(tier);
@@ -840,8 +739,6 @@ function renderPage(pageId) {
   if (pageId==='opinions')   renderOpinions(tier);
   if (pageId==='settings')   renderSettings();
 }
-
-/* ── Shared row builders (data shown inline, row is a link) ── */
 
 function caseRow(c) {
   return `<a class="case-row" href="${caseUrl(c.id)}">
@@ -930,7 +827,6 @@ function docketTableRow(c) {
   </tr>`;
 }
 
-/* ── Overview ── */
 function renderOverview(tier) {
   const el       = document.getElementById('overview-content');
   const isPublic = tier==='public';
@@ -984,9 +880,7 @@ function renderOverview(tier) {
           </div>
         </div>
       </div>`;
-  }
-
-  else if (isAtty) {
+  } else if (isAtty) {
     el.innerHTML = `
       <div class="stat-row cols-4">
         <div class="stat-card gold"><span class="sc-icon">📋</span><span class="sc-label">Active Matters</span><span class="sc-value">3</span><span class="sc-sub">2 criminal · 1 civil</span></div>
@@ -1023,9 +917,7 @@ function renderOverview(tier) {
           </div>
         </div>
       </div>`;
-  }
-
-  else if (isClerk) {
+  } else if (isClerk) {
     el.innerHTML = `
       <div class="stat-row cols-4">
         <div class="stat-card red"><span class="sc-icon">📥</span><span class="sc-label">Queue Items</span><span class="sc-value">5</span><span class="sc-sub">2 high priority</span></div>
@@ -1054,9 +946,7 @@ function renderOverview(tier) {
           </div>
         </div>
       </div>`;
-  }
-
-  else if (isJudge) {
+  } else if (isJudge) {
     const docket = isScRole(currentRole) ? MOCK_SC_DOCKET : MOCK_DOCKET;
     el.innerHTML = `
       <div class="stat-row cols-4">
@@ -1098,11 +988,10 @@ function renderOverview(tier) {
   }
 }
 
-/* ── Cases ── */
 function renderCases(tier) {
   const isStaff = isStaffRole(currentRole);
   const data    = isStaff ? (isScRole(currentRole) ? MOCK_SC_DOCKET : MOCK_DOCKET) : MOCK_CASES;
-  if (tier==='attorney')   document.getElementById('cases-sub').textContent = 'Cases in which you are counsel of record.';
+  if (tier==='attorney')        document.getElementById('cases-sub').textContent = 'Cases in which you are counsel of record.';
   else if (tier==='state-atty') document.getElementById('cases-sub').textContent = 'Active prosecutions you are assigned to.';
   document.getElementById('cases-content').innerHTML = `
     <div class="card">
@@ -1111,8 +1000,7 @@ function renderCases(tier) {
     </div>`;
 }
 
-/* ── Hearings ── */
-function renderHearings(tier) {
+function renderHearings() {
   document.getElementById('hearings-content').innerHTML = `
     <div class="card">
       <div class="card-hdr"><h3>Scheduled Proceedings</h3><span class="card-tag">${MOCK_HEARINGS.length} total</span></div>
@@ -1120,8 +1008,7 @@ function renderHearings(tier) {
     </div>`;
 }
 
-/* ── Filings ── */
-function renderFilings(tier) {
+function renderFilings() {
   document.getElementById('filings-content').innerHTML = `
     <div class="card">
       <div class="card-hdr"><h3>Case Filings</h3><span class="card-tag">${MOCK_FILINGS.length} documents</span></div>
@@ -1129,8 +1016,7 @@ function renderFilings(tier) {
     </div>`;
 }
 
-/* ── Financials ── */
-function renderFinancials(tier) {
+function renderFinancials() {
   const total   = MOCK_FINANCIALS.reduce((s,f)=>s+f.amount,0);
   const paid    = MOCK_FINANCIALS.reduce((s,f)=>s+f.paid,0);
   const balance = total - paid;
@@ -1151,8 +1037,7 @@ function renderFinancials(tier) {
     </div>`:''}`;
 }
 
-/* ── Docket (staff) ── */
-function renderDocket(tier) {
+function renderDocket() {
   const data = isScRole(currentRole) ? MOCK_SC_DOCKET : MOCK_DOCKET;
   document.getElementById('docket-content').innerHTML = `
     <div class="card">
@@ -1166,9 +1051,8 @@ function renderDocket(tier) {
     </div>`;
 }
 
-/* ── All Cases (staff) ── */
-function renderAllCases(tier) {
-  const sc  = isScRole(currentRole);
+function renderAllCases() {
+  const sc  = isScRole(currentRole) && currentCourt==='Michigan Supreme Court';
   document.getElementById('all-cases-sub').textContent = sc
     ? 'All cases filed with the Michigan Supreme Court.'
     : 'All cases on record at the Genesee County District Court.';
@@ -1184,8 +1068,7 @@ function renderAllCases(tier) {
     </div>`;
 }
 
-/* ── Queue ── */
-function renderQueue(tier) {
+function renderQueue() {
   document.getElementById('queue-content').innerHTML = `
     <div class="stat-row cols-3">
       <div class="stat-card red"><span class="sc-label">High Priority</span><span class="sc-value">2</span></div>
@@ -1198,8 +1081,7 @@ function renderQueue(tier) {
     </div>`;
 }
 
-/* ── Admin Tools — all real <a> links ── */
-function renderAdmin(tier) {
+function renderAdmin() {
   const sc    = isScRole(currentRole) && currentCourt==='Michigan Supreme Court';
   const tools = sc ? ADMIN_TOOLS_SC : ADMIN_TOOLS_DISTRICT;
   document.getElementById('admin-content').innerHTML = `
@@ -1212,8 +1094,7 @@ function renderAdmin(tier) {
     </div>`;
 }
 
-/* ── Opinions ── */
-function renderOpinions(tier) {
+function renderOpinions() {
   document.getElementById('opinions-content').innerHTML = `
     <div class="stat-row cols-3">
       <div class="stat-card gold"><span class="sc-label">Pending Drafts</span><span class="sc-value">2</span></div>
@@ -1247,7 +1128,6 @@ function renderOpinions(tier) {
     </div>`;
 }
 
-/* ── Settings ── */
 function renderSettings() {
   const showBar = ['Licensed Attorney','State Attorney'].includes(currentRole);
   const fields = [
@@ -1293,29 +1173,21 @@ function renderSettings() {
     </div>`;
 }
 
-/* ═══════════════════════════════════════════
-   ROLE APPLICATION
-═══════════════════════════════════════════ */
 function applyRole(role) {
   currentRole  = role;
   const meta   = ROLE_META[role] || ROLE_META['Portal User'];
   currentCourt = meta.court;
   activePage   = 'overview';
 
-  // Sidebar
-  document.getElementById('sb-username').textContent       = CURRENT_USER.name;
-  document.getElementById('sb-role-label').textContent     = role;
+  document.getElementById('sb-username').textContent        = CURRENT_USER.name;
+  document.getElementById('sb-role-label').textContent      = role;
   document.getElementById('sb-avatar-initials').textContent = initials(CURRENT_USER.name);
 
-  // Welcome banner — FULL name
   document.getElementById('wb-name').textContent      = CURRENT_USER.name;
   document.getElementById('wb-role-badge').textContent = role;
   document.getElementById('wb-date-full').textContent  = new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
-
-  // Court badge
   document.getElementById('topbar-court-name').textContent = currentCourt;
 
-  // Welcome sub-text
   const subs = {
     'Portal User':                          'View your cases, upcoming hearings, and manage your court obligations.',
     'Licensed Attorney':                    'Manage your active matters, file documents, and track client cases.',
@@ -1331,7 +1203,6 @@ function applyRole(role) {
   };
   document.getElementById('wb-sub').textContent = subs[role] || 'Welcome to MiCOURT.';
 
-  // Court switcher (SC roles only)
   const switcher = document.getElementById('court-switcher');
   meta.sc ? switcher.classList.add('show') : switcher.classList.remove('show');
 
@@ -1353,16 +1224,18 @@ window.switchCourt = switchCourt;
 
 async function signOutUser() {
   try { if (window._micourtAuth) await window._micourtAuth.signOut(); } catch(e) {}
-  sessionStorage.removeItem('micourt_user');
   window.location.href = '/courts/micourt/';
 }
 window.signOutUser = signOutUser;
 </script>
 
+<!-- Firebase — DEFAULT app, matches the login page -->
 <script type="module">
 import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
-import { getFirestore, doc, getDoc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+import { getAuth, onAuthStateChanged, setPersistence, browserLocalPersistence }
+  from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
+import { getFirestore, doc, getDoc, updateDoc, serverTimestamp }
+  from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 
 const micourtConfig = {
   apiKey:            "AIzaSyA8sUFIq81cs6uQvqduardpGJ4R2DxO8NQ",
@@ -1373,25 +1246,26 @@ const micourtConfig = {
   appId:             "1:1013564619997:web:8f259dab457915758f6f34"
 };
 
+// Default app — same as login page
 const app  = getApps().length ? getApp() : initializeApp(micourtConfig);
 const auth = getAuth(app);
 const db   = getFirestore(app);
 window._micourtAuth = auth;
+
+// Keep persistence consistent
+await setPersistence(auth, browserLocalPersistence);
 
 document.getElementById('topbar-date').textContent = new Date()
   .toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'});
 
 function setMsg(msg) { document.getElementById('auth-overlay-msg').textContent = msg; }
 
-let authSettled = false;
-
 const unsubscribe = onAuthStateChanged(auth, async (user) => {
-  authSettled = true;
   unsubscribe();
 
   if (!user) {
     setMsg('Session expired. Redirecting…');
-    setTimeout(() => { window.location.href = '/courts/micourt/'; }, 1200);
+    setTimeout(() => { window.location.href = '/courts/micourt/'; }, 1500);
     return;
   }
 
@@ -1400,7 +1274,7 @@ const unsubscribe = onAuthStateChanged(auth, async (user) => {
     const snap = await getDoc(doc(db, 'accounts', user.uid));
     if (!snap.exists()) {
       setMsg('Account not found. Redirecting…');
-      setTimeout(() => { window.location.href = '/courts/micourt/'; }, 1200);
+      setTimeout(() => { window.location.href = '/courts/micourt/'; }, 1500);
       return;
     }
     const data = snap.data();
@@ -1410,18 +1284,23 @@ const unsubscribe = onAuthStateChanged(auth, async (user) => {
     CURRENT_USER.pin       = data.pin       || data.mipassPin   || '—';
     CURRENT_USER.role      = data.role      || 'Portal User';
     CURRENT_USER.barNumber = data.barNumber || null;
+
     updateDoc(doc(db, 'accounts', user.uid), { lastLogin: serverTimestamp() }).catch(() => {});
+
     document.getElementById('auth-overlay').classList.add('hidden');
     applyRole(CURRENT_USER.role);
   } catch (err) {
-    setMsg('Error loading profile: ' + err.message);
+    setMsg('Error loading profile. Retrying…');
     setTimeout(() => { window.location.reload(); }, 3000);
   }
 });
 
+// Safety timeout — if Firebase never responds, reload
 setTimeout(() => {
-  if (!authSettled) window.location.reload();
-}, 8000);
+  if (!document.getElementById('auth-overlay').classList.contains('hidden')) {
+    window.location.reload();
+  }
+}, 10000);
 </script>
 </body>
 </html>

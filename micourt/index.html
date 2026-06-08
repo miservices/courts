@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Sign In | MiCOURT</title>
 
-<!-- ★ MiCOURT Shell — injects banner, header/nav, footer automatically -->
 <script src="/courts/shell.js" data-active="home"></script>
 
 <link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;1,300&family=DM+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -99,7 +98,6 @@
   .form-group .field-error { font-size: 11.5px; color: var(--red); margin-top: 5px; display: none; }
   .form-group .field-error.show { display: block; }
 
-  /* Role selector — segmented pill toggle */
   .role-toggle { display: flex; gap: 0; margin-bottom: 20px; border: 1.5px solid var(--line); border-radius: 6px; overflow: hidden; background: #faf9f7; }
   .role-option { flex: 1; position: relative; cursor: pointer; }
   .role-option input[type=radio] { position: absolute; opacity: 0; width: 0; height: 0; }
@@ -111,16 +109,13 @@
   }
   .role-option:last-child .role-option-inner { border-right: none; }
   .role-option-inner:hover { background: #f0ede8; }
-  .role-option.selected .role-option-inner {
-    background: var(--navy);
-  }
+  .role-option.selected .role-option-inner { background: var(--navy); }
   .ro-icon { font-size: 26px; line-height: 1; display: block; transition: transform 0.18s; }
   .role-option.selected .ro-icon { transform: scale(1.1); }
   .ro-title { font-size: 13.5px; font-weight: 700; color: var(--text); display: block; line-height: 1.2; transition: color 0.18s; }
   .ro-sub { font-size: 11px; color: var(--muted); line-height: 1.45; display: block; transition: color 0.18s; }
   .role-option.selected .ro-title { color: #fff; }
   .role-option.selected .ro-sub { color: #7a9bbf; }
-  /* Animated check dot */
   .ro-check { width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--line); background: transparent; display: flex; align-items: center; justify-content: center; margin: 4px auto 0; transition: all 0.18s; font-size: 9px; color: transparent; }
   .role-option.selected .ro-check { border-color: var(--gold); background: var(--gold); color: var(--navy); font-weight: 900; }
 
@@ -153,7 +148,7 @@
   .redirect-bar-wrap { margin-bottom: 12px; display: none; }
   .redirect-bar-wrap p { font-size: 12px; color: #1a3a6a; margin-bottom: 6px; }
   .redirect-bar { width: 100%; height: 4px; background: #c0d0e8; border-radius: 2px; overflow: hidden; }
-  .redirect-fill { height: 100%; background: var(--navy); width: 0%; transition: width 2.5s linear; border-radius: 2px; }
+  .redirect-fill { height: 100%; background: var(--navy); width: 0%; transition: width 3s linear; border-radius: 2px; }
 
   .note-box { background: var(--amber-bg); border: 1px solid var(--amber-bdr); border-radius: 4px; padding: 12px 16px; margin-bottom: 16px; font-size: 12px; color: #78350f; line-height: 1.6; }
 
@@ -165,7 +160,6 @@
     .login-shell { grid-template-columns: 1fr; }
     .login-left { display: none; }
     .login-right { padding: 32px 24px; }
-    .role-grid { grid-template-columns: 1fr; }
   }
 </style>
 </head>
@@ -174,7 +168,6 @@
 <div class="page-wrap">
   <div class="login-shell">
 
-    <!-- Left branding panel -->
     <div class="login-left">
       <div class="ll-top">
         <div class="ll-seal">⚖️</div>
@@ -208,7 +201,6 @@
       <p class="ll-bottom">Authentication is provided through MiPASS — the Michigan State Identity Authentication System. Your identity is verified against the official state registry.</p>
     </div>
 
-    <!-- Right panel — all steps -->
     <div class="login-right">
 
       <!-- STEP 0 — Sign in with MiPASS -->
@@ -273,7 +265,7 @@
         </div>
       </div>
 
-      <!-- STEP AUTO-LOGIN — Account found -->
+      <!-- STEP AUTO-LOGIN -->
       <div class="step" id="step-autologin">
         <div class="step-header" style="margin-bottom:20px">
           <h2>Welcome Back</h2>
@@ -470,17 +462,20 @@
         <button class="btn-secondary" id="s3-retry-btn" style="display:none" onclick="retryAccountCreation()">Try Again</button>
       </div>
 
-    </div><!-- /login-right -->
-  </div><!-- /login-shell -->
-</div><!-- /page-wrap -->
+    </div>
+  </div>
+</div>
 
-<!-- Firebase -->
+<!-- Firebase — DEFAULT app (no named instance) -->
 <script type="module">
-  import { initializeApp }         from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
-  import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword }
-                                   from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
-  import { getFirestore, doc, getDoc, setDoc, query, collection, where, getDocs, serverTimestamp }
-                                   from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+  import { initializeApp, getApps, getApp }
+    from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
+  import { getAuth, setPersistence, browserLocalPersistence,
+           createUserWithEmailAndPassword, signInWithEmailAndPassword }
+    from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
+  import { getFirestore, doc, getDoc, setDoc,
+           query, collection, where, getDocs, serverTimestamp }
+    from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 
   const micourtConfig = {
     apiKey:            "AIzaSyA8sUFIq81cs6uQvqduardpGJ4R2DxO8NQ",
@@ -491,23 +486,27 @@
     appId:             "1:1013564619997:web:8f259dab457915758f6f34"
   };
 
-  const app  = initializeApp(micourtConfig, 'micourt-main');
+  // Use default app — no named instance — so dashboard shares the same Auth state
+  const app  = getApps().length ? getApp() : initializeApp(micourtConfig);
   const auth = getAuth(app);
   const db   = getFirestore(app);
 
-  window._micourtAuth      = auth;
-  window._micourtDb        = db;
-  window._serverTimestamp  = serverTimestamp;
-  window._doc              = doc;
-  window._getDoc           = getDoc;
-  window._setDoc           = setDoc;
-  window._query            = query;
-  window._collection       = collection;
-  window._where            = where;
-  window._getDocs          = getDocs;
-  window._createUser       = createUserWithEmailAndPassword;
-  window._signIn           = signInWithEmailAndPassword;
-  window._fbReady          = true;
+  // Force LOCAL persistence so the session survives the redirect
+  await setPersistence(auth, browserLocalPersistence);
+
+  window._micourtAuth     = auth;
+  window._micourtDb       = db;
+  window._serverTimestamp = serverTimestamp;
+  window._doc             = doc;
+  window._getDoc          = getDoc;
+  window._setDoc          = setDoc;
+  window._query           = query;
+  window._collection      = collection;
+  window._where           = where;
+  window._getDocs         = getDocs;
+  window._createUser      = createUserWithEmailAndPassword;
+  window._signIn          = signInWithEmailAndPassword;
+  window._fbReady         = true;
   document.dispatchEvent(new Event('fbReady'));
 </script>
 
@@ -530,14 +529,7 @@
     if(msg) { f.classList.add('error'); e.textContent=msg; e.classList.add('show'); }
     else    { f.classList.remove('error'); e.classList.remove('show'); }
   }
-  function generatePassword(len=18) {
-    const chars = 'ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#$%';
-    let pw = '';
-    const arr = new Uint8Array(len);
-    crypto.getRandomValues(arr);
-    arr.forEach(b => pw += chars[b % chars.length]);
-    return pw;
-  }
+
   function buildIndicator(containerId, current) {
     const labels = ['Email', 'Role', 'Done'];
     let html = '';
@@ -549,6 +541,7 @@
     const el = document.getElementById(containerId);
     if (el) el.innerHTML = html;
   }
+
   function goToStep(n) {
     document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
     const target = document.getElementById('step-' + n);
@@ -568,8 +561,13 @@
   }
   window.goMipass = goMipass;
 
+  async function waitForFb() {
+    if (window._fbReady) return;
+    await new Promise(r => document.addEventListener('fbReady', r, {once:true}));
+  }
+
   async function checkExistingAccount(pin) {
-    if (!window._fbReady) await new Promise(r => document.addEventListener('fbReady', r, {once:true}));
+    await waitForFb();
     try {
       const q    = window._query(window._collection(window._micourtDb, 'accounts'), window._where('mipassPin', '==', String(pin)));
       const snap = await window._getDocs(q);
@@ -593,21 +591,26 @@
     document.getElementById('sal-loading-title').textContent = 'Signing you in…';
     document.getElementById('sal-loading-msg').textContent   = 'Authenticating your MiCOURT account via MiPASS.';
 
-    if (!window._fbReady) await new Promise(r => document.addEventListener('fbReady', r, {once:true}));
+    await waitForFb();
 
     try {
       await window._signIn(window._micourtAuth, accountData.email, String(mipassData.pin));
-      sessionStorage.setItem('micourt_user', JSON.stringify({
-        uid: accountData.uid, pin: mipassData.pin,
-        name: accountData.name, email: accountData.email,
-        role: accountData.role, barNumber: accountData.barNumber || null,
-        loginAt: new Date().toISOString()
-      }));
+
+      // Wait for Auth to fully commit the session before navigating
+      await new Promise((resolve, reject) => {
+        const unsub = window._micourtAuth.onAuthStateChanged(user => {
+          unsub();
+          if (user) resolve();
+          else reject(new Error('Auth state not confirmed'));
+        });
+        setTimeout(() => reject(new Error('Auth confirmation timeout')), 5000);
+      });
+
       hide('sal-loading');
       show('sal-success');
       document.getElementById('sal-redirect-bar').style.display = 'block';
       setTimeout(() => { document.getElementById('sal-redirect-fill').style.width = '100%'; }, 50);
-      setTimeout(() => { window.location.href = '/courts/micourt/dashboard/'; }, 2700);
+      setTimeout(() => { window.location.href = '/courts/micourt/dashboard/'; }, 3200);
     } catch(err) {
       hide('sal-loading');
       let msg = 'Could not sign you in automatically. ';
@@ -672,7 +675,7 @@
     const btn = document.getElementById('bar-verify-btn');
     btn.disabled = true;
     show('bar-loading');
-    if (!window._fbReady) await new Promise(r => document.addEventListener('fbReady', r, {once:true}));
+    await waitForFb();
     try {
       const docSnap = await window._getDoc(window._doc(window._micourtDb, 'sbm', barInput));
       hide('bar-loading');
@@ -728,9 +731,9 @@
     const roleLabel = isBar ? verifiedBarData.role   : 'Portal User';
     const barNumber = isBar ? verifiedBarData.barNumber : null;
     const barStatus = isBar ? verifiedBarData.status    : null;
-    const password  = String(pin); // PIN-as-password for passwordless MiPASS flow
+    const password  = String(pin);
 
-    if (!window._fbReady) await new Promise(r => document.addEventListener('fbReady', r, {once:true}));
+    await waitForFb();
 
     try {
       document.getElementById('s3-loading-title').textContent = 'Creating your account…';
@@ -746,16 +749,21 @@
         mipassPin: pin, robloxUser: mipassData?.robloxUsername || null,
       });
 
-      sessionStorage.setItem('micourt_user', JSON.stringify({
-        uid, pin, name, email, role: roleLabel, barNumber,
-        loginAt: new Date().toISOString()
-      }));
+      // Wait for Auth state to confirm before redirecting
+      await new Promise((resolve, reject) => {
+        const unsub = window._micourtAuth.onAuthStateChanged(user => {
+          unsub();
+          if (user) resolve();
+          else reject(new Error('Auth state not confirmed after account creation'));
+        });
+        setTimeout(() => reject(new Error('Timeout waiting for auth confirmation')), 5000);
+      });
 
       hide('s3-loading');
       show('s3-success');
       document.getElementById('s3-redirect-bar').style.display = 'block';
       setTimeout(() => { document.getElementById('s3-redirect-fill').style.width = '100%'; }, 50);
-      setTimeout(() => { window.location.href = '/courts/micourt/dashboard/'; }, 2700);
+      setTimeout(() => { window.location.href = '/courts/micourt/dashboard/'; }, 3200);
     } catch(err) {
       hide('s3-loading');
       let msg = err.message || 'An unexpected error occurred.';
@@ -791,7 +799,7 @@
     document.getElementById('s0-loading-msg').textContent   = 'Looking up your identity in the portal registry.';
     show('s0-loading');
 
-    if (!window._fbReady) await new Promise(r => document.addEventListener('fbReady', r, {once:true}));
+    await waitForFb();
 
     const existing = await checkExistingAccount(pin);
 
