@@ -1362,10 +1362,8 @@ window.signOutUser = signOutUser;
 <!-- Firebase Auth -->
 <script type="module">
 import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
-import { getAuth, onAuthStateChanged, signOut }
-                           from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
-import { getFirestore, doc, getDoc, updateDoc, serverTimestamp }
-                           from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
+import { getFirestore, doc, getDoc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 
 const micourtConfig = {
   apiKey:            "AIzaSyA8sUFIq81cs6uQvqduardpGJ4R2DxO8NQ",
@@ -1376,10 +1374,8 @@ const micourtConfig = {
   appId:             "1:1013564619997:web:8f259dab457915758f6f34"
 };
 
-// Use default (unnamed) app so auth state is shared with the login page
-import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
 
-const app = getApps().length ? getApp() : initializeApp(micourtConfig);
+const app  = getApps().length ? getApp() : initializeApp(micourtConfig);
 const auth = getAuth(app);
 const db   = getFirestore(app);
 window._micourtAuth = auth;
