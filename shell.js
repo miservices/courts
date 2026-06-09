@@ -244,12 +244,12 @@
   const BASE = '/courts/';
 
   const NAV_ITEMS = [
-    { id: 'home',      label: 'Home',            href: BASE + 'micourt/' },
+    { id: 'home',      label: 'Home',            href: BASE },
     {
       id: 'directory', label: 'Directory',
       children: [
-        { label: 'Supreme Court',            href: '#' },
-        { label: 'Genesee Co. District Court', href: '#' },
+        { label: 'Supreme Court',              href: BASE + 'supreme-court/' },
+        { label: 'Genesee Co. District Court', href: BASE + 'genesee-co-district/' },
       ]
     },
     {
@@ -257,21 +257,21 @@
       children: [
         { label: 'Online Portal (MiCOURT)',  href: BASE + 'micourt/' },
         { label: 'Search Cases',             href: BASE + 'case-search/' },
-        { label: 'Pay Fines & Fees',         href: '#' },
-        { label: 'Docket Calendar',          href: '#' },
-        { label: 'Jury Duty Portal',         href: '#' },
-        { label: 'Request Court Records',    href: '#' },
+        { label: 'Pay Fines & Fees',         href: BASE + 'online-services/pay-fees/' },
+        { label: 'Docket Calendar',          href: BASE + 'online-services/docket/' },
+        { label: 'Jury Duty Portal',         href: BASE + 'online-services/jury-portal/' },
+        { label: 'Request Court Records',    href: BASE + 'online-services/request-records/' },
       ]
     },
     {
       id: 'forms', label: 'Forms & Filing',
       children: [
-        { label: 'Filing Information', href: '#' },
-        { label: 'Court Forms',        href: '#' },
+        { label: 'Filing Information', href: BASE + 'forms-and-filing/information/' },
+        { label: 'Court Forms',        href: BASE + 'forms-and-filing/forms/' },
       ]
     },
-    { id: 'selfhelp', label: 'Self Help', href: '#' },
-    { id: 'careers',  label: 'Careers',   href: '#' },
+    { id: 'selfhelp', label: 'Self Help', href: BASE + 'self-help/' },
+    { id: 'careers',  label: 'Careers',   href: BASE + 'careers/' },
   ];
 
   /* ── 3. Build HTML strings ──────────────────────────────────────────────── */
@@ -297,7 +297,7 @@
       <nav class="mc-shell-nav">
         ${items}
         <div class="mc-shell-nav-right">
-          <a href="${BASE}micourt/account/" class="mc-shell-nav-btn">Access MiCOURT ›</a>
+          <a href="${BASE}micourt/" class="mc-shell-nav-btn">Access MiCOURT ›</a>
         </div>
       </nav>`;
   }
