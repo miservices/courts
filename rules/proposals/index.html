@@ -73,6 +73,13 @@ body{font-family:'DM Sans',sans-serif;background:#f4f1ec;color:#1a1a1a;min-heigh
 .adm-proposal-link:hover{background:#112240}
 .adm-proposal-link svg{width:13px;height:13px;flex-shrink:0}
 
+/* Decision block */
+.adm-decision{padding:14px 28px;border-bottom:1px solid #f0ebe3}
+.adm-decision-top{display:flex;align-items:center;gap:10px;margin-bottom:0}
+.adm-decision-badge{font-size:10.5px;font-weight:700;letter-spacing:0.06em;padding:4px 11px;border-radius:2px;text-transform:uppercase;flex-shrink:0}
+.adm-decision-label{font-size:10px;color:#9a8f82;text-transform:uppercase;letter-spacing:0.08em}
+.adm-decision-notes{font-size:12.5px;color:#4a4035;line-height:1.6;margin-top:8px}
+
 /* Comments toggle */
 .adm-toggle-row{padding:12px 28px;background:#f8f5f0;border-bottom:1px solid #f0ebe3;display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none}
 .adm-toggle-row:hover{background:#f2ede5}
@@ -223,6 +230,29 @@ body{font-family:'DM Sans',sans-serif;background:#f4f1ec;color:#1a1a1a;min-heigh
       </div>`;
   }
 
+  // ── Decision config ─────────────────────────────────────────
+  const DECISIONS = {
+    adopted:          { label: 'Adopted',                    bg: '#e8f5e9', color: '#2e7d32', border: '#a5d6a7', icon: '✓' },
+    adopted_amended:  { label: 'Adopted with Amendments',   bg: '#e8f4fd', color: '#1565c0', border: '#90caf9', icon: '✓' },
+    withdrawn:        { label: 'Withdrawn',                  bg: '#fff8e1', color: '#e65100', border: '#ffcc80', icon: '↩' },
+    rejected:         { label: 'Rejected',                   bg: '#fce8e8', color: '#c62828', border: '#ef9a9a', icon: '✕' },
+  };
+
+  function renderDecision(p) {
+    const key  = (p.decision || '').toLowerCase().trim();
+    const cfg  = DECISIONS[key];
+    if (!cfg) return '';
+    const notes = (p.decision_notes || '').trim();
+    return `
+      <div class="adm-decision" style="background:${cfg.bg};border:1px solid ${cfg.border};border-left:3px solid ${cfg.color}">
+        <div class="adm-decision-top">
+          <span class="adm-decision-badge" style="background:${cfg.color};color:#fff">${cfg.icon} ${cfg.label}</span>
+          <span class="adm-decision-label">Court Decision</span>
+        </div>
+        ${notes ? `<div class="adm-decision-notes">${esc(notes)}</div>` : ''}
+      </div>`;
+  }
+
   // ── Render a single proposal card ──────────────────────────
   function renderCard(p, comments) {
     const isOpen   = (p.status || '').toLowerCase().trim() === 'open';
@@ -265,6 +295,7 @@ body{font-family:'DM Sans',sans-serif;background:#f4f1ec;color:#1a1a1a;min-heigh
             </a>
           </div>
         </div>
+        ${!isOpen ? renderDecision(p) : ''}
         <div class="adm-toggle-row" onclick="toggleComments('${panelId}', this)">
           <span class="toggle-label">
             Public Comments
