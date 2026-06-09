@@ -1,0 +1,1160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Electronic Filing | MiCOURT</title>
+<link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;1,300&family=DM+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy:       #0a1628;
+  --navy-mid:   #0d1f3c;
+  --navy-light: #112240;
+  --border:     #1e3a5f;
+  --gold:       #c8a84b;
+  --gold-dim:   rgba(200,168,75,0.15);
+  --cream:      #f4f1ec;
+  --cream-dark: #ede9e1;
+  --white:      #ffffff;
+  --text:       #1a1a1a;
+  --muted:      #6b5f4e;
+  --line:       #e0d9cf;
+  --blue-muted: #7a9bbf;
+  --green:      #15803d;
+  --green-bg:   #f0fdf4;
+  --green-bdr:  #dcfce7;
+  --red:        #dc2626;
+  --red-bg:     #fef2f2;
+  --red-bdr:    #fee2e2;
+  --amber:      #a16207;
+  --amber-bg:   #fef9e7;
+  --amber-bdr:  #fde68a;
+  --blue:       #1d4ed8;
+  --blue-bg:    #eff6ff;
+  --blue-bdr:   #dbeafe;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'DM Sans',sans-serif; background:var(--cream); color:var(--text); min-height:100vh; }
+
+/* ── Top bar ── */
+.topbar { background:var(--navy); border-bottom:1px solid var(--border); padding:0 40px; height:58px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:100; }
+.topbar-brand { display:flex; align-items:center; gap:12px; text-decoration:none; }
+.topbar-seal { width:30px; height:30px; background:var(--gold); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:14px; flex-shrink:0; }
+.topbar-name { font-family:'Merriweather',serif; color:#fff; font-size:14px; font-weight:400; }
+.topbar-right { display:flex; align-items:center; gap:12px; }
+.topbar-back { color:var(--blue-muted); font-size:12.5px; text-decoration:none; display:flex; align-items:center; gap:5px; transition:color 0.12s; }
+.topbar-back:hover { color:var(--gold); }
+.topbar-user { color:var(--blue-muted); font-size:12.5px; }
+
+/* ── Page layout ── */
+.page-wrap { max-width:860px; margin:0 auto; padding:40px 24px 80px; }
+
+/* ── Auth overlay ── */
+.auth-overlay { position:fixed; inset:0; background:var(--navy); display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:9999; gap:18px; }
+.auth-overlay.hidden { display:none; }
+.ao-seal { width:52px; height:52px; background:var(--gold); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:24px; }
+.ao-title { font-family:'Merriweather',serif; color:#fff; font-size:17px; font-weight:300; }
+.ao-spin { width:28px; height:28px; border:3px solid #1e3a5f; border-top-color:var(--gold); border-radius:50%; animation:spin 0.8s linear infinite; }
+.ao-msg { color:var(--blue-muted); font-size:12px; }
+
+/* ── Page header ── */
+.page-header { margin-bottom:32px; }
+.page-header h1 { font-family:'Merriweather',serif; font-size:26px; font-weight:300; color:var(--text); margin-bottom:6px; }
+.page-header p { font-size:13.5px; color:var(--muted); line-height:1.6; }
+.breadcrumb { display:flex; align-items:center; gap:7px; margin-bottom:14px; }
+.breadcrumb a { color:var(--muted); font-size:11.5px; text-decoration:none; }
+.breadcrumb a:hover { color:var(--navy); }
+.breadcrumb span { color:#b0a898; font-size:11px; }
+.breadcrumb .bc-current { color:var(--text); font-size:11.5px; font-weight:600; }
+
+/* ── Progress steps ── */
+.steps { display:flex; align-items:center; gap:0; margin-bottom:36px; }
+.step { display:flex; align-items:center; gap:10px; flex:1; }
+.step-circle { width:30px; height:30px; border-radius:50%; border:2px solid var(--line); background:var(--white); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; color:var(--muted); flex-shrink:0; transition:all 0.2s; }
+.step.done .step-circle { border-color:var(--green); background:var(--green); color:#fff; }
+.step.active .step-circle { border-color:var(--navy); background:var(--navy); color:#fff; }
+.step-label { font-size:12px; color:var(--muted); font-weight:500; transition:color 0.2s; }
+.step.active .step-label { color:var(--text); font-weight:700; }
+.step.done .step-label { color:var(--green); }
+.step-line { flex:1; height:2px; background:var(--line); margin:0 10px; transition:background 0.2s; }
+.step-line.done { background:var(--green); }
+
+/* ── Cards ── */
+.card { background:var(--white); border:1px solid var(--line); border-radius:5px; overflow:hidden; margin-bottom:20px; }
+.card-hdr { padding:18px 24px; border-bottom:1px solid var(--line); display:flex; align-items:center; gap:12px; }
+.card-hdr-icon { font-size:18px; }
+.card-hdr h2 { font-family:'Merriweather',serif; font-size:16px; font-weight:400; color:var(--text); }
+.card-hdr p { font-size:12px; color:var(--muted); margin-top:2px; }
+.card-body { padding:24px; }
+
+/* ── Form elements ── */
+.form-group { margin-bottom:20px; }
+.form-group:last-child { margin-bottom:0; }
+.form-label { display:block; font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:0.08em; font-weight:700; margin-bottom:6px; }
+.form-label .req { color:var(--red); margin-left:2px; }
+.form-input, .form-select, .form-textarea {
+  width:100%; padding:11px 14px; border:1.5px solid var(--line); border-radius:4px;
+  font-family:'DM Sans',sans-serif; font-size:14px; color:var(--text); background:var(--white);
+  transition:border-color 0.15s, box-shadow 0.15s; outline:none;
+}
+.form-input:focus, .form-select:focus, .form-textarea:focus {
+  border-color:var(--navy); box-shadow:0 0 0 3px rgba(10,22,40,0.07);
+}
+.form-input.error, .form-select.error, .form-textarea.error { border-color:var(--red); }
+.form-textarea { resize:vertical; min-height:90px; line-height:1.6; }
+.form-select { appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236b5f4e' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 12px center; padding-right:36px; }
+.form-hint { font-size:11.5px; color:var(--muted); margin-top:5px; line-height:1.5; }
+.form-error-msg { font-size:11.5px; color:var(--red); margin-top:5px; display:none; }
+.form-error-msg.show { display:block; }
+.form-row { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+.form-row-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; }
+
+/* ── File upload ── */
+.upload-zone { border:2px dashed var(--line); border-radius:4px; padding:32px 24px; text-align:center; cursor:pointer; transition:all 0.2s; position:relative; background:var(--cream); }
+.upload-zone:hover, .upload-zone.drag-over { border-color:var(--navy); background:#ece8e0; }
+.upload-zone input[type=file] { position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%; }
+.upload-icon { font-size:32px; margin-bottom:10px; }
+.upload-title { font-size:14px; font-weight:700; color:var(--text); margin-bottom:4px; }
+.upload-sub { font-size:12.5px; color:var(--muted); line-height:1.5; }
+.upload-sub strong { color:var(--navy); }
+.upload-files { margin-top:16px; display:flex; flex-direction:column; gap:8px; }
+.upload-file-row { display:flex; align-items:center; gap:10px; background:var(--white); border:1px solid var(--line); border-radius:3px; padding:10px 14px; }
+.uf-icon { font-size:16px; flex-shrink:0; }
+.uf-name { flex:1; font-size:13px; font-weight:600; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.uf-size { font-size:11px; color:var(--muted); flex-shrink:0; }
+.uf-remove { width:22px; height:22px; border-radius:50%; border:none; background:var(--red-bg); color:var(--red); cursor:pointer; font-size:12px; display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:background 0.12s; }
+.uf-remove:hover { background:var(--red-bdr); }
+
+/* ── Radio / checkbox groups ── */
+.radio-group, .check-group { display:flex; flex-direction:column; gap:8px; }
+.radio-opt, .check-opt { display:flex; align-items:flex-start; gap:10px; padding:12px 14px; border:1.5px solid var(--line); border-radius:4px; cursor:pointer; transition:all 0.15s; }
+.radio-opt:hover, .check-opt:hover { border-color:#b0a898; background:#faf9f7; }
+.radio-opt.selected, .check-opt.selected { border-color:var(--navy); background:var(--blue-bg); }
+.radio-opt input, .check-opt input { margin-top:2px; accent-color:var(--navy); flex-shrink:0; }
+.ro-label { font-size:13.5px; font-weight:600; color:var(--text); }
+.ro-sub   { font-size:12px; color:var(--muted); margin-top:2px; line-height:1.4; }
+
+/* ── Buttons ── */
+.btn-primary { display:inline-flex; align-items:center; gap:8px; background:var(--navy); color:#fff; border:none; padding:12px 28px; border-radius:4px; font-size:13.5px; font-weight:700; cursor:pointer; font-family:'DM Sans',sans-serif; transition:background 0.12s; letter-spacing:0.02em; text-decoration:none; }
+.btn-primary:hover { background:var(--navy-mid); }
+.btn-primary:disabled { opacity:0.5; cursor:not-allowed; }
+.btn-outline { display:inline-flex; align-items:center; gap:8px; background:none; color:var(--navy); border:1.5px solid var(--navy); padding:11px 24px; border-radius:4px; font-size:13.5px; font-weight:700; cursor:pointer; font-family:'DM Sans',sans-serif; transition:all 0.12s; }
+.btn-outline:hover { background:var(--navy); color:#fff; }
+.btn-ghost { display:inline-flex; align-items:center; gap:7px; background:none; color:var(--muted); border:1.5px solid var(--line); padding:11px 20px; border-radius:4px; font-size:13px; font-weight:600; cursor:pointer; font-family:'DM Sans',sans-serif; transition:all 0.12s; }
+.btn-ghost:hover { border-color:#b0a898; color:var(--text); }
+
+/* ── Navigation footer ── */
+.step-nav { display:flex; align-items:center; justify-content:space-between; margin-top:28px; padding-top:24px; border-top:1px solid var(--line); }
+
+/* ── Info callout ── */
+.callout { display:flex; gap:12px; padding:14px 16px; border-radius:4px; margin-bottom:20px; }
+.callout-info { background:var(--blue-bg); border:1px solid var(--blue-bdr); }
+.callout-warn { background:var(--amber-bg); border:1px solid var(--amber-bdr); }
+.callout-icon { font-size:16px; flex-shrink:0; margin-top:1px; }
+.callout-text { font-size:13px; line-height:1.6; }
+.callout-info .callout-text { color:#1e40af; }
+.callout-warn .callout-text { color:var(--amber); }
+
+/* ── Review section ── */
+.review-section { margin-bottom:20px; }
+.review-section-label { font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:0.1em; font-weight:700; margin-bottom:10px; padding-bottom:6px; border-bottom:1px solid var(--line); }
+.review-row { display:flex; justify-content:space-between; align-items:flex-start; padding:8px 0; gap:16px; border-bottom:1px solid #f8f5f0; }
+.review-row:last-child { border-bottom:none; }
+.review-key { font-size:12px; color:var(--muted); flex-shrink:0; width:160px; }
+.review-val { font-size:13px; color:var(--text); font-weight:500; text-align:right; flex:1; line-height:1.4; }
+.review-file { display:flex; align-items:center; gap:8px; background:var(--cream); border:1px solid var(--line); border-radius:3px; padding:8px 12px; margin-bottom:6px; }
+.rf-name { font-size:13px; font-weight:600; color:var(--text); flex:1; }
+.rf-size { font-size:11px; color:var(--muted); }
+
+/* ── Success screen ── */
+.success-screen { display:none; }
+.success-screen.active { display:block; }
+.filing-wizard { display:block; }
+.filing-wizard.hidden { display:none; }
+.success-card { background:var(--white); border:1px solid var(--line); border-radius:5px; padding:48px 40px; text-align:center; }
+.success-icon { font-size:52px; margin-bottom:18px; }
+.success-title { font-family:'Merriweather',serif; font-size:26px; font-weight:300; color:var(--text); margin-bottom:8px; }
+.success-sub { font-size:14px; color:var(--muted); line-height:1.7; max-width:520px; margin:0 auto 24px; }
+.conf-number { background:var(--navy); color:var(--gold); font-family:'Merriweather',serif; font-size:20px; padding:16px 28px; border-radius:4px; display:inline-block; margin-bottom:28px; letter-spacing:0.04em; }
+.conf-label { font-size:10px; color:var(--blue-muted); text-transform:uppercase; letter-spacing:0.1em; margin-bottom:6px; display:block; }
+.success-actions { display:flex; gap:12px; justify-content:center; flex-wrap:wrap; }
+
+/* ── Loading spinner ── */
+.spin { display:inline-block; width:18px; height:18px; border:2px solid rgba(255,255,255,0.3); border-top-color:#fff; border-radius:50%; animation:spin 0.8s linear infinite; vertical-align:middle; }
+
+/* ── Case type tag ── */
+.type-tag { font-size:10px; font-weight:700; letter-spacing:0.06em; padding:2px 8px; border-radius:2px; text-transform:uppercase; }
+.tt-criminal  { background:#fef2f2; color:#dc2626; border:1px solid #fee2e2; }
+.tt-civil     { background:#eff6ff; color:#1d4ed8; border:1px solid #dbeafe; }
+.tt-appellate { background:#f5f3ff; color:#6d28d9; border:1px solid #ede9fe; }
+.tt-traffic   { background:#fff7ed; color:#c2410c; border:1px solid #fed7aa; }
+.tt-admin     { background:#f0fdf4; color:#15803d; border:1px solid #dcfce7; }
+
+/* ── Case option card ── */
+.case-opt { display:flex; align-items:flex-start; gap:12px; padding:14px 16px; border:1.5px solid var(--line); border-radius:4px; cursor:pointer; transition:all 0.15s; margin-bottom:8px; }
+.case-opt:hover { border-color:#b0a898; background:#faf9f7; }
+.case-opt.selected { border-color:var(--navy); background:var(--blue-bg); }
+.case-opt input { margin-top:3px; accent-color:var(--navy); flex-shrink:0; }
+.co-body { flex:1; }
+.co-num { font-size:10.5px; color:var(--gold); font-weight:700; letter-spacing:0.06em; margin-bottom:3px; }
+.co-title { font-size:13.5px; font-weight:600; color:var(--text); margin-bottom:4px; }
+.co-meta { font-size:12px; color:var(--muted); display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+.co-right { text-align:right; flex-shrink:0; }
+
+/* ── New case section ── */
+.or-divider { display:flex; align-items:center; gap:12px; margin:20px 0; }
+.or-divider::before, .or-divider::after { content:''; flex:1; height:1px; background:var(--line); }
+.or-divider span { font-size:12px; color:var(--muted); font-weight:700; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; }
+
+@keyframes spin { to { transform:rotate(360deg); } }
+@keyframes fadeUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+
+@media(max-width:640px){
+  .page-wrap { padding:24px 16px 60px; }
+  .topbar { padding:0 18px; }
+  .form-row, .form-row-3 { grid-template-columns:1fr; }
+  .steps { gap:0; }
+  .step-label { display:none; }
+}
+</style>
+</head>
+<body>
+
+<!-- Top bar -->
+<div class="topbar">
+  <a class="topbar-brand" href="/courts/micourt/">
+    <div class="topbar-seal">⚖️</div>
+    <span class="topbar-name">MiCOURT</span>
+  </a>
+  <div class="topbar-right">
+    <span class="topbar-user" id="topbar-user">Loading…</span>
+    <a class="topbar-back" href="/courts/micourt/dashboard/">← Back to Dashboard</a>
+  </div>
+</div>
+
+<!-- Auth overlay -->
+<div class="auth-overlay" id="auth-overlay">
+  <div class="ao-seal">⚖️</div>
+  <div class="ao-title">MiCOURT</div>
+  <div class="ao-spin"></div>
+  <div class="ao-msg" id="ao-msg">Verifying session…</div>
+</div>
+
+<div class="page-wrap">
+
+  <!-- Page header -->
+  <div class="page-header">
+    <div class="breadcrumb">
+      <a href="/courts/micourt/dashboard/">Dashboard</a>
+      <span>›</span>
+      <span class="bc-current">Electronic Filing</span>
+    </div>
+    <h1>Electronic Filing</h1>
+    <p>Submit documents and initiate cases electronically with the court. All filings are reviewed by the clerk's office before being entered into the official record.</p>
+  </div>
+
+  <!-- ── WIZARD ── -->
+  <div class="filing-wizard" id="filing-wizard">
+
+    <!-- Progress steps -->
+    <div class="steps" id="steps-bar">
+      <div class="step active" id="step-ind-1">
+        <div class="step-circle" id="step-circle-1">1</div>
+        <span class="step-label">Filing Type</span>
+      </div>
+      <div class="step-line" id="line-1-2"></div>
+      <div class="step" id="step-ind-2">
+        <div class="step-circle" id="step-circle-2">2</div>
+        <span class="step-label">Case</span>
+      </div>
+      <div class="step-line" id="line-2-3"></div>
+      <div class="step" id="step-ind-3">
+        <div class="step-circle" id="step-circle-3">3</div>
+        <span class="step-label">Document</span>
+      </div>
+      <div class="step-line" id="line-3-4"></div>
+      <div class="step" id="step-ind-4">
+        <div class="step-circle" id="step-circle-4">4</div>
+        <span class="step-label">Details</span>
+      </div>
+      <div class="step-line" id="line-4-5"></div>
+      <div class="step" id="step-ind-5">
+        <div class="step-circle" id="step-circle-5">5</div>
+        <span class="step-label">Review</span>
+      </div>
+    </div>
+
+    <!-- ── STEP 1: Filing Type ── -->
+    <div id="step-1">
+      <div class="card">
+        <div class="card-hdr">
+          <span class="card-hdr-icon">📋</span>
+          <div><h2>What are you filing?</h2><p>Choose whether this is a new case or a document in an existing matter.</p></div>
+        </div>
+        <div class="card-body">
+          <div class="radio-group">
+            <label class="radio-opt" id="opt-existing" onclick="selectFilingType('existing',this)">
+              <input type="radio" name="filing_type" value="existing" id="ft-existing">
+              <div>
+                <div class="ro-label">File in an Existing Case</div>
+                <div class="ro-sub">Submit a motion, response, brief, exhibit, or other document into a case already on the court's docket.</div>
+              </div>
+            </label>
+            <label class="radio-opt" id="opt-new" onclick="selectFilingType('new',this)">
+              <input type="radio" name="filing_type" value="new" id="ft-new">
+              <div>
+                <div class="ro-label">Initiate a New Case</div>
+                <div class="ro-sub">File a complaint, petition, or other initiating document to open a new matter with the court.</div>
+              </div>
+            </label>
+          </div>
+
+          <!-- New case sub-options (hidden until selected) -->
+          <div id="new-case-options" style="display:none;margin-top:16px">
+            <div class="form-group">
+              <label class="form-label">Case Type <span class="req">*</span></label>
+              <select class="form-select" id="new-case-type">
+                <option value="">Select a case type…</option>
+                <option value="Civil">Civil — Lawsuit or monetary dispute between parties</option>
+                <option value="Criminal">Criminal — Misdemeanor or felony charges (prosecutorial filing)</option>
+                <option value="Traffic">Traffic — Ordinance or civil infraction</option>
+                <option value="Administrative">Administrative — Agency or regulatory matter</option>
+                <option value="Appellate">Appellate — Appeal of a lower court decision</option>
+              </select>
+            </div>
+            <div class="form-group" id="new-court-group">
+              <label class="form-label">Court <span class="req">*</span></label>
+              <select class="form-select" id="new-court">
+                <option value="">Select a court…</option>
+                <option value="Genesee Co. District Court">Genesee County District Court</option>
+                <option value="Michigan Supreme Court">Michigan Supreme Court</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="step-nav">
+        <span></span>
+        <button class="btn-primary" onclick="goStep(2)" id="btn-step1-next">Continue <span style="font-size:16px">→</span></button>
+      </div>
+    </div>
+
+    <!-- ── STEP 2: Case Selection ── -->
+    <div id="step-2" style="display:none">
+      <div class="card" id="step2-existing-card">
+        <div class="card-hdr">
+          <span class="card-hdr-icon">⚖️</span>
+          <div><h2>Select the Case</h2><p>Choose the case this filing is associated with.</p></div>
+        </div>
+        <div class="card-body">
+          <div class="form-group">
+            <label class="form-label">Search Cases</label>
+            <input class="form-input" id="case-search" placeholder="Enter case number or party name…" oninput="filterCases(this.value)">
+          </div>
+          <div id="case-list">
+            <div style="color:var(--muted);font-size:13px;padding:20px;text-align:center">Loading cases…</div>
+          </div>
+          <div class="or-divider"><span>or</span></div>
+          <div style="text-align:center">
+            <p style="font-size:13px;color:var(--muted);margin-bottom:12px">Can't find your case? It may not be in the system yet, or you may need to initiate a new filing.</p>
+            <button class="btn-ghost" onclick="selectFilingTypeNew()">Initiate a New Case instead</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" id="step2-new-card" style="display:none">
+        <div class="card-hdr">
+          <span class="card-hdr-icon">📋</span>
+          <div><h2>New Case — Initiating Parties</h2><p>Provide the primary party information for the new matter.</p></div>
+        </div>
+        <div class="card-body">
+          <div class="callout callout-info">
+            <span class="callout-icon">ℹ️</span>
+            <div class="callout-text">A case number will be assigned by the clerk's office after your filing is reviewed and accepted. You will receive confirmation by email.</div>
+          </div>
+          <!-- Filing party -->
+          <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;font-weight:700;margin-bottom:12px" id="new-party1-label">Plaintiff / Petitioner</div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">First Name <span class="req">*</span></label>
+              <input class="form-input" id="party1-first" placeholder="First name">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Last Name <span class="req">*</span></label>
+              <input class="form-input" id="party1-last" placeholder="Last name">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Representing (if attorney)</label>
+            <input class="form-input" id="party1-representing" placeholder="Leave blank if filing on your own behalf">
+          </div>
+
+          <hr style="border:none;border-top:1px solid var(--line);margin:20px 0">
+
+          <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;font-weight:700;margin-bottom:12px" id="new-party2-label">Defendant / Respondent</div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">First Name <span class="req">*</span></label>
+              <input class="form-input" id="party2-first" placeholder="First name">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Last Name <span class="req">*</span></label>
+              <input class="form-input" id="party2-last" placeholder="Last name">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Address (if known)</label>
+            <input class="form-input" id="party2-address" placeholder="Street address">
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">City</label>
+              <input class="form-input" id="party2-city" placeholder="City">
+            </div>
+            <div class="form-group">
+              <label class="form-label">ZIP Code</label>
+              <input class="form-input" id="party2-zip" placeholder="48xxx">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="step-nav">
+        <button class="btn-ghost" onclick="goStep(1)">← Back</button>
+        <button class="btn-primary" onclick="goStep(3)">Continue <span style="font-size:16px">→</span></button>
+      </div>
+    </div>
+
+    <!-- ── STEP 3: Document Upload ── -->
+    <div id="step-3" style="display:none">
+      <div class="card">
+        <div class="card-hdr">
+          <span class="card-hdr-icon">📄</span>
+          <div><h2>Attach Documents</h2><p>Upload the document(s) you are filing with the court.</p></div>
+        </div>
+        <div class="card-body">
+          <div class="callout callout-warn">
+            <span class="callout-icon">⚠️</span>
+            <div class="callout-text">Documents must be in <strong>PDF format</strong>, under <strong>25 MB</strong> each. Ensure all signatures are in place before uploading. Filings with missing signatures will be rejected.</div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Document Type <span class="req">*</span></label>
+            <select class="form-select" id="doc-type">
+              <option value="">Select document type…</option>
+              <optgroup label="Initiating Documents">
+                <option value="Complaint">Complaint</option>
+                <option value="Petition">Petition</option>
+                <option value="Notice of Appeal">Notice of Appeal</option>
+                <option value="Application for Leave to Appeal">Application for Leave to Appeal</option>
+              </optgroup>
+              <optgroup label="Motions">
+                <option value="Motion">Motion (General)</option>
+                <option value="Motion to Dismiss">Motion to Dismiss</option>
+                <option value="Motion for Summary Judgment">Motion for Summary Judgment</option>
+                <option value="Motion in Limine">Motion in Limine</option>
+                <option value="Motion to Adjourn">Motion to Adjourn</option>
+                <option value="Emergency Motion">Emergency Motion</option>
+              </optgroup>
+              <optgroup label="Briefs & Responses">
+                <option value="Brief">Brief</option>
+                <option value="Response Brief">Response / Answer Brief</option>
+                <option value="Reply Brief">Reply Brief</option>
+                <option value="Answer to Complaint">Answer to Complaint</option>
+                <option value="Affidavit">Affidavit / Declaration</option>
+              </optgroup>
+              <optgroup label="Orders & Judgments">
+                <option value="Proposed Order">Proposed Order</option>
+                <option value="Consent Judgment">Consent Judgment</option>
+                <option value="Stipulation">Stipulation</option>
+              </optgroup>
+              <optgroup label="Other">
+                <option value="Exhibit">Exhibit</option>
+                <option value="Subpoena">Subpoena</option>
+                <option value="Notice">Notice</option>
+                <option value="Proof of Service">Proof of Service</option>
+                <option value="Other">Other</option>
+              </optgroup>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Upload Document(s) <span class="req">*</span></label>
+            <div class="upload-zone" id="upload-zone" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
+              <input type="file" id="file-input" accept=".pdf,application/pdf" multiple onchange="handleFileSelect(this)">
+              <div class="upload-icon">📁</div>
+              <div class="upload-title">Drag &amp; drop PDF files here</div>
+              <div class="upload-sub">or <strong>click to browse</strong> · PDF only · Max 25 MB per file</div>
+            </div>
+            <div class="upload-files" id="upload-files-list"></div>
+            <div class="form-error-msg" id="upload-error">Please attach at least one document before continuing.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="step-nav">
+        <button class="btn-ghost" onclick="goStep(2)">← Back</button>
+        <button class="btn-primary" onclick="goStep(4)">Continue <span style="font-size:16px">→</span></button>
+      </div>
+    </div>
+
+    <!-- ── STEP 4: Details ── -->
+    <div id="step-4" style="display:none">
+      <div class="card">
+        <div class="card-hdr">
+          <span class="card-hdr-icon">✏️</span>
+          <div><h2>Filing Details</h2><p>Provide additional information about this submission.</p></div>
+        </div>
+        <div class="card-body">
+          <div class="form-group">
+            <label class="form-label">Filing Title <span class="req">*</span></label>
+            <input class="form-input" id="filing-title" placeholder="e.g. Defendant's Motion to Dismiss — Count II">
+            <div class="form-hint">This will appear as the document title in the case record.</div>
+            <div class="form-error-msg" id="title-error">Please enter a filing title.</div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Filed On Behalf Of</label>
+            <input class="form-input" id="filed-behalf" placeholder="Leave blank if filing as a pro se party (self-represented)">
+            <div class="form-hint">If you are an attorney, enter the client's name.</div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Filer Role</label>
+            <select class="form-select" id="filer-role">
+              <option value="">Select your role in this case…</option>
+              <option value="Plaintiff">Plaintiff</option>
+              <option value="Defendant">Defendant</option>
+              <option value="Petitioner">Petitioner</option>
+              <option value="Respondent">Respondent</option>
+              <option value="Appellant">Appellant</option>
+              <option value="Appellee">Appellee</option>
+              <option value="Attorney for Plaintiff">Attorney for Plaintiff</option>
+              <option value="Attorney for Defendant">Attorney for Defendant</option>
+              <option value="Attorney for Petitioner">Attorney for Petitioner</option>
+              <option value="Prosecuting Attorney">Prosecuting Attorney</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Notes to the Clerk (optional)</label>
+            <textarea class="form-textarea" id="filing-notes" placeholder="Any special instructions, explanations, or context for the clerk reviewing this filing…"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Contact Email for Confirmation <span class="req">*</span></label>
+            <input class="form-input" type="email" id="contact-email" placeholder="your@email.com">
+            <div class="form-hint">A confirmation will be sent to this address when your filing is accepted or if action is needed.</div>
+            <div class="form-error-msg" id="email-error">Please enter a valid email address.</div>
+          </div>
+
+          <!-- Service / notice -->
+          <div class="form-group">
+            <label class="form-label" style="margin-bottom:10px">Service Confirmation</label>
+            <div class="check-group">
+              <label class="check-opt" id="check-served" onclick="toggleCheck(this)">
+                <input type="checkbox" id="cb-served">
+                <div>
+                  <div class="ro-label">I have served all opposing parties</div>
+                  <div class="ro-sub">I confirm that a copy of this filing has been or will be served on all parties of record in accordance with court rules.</div>
+                </div>
+              </label>
+              <label class="check-opt" id="check-accurate" onclick="toggleCheck(this)">
+                <input type="checkbox" id="cb-accurate">
+                <div>
+                  <div class="ro-label">This filing is accurate and complete</div>
+                  <div class="ro-sub">I certify that the information and documents submitted are true, accurate, and complete to the best of my knowledge.</div>
+                </div>
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="step-nav">
+        <button class="btn-ghost" onclick="goStep(3)">← Back</button>
+        <button class="btn-primary" onclick="goStep(5)">Review Filing <span style="font-size:16px">→</span></button>
+      </div>
+    </div>
+
+    <!-- ── STEP 5: Review & Submit ── -->
+    <div id="step-5" style="display:none">
+      <div class="card">
+        <div class="card-hdr">
+          <span class="card-hdr-icon">🔍</span>
+          <div><h2>Review Your Filing</h2><p>Confirm all details before submitting to the clerk's office.</p></div>
+        </div>
+        <div class="card-body">
+          <div id="review-content"></div>
+        </div>
+      </div>
+
+      <div class="callout callout-warn">
+        <span class="callout-icon">⚠️</span>
+        <div class="callout-text">Once submitted, your filing will be placed in the clerk's review queue. Submissions cannot be edited after submission — if you need to make changes, contact the court directly.</div>
+      </div>
+
+      <div class="step-nav">
+        <button class="btn-ghost" onclick="goStep(4)">← Back</button>
+        <button class="btn-primary" id="submit-btn" onclick="submitFiling()">
+          <span id="submit-label">Submit Filing</span>
+        </button>
+      </div>
+    </div>
+
+  </div><!-- end .filing-wizard -->
+
+  <!-- ── SUCCESS ── -->
+  <div class="success-screen" id="success-screen">
+    <div class="success-card">
+      <div class="success-icon">✅</div>
+      <div class="success-title">Filing Submitted</div>
+      <div class="success-sub">Your filing has been received and placed in the clerk's review queue. You will be notified by email once it is reviewed.</div>
+      <div>
+        <span class="conf-label">Confirmation Number</span>
+        <div class="conf-number" id="conf-number">MCR-2026-000000</div>
+      </div>
+      <div style="margin-bottom:28px">
+        <div id="success-case-info" style="font-size:13px;color:var(--muted);line-height:1.7"></div>
+      </div>
+      <div class="success-actions">
+        <a href="/courts/micourt/dashboard/" class="btn-primary">← Return to Dashboard</a>
+        <button class="btn-outline" onclick="startNewFiling()">File Another Document</button>
+      </div>
+    </div>
+  </div>
+
+</div><!-- end .page-wrap -->
+
+<script>
+// ── State ──
+let currentStep = 1;
+let filingType  = null;   // 'existing' | 'new'
+let selectedCase = null;  // case object
+let uploadedFiles = [];   // File[]
+let userData = { name:'—', email:'—', uid:null, role:'Portal User', barNumber:null };
+let allCases = [];
+let casesLoaded = false;
+
+// ── Helpers ──
+function fmtDate(s) {
+  if (!s) return '—';
+  const d = new Date(s);
+  return isNaN(d) ? s : d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+}
+function getCaseTitle(c) {
+  const t = (c.caseType||'').toLowerCase();
+  const p = c.parties||{};
+  if (t==='criminal'||t==='traffic') {
+    const def=p.primaryDefendant?.name;
+    return def?`State of Michigan v. ${def}`:'State of Michigan v. Unknown';
+  }
+  if (t==='civil') {
+    const pl=p.primaryPlaintiff?.name, df=p.primaryDefendant?.name;
+    if (pl&&df) return `${pl} v. ${df}`;
+    if (pl) return `Ex parte ${pl}`;
+  }
+  if (t==='appellate'||t==='appeal') {
+    const ap=p.appellant?.name, apl=p.appellee?.name;
+    if (ap&&apl) return `${ap} v. ${apl}`;
+    const s=c.docketSummary?.split('.')[0]?.trim();
+    return (s&&s.length<80)?s:(c.caseId||'Appellate Matter');
+  }
+  if (t==='administrative') {
+    const pet=p.primaryPetitioner?.name||p.petitioner?.name, res=p.respondent?.name;
+    if (pet&&res) return `${pet} v. ${res}`;
+    return c.administrativeSubtype||'Administrative Matter';
+  }
+  return c.caseId||'Case Record';
+}
+function fmtFileSize(bytes) {
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1024*1024) return (bytes/1024).toFixed(1) + ' KB';
+  return (bytes/(1024*1024)).toFixed(1) + ' MB';
+}
+function confNum() {
+  const yr=new Date().getFullYear();
+  const n=Math.floor(100000+Math.random()*900000);
+  return `MCR-${yr}-${n}`;
+}
+function typeBadgeCls(t) {
+  const l=(t||'').toLowerCase();
+  if(l==='criminal')return'tt-criminal';
+  if(l==='civil')return'tt-civil';
+  if(l==='appellate'||l==='appeal')return'tt-appellate';
+  if(l==='traffic')return'tt-traffic';
+  if(l==='administrative')return'tt-admin';
+  return'tt-civil';
+}
+
+// ── Steps ──
+function updateStepUI() {
+  for (let i=1;i<=5;i++) {
+    const ind = document.getElementById('step-ind-'+i);
+    const circ= document.getElementById('step-circle-'+i);
+    ind.classList.remove('active','done');
+    circ.textContent = i < currentStep ? '✓' : i;
+    if (i < currentStep) { ind.classList.add('done'); }
+    else if (i === currentStep) { ind.classList.add('active'); }
+    if (i < 5) {
+      const line = document.getElementById(`line-${i}-${i+1}`);
+      if (i < currentStep) line.classList.add('done');
+      else line.classList.remove('done');
+    }
+    document.getElementById('step-'+i).style.display = (i===currentStep)?'block':'none';
+  }
+}
+
+function goStep(n) {
+  if (n > currentStep && !validateStep(currentStep)) return;
+  currentStep = n;
+  if (n === 2) setupStep2();
+  if (n === 5) buildReview();
+  updateStepUI();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function validateStep(s) {
+  if (s===1) {
+    if (!filingType) { alert('Please select a filing type.'); return false; }
+    if (filingType==='new') {
+      const ct=document.getElementById('new-case-type').value;
+      const co=document.getElementById('new-court').value;
+      if (!ct||!co) { alert('Please select a case type and court.'); return false; }
+    }
+    return true;
+  }
+  if (s===2) {
+    if (filingType==='existing' && !selectedCase) { alert('Please select a case to file in.'); return false; }
+    if (filingType==='new') {
+      const f=document.getElementById('party1-first').value.trim();
+      const l=document.getElementById('party1-last').value.trim();
+      const f2=document.getElementById('party2-first').value.trim();
+      const l2=document.getElementById('party2-last').value.trim();
+      if(!f||!l||!f2||!l2){alert('Please enter names for both parties.');return false;}
+    }
+    return true;
+  }
+  if (s===3) {
+    if (!document.getElementById('doc-type').value) { alert('Please select a document type.'); return false; }
+    if (uploadedFiles.length===0) {
+      document.getElementById('upload-error').classList.add('show');
+      return false;
+    }
+    return true;
+  }
+  if (s===4) {
+    const title=document.getElementById('filing-title').value.trim();
+    const email=document.getElementById('contact-email').value.trim();
+    let ok=true;
+    if(!title){ document.getElementById('title-error').classList.add('show'); ok=false; }
+    else document.getElementById('title-error').classList.remove('show');
+    if(!email||!email.includes('@')){ document.getElementById('email-error').classList.add('show'); ok=false; }
+    else document.getElementById('email-error').classList.remove('show');
+    return ok;
+  }
+  return true;
+}
+
+// ── Step 1 ──
+function selectFilingType(type, el) {
+  filingType = type;
+  document.querySelectorAll('.radio-opt').forEach(o=>o.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById('ft-'+type).checked = true;
+  document.getElementById('new-case-options').style.display = type==='new'?'block':'none';
+}
+window.selectFilingType=selectFilingType;
+
+function selectFilingTypeNew() {
+  filingType='new';
+  document.querySelectorAll('.radio-opt').forEach(o=>o.classList.remove('selected'));
+  document.getElementById('opt-new').classList.add('selected');
+  document.getElementById('ft-new').checked=true;
+  document.getElementById('new-case-options').style.display='block';
+  goStep(1);
+}
+window.selectFilingTypeNew=selectFilingTypeNew;
+
+// Update party labels based on case type
+document.getElementById('new-case-type').addEventListener('change', function(){
+  const t=this.value.toLowerCase();
+  const l1=document.getElementById('new-party1-label');
+  const l2=document.getElementById('new-party2-label');
+  if(t==='criminal'){l1.textContent='Prosecutor';l2.textContent='Defendant';}
+  else if(t==='appellate'){l1.textContent='Appellant';l2.textContent='Appellee';}
+  else if(t==='administrative'){l1.textContent='Petitioner';l2.textContent='Respondent';}
+  else{l1.textContent='Plaintiff / Petitioner';l2.textContent='Defendant / Respondent';}
+});
+
+// ── Step 2 ──
+function setupStep2() {
+  const existingCard = document.getElementById('step2-existing-card');
+  const newCard = document.getElementById('step2-new-card');
+  if (filingType==='new') {
+    existingCard.style.display='none';
+    newCard.style.display='block';
+  } else {
+    existingCard.style.display='block';
+    newCard.style.display='none';
+    renderCaseList('');
+  }
+}
+
+function renderCaseList(query) {
+  const container = document.getElementById('case-list');
+  if (!casesLoaded) { container.innerHTML='<div style="color:var(--muted);font-size:13px;padding:20px;text-align:center">Loading cases…</div>'; return; }
+  const q=(query||'').toLowerCase().trim();
+  // Filter to user-related cases
+  const name=(userData.name||'').toLowerCase();
+  let cases=allCases.filter(c=>{
+    const ps=JSON.stringify(c.parties||{}).toLowerCase();
+    if(name&&ps.includes(name)) return true;
+    if(userData.uid&&Array.isArray(c.relatedUserIds)&&c.relatedUserIds.includes(userData.uid)) return true;
+    return false;
+  });
+  if(q) cases=cases.filter(c=>getCaseTitle(c).toLowerCase().includes(q)||(c.caseId||'').toLowerCase().includes(q));
+  if(!cases.length){
+    container.innerHTML=`<div style="color:var(--muted);font-size:13px;padding:20px;text-align:center">No cases found matching your search. ${!q?'No cases are linked to your account.':''}</div>`;
+    return;
+  }
+  container.innerHTML=cases.map(c=>{
+    const title=getCaseTitle(c);
+    const tc=typeBadgeCls(c.caseType);
+    return `<label class="case-opt${selectedCase&&selectedCase._id===c._id?' selected':''}" id="co-${c._id}" onclick="selectCase(${JSON.stringify(c).replace(/"/g,'&quot;')})">
+      <input type="radio" name="selected_case" value="${c._id}" ${selectedCase&&selectedCase._id===c._id?'checked':''}>
+      <div class="co-body">
+        <div class="co-num">${c.caseId}</div>
+        <div class="co-title">${title}</div>
+        <div class="co-meta">
+          <span class="type-tag ${tc}">${c.caseType}</span>
+          <span>${c.court}</span>
+          <span>Filed ${fmtDate(c.dates?.filed)}</span>
+          <span style="color:${c.status==='Closed'?'#9a8f82':c.status==='Active'?'var(--amber)':'var(--blue)'};font-weight:600">${c.status}</span>
+        </div>
+      </div>
+    </label>`;
+  }).join('');
+}
+
+function selectCase(c) {
+  selectedCase = c;
+  document.querySelectorAll('.case-opt').forEach(o=>o.classList.remove('selected'));
+  const el = document.getElementById('co-'+c._id);
+  if(el) el.classList.add('selected');
+}
+window.selectCase=selectCase;
+
+function filterCases(q) { renderCaseList(q); }
+window.filterCases=filterCases;
+
+// ── Step 3: File upload ──
+function handleFileSelect(input) {
+  Array.from(input.files).forEach(addFile);
+  input.value='';
+}
+window.handleFileSelect=handleFileSelect;
+
+function handleDragOver(e) { e.preventDefault(); document.getElementById('upload-zone').classList.add('drag-over'); }
+window.handleDragOver=handleDragOver;
+function handleDragLeave(e) { document.getElementById('upload-zone').classList.remove('drag-over'); }
+window.handleDragLeave=handleDragLeave;
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('upload-zone').classList.remove('drag-over');
+  Array.from(e.dataTransfer.files).forEach(f=>{ if(f.type==='application/pdf') addFile(f); });
+}
+window.handleDrop=handleDrop;
+
+function addFile(file) {
+  if(file.type!=='application/pdf'&&!file.name.toLowerCase().endsWith('.pdf')){
+    alert(`${file.name} is not a PDF. Only PDF files are accepted.`); return;
+  }
+  if(file.size>25*1024*1024){ alert(`${file.name} exceeds the 25 MB limit.`); return; }
+  if(uploadedFiles.find(f=>f.name===file.name)) return;
+  uploadedFiles.push(file);
+  document.getElementById('upload-error').classList.remove('show');
+  renderFileList();
+}
+
+function removeFile(name) {
+  uploadedFiles=uploadedFiles.filter(f=>f.name!==name);
+  renderFileList();
+}
+window.removeFile=removeFile;
+
+function renderFileList() {
+  const container=document.getElementById('upload-files-list');
+  if(!uploadedFiles.length){container.innerHTML='';return;}
+  container.innerHTML=uploadedFiles.map(f=>`<div class="upload-file-row">
+    <span class="uf-icon">📄</span>
+    <span class="uf-name">${f.name}</span>
+    <span class="uf-size">${fmtFileSize(f.size)}</span>
+    <button class="uf-remove" onclick="removeFile('${f.name.replace(/'/g,"\\'")}')">×</button>
+  </div>`).join('');
+}
+
+// ── Step 4: checkboxes ──
+function toggleCheck(el) {
+  const cb=el.querySelector('input[type=checkbox]');
+  cb.checked=!cb.checked;
+  el.classList.toggle('selected',cb.checked);
+}
+window.toggleCheck=toggleCheck;
+
+// ── Step 5: Review ──
+function buildReview() {
+  const el=document.getElementById('review-content');
+  const isNew = filingType==='new';
+  const docType=document.getElementById('doc-type').value;
+  const title=document.getElementById('filing-title').value.trim();
+  const role=document.getElementById('filer-role').value;
+  const behalf=document.getElementById('filed-behalf').value.trim();
+  const notes=document.getElementById('filing-notes').value.trim();
+  const email=document.getElementById('contact-email').value.trim();
+  const newCT=document.getElementById('new-case-type').value;
+  const newCO=document.getElementById('new-court').value;
+  const p1f=document.getElementById('party1-first').value.trim();
+  const p1l=document.getElementById('party1-last').value.trim();
+  const p2f=document.getElementById('party2-first').value.trim();
+  const p2l=document.getElementById('party2-last').value.trim();
+
+  let caseBlock='';
+  if(isNew){
+    caseBlock=`<div class="review-section">
+      <div class="review-section-label">New Case</div>
+      <div class="review-row"><span class="review-key">Case Type</span><span class="review-val">${newCT}</span></div>
+      <div class="review-row"><span class="review-key">Court</span><span class="review-val">${newCO}</span></div>
+      <div class="review-row"><span class="review-key">Party 1</span><span class="review-val">${p1f} ${p1l}</span></div>
+      <div class="review-row"><span class="review-key">Party 2</span><span class="review-val">${p2f} ${p2l}</span></div>
+    </div>`;
+  } else if(selectedCase) {
+    const tc=typeBadgeCls(selectedCase.caseType);
+    caseBlock=`<div class="review-section">
+      <div class="review-section-label">Case</div>
+      <div class="review-row"><span class="review-key">Case Number</span><span class="review-val" style="font-family:monospace">${selectedCase.caseId}</span></div>
+      <div class="review-row"><span class="review-key">Caption</span><span class="review-val">${getCaseTitle(selectedCase)}</span></div>
+      <div class="review-row"><span class="review-key">Court</span><span class="review-val">${selectedCase.court}</span></div>
+      <div class="review-row"><span class="review-key">Type</span><span class="review-val"><span class="type-tag ${tc}">${selectedCase.caseType}</span></span></div>
+    </div>`;
+  }
+
+  const docsBlock=`<div class="review-section">
+    <div class="review-section-label">Documents</div>
+    <div class="review-row"><span class="review-key">Document Type</span><span class="review-val">${docType}</span></div>
+    ${uploadedFiles.map(f=>`<div class="review-file"><span style="font-size:14px">📄</span><span class="rf-name">${f.name}</span><span class="rf-size">${fmtFileSize(f.size)}</span></div>`).join('')}
+  </div>`;
+
+  const detailsBlock=`<div class="review-section">
+    <div class="review-section-label">Filing Details</div>
+    <div class="review-row"><span class="review-key">Filing Title</span><span class="review-val">${title}</span></div>
+    ${role?`<div class="review-row"><span class="review-key">Filer Role</span><span class="review-val">${role}</span></div>`:''}
+    ${behalf?`<div class="review-row"><span class="review-key">Filed on Behalf of</span><span class="review-val">${behalf}</span></div>`:''}
+    ${notes?`<div class="review-row"><span class="review-key">Notes to Clerk</span><span class="review-val">${notes}</span></div>`:''}
+    <div class="review-row"><span class="review-key">Confirmation Email</span><span class="review-val">${email}</span></div>
+    <div class="review-row"><span class="review-key">Filed By</span><span class="review-val">${userData.name}</span></div>
+  </div>`;
+
+  el.innerHTML=caseBlock+docsBlock+detailsBlock;
+}
+
+// ── Submit ──
+async function submitFiling() {
+  const btn=document.getElementById('submit-btn');
+  const lbl=document.getElementById('submit-label');
+  btn.disabled=true;
+  lbl.innerHTML='<span class="spin"></span> Submitting…';
+
+  try {
+    // Build filing object for Firestore
+    const docType=document.getElementById('doc-type').value;
+    const title=document.getElementById('filing-title').value.trim();
+    const role=document.getElementById('filer-role').value;
+    const behalf=document.getElementById('filed-behalf').value.trim();
+    const notes=document.getElementById('filing-notes').value.trim();
+    const email=document.getElementById('contact-email').value.trim();
+    const now=new Date().toISOString();
+    const confirmation=confNum();
+
+    const filingData = {
+      confirmationNumber: confirmation,
+      filingType,
+      documentType: docType,
+      title,
+      filedBy: userData.name,
+      filedByUid: userData.uid,
+      filedOnBehalfOf: behalf||null,
+      role: role||null,
+      notesToClerk: notes||null,
+      confirmationEmail: email,
+      dateFiled: now,
+      status: 'Pending',
+      accepted: false,
+      documents: uploadedFiles.map(f=>({name:f.name,size:f.size})),
+    };
+
+    if (filingType==='existing' && selectedCase) {
+      filingData.caseId = selectedCase.caseId;
+      filingData.caseFirestoreId = selectedCase._id;
+    } else if (filingType==='new') {
+      const ct=document.getElementById('new-case-type').value;
+      const co=document.getElementById('new-court').value;
+      const p1f=document.getElementById('party1-first').value.trim();
+      const p1l=document.getElementById('party1-last').value.trim();
+      const p2f=document.getElementById('party2-first').value.trim();
+      const p2l=document.getElementById('party2-last').value.trim();
+      filingData.newCaseData = { caseType:ct, court:co, party1:`${p1f} ${p1l}`, party2:`${p2f} ${p2l}` };
+    }
+
+    // Save to Firestore
+    if (window._db) {
+      const { collection, addDoc } = await import("https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js");
+      await addDoc(collection(window._db,'pendingFilings'), filingData);
+
+      // Also append to existing case doc if filing in existing case
+      if (filingType==='existing' && selectedCase?._id) {
+        const { doc, updateDoc, arrayUnion } = await import("https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js");
+        await updateDoc(doc(window._db,'cases',selectedCase._id), {
+          filings: arrayUnion({
+            title,
+            documentType: docType,
+            filedBy: userData.name,
+            filedByUid: userData.uid,
+            role: role||null,
+            dateFiled: now,
+            status: 'Pending',
+            accepted: false,
+            notes: notes||null,
+            documentLink: null,
+          })
+        });
+      }
+    }
+
+    // Show success
+    document.getElementById('conf-number').textContent = confirmation;
+    let caseInfo = '';
+    if (filingType==='existing'&&selectedCase) {
+      caseInfo=`<strong>${getCaseTitle(selectedCase)}</strong><br>${selectedCase.caseId} · ${selectedCase.court}`;
+    } else if (filingType==='new') {
+      const ct=document.getElementById('new-case-type').value;
+      const co=document.getElementById('new-court').value;
+      caseInfo=`New ${ct} case · ${co}<br>Parties: ${document.getElementById('party1-first').value} ${document.getElementById('party1-last').value} &amp; ${document.getElementById('party2-first').value} ${document.getElementById('party2-last').value}`;
+    }
+    document.getElementById('success-case-info').innerHTML=caseInfo;
+    document.getElementById('filing-wizard').classList.add('hidden');
+    document.getElementById('success-screen').classList.add('active');
+
+  } catch(err) {
+    console.error('Filing error:', err);
+    btn.disabled=false;
+    lbl.textContent='Submit Filing';
+    alert('There was an error submitting your filing. Please try again or contact the court directly.');
+  }
+}
+window.submitFiling=submitFiling;
+
+function startNewFiling() {
+  currentStep=1;
+  filingType=null;
+  selectedCase=null;
+  uploadedFiles=[];
+  document.querySelectorAll('.radio-opt').forEach(o=>o.classList.remove('selected'));
+  document.querySelectorAll('input[type=radio]').forEach(r=>r.checked=false);
+  document.getElementById('new-case-options').style.display='none';
+  document.getElementById('new-case-type').value='';
+  document.getElementById('new-court').value='';
+  document.getElementById('doc-type').value='';
+  document.getElementById('upload-files-list').innerHTML='';
+  document.getElementById('filing-title').value='';
+  document.getElementById('filed-behalf').value='';
+  document.getElementById('filer-role').value='';
+  document.getElementById('filing-notes').value='';
+  document.getElementById('contact-email').value='';
+  document.getElementById('cb-served').checked=false;
+  document.getElementById('cb-accurate').checked=false;
+  document.querySelectorAll('.check-opt').forEach(o=>o.classList.remove('selected'));
+  document.getElementById('success-screen').classList.remove('active');
+  document.getElementById('filing-wizard').classList.remove('hidden');
+  updateStepUI();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+window.startNewFiling=startNewFiling;
+</script>
+
+<!-- Firebase -->
+<script type="module">
+import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
+import { getAuth, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
+import { getFirestore, doc, getDoc, getDocs, collection } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+
+const cfg = {
+  apiKey:"AIzaSyA8sUFIq81cs6uQvqduardpGJ4R2DxO8NQ",
+  authDomain:"micourt-dada6.firebaseapp.com",
+  projectId:"micourt-dada6",
+  storageBucket:"micourt-dada6.firebasestorage.app",
+  messagingSenderId:"1013564619997",
+  appId:"1:1013564619997:web:8f259dab457915758f6f34"
+};
+
+const app  = getApps().length ? getApp() : initializeApp(cfg);
+const auth = getAuth(app);
+const db   = getFirestore(app);
+window._db = db;
+
+await setPersistence(auth, browserLocalPersistence);
+
+function setMsg(m) { document.getElementById('ao-msg').textContent=m; }
+
+const unsub = onAuthStateChanged(auth, async (user) => {
+  unsub();
+  if (!user) {
+    setMsg('Session expired. Redirecting…');
+    setTimeout(()=>{ window.location.href='/courts/micourt/'; },1500);
+    return;
+  }
+  setMsg('Loading your profile…');
+  try {
+    const snap=await getDoc(doc(db,'accounts',user.uid));
+    if (!snap.exists()){
+      setMsg('Account not found. Redirecting…');
+      setTimeout(()=>{ window.location.href='/courts/micourt/'; },1500);
+      return;
+    }
+    const data=snap.data();
+    userData.uid       = user.uid;
+    userData.name      = data.name      || user.displayName || 'Unknown User';
+    userData.email     = data.email     || user.email       || '';
+    userData.role      = data.role      || 'Portal User';
+    userData.barNumber = data.barNumber || null;
+
+    document.getElementById('topbar-user').textContent = userData.name;
+    // Pre-fill email
+    document.getElementById('contact-email').value = userData.email;
+
+    // Load cases
+    setMsg('Loading cases…');
+    try {
+      const cs = await getDocs(collection(db,'cases'));
+      allCases=[];
+      cs.forEach(d=>allCases.push({...d.data(),_id:d.id}));
+      casesLoaded=true;
+    } catch(e) { casesLoaded=true; }
+
+    document.getElementById('auth-overlay').classList.add('hidden');
+    updateStepUI();
+  } catch(err) {
+    setMsg('Error loading profile. Retrying…');
+    setTimeout(()=>{ window.location.reload(); },3000);
+  }
+});
+
+setTimeout(()=>{
+  if(!document.getElementById('auth-overlay').classList.contains('hidden'))
+    window.location.reload();
+},12000);
+</script>
+</body>
+</html>

@@ -38,6 +38,7 @@
 * { margin:0; padding:0; box-sizing:border-box; }
 body { font-family:'DM Sans',sans-serif; background:var(--cream); color:var(--text); min-height:100vh; display:flex; overflow-x:hidden; }
 
+/* ── Sidebar ── */
 .sidebar { width:var(--sidebar-w); min-height:100vh; background:var(--navy); display:flex; flex-direction:column; flex-shrink:0; position:fixed; top:0; left:0; z-index:200; border-right:1px solid var(--border); overflow-y:auto; overflow-x:hidden; }
 .sb-brand { padding:22px 22px 18px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:12px; text-decoration:none; }
 .sb-brand-seal { width:34px;height:34px;background:var(--gold);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0; }
@@ -68,6 +69,7 @@ body { font-family:'DM Sans',sans-serif; background:var(--cream); color:var(--te
 .sb-sign-out { display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:4px;color:#5a7a9a;font-size:12px;cursor:pointer;border:none;background:none;font-family:'DM Sans',sans-serif;width:100%;text-align:left;transition:all 0.12s; }
 .sb-sign-out:hover { color:var(--red-bg);background:rgba(220,38,38,0.1); }
 
+/* ── Main ── */
 .main { margin-left:var(--sidebar-w);flex:1;display:flex;flex-direction:column;min-height:100vh; }
 .topbar { background:var(--white);border-bottom:1px solid var(--line);padding:0 36px;display:flex;align-items:center;justify-content:space-between;height:58px;position:sticky;top:0;z-index:100; }
 .topbar-left { display:flex;align-items:center;gap:12px; }
@@ -80,13 +82,20 @@ body { font-family:'DM Sans',sans-serif; background:var(--cream); color:var(--te
 .court-badge { display:flex;align-items:center;gap:7px;padding:4px 12px;border-radius:3px;background:var(--navy);color:var(--gold);font-size:11px;font-weight:700;letter-spacing:0.04em;text-transform:uppercase; }
 .court-badge-dot { width:6px;height:6px;border-radius:50%;background:var(--gold); }
 
+/* ── Page ── */
 .page-body { padding:32px 36px;flex:1; }
 .page-section { display:none; }
 .page-section.active { display:block;animation:fadeUp 0.22s ease; }
-.section-hdr { margin-bottom:28px; }
-.section-hdr h2 { font-family:'Merriweather',serif;font-size:22px;font-weight:300;color:var(--text);margin-bottom:5px; }
-.section-hdr p { font-size:13px;color:var(--muted);line-height:1.6; }
+.section-hdr { margin-bottom:28px; display:flex; align-items:flex-start; justify-content:space-between; gap:16px; }
+.section-hdr-text h2 { font-family:'Merriweather',serif;font-size:22px;font-weight:300;color:var(--text);margin-bottom:5px; }
+.section-hdr-text p { font-size:13px;color:var(--muted);line-height:1.6; }
+.section-hdr-action { flex-shrink:0; }
+.btn-primary { display:inline-flex;align-items:center;gap:7px;background:var(--navy);color:#fff;border:none;padding:10px 20px;border-radius:4px;font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;text-decoration:none;letter-spacing:0.02em;transition:background 0.12s; }
+.btn-primary:hover { background:var(--navy-mid); }
+.btn-outline { display:inline-flex;align-items:center;gap:7px;background:none;color:var(--navy);border:1.5px solid var(--navy);padding:9px 18px;border-radius:4px;font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;text-decoration:none;transition:all 0.12s; }
+.btn-outline:hover { background:var(--navy);color:#fff; }
 
+/* ── Stats ── */
 .stat-row { display:grid;gap:16px;margin-bottom:28px; }
 .stat-row.cols-4 { grid-template-columns:repeat(4,1fr); }
 .stat-row.cols-3 { grid-template-columns:repeat(3,1fr); }
@@ -103,6 +112,7 @@ body { font-family:'DM Sans',sans-serif; background:var(--cream); color:var(--te
 .sc-sub { font-size:12px;color:var(--muted);margin-top:5px;display:block; }
 .sc-icon { position:absolute;right:18px;top:18px;font-size:22px;opacity:0.15; }
 
+/* ── Cards ── */
 .card { background:var(--white);border:1px solid var(--line);border-radius:5px;overflow:hidden;margin-bottom:20px; }
 .card-hdr { padding:16px 22px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between; }
 .card-hdr h3 { font-family:'Merriweather',serif;font-size:14px;font-weight:400;color:var(--text); }
@@ -111,9 +121,9 @@ body { font-family:'DM Sans',sans-serif; background:var(--cream); color:var(--te
 .card-link:hover { text-decoration:underline; }
 .card-body { padding:0; }
 .card-body-pad { padding:20px 22px; }
-
 .two-col { display:grid;grid-template-columns:1fr 360px;gap:20px;align-items:start; }
 
+/* ── Case rows ── */
 .case-row { padding:15px 22px;border-bottom:1px solid #f8f5f0;display:flex;align-items:flex-start;justify-content:space-between;gap:16px;transition:background 0.1s;text-decoration:none;color:inherit;cursor:pointer;position:relative; }
 .case-row:last-child { border-bottom:none; }
 .case-row:hover { background:#faf9f7; }
@@ -125,6 +135,7 @@ body { font-family:'DM Sans',sans-serif; background:var(--cream); color:var(--te
 .cr-meta { font-size:11.5px;color:var(--muted); }
 .cr-right { display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex-shrink:0; }
 
+/* ── Badges ── */
 .badge { font-size:10px;font-weight:700;letter-spacing:0.07em;padding:3px 9px;border-radius:2px;text-transform:uppercase;white-space:nowrap; }
 .badge-criminal  { background:#fef2f2;color:#dc2626;border:1px solid #fee2e2; }
 .badge-civil     { background:#eff6ff;color:#1d4ed8;border:1px solid #dbeafe; }
@@ -138,6 +149,7 @@ body { font-family:'DM Sans',sans-serif; background:var(--cream); color:var(--te
 .sp-closed   { background:#f8f5f0;color:#9a8f82;border:1px solid var(--line); }
 .sp-dismissed{ background:#f8f5f0;color:#9a8f82;border:1px solid var(--line); }
 
+/* ── Hearing rows ── */
 .hearing-row { padding:14px 22px;border-bottom:1px solid #f8f5f0;display:flex;align-items:flex-start;gap:16px;transition:background 0.1s; }
 .hearing-row:last-child { border-bottom:none; }
 .hearing-row:hover { background:#faf9f7; }
@@ -154,6 +166,7 @@ body { font-family:'DM Sans',sans-serif; background:var(--cream); color:var(--te
 .hr-today    { background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-bdr); }
 .hr-past     { background:#f8f5f0;color:#9a8f82;border:1px solid var(--line); }
 
+/* ── Financial rows ── */
 .fin-row { padding:14px 22px;border-bottom:1px solid #f8f5f0;display:flex;align-items:center;gap:16px;justify-content:space-between; }
 .fin-row:last-child { border-bottom:none; }
 .fin-type   { font-size:13px;font-weight:600;color:var(--text); }
@@ -164,6 +177,7 @@ body { font-family:'DM Sans',sans-serif; background:var(--cream); color:var(--te
 .fin-unpaid  { background:var(--red-bg);color:var(--red);border:1px solid var(--red-bdr); }
 .fin-partial { background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-bdr); }
 
+/* ── Filing rows ── */
 .filing-row { padding:14px 22px;border-bottom:1px solid #f8f5f0;display:flex;align-items:flex-start;gap:14px; }
 .filing-row:last-child { border-bottom:none; }
 .filing-row:hover { background:#faf9f7; }
@@ -171,7 +185,12 @@ body { font-family:'DM Sans',sans-serif; background:var(--cream); color:var(--te
 .filing-info { flex:1; }
 .filing-title { font-size:13px;font-weight:600;color:var(--text);margin-bottom:2px; }
 .filing-meta  { font-size:11.5px;color:var(--muted); }
+.filing-status { font-size:10px;font-weight:700;letter-spacing:0.06em;padding:2px 7px;border-radius:2px;text-transform:uppercase;margin-top:4px;display:inline-block; }
+.fs-accepted { background:var(--green-bg);color:var(--green);border:1px solid var(--green-bdr); }
+.fs-pending  { background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-bdr); }
+.fs-rejected { background:var(--red-bg);color:var(--red);border:1px solid var(--red-bdr); }
 
+/* ── Quick actions ── */
 .qa-grid { display:grid;grid-template-columns:repeat(2,1fr);gap:10px; }
 .qa-btn { display:flex;flex-direction:column;align-items:flex-start;gap:5px;padding:14px 16px;background:var(--cream);border:1px solid var(--line);border-radius:4px;cursor:pointer;transition:all 0.15s;text-decoration:none;color:inherit; }
 .qa-btn:hover { border-color:var(--navy);background:#ece8e0; }
@@ -179,6 +198,7 @@ body { font-family:'DM Sans',sans-serif; background:var(--cream); color:var(--te
 .qa-label { font-size:12.5px;font-weight:700;color:var(--text); }
 .qa-sub   { font-size:11px;color:var(--muted);line-height:1.4; }
 
+/* ── Welcome banner ── */
 .welcome-banner { background:var(--navy);border-radius:5px;padding:26px 30px;margin-bottom:24px;display:flex;align-items:center;justify-content:space-between;gap:20px;position:relative;overflow:hidden; }
 .welcome-banner::before { content:'';position:absolute;right:-40px;top:-40px;width:200px;height:200px;border-radius:50%;background:rgba(200,168,75,0.08);pointer-events:none; }
 .wb-title { font-family:'Merriweather',serif;color:#fff;font-size:20px;font-weight:300;margin-bottom:6px; }
@@ -188,6 +208,7 @@ body { font-family:'DM Sans',sans-serif; background:var(--cream); color:var(--te
 .wb-role-badge { background:var(--gold-dim);border:1px solid rgba(200,168,75,0.3);color:var(--gold);font-size:11px;font-weight:700;padding:6px 14px;border-radius:3px;letter-spacing:0.06em;text-transform:uppercase;display:inline-block;margin-bottom:8px; }
 .wb-date { font-size:12px;color:var(--blue-muted); }
 
+/* ── Admin tools ── */
 .admin-tool-grid { display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px; }
 .admin-tool { background:var(--white);border:1px solid var(--line);border-radius:4px;padding:18px;cursor:pointer;transition:all 0.15s;text-decoration:none;display:flex;flex-direction:column;gap:8px;color:inherit;position:relative;overflow:hidden; }
 .admin-tool::after { content:'↗';position:absolute;top:12px;right:14px;font-size:11px;color:var(--muted);opacity:0;transition:opacity 0.15s; }
@@ -197,6 +218,7 @@ body { font-family:'DM Sans',sans-serif; background:var(--cream); color:var(--te
 .at-title { font-size:13px;font-weight:700;color:var(--text); }
 .at-sub   { font-size:11.5px;color:var(--muted);line-height:1.45; }
 
+/* ── Docket table ── */
 .docket-table { width:100%;border-collapse:collapse; }
 .docket-table th { font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;padding:10px 18px;border-bottom:2px solid var(--line);text-align:left;font-weight:700;background:#faf9f7; }
 .docket-table td { padding:12px 18px;border-bottom:1px solid #f8f5f0;font-size:13px;color:var(--text);vertical-align:top; }
@@ -204,6 +226,7 @@ body { font-family:'DM Sans',sans-serif; background:var(--cream); color:var(--te
 .docket-table tr:hover td { background:#faf9f7;cursor:pointer; }
 .dt-case-num { font-size:11px;color:var(--gold);font-weight:700;letter-spacing:0.06em;display:block;margin-bottom:2px; }
 
+/* ── Queue ── */
 .queue-row { padding:13px 22px;border-bottom:1px solid #f8f5f0;display:flex;align-items:center;gap:14px; }
 .queue-row:last-child { border-bottom:none; }
 .queue-priority { width:6px;align-self:stretch;border-radius:2px;flex-shrink:0; }
@@ -215,14 +238,18 @@ body { font-family:'DM Sans',sans-serif; background:var(--cream); color:var(--te
 .queue-meta   { font-size:11.5px;color:var(--muted); }
 .queue-action { background:var(--navy);color:#fff;border:none;border-radius:3px;padding:6px 14px;font-size:11.5px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background 0.12s;white-space:nowrap;text-decoration:none;display:inline-block; }
 
-.empty-state { padding:40px 22px;text-align:center; }
-.empty-state .ei { font-size:32px;margin-bottom:10px; }
+/* ── Empty states ── */
+.empty-state { padding:48px 22px;text-align:center; }
+.empty-state .ei { font-size:36px;margin-bottom:12px; }
 .empty-state h4 { font-family:'Merriweather',serif;font-size:16px;font-weight:300;margin-bottom:6px; }
-.empty-state p  { font-size:12.5px;color:var(--muted);line-height:1.6; }
+.empty-state p  { font-size:12.5px;color:var(--muted);line-height:1.6;margin-bottom:18px; }
+.empty-state-actions { display:flex;gap:10px;justify-content:center;flex-wrap:wrap; }
 
+/* ── Loading ── */
 .loading-inline { padding:36px;text-align:center;color:var(--muted);font-size:13px; }
 .spin-sm { display:inline-block;width:22px;height:22px;border:2px solid var(--line);border-top-color:var(--gold);border-radius:50%;animation:spin 0.8s linear infinite;vertical-align:middle;margin-right:8px; }
 
+/* ── Auth overlay ── */
 .auth-loading-overlay { position:fixed;inset:0;background:var(--navy);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;gap:18px; }
 .auth-loading-overlay.hidden { display:none; }
 .alo-seal  { width:56px;height:56px;background:var(--gold);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:26px; }
@@ -285,6 +312,7 @@ body { font-family:'DM Sans',sans-serif; background:var(--cream); color:var(--te
   </div>
 
   <div class="page-body">
+    <!-- Overview -->
     <div class="page-section active" id="page-overview">
       <div class="welcome-banner">
         <div>
@@ -298,44 +326,86 @@ body { font-family:'DM Sans',sans-serif; background:var(--cream); color:var(--te
       </div>
       <div id="overview-content"></div>
     </div>
+
+    <!-- My Cases -->
     <div class="page-section" id="page-cases">
-      <div class="section-hdr"><h2>My Cases</h2><p id="cases-sub">Cases in which you are a named party.</p></div>
+      <div class="section-hdr">
+        <div class="section-hdr-text"><h2>My Cases</h2><p id="cases-sub">Cases in which you are a named party.</p></div>
+        <div class="section-hdr-action" id="cases-action"></div>
+      </div>
       <div id="cases-content"></div>
     </div>
+
+    <!-- Hearings -->
     <div class="page-section" id="page-hearings">
-      <div class="section-hdr"><h2>Hearings</h2><p>Scheduled court dates and proceedings.</p></div>
+      <div class="section-hdr">
+        <div class="section-hdr-text"><h2>Hearings</h2><p>Scheduled court dates and proceedings.</p></div>
+      </div>
       <div id="hearings-content"></div>
     </div>
+
+    <!-- Electronic Filing -->
     <div class="page-section" id="page-filings">
-      <div class="section-hdr"><h2>Filings &amp; Documents</h2><p>Documents filed with the court.</p></div>
+      <div class="section-hdr">
+        <div class="section-hdr-text"><h2>Electronic Filing</h2><p>Documents filed electronically with the court.</p></div>
+        <div class="section-hdr-action" id="filings-action"></div>
+      </div>
       <div id="filings-content"></div>
     </div>
+
+    <!-- Financials -->
     <div class="page-section" id="page-financials">
-      <div class="section-hdr"><h2>Fines &amp; Fees</h2><p>Outstanding balances, payment history, and financial orders.</p></div>
+      <div class="section-hdr">
+        <div class="section-hdr-text"><h2>Fines &amp; Fees</h2><p>Outstanding balances, payment history, and financial orders.</p></div>
+      </div>
       <div id="financials-content"></div>
     </div>
+
+    <!-- Docket -->
     <div class="page-section" id="page-docket">
-      <div class="section-hdr"><h2>My Docket</h2><p>Cases currently assigned to you.</p></div>
+      <div class="section-hdr">
+        <div class="section-hdr-text"><h2>My Docket</h2><p>Cases currently assigned to you.</p></div>
+      </div>
       <div id="docket-content"></div>
     </div>
+
+    <!-- All Cases -->
     <div class="page-section" id="page-all-cases">
-      <div class="section-hdr"><h2>All Cases</h2><p id="all-cases-sub">Browse all cases in the court record.</p></div>
+      <div class="section-hdr">
+        <div class="section-hdr-text"><h2>All Cases</h2><p id="all-cases-sub">Browse all cases in the court record.</p></div>
+      </div>
       <div id="all-cases-content"></div>
     </div>
+
+    <!-- Queue -->
     <div class="page-section" id="page-queue">
-      <div class="section-hdr"><h2>Processing Queue</h2><p>Incoming filings and items awaiting review or action.</p></div>
+      <div class="section-hdr">
+        <div class="section-hdr-text"><h2>Processing Queue</h2><p>Incoming filings and items awaiting review or action.</p></div>
+      </div>
       <div id="queue-content"></div>
     </div>
+
+    <!-- Admin -->
     <div class="page-section" id="page-admin">
-      <div class="section-hdr"><h2>Administrative Tools</h2><p>Court management, scheduling, records, and system access.</p></div>
+      <div class="section-hdr">
+        <div class="section-hdr-text"><h2>Administrative Tools</h2><p>Court management, scheduling, records, and system access.</p></div>
+      </div>
       <div id="admin-content"></div>
     </div>
+
+    <!-- Opinions -->
     <div class="page-section" id="page-opinions">
-      <div class="section-hdr"><h2>Opinions &amp; Orders</h2><p>Pending decisions, published opinions, and appellate management.</p></div>
+      <div class="section-hdr">
+        <div class="section-hdr-text"><h2>Opinions &amp; Orders</h2><p>Pending decisions, published opinions, and appellate management.</p></div>
+      </div>
       <div id="opinions-content"></div>
     </div>
+
+    <!-- Settings -->
     <div class="page-section" id="page-settings">
-      <div class="section-hdr"><h2>Account Settings</h2><p>Manage your MiCOURT account preferences and profile.</p></div>
+      <div class="section-hdr">
+        <div class="section-hdr-text"><h2>Account Settings</h2><p>Manage your MiCOURT account preferences and profile.</p></div>
+      </div>
       <div id="settings-content"></div>
     </div>
   </div>
@@ -350,13 +420,13 @@ body { font-family:'DM Sans',sans-serif; background:var(--cream); color:var(--te
 
 <script>
 const CURRENT_USER = { name:'—', email:'—', pin:'—', role:'Portal User', barNumber:null, uid:null };
-let ALL_CASES = [];
+let ALL_CASES    = [];
 let CASES_LOADED = false;
 let currentRole  = 'Portal User';
 let currentCourt = 'Genesee Co. District Court';
 let activePage   = 'overview';
 
-// ── Admin tool definitions (all /administration/ paths) ──
+// ── Admin tool definitions ──
 const ADMIN_TOOLS_DISTRICT = [
   { icon:'📋', title:'Case Management',      sub:'Open, assign, close, and merge cases.',          href:'/courts/micourt/administration/cases/' },
   { icon:'📅', title:'Schedule Hearing',     sub:'Add or modify court proceedings.',               href:'/courts/micourt/administration/hearings/' },
@@ -397,7 +467,7 @@ const NAV_CONFIG = {
       { id:'overview',   icon:'🏠', label:'Overview' },
       { id:'cases',      icon:'📋', label:'My Cases' },
       { id:'hearings',   icon:'📅', label:'Hearings' },
-      { id:'filings',    icon:'📄', label:'Filings & Documents' },
+      { id:'filings',    icon:'📤', label:'Electronic Filing' },
       { id:'financials', icon:'💳', label:'Fines & Fees' },
     ]},
     { section:'account', items:[{ id:'settings', icon:'⚙️', label:'Account Settings' }]},
@@ -407,7 +477,7 @@ const NAV_CONFIG = {
       { id:'overview',   icon:'🏠', label:'Overview' },
       { id:'cases',      icon:'📋', label:'Client Cases' },
       { id:'hearings',   icon:'📅', label:'Hearings' },
-      { id:'filings',    icon:'📄', label:'Filings & Documents' },
+      { id:'filings',    icon:'📤', label:'Electronic Filing' },
       { id:'financials', icon:'💳', label:'Financials' },
     ]},
     { section:'account', items:[{ id:'settings', icon:'⚙️', label:'Account Settings' }]},
@@ -418,7 +488,7 @@ const NAV_CONFIG = {
       { id:'cases',    icon:'📋', label:'Active Prosecutions' },
       { id:'docket',   icon:'⚖️', label:'My Docket' },
       { id:'hearings', icon:'📅', label:'Hearings' },
-      { id:'filings',  icon:'📄', label:'Filings' },
+      { id:'filings',  icon:'📤', label:'Electronic Filing' },
     ]},
     { section:'account', items:[{ id:'settings', icon:'⚙️', label:'Settings' }]},
   ],
@@ -427,7 +497,7 @@ const NAV_CONFIG = {
       { id:'overview',  icon:'🏠', label:'Overview' },
       { id:'queue',     icon:'📥', label:'Processing Queue' },
       { id:'all-cases', icon:'🔎', label:'All Cases' },
-      { id:'filings',   icon:'📄', label:'Filings' },
+      { id:'filings',   icon:'📤', label:'Electronic Filing' },
     ]},
     { section:'tools', items:[{ id:'admin', icon:'🛠️', label:'Admin Tools' }]},
     { section:'account', items:[{ id:'settings', icon:'⚙️', label:'Settings' }]},
@@ -438,7 +508,7 @@ const NAV_CONFIG = {
       { id:'docket',    icon:'⚖️', label:'My Docket' },
       { id:'hearings',  icon:'📅', label:'Hearings' },
       { id:'all-cases', icon:'🔎', label:'All Cases' },
-      { id:'filings',   icon:'📄', label:'Filings' },
+      { id:'filings',   icon:'📤', label:'Electronic Filing' },
     ]},
     { section:'tools', items:[{ id:'admin', icon:'🛠️', label:'Admin Tools' }]},
     { section:'account', items:[{ id:'settings', icon:'⚙️', label:'Settings' }]},
@@ -449,7 +519,7 @@ const NAV_CONFIG = {
       { id:'docket',    icon:'⚖️', label:'My Docket' },
       { id:'hearings',  icon:'📅', label:'Hearings' },
       { id:'all-cases', icon:'🔎', label:'All Cases' },
-      { id:'filings',   icon:'📄', label:'Filings' },
+      { id:'filings',   icon:'📤', label:'Electronic Filing' },
     ]},
     { section:'tools', items:[{ id:'admin', icon:'🛠️', label:'Admin Tools' }]},
     { section:'account', items:[{ id:'settings', icon:'⚙️', label:'Settings' }]},
@@ -460,7 +530,7 @@ const NAV_CONFIG = {
       { id:'docket',    icon:'⚖️', label:'My Docket' },
       { id:'hearings',  icon:'📅', label:'Hearings' },
       { id:'all-cases', icon:'🔎', label:'All Cases' },
-      { id:'filings',   icon:'📄', label:'Filings' },
+      { id:'filings',   icon:'📤', label:'Electronic Filing' },
     ]},
     { section:'tools', items:[
       { id:'admin', icon:'🛠️', label:'Admin Tools' },
@@ -473,7 +543,7 @@ const NAV_CONFIG = {
       { id:'overview',  icon:'🏠', label:'Overview' },
       { id:'queue',     icon:'📥', label:'Processing Queue' },
       { id:'all-cases', icon:'🔎', label:'All SC Cases' },
-      { id:'filings',   icon:'📄', label:'Filings' },
+      { id:'filings',   icon:'📤', label:'Electronic Filing' },
     ]},
     { section:'tools', items:[{ id:'admin', icon:'🛠️', label:'Admin Tools' }]},
     { section:'account', items:[{ id:'settings', icon:'⚙️', label:'Settings' }]},
@@ -483,7 +553,7 @@ const NAV_CONFIG = {
       { id:'overview',  icon:'🏠', label:'Overview' },
       { id:'queue',     icon:'📥', label:'Processing Queue' },
       { id:'all-cases', icon:'🔎', label:'All SC Cases' },
-      { id:'filings',   icon:'📄', label:'Filings' },
+      { id:'filings',   icon:'📤', label:'Electronic Filing' },
     ]},
     { section:'account', items:[{ id:'settings', icon:'⚙️', label:'Settings' }]},
   ],
@@ -528,11 +598,8 @@ function fmtDate(s) {
 function loadingHtml() {
   return `<div class="loading-inline"><span class="spin-sm"></span>Loading from Firestore…</div>`;
 }
-function emptyState(icon, title, msg) {
-  return `<div class="empty-state"><div class="ei">${icon}</div><h4>${title}</h4><p>${msg}</p></div>`;
-}
 
-// ── Derive case title from Firestore schema ──
+// ── Case title derivation (matches Firestore schema) ──
 function getCaseTitle(c) {
   const t = (c.caseType||'').toLowerCase();
   const p = c.parties||{};
@@ -567,7 +634,7 @@ function getJudge(c) {
   return c.judge||(Array.isArray(c.judges)?c.judges[0]:null)||'—';
 }
 
-// ── Case filtering ──
+// ── Filtering ──
 function getUserCases() {
   const name = (CURRENT_USER.name||'').toLowerCase().trim();
   if (!name||name==='—') return [];
@@ -600,7 +667,7 @@ function getAllHearings(cases) {
 
 function getAllFilings(cases) {
   const out = [];
-  cases.forEach(c => (c.filings||[]).forEach(f => out.push({...f,_caseId:c.caseId})));
+  cases.forEach(c => (c.filings||[]).forEach(f => out.push({...f,_caseId:c.caseId,_caseFirestoreId:c._id})));
   return out.sort((a,b)=>new Date(b.dateFiled)-new Date(a.dateFiled));
 }
 
@@ -610,7 +677,7 @@ function getAllFinancials(cases) {
   return out;
 }
 
-// ── Rendering helpers ──
+// ── Render helpers ──
 function statusPill(status) {
   const s=(status||'').toLowerCase().replace(/[-\s]/g,'');
   let cls='sp-active';
@@ -674,11 +741,18 @@ function hearingRowHtml(h) {
 }
 
 function filingRowHtml(f) {
+  const st=(f.status||'').toLowerCase();
+  let stCls='fs-pending', stLabel='Pending';
+  if(st==='accepted'||st==='approved')  { stCls='fs-accepted'; stLabel='Accepted'; }
+  else if(st==='rejected'||st==='denied'){ stCls='fs-rejected'; stLabel='Rejected'; }
   return `<div class="filing-row">
     <div class="filing-icon">📄</div>
     <div class="filing-info">
       <div class="filing-title">${f.title||'Untitled Filing'}</div>
-      <div class="filing-meta">Filed by: ${f.filedBy||'—'} · ${fmtDate(f.dateFiled)} · Case ${f._caseId||'—'}${f.role?' · '+f.role:''}</div>
+      <div class="filing-meta">Case ${f._caseId||'—'} · Filed by ${f.filedBy||'—'} · ${fmtDate(f.dateFiled)}${f.role?' · <em>'+f.role+'</em>':''}</div>
+      ${f.notes?`<div style="font-size:11.5px;color:var(--muted);margin-top:2px">${f.notes}</div>`:''}
+      <span class="filing-status ${stCls}">${stLabel}</span>
+      ${f.documentLink?`<a href="${f.documentLink}" target="_blank" style="font-size:11.5px;color:#1a4a7a;font-weight:700;text-decoration:none;margin-left:10px">View ↗</a>`:''}
     </div>
   </div>`;
 }
@@ -736,7 +810,7 @@ function navigateTo(pageId) {
   document.querySelectorAll('.page-section').forEach(p=>p.classList.remove('active'));
   const t=document.getElementById('page-'+pageId);
   if(t)t.classList.add('active');
-  const labels={overview:'Dashboard',cases:'My Cases',hearings:'Hearings',filings:'Filings & Documents',financials:'Fines & Fees',docket:'My Docket','all-cases':'All Cases',queue:'Processing Queue',admin:'Administrative Tools',opinions:'Opinions & Orders',settings:'Account Settings'};
+  const labels={overview:'Dashboard',cases:'My Cases',hearings:'Hearings',filings:'Electronic Filing',financials:'Fines & Fees',docket:'My Docket','all-cases':'All Cases',queue:'Processing Queue',admin:'Administrative Tools',opinions:'Opinions & Orders',settings:'Account Settings'};
   document.getElementById('topbar-title').textContent=labels[pageId]||'MiCOURT';
   buildNav(currentRole);
   renderPage(pageId);
@@ -745,17 +819,17 @@ window.navigateTo=navigateTo;
 
 function renderPage(p) {
   const t=getTier(currentRole);
-  if(p==='overview')  renderOverview(t);
-  if(p==='cases')     renderCases(t);
-  if(p==='hearings')  renderHearings();
-  if(p==='filings')   renderFilings();
-  if(p==='financials')renderFinancials();
-  if(p==='docket')    renderDocket();
-  if(p==='all-cases') renderAllCases();
-  if(p==='queue')     renderQueue();
-  if(p==='admin')     renderAdmin();
-  if(p==='opinions')  renderOpinions();
-  if(p==='settings')  renderSettings();
+  if(p==='overview')   renderOverview(t);
+  if(p==='cases')      renderCases(t);
+  if(p==='hearings')   renderHearings();
+  if(p==='filings')    renderFilings();
+  if(p==='financials') renderFinancials();
+  if(p==='docket')     renderDocket();
+  if(p==='all-cases')  renderAllCases();
+  if(p==='queue')      renderQueue();
+  if(p==='admin')      renderAdmin();
+  if(p==='opinions')   renderOpinions();
+  if(p==='settings')   renderSettings();
 }
 
 // ── Page renders ──
@@ -785,13 +859,13 @@ function renderOverview(tier) {
         <div class="stat-card gold"><span class="sc-icon">📋</span><span class="sc-label">Active Cases</span><span class="sc-value">${activeCases.length}</span><span class="sc-sub">${myCases.length} total</span></div>
         <div class="stat-card blue"><span class="sc-icon">📅</span><span class="sc-label">Upcoming Hearings</span><span class="sc-value">${upcoming.length}</span><span class="sc-sub">${upcoming[0]?'Next: '+fmtDate(upcoming[0].date):'None scheduled'}</span></div>
         <div class="stat-card ${balance>0?'red':'green'}"><span class="sc-icon">💳</span><span class="sc-label">Balance Due</span><span class="sc-value">${fmtMoney(balance)}</span><span class="sc-sub">${allFin.length} order(s)</span></div>
-        <div class="stat-card navy"><span class="sc-icon">📄</span><span class="sc-label">Filings</span><span class="sc-value">${allFilings.length}</span><span class="sc-sub">${allFilings[0]?'Last: '+fmtDate(allFilings[0].dateFiled):'None'}</span></div>
+        <div class="stat-card navy"><span class="sc-icon">📤</span><span class="sc-label">Filings</span><span class="sc-value">${allFilings.length}</span><span class="sc-sub">${allFilings[0]?'Last: '+fmtDate(allFilings[0].dateFiled):'None submitted'}</span></div>
       </div>
       <div class="two-col">
         <div>
           <div class="card">
             <div class="card-hdr"><h3>${isAtty?'Client Cases':'My Cases'}</h3><span class="card-link" onclick="navigateTo('cases')">View All →</span></div>
-            <div class="card-body">${myCases.length?myCases.slice(0,6).map(caseRowHtml).join(''):emptyState('📂','No Cases Found','No cases are linked to your account.')}</div>
+            <div class="card-body">${myCases.length?myCases.slice(0,6).map(caseRowHtml).join(''):emptyCaseState()}</div>
           </div>
         </div>
         <div>
@@ -800,7 +874,7 @@ function renderOverview(tier) {
             <div class="card-body-pad">
               <div class="qa-grid">
                 ${balance>0?`<a class="qa-btn" href="/courts/micourt/pay/"><span class="qa-icon">💳</span><span class="qa-label">Pay Fines</span><span class="qa-sub">${fmtMoney(balance)} outstanding</span></a>`:''}
-                ${isAtty?`<a class="qa-btn" href="/courts/micourt/e-file/"><span class="qa-icon">📝</span><span class="qa-label">E-File Document</span><span class="qa-sub">Submit to clerk</span></a>`:''}
+                <a class="qa-btn" href="/filings/new/"><span class="qa-icon">📤</span><span class="qa-label">File a Document</span><span class="qa-sub">Submit electronically</span></a>
                 <a class="qa-btn" onclick="navigateTo('hearings')"><span class="qa-icon">📅</span><span class="qa-label">Hearings</span><span class="qa-sub">${upcoming.length} upcoming</span></a>
                 <a class="qa-btn" href="/courts/micourt/cases/"><span class="qa-icon">🔎</span><span class="qa-label">Search Cases</span><span class="qa-sub">Public records</span></a>
                 <a class="qa-btn" href="/courts/micourt/forms/"><span class="qa-icon">📋</span><span class="qa-label">Court Forms</span><span class="qa-sub">Standardized forms</span></a>
@@ -809,7 +883,7 @@ function renderOverview(tier) {
           </div>
           <div class="card">
             <div class="card-hdr"><h3>Upcoming Hearings</h3><span class="card-link" onclick="navigateTo('hearings')">View All →</span></div>
-            <div class="card-body">${upcoming.length?upcoming.slice(0,4).map(hearingRowHtml).join(''):emptyState('📅','No Upcoming Hearings','None scheduled.')}</div>
+            <div class="card-body">${upcoming.length?upcoming.slice(0,4).map(hearingRowHtml).join(''):`<div class="empty-state"><div class="ei">📅</div><h4>No Upcoming Hearings</h4><p>None currently scheduled.</p></div>`}</div>
           </div>
           ${balance>0?`<div class="card"><div class="card-hdr"><h3>Fines &amp; Fees</h3><span class="card-link" onclick="navigateTo('financials')">Pay →</span></div><div class="card-body">${allFin.slice(0,3).map(finRowHtml).join('')}</div></div>`:''}
         </div>
@@ -823,14 +897,14 @@ function renderOverview(tier) {
       <div class="stat-row cols-4">
         <div class="stat-card gold"><span class="sc-icon">📋</span><span class="sc-label">Cases on Record</span><span class="sc-value">${cc.length}</span><span class="sc-sub">In this court</span></div>
         <div class="stat-card blue"><span class="sc-icon">⚖️</span><span class="sc-label">Active Cases</span><span class="sc-value">${cc.filter(c=>!['Closed','Dismissed'].includes(c.status)).length}</span><span class="sc-sub">Open matters</span></div>
-        <div class="stat-card green"><span class="sc-icon">📄</span><span class="sc-label">Total Filings</span><span class="sc-value">${cc.reduce((s,c)=>s+(c.filings||[]).length,0)}</span><span class="sc-sub">On record</span></div>
+        <div class="stat-card green"><span class="sc-icon">📤</span><span class="sc-label">Total Filings</span><span class="sc-value">${cc.reduce((s,c)=>s+(c.filings||[]).length,0)}</span><span class="sc-sub">On record</span></div>
         <div class="stat-card navy"><span class="sc-icon">📅</span><span class="sc-label">Upcoming Hearings</span><span class="sc-value">${upH.length}</span><span class="sc-sub">Scheduled</span></div>
       </div>
       <div class="two-col">
         <div>
           <div class="card">
             <div class="card-hdr"><h3>Recent Cases</h3><span class="card-link" onclick="navigateTo('all-cases')">View All →</span></div>
-            <div class="card-body">${cc.slice(0,6).map(caseRowHtml).join('')||emptyState('📂','No Cases','No cases found.')}</div>
+            <div class="card-body">${cc.slice(0,6).map(caseRowHtml).join('')||`<div class="empty-state"><div class="ei">📂</div><h4>No Cases</h4><p>No cases found for this court.</p></div>`}</div>
           </div>
         </div>
         <div>
@@ -884,21 +958,59 @@ function renderOverview(tier) {
           </div>
           <div class="card">
             <div class="card-hdr"><h3>Upcoming Proceedings</h3><span class="card-link" onclick="navigateTo('hearings')">View All →</span></div>
-            <div class="card-body">${upH.length?upH.slice(0,4).map(hearingRowHtml).join(''):emptyState('📅','No Upcoming Hearings','None scheduled.')}</div>
+            <div class="card-body">${upH.length?upH.slice(0,4).map(hearingRowHtml).join(''):`<div class="empty-state"><div class="ei">📅</div><h4>No Upcoming Hearings</h4><p>None scheduled.</p></div>`}</div>
           </div>
         </div>
       </div>`;
   }
 }
 
+function emptyCaseState() {
+  return `<div class="empty-state">
+    <div class="ei">📂</div>
+    <h4>No Cases Found</h4>
+    <p>No cases are currently linked to your account. If you need to initiate a new matter, you can file electronically.</p>
+    <div class="empty-state-actions">
+      <a href="/filings/new/" class="btn-primary">📤 File a New Case</a>
+    </div>
+  </div>`;
+}
+
+function emptyFilingsState(hasCases) {
+  if (!hasCases) {
+    return `<div class="empty-state">
+      <div class="ei">📤</div>
+      <h4>No Filings Yet</h4>
+      <p>You haven't submitted any documents electronically. Start by filing your case or a document with the court.</p>
+      <div class="empty-state-actions">
+        <a href="/filings/new/" class="btn-primary">📤 File a New Case</a>
+      </div>
+    </div>`;
+  }
+  return `<div class="empty-state">
+    <div class="ei">📤</div>
+    <h4>No Filings on Record</h4>
+    <p>No electronic filings are associated with your cases yet.</p>
+    <div class="empty-state-actions">
+      <a href="/filings/new/" class="btn-primary">📤 File a Document</a>
+    </div>
+  </div>`;
+}
+
 function renderCases(tier) {
   const el=document.getElementById('cases-content');
+  const actionEl=document.getElementById('cases-action');
   if(!CASES_LOADED){el.innerHTML=loadingHtml();return;}
   const staff=isStaffTier(tier);
   const data=staff?getDocketCases():getUserCases();
   if(tier==='attorney') document.getElementById('cases-sub').textContent='Cases in which you are counsel of record.';
   else if(tier==='state-atty') document.getElementById('cases-sub').textContent='Active prosecutions you are assigned to.';
-  el.innerHTML=`<div class="card"><div class="card-hdr"><h3>${staff?'Docket Cases':'My Cases'}</h3><span class="card-tag">${data.length} cases</span></div><div class="card-body">${data.length?data.map(caseRowHtml).join(''):emptyState('📂','No Cases Found','No cases are linked to your account in Firestore.')}</div></div>`;
+
+  if(data.length&&actionEl&&!staff) {
+    actionEl.innerHTML=`<a href="/filings/new/" class="btn-outline">📤 File a Document</a>`;
+  }
+
+  el.innerHTML=`<div class="card"><div class="card-hdr"><h3>${staff?'Docket Cases':'My Cases'}</h3><span class="card-tag">${data.length} case${data.length!==1?'s':''}</span></div><div class="card-body">${data.length?data.map(caseRowHtml).join(''):emptyCaseState()}</div></div>`;
 }
 
 function renderHearings() {
@@ -906,15 +1018,37 @@ function renderHearings() {
   if(!CASES_LOADED){el.innerHTML=loadingHtml();return;}
   const cases=isStaffTier(getTier(currentRole))?getDocketCases():getUserCases();
   const hearings=getAllHearings(cases);
-  el.innerHTML=`<div class="card"><div class="card-hdr"><h3>Scheduled Proceedings</h3><span class="card-tag">${hearings.length} total</span></div><div class="card-body">${hearings.length?hearings.map(hearingRowHtml).join(''):emptyState('📅','No Hearings','No hearings on record.')}</div></div>`;
+  el.innerHTML=`<div class="card"><div class="card-hdr"><h3>Scheduled Proceedings</h3><span class="card-tag">${hearings.length} total</span></div><div class="card-body">${hearings.length?hearings.map(hearingRowHtml).join(''):`<div class="empty-state"><div class="ei">📅</div><h4>No Hearings</h4><p>No hearings are currently scheduled.</p></div>`}</div></div>`;
 }
 
 function renderFilings() {
   const el=document.getElementById('filings-content');
+  const actionEl=document.getElementById('filings-action');
   if(!CASES_LOADED){el.innerHTML=loadingHtml();return;}
-  const cases=isStaffTier(getTier(currentRole))?getDocketCases():getUserCases();
+
+  const isStaff=isStaffTier(getTier(currentRole));
+  const cases=isStaff?getDocketCases():getUserCases();
   const filings=getAllFilings(cases);
-  el.innerHTML=`<div class="card"><div class="card-hdr"><h3>Case Filings</h3><span class="card-tag">${filings.length} documents</span></div><div class="card-body">${filings.length?filings.map(filingRowHtml).join(''):emptyState('📄','No Filings','No documents on record.')}</div></div>`;
+  const hasCases=cases.length>0;
+
+  if(filings.length&&actionEl) {
+    actionEl.innerHTML=`<a href="/filings/new/" class="btn-primary">📤 File Another Document</a>`;
+  } else if(actionEl) {
+    actionEl.innerHTML='';
+  }
+
+  // Pending count for staff
+  const pendingCount=isStaff?filings.filter(f=>!f.accepted&&!(f.status==='Accepted'||f.status==='accepted')).length:0;
+
+  el.innerHTML=`
+    ${isStaff&&pendingCount>0?`<div style="background:var(--amber-bg);border:1px solid var(--amber-bdr);border-radius:4px;padding:12px 18px;margin-bottom:16px;display:flex;align-items:center;gap:10px;font-size:13px;color:var(--amber);font-weight:600;"><span>⚠️</span> ${pendingCount} filing${pendingCount!==1?'s':''} pending review</div>`:''}
+    <div class="card">
+      <div class="card-hdr">
+        <h3>${isStaff?'All Filings':'My Filings'}</h3>
+        <span class="card-tag">${filings.length} document${filings.length!==1?'s':''}</span>
+      </div>
+      <div class="card-body">${filings.length?filings.map(filingRowHtml).join(''):emptyFilingsState(hasCases)}</div>
+    </div>`;
 }
 
 function renderFinancials() {
@@ -930,7 +1064,7 @@ function renderFinancials() {
       <div class="stat-card green"><span class="sc-label">Total Paid</span><span class="sc-value">${fmtMoney(totalPaid)}</span></div>
       <div class="stat-card ${balance>0?'red':'green'}"><span class="sc-label">Balance Due</span><span class="sc-value">${fmtMoney(balance)}</span></div>
     </div>
-    <div class="card"><div class="card-hdr"><h3>Financial Orders</h3></div><div class="card-body">${orders.length?orders.map(finRowHtml).join(''):emptyState('💳','No Financial Orders','No fines or fees on record.')}</div></div>
+    <div class="card"><div class="card-hdr"><h3>Financial Orders</h3></div><div class="card-body">${orders.length?orders.map(finRowHtml).join(''):`<div class="empty-state"><div class="ei">💳</div><h4>No Financial Orders</h4><p>No fines or fees are currently on record.</p></div>`}</div></div>
     ${balance>0?`<div style="text-align:right;margin-top:4px"><a href="/courts/micourt/pay/" style="background:var(--navy);color:#fff;border:none;padding:12px 28px;border-radius:4px;font-size:14px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;text-decoration:none;display:inline-block">Pay Balance (${fmtMoney(balance)}) →</a></div>`:''}`;
 }
 
@@ -947,7 +1081,7 @@ function renderAllCases() {
   const sc=isScRole(currentRole);
   const cf=sc?'Michigan Supreme Court':'Genesee Co. District Court';
   document.getElementById('all-cases-sub').textContent=sc?'All cases filed with the Michigan Supreme Court.':'All cases on record at the Genesee County District Court.';
-  let data=ALL_CASES.filter(c=>c.court===cf);
+  const data=ALL_CASES.filter(c=>c.court===cf);
 
   el.innerHTML=`
     <div style="margin-bottom:16px;display:flex;gap:10px">
@@ -957,16 +1091,16 @@ function renderAllCases() {
     </div>
     <div class="card">
       <div class="card-hdr"><h3>Case Records</h3><span class="card-tag" id="ac-count">${data.length} results</span></div>
-      <div class="card-body" id="ac-results">${data.length?data.map(caseRowHtml).join(''):emptyState('📂','No Cases Found','No cases in this court.')}</div>
+      <div class="card-body" id="ac-results">${data.length?data.map(caseRowHtml).join(''):`<div class="empty-state"><div class="ei">📂</div><h4>No Cases Found</h4><p>No cases in this court.</p></div>`}</div>
     </div>`;
 
   window._acSearch=function(){
     const q=document.getElementById('ac-search').value.trim().toLowerCase();
     const filtered=data.filter(c=>{
       if(!q)return true;
-      return getCaseTitle(c).toLowerCase().includes(q)||(c.caseId||'').toLowerCase().includes(q)||JSON.stringify(c.parties||{}).toLowerCase().includes(q);
+      return getCaseTitle(c).toLowerCase().includes(q)||(c.caseId||'').toLowerCase().includes(q)||JSON.stringify(c.parties||{}).toLowerCase().includes(q)||(c.docketSummary||'').toLowerCase().includes(q);
     });
-    document.getElementById('ac-results').innerHTML=filtered.length?filtered.map(caseRowHtml).join(''):emptyState('📂','No Results','Try a different search term.');
+    document.getElementById('ac-results').innerHTML=filtered.length?filtered.map(caseRowHtml).join(''):`<div class="empty-state"><div class="ei">📂</div><h4>No Results</h4><p>Try a different search term.</p></div>`;
     document.getElementById('ac-count').textContent=`${filtered.length} results`;
   };
   document.getElementById('ac-search').addEventListener('keydown',e=>{if(e.key==='Enter')window._acSearch();});
@@ -977,8 +1111,11 @@ function renderQueue() {
   if(!CASES_LOADED){el.innerHTML=loadingHtml();return;}
   const cf=isScRole(currentRole)?'Michigan Supreme Court':'Genesee Co. District Court';
   const cases=ALL_CASES.filter(c=>c.court===cf);
-  const pending=getAllFilings(cases).filter(f=>!f.accepted);
-  el.innerHTML=`<div class="card"><div class="card-hdr"><h3>Processing Queue</h3><span class="card-tag">${pending.length} items</span></div><div class="card-body">${pending.length?pending.map(f=>`<div class="queue-row"><div class="queue-priority qp-med"></div><div class="queue-info"><div class="queue-title">${f.title||'Untitled Filing'}</div><div class="queue-meta">From: ${f.filedBy||'—'} · Filed: ${fmtDate(f.dateFiled)} · Case ${f._caseId||'—'}</div></div><a class="queue-action" href="/courts/micourt/filings/${encodeURIComponent(f._caseId||'')}/">Review →</a></div>`).join(''):emptyState('📥','Queue Empty','No pending items.')}</div></div>`;
+  const pending=getAllFilings(cases).filter(f=>{
+    const st=(f.status||'').toLowerCase();
+    return !f.accepted && st!=='accepted' && st!=='rejected';
+  });
+  el.innerHTML=`<div class="card"><div class="card-hdr"><h3>Processing Queue</h3><span class="card-tag">${pending.length} items</span></div><div class="card-body">${pending.length?pending.map(f=>`<div class="queue-row"><div class="queue-priority qp-med"></div><div class="queue-info"><div class="queue-title">${f.title||'Untitled Filing'}</div><div class="queue-meta">From: ${f.filedBy||'—'} · Filed: ${fmtDate(f.dateFiled)} · Case ${f._caseId||'—'}</div></div><a class="queue-action" href="/courts/micourt/filings/${encodeURIComponent(f._caseId||'')}/">Review →</a></div>`).join(''):`<div class="empty-state"><div class="ei">📥</div><h4>Queue Empty</h4><p>No pending items to review.</p></div>`}</div></div>`;
 }
 
 function renderAdmin() {
@@ -999,7 +1136,7 @@ function renderOpinions() {
       <div class="stat-card green"><span class="sc-label">Closed SC Cases</span><span class="sc-value">${ALL_CASES.filter(c=>c.court==='Michigan Supreme Court'&&c.status==='Closed').length}</span></div>
       <div class="stat-card navy"><span class="sc-label">Active SC Matters</span><span class="sc-value">${active.length}</span></div>
     </div>
-    <div class="card"><div class="card-hdr"><h3>Pending Decisions</h3><span class="card-tag">${pending.length} matters</span></div><div class="card-body">${pending.length?pending.map(caseRowHtml).join(''):emptyState('📜','No Pending Decisions','All matters are resolved.')}</div></div>
+    <div class="card"><div class="card-hdr"><h3>Pending Decisions</h3><span class="card-tag">${pending.length} matters</span></div><div class="card-body">${pending.length?pending.map(caseRowHtml).join(''):`<div class="empty-state"><div class="ei">📜</div><h4>No Pending Decisions</h4><p>All matters are resolved.</p></div>`}</div></div>
     ${closed.length?`<div class="card"><div class="card-hdr"><h3>Recently Closed Appellate Cases</h3></div><div class="card-body">${closed.map(caseRowHtml).join('')}</div></div>`:''}`;
 }
 
@@ -1145,7 +1282,6 @@ const unsub = onAuthStateChanged(auth, async (user) => {
 
     updateDoc(doc(db,'accounts',user.uid),{lastLogin:serverTimestamp()}).catch(()=>{});
 
-    // Load all cases
     setMsg('Loading case records…');
     try {
       const casesSnap = await getDocs(collection(db,'cases'));
