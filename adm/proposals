@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Proposed Amendments — Michigan Courts</title>
+<link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;1,300&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:#f4f1ec;color:#1a1a1a;min-height:100vh}
+
+/* ── RP Banner ── */
+.rp-banner{background:#071220;color:#7a9bbf;text-align:center;padding:9px 20px;font-size:11.5px;letter-spacing:0.01em;border-bottom:1px solid #1e3a5f;line-height:1.5}
+
+/* ── Header ── */
+.header{background:#0a1628}
+.header-top{display:flex;align-items:center;justify-content:space-between;padding:22px 40px 18px;border-bottom:1px solid #1e3a5f}
+.logo-text h1{font-family:'Merriweather',serif;color:#fff;font-size:22px;font-weight:300;letter-spacing:0.01em}
+.logo-text p{color:#7a9bbf;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;margin-top:3px}
+.header-right{text-align:right}
+.header-right p{color:#7a9bbf;font-size:11px;letter-spacing:0.06em;text-transform:uppercase}
+.header-right .date{color:#c8a84b;font-size:13px;margin-top:3px}
+
+/* ── Nav ── */
+nav{background:#0d1f3c;display:flex;align-items:center;padding:0 40px;position:relative;z-index:100}
+nav > a{color:#a0b8d0;font-size:12.5px;padding:14px 18px;text-decoration:none;letter-spacing:0.04em;border-bottom:3px solid transparent;transition:all 0.15s;white-space:nowrap}
+nav > a:hover{color:#fff;border-bottom-color:#c8a84b}
+nav > a.active{color:#fff;border-bottom-color:#c8a84b}
+nav .nav-right{margin-left:auto;display:flex;gap:8px;align-items:center}
+nav .nav-btn{background:#c8a84b;color:#0a1628;padding:8px 18px;border-radius:3px;font-size:12px;font-weight:600;letter-spacing:0.05em;text-decoration:none;border-bottom:none;white-space:nowrap}
+nav .nav-btn:hover{background:#d4b85e}
+.nav-dropdown{position:relative;display:inline-block}
+.nav-dropdown > a{color:#a0b8d0;font-size:12.5px;padding:14px 18px;text-decoration:none;letter-spacing:0.04em;border-bottom:3px solid transparent;transition:all 0.15s;white-space:nowrap;display:flex;align-items:center;gap:5px;cursor:pointer}
+.nav-dropdown > a::after{content:'v';font-size:9px;color:#7a9bbf;font-weight:700;margin-top:1px}
+.nav-dropdown:hover > a{color:#fff;border-bottom-color:transparent}.nav-dropdown:hover > a::after{color:#c8a84b}
+.dropdown-menu{display:none;position:absolute;top:100%;left:0;background:#0d1f3c;border:1px solid #1e3a5f;border-top:2px solid #c8a84b;min-width:200px;z-index:200;box-shadow:0 8px 28px rgba(0,0,0,0.4)}
+.nav-dropdown:hover .dropdown-menu{display:block}
+.dropdown-menu a{display:block;padding:10px 18px;color:#a0b8d0;font-size:12px;text-decoration:none;border-bottom:1px solid #1a2d48;letter-spacing:0.03em;border-left:3px solid transparent;transition:all 0.12s}
+.dropdown-menu a:last-child{border-bottom:none}
+.dropdown-menu a:hover{color:#fff;background:#112240;border-left-color:#c8a84b}
+
+/* ── Page Header ── */
+.page-header{background:#0a1628;padding:40px 40px 36px;border-bottom:3px solid #c8a84b}
+.breadcrumb{display:flex;align-items:center;gap:8px;margin-bottom:14px}
+.breadcrumb a{color:#7a9bbf;font-size:11.5px;text-decoration:none;letter-spacing:0.04em}
+.breadcrumb a:hover{color:#c8a84b}
+.breadcrumb span{color:#3a5878;font-size:11.5px}
+.page-header h2{font-family:'Merriweather',serif;color:#fff;font-size:26px;font-weight:300;line-height:1.3}
+.page-header p{color:#7a9bbf;font-size:13.5px;line-height:1.7;margin-top:10px;max-width:680px}
+
+/* ── Intro Block ── */
+.intro-block{background:#fff;border:1px solid #e0d9cf;border-radius:4px;margin:32px 40px 0;padding:28px 32px;display:grid;grid-template-columns:1fr 1fr;gap:32px}
+.intro-section h3{font-family:'Merriweather',serif;font-size:14px;font-weight:400;color:#1a1a1a;margin-bottom:10px}
+.intro-section p{font-size:13px;color:#4a4035;line-height:1.75}
+.comment-box{background:#0d1f3c;border:1px solid #2d4f6e;border-left:3px solid #c8a84b;border-radius:3px;padding:18px 20px}
+.comment-box .cb-label{font-size:10px;color:#c8a84b;text-transform:uppercase;letter-spacing:0.1em;font-weight:700;margin-bottom:8px}
+.comment-box .cb-text{font-size:13px;color:#a0b8d0;line-height:1.65}
+.comment-box .cb-email{display:inline-block;margin-top:10px;color:#c8a84b;font-size:13.5px;font-weight:600;text-decoration:none;letter-spacing:0.02em}
+.comment-box .cb-email:hover{text-decoration:underline}
+.comment-box .cb-note{font-size:11.5px;color:#4a6a8a;margin-top:8px;line-height:1.5}
+
+/* ── Section Label ── */
+.section-label{display:flex;align-items:center;gap:12px;margin-bottom:24px}
+.section-label span{font-family:'Merriweather',serif;font-size:13px;font-weight:400;color:#6b5f4e;text-transform:uppercase;letter-spacing:0.12em}
+.section-label::after{content:'';flex:1;height:1px;background:#d6cfc4}
+
+/* ── Amendments List ── */
+.amendments-wrap{padding:32px 40px 48px}
+
+/* ── Amendment Card ── */
+.adm-card{background:#fff;border:1px solid #e0d9cf;border-radius:4px;overflow:hidden;margin-bottom:20px}
+.adm-card-top{display:flex;align-items:flex-start;gap:20px;padding:22px 28px;border-bottom:1px solid #f0ebe3;cursor:pointer;user-select:none}
+.adm-left{flex:1}
+.adm-meta{display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap}
+.adm-number{background:#0a1628;color:#c8a84b;font-size:10px;font-weight:700;letter-spacing:0.1em;padding:3px 10px;border-radius:2px;text-transform:uppercase}
+.adm-ruleset{font-size:11px;color:#9a8f82;text-transform:uppercase;letter-spacing:0.08em}
+.adm-badge-open{background:#e8f5e9;color:#2e7d32;font-size:10px;font-weight:700;letter-spacing:0.07em;padding:3px 9px;border-radius:2px;text-transform:uppercase;border:1px solid #a5d6a7}
+.adm-badge-closed{background:#fce8e8;color:#c62828;font-size:10px;font-weight:700;letter-spacing:0.07em;padding:3px 9px;border-radius:2px;text-transform:uppercase;border:1px solid #ef9a9a}
+.adm-action{font-family:'Merriweather',serif;font-size:17px;font-weight:400;color:#1a1a1a;line-height:1.35;margin-bottom:6px}
+.adm-summary{font-size:13px;color:#4a4035;line-height:1.65}
+.adm-right{display:flex;flex-direction:column;align-items:flex-end;gap:10px;flex-shrink:0;min-width:160px}
+.adm-dates{text-align:right}
+.adm-date-row{margin-bottom:6px}
+.adm-date-row .dk{font-size:10px;color:#9a8f82;text-transform:uppercase;letter-spacing:0.07em}
+.adm-date-row .dv{font-size:13px;color:#1a1a1a;font-weight:500;margin-top:1px}
+.adm-proposal-link{display:inline-flex;align-items:center;gap:5px;background:#0a1628;color:#c8a84b;font-size:11.5px;font-weight:600;padding:7px 14px;border-radius:3px;text-decoration:none;letter-spacing:0.03em;white-space:nowrap}
+.adm-proposal-link:hover{background:#112240}
+.adm-proposal-link svg{width:13px;height:13px;flex-shrink:0}
+
+/* Comments toggle */
+.adm-toggle-row{padding:12px 28px;background:#f8f5f0;border-bottom:1px solid #f0ebe3;display:flex;align-items:center;justify-content:space-between;cursor:pointer}
+.adm-toggle-row:hover{background:#f2ede5}
+.toggle-label{font-size:12.5px;color:#4a4035;font-weight:500;display:flex;align-items:center;gap:8px}
+.comment-count{background:#e0d9cf;color:#6b5f4e;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;letter-spacing:0.04em}
+.toggle-arrow{font-size:12px;color:#9a8f82;transition:transform 0.2s}
+.toggle-arrow.open{transform:rotate(180deg)}
+
+/* Comments Panel */
+.adm-comments{display:none;padding:0 28px 22px}
+.adm-comments.visible{display:block}
+.comments-inner{padding-top:18px}
+.no-comments{font-size:13px;color:#9a8f82;font-style:italic;padding:10px 0}
+.comment-item{border:1px solid #e0d9cf;border-radius:3px;padding:14px 18px;margin-bottom:12px;background:#fdfcfa}
+.comment-item:last-child{margin-bottom:0}
+.comment-header{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:6px}
+.comment-author{font-size:13px;font-weight:600;color:#1a1a1a}
+.comment-date{font-size:11px;color:#9a8f82;flex-shrink:0;margin-top:2px}
+.comment-link{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:#1a4a7a;font-weight:600;text-decoration:none;margin-top:6px}
+.comment-link:hover{text-decoration:underline}
+.comment-link svg{width:12px;height:12px}
+
+/* ── Footer ── */
+.footer{background:#0a1628;padding:24px 40px;display:flex;justify-content:space-between;align-items:center;border-top:3px solid #c8a84b}
+.footer p{color:#4a6a8a;font-size:12px}
+
+@media(max-width:768px){
+  .header-top,.page-header,.amendments-wrap,.intro-block{padding-left:20px;padding-right:20px}
+  .intro-block{grid-template-columns:1fr;margin:20px 20px 0}
+  .amendments-wrap{padding:24px 20px 40px}
+  .adm-card-top{flex-direction:column;gap:14px}
+  .adm-right{align-items:flex-start;min-width:unset}
+  .footer{padding:20px;flex-direction:column;gap:8px;text-align:center}
+}
+</style>
+</head>
+<body>
+
+<div class="rp-banner">
+  This site is not a real court, does not have legal authority, and is not affiliated with or endorsed by any real court system or government agency.
+</div>
+
+<div class="header">
+  <div class="header-top">
+    <div class="logo-text">
+      <h1>Michigan Courts</h1>
+      <p>One Court of Justice</p>
+    </div>
+    <div class="header-right">
+      <p>SCAO Maintained</p>
+      <div class="date" id="today"></div>
+    </div>
+  </div>
+</div>
+
+<nav>
+  <a href="index.html">Home</a>
+  <div class="nav-dropdown">
+    <a href="#">Directory</a>
+    <div class="dropdown-menu">
+      <a href="#">Supreme Court</a>
+      <a href="#">Genesee Co. District Court</a>
+    </div>
+  </div>
+  <div class="nav-dropdown">
+    <a href="#">Online Services</a>
+    <div class="dropdown-menu">
+      <a href="#">Online Portal (MiCOURT)</a>
+      <a href="cases.html">Search Cases</a>
+      <a href="#">Pay Fines &amp; Fees</a>
+      <a href="#">Docket Calendar</a>
+      <a href="#">Jury Duty Portal</a>
+      <a href="#">Request Court Records</a>
+    </div>
+  </div>
+  <div class="nav-dropdown">
+    <a href="#">Forms &amp; Filing</a>
+    <div class="dropdown-menu">
+      <a href="#">Filing Information</a>
+      <a href="#">Court Forms</a>
+    </div>
+  </div>
+  <a href="#">Self Help</a>
+  <a href="#">Careers</a>
+  <a href="amendments.html" class="active" style="color:#fff;border-bottom:3px solid #c8a84b">Rule Amendments</a>
+  <div class="nav-right">
+    <a href="#" class="nav-btn">Access MiCOURT ></a>
+  </div>
+</nav>
+
+<!-- Page Header -->
+<div class="page-header">
+  <div class="breadcrumb">
+    <a href="index.html">Home</a>
+    <span>/</span>
+    <span style="color:#a0b8d0">Proposed Rule Amendments &amp; Adoptions</span>
+  </div>
+  <h2>Proposed Rule Amendments &amp; Adoptions</h2>
+  <p>The Michigan Supreme Court publishes proposed amendments and adoptions to the Michigan Court Rules, Rules of Evidence, Michigan Rules of Professional Conduct, Rules Concerning the State Bar, Michigan Code of Judicial Conduct, and other administrative rules. Public comment is invited on all open proposals before the Court takes final action.</p>
+</div>
+
+<!-- Intro / Comment Instructions -->
+<div class="intro-block">
+  <div class="intro-section">
+    <h3>About This Page</h3>
+    <p>Each proposal below includes an ADM docket number, the action being taken (amendment or adoption), a plain-language summary, and a link to the full proposal document. Proposals are listed from newest to oldest. Once the comment period for a proposal has closed, the record is preserved here for reference.</p>
+    <p style="margin-top:12px">After the comment period closes, the Court reviews all submissions before issuing a final order. Final orders are published separately in the Court's administrative orders.</p>
+  </div>
+  <div>
+    <div class="comment-box">
+      <div class="cb-label">How to Submit a Public Comment</div>
+      <div class="cb-text">Comments on any open proposal must be submitted by email before the comment period expiration date. Include the ADM number, your name or organization, and your complete comment in the body of the email or as an attachment.</div>
+      <a href="mailto:comments@michigancourts-rp.gov" class="cb-email">comments@michigancourts-rp.gov</a>
+      <div class="cb-note">Anonymous comments are accepted. Organizations should identify themselves by their full legal name. All timely-submitted comments become part of the public record and will be displayed below.</div>
+    </div>
+  </div>
+</div>
+
+<!-- Amendments List -->
+<div class="amendments-wrap">
+  <div class="section-label"><span>Open for Comment</span></div>
+
+  <!-- ═══════════════════════════════════════════════════════
+       ADM 1 — Adoption of the Michigan Court Rules
+       To add more amendments, copy this .adm-card block.
+       ═══════════════════════════════════════════════════════ -->
+  <div class="adm-card">
+    <div class="adm-card-top">
+      <div class="adm-left">
+        <div class="adm-meta">
+          <span class="adm-number">ADM 1</span>
+          <span class="adm-ruleset">Michigan Court Rules</span>
+          <span class="adm-badge-open">Open for Comment</span>
+        </div>
+        <div class="adm-action">Adoption of the Michigan Court Rules</div>
+        <div class="adm-summary">
+          The Court proposes the adoption of the Michigan Court Rules in their entirety, establishing the foundational procedural framework governing practice and procedure in all courts within the Michigan judicial system. This adoption sets uniform standards for pleading, motion practice, discovery, trials, and appeals.
+        </div>
+      </div>
+      <div class="adm-right">
+        <div class="adm-dates">
+          <div class="adm-date-row">
+            <div class="dk">Issued</div>
+            <div class="dv">June 1, 2026</div>
+          </div>
+          <div class="adm-date-row">
+            <div class="dk">Comment Period Expires</div>
+            <div class="dv">June 30, 2026</div>
+          </div>
+        </div>
+        <!-- Replace href="#" with the real Google Drive PDF link -->
+        <a href="#" class="adm-proposal-link" target="_blank" rel="noopener">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h8l4 4v8H4V4z"/><path d="M12 4v4h4"/><path d="M7 11h6M7 14h4"/></svg>
+          View Proposal (PDF)
+        </a>
+      </div>
+    </div>
+
+    <!-- Comments Toggle -->
+    <div class="adm-toggle-row" onclick="toggleComments('adm1-comments', this)">
+      <span class="toggle-label">
+        Public Comments
+        <span class="comment-count">0 comments</span>
+      </span>
+      <span class="toggle-arrow" id="adm1-arrow">▼</span>
+    </div>
+
+    <!-- Comments Panel -->
+    <div class="adm-comments" id="adm1-comments">
+      <div class="comments-inner">
+        <div class="no-comments">No comments have been submitted yet. Be the first — email your comment to <a href="mailto:comments@michigancourts-rp.gov" style="color:#1a4a7a">comments@michigancourts-rp.gov</a>.</div>
+
+        <!-- Example comment (hidden by default — uncomment and fill in when real comments arrive):
+        <div class="comment-item">
+          <div class="comment-header">
+            <span class="comment-author">Michigan District Judges Association</span>
+            <span class="comment-date">June 5, 2026</span>
+          </div>
+          <a href="https://drive.google.com/..." class="comment-link" target="_blank" rel="noopener">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h8l4 4v8H4V4z"/><path d="M12 4v4h4"/></svg>
+            View Comment (PDF)
+          </a>
+        </div>
+        -->
+      </div>
+    </div>
+  </div>
+  <!-- ═══ END ADM 1 ═══ -->
+
+  <!-- ─────────────────────────────────────────────────────────
+       CLOSED PROPOSALS — add closed cards below this label
+       when their comment periods expire.
+       ───────────────────────────────────────────────────────── -->
+  <!-- <div class="section-label" style="margin-top:8px"><span>Closed — Comment Period Expired</span></div> -->
+
+</div>
+
+<div class="footer">
+  <p>© 2026 Michigan Courts · State Court Administrative Office · P.O. Box 30048, Lansing, MI 48909</p>
+</div>
+
+<script>
+  // Date in header
+  const d = new Date();
+  document.getElementById('today').textContent = d.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
+
+  // Toggle comments panel
+  function toggleComments(panelId, rowEl) {
+    const panel = document.getElementById(panelId);
+    const arrow = rowEl.querySelector('.toggle-arrow');
+    const isVisible = panel.classList.contains('visible');
+    panel.classList.toggle('visible', !isVisible);
+    arrow.classList.toggle('open', !isVisible);
+  }
+</script>
+</body>
+</html>
