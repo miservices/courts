@@ -874,7 +874,7 @@ function renderOverview(tier) {
             <div class="card-body-pad">
               <div class="qa-grid">
                 ${balance>0?`<a class="qa-btn" href="/courts/micourt/pay/"><span class="qa-icon">💳</span><span class="qa-label">Pay Fines</span><span class="qa-sub">${fmtMoney(balance)} outstanding</span></a>`:''}
-                <a class="qa-btn" href="/filings/new/"><span class="qa-icon">📤</span><span class="qa-label">File a Document</span><span class="qa-sub">Submit electronically</span></a>
+                <a class="qa-btn" href="/courts/micourt/dashboard/filings/new/"><span class="qa-icon">📤</span><span class="qa-label">File a Document</span><span class="qa-sub">Submit electronically</span></a>
                 <a class="qa-btn" onclick="navigateTo('hearings')"><span class="qa-icon">📅</span><span class="qa-label">Hearings</span><span class="qa-sub">${upcoming.length} upcoming</span></a>
                 <a class="qa-btn" href="/courts/micourt/cases/"><span class="qa-icon">🔎</span><span class="qa-label">Search Cases</span><span class="qa-sub">Public records</span></a>
                 <a class="qa-btn" href="/courts/micourt/forms/"><span class="qa-icon">📋</span><span class="qa-label">Court Forms</span><span class="qa-sub">Standardized forms</span></a>
@@ -971,7 +971,7 @@ function emptyCaseState() {
     <h4>No Cases Found</h4>
     <p>No cases are currently linked to your account. If you need to initiate a new matter, you can file electronically.</p>
     <div class="empty-state-actions">
-      <a href="/filings/new/" class="btn-primary">📤 File a New Case</a>
+      <a href="/courts/micourt/dashboard/filings/new/" class="btn-primary">📤 File a New Case</a>
     </div>
   </div>`;
 }
@@ -983,7 +983,7 @@ function emptyFilingsState(hasCases) {
       <h4>No Filings Yet</h4>
       <p>You haven't submitted any documents electronically. Start by filing your case or a document with the court.</p>
       <div class="empty-state-actions">
-        <a href="/filings/new/" class="btn-primary">📤 File a New Case</a>
+        <a href="/courts/micourt/dashboard/filings/new/" class="btn-primary">📤 File a New Case</a>
       </div>
     </div>`;
   }
@@ -992,7 +992,7 @@ function emptyFilingsState(hasCases) {
     <h4>No Filings on Record</h4>
     <p>No electronic filings are associated with your cases yet.</p>
     <div class="empty-state-actions">
-      <a href="/filings/new/" class="btn-primary">📤 File a Document</a>
+      <a href="/courts/micourt/dashboard/filings/new/" class="btn-primary">📤 File a Document</a>
     </div>
   </div>`;
 }
@@ -1007,7 +1007,7 @@ function renderCases(tier) {
   else if(tier==='state-atty') document.getElementById('cases-sub').textContent='Active prosecutions you are assigned to.';
 
   if(data.length&&actionEl&&!staff) {
-    actionEl.innerHTML=`<a href="/filings/new/" class="btn-outline">📤 File a Document</a>`;
+    actionEl.innerHTML=`<a href="/courts/micourt/dashboard/filings/new/" class="btn-outline">📤 File a Document</a>`;
   }
 
   el.innerHTML=`<div class="card"><div class="card-hdr"><h3>${staff?'Docket Cases':'My Cases'}</h3><span class="card-tag">${data.length} case${data.length!==1?'s':''}</span></div><div class="card-body">${data.length?data.map(caseRowHtml).join(''):emptyCaseState()}</div></div>`;
@@ -1032,7 +1032,7 @@ function renderFilings() {
   const hasCases=cases.length>0;
 
   if(filings.length&&actionEl) {
-    actionEl.innerHTML=`<a href="/filings/new/" class="btn-primary">📤 File Another Document</a>`;
+    actionEl.innerHTML=`<a href="/courts/micourt/dashboard/filings/new/" class="btn-primary">📤 File Another Document</a>`;
   } else if(actionEl) {
     actionEl.innerHTML='';
   }
