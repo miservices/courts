@@ -61,12 +61,12 @@ body{font-family:'DM Sans',sans-serif;background:#f4f1ec;color:#1a1a1a;min-heigh
 .back-link{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:#7a9bbf;text-decoration:none;font-weight:600;margin-bottom:4px}
 .back-link:hover{color:#c8a84b}
 
-/* ── Article footer bar ── */
-.article-footer-bar{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px 40px 0;flex-wrap:wrap}
-.last-updated{font-size:11.5px;color:#9a8f82;display:flex;align-items:center;gap:6px}
-.last-updated svg{width:13px;height:13px;color:#c8a84b;flex-shrink:0}
-.print-btn{display:inline-flex;align-items:center;gap:7px;background:#fff;border:1.5px solid #e0d9cf;color:#4a4035;font-family:'DM Sans',sans-serif;font-size:12.5px;font-weight:600;padding:8px 16px;border-radius:3px;cursor:pointer;transition:all 0.15s;text-decoration:none}
-.print-btn:hover{border-color:#0a1628;color:#0a1628;background:#f8f5f0}
+/* ── Article actions sidebar card ── */
+.article-actions{display:flex;flex-direction:column;gap:10px;padding:16px}
+.last-updated-row{display:flex;align-items:center;gap:7px;font-size:12px;color:#6b5f4e}
+.last-updated-row svg{width:13px;height:13px;color:#c8a84b;flex-shrink:0}
+.print-btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;width:100%;background:#0a1628;border:none;color:#c8a84b;font-family:'DM Sans',sans-serif;font-size:12.5px;font-weight:600;padding:10px 16px;border-radius:3px;cursor:pointer;transition:background 0.15s;letter-spacing:0.02em}
+.print-btn:hover{background:#112240}
 .print-btn svg{width:13px;height:13px;flex-shrink:0}
 
 /* ── Print styles ── */
@@ -162,18 +162,6 @@ body{font-family:'DM Sans',sans-serif;background:#f4f1ec;color:#1a1a1a;min-heigh
       </div>
     </div>
 
-    <!-- Footer bar: last updated + print button -->
-    <div class="article-footer-bar" id="article-footer-bar" style="display:none">
-      <div class="last-updated" id="last-updated-wrap">
-        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="10" cy="10" r="7"/><path d="M10 6v4l2.5 2.5"/></svg>
-        <span id="last-updated-text"></span>
-      </div>
-      <button class="print-btn" onclick="window.print()">
-        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 7V3h10v4M5 15H3V9h14v6h-2M5 12h10v5H5z"/></svg>
-        Print This Article
-      </button>
-    </div>
-
     <!-- Print-only footer (hidden on screen) -->
     <div class="print-footer" id="print-footer">
       Michigan Legal Help Program — A joint program of the Michigan Supreme Court, the State Bar of Michigan, and the Michigan Attorney General.<br>
@@ -187,21 +175,17 @@ body{font-family:'DM Sans',sans-serif;background:#f4f1ec;color:#1a1a1a;min-heigh
         <p>A joint program of the Michigan Supreme Court, the State Bar of Michigan, and the Michigan Attorney General providing free legal information to residents.</p>
       </div>
     </div>
-    <div class="sidebar-card">
-      <div class="sidebar-card-header"><h3>Quick Links</h3></div>
-      <div class="sidebar-card-body" style="padding:6px 0">
-        <a href="/courts/self-help/" class="sidebar-link" style="padding:10px 16px">
-          <span>All Legal Help Topics</span><span class="sl-arrow">›</span>
-        </a>
-        <a href="/courts/forms/" class="sidebar-link" style="padding:10px 16px">
-          <span>Court Forms</span><span class="sl-arrow">›</span>
-        </a>
-        <a href="/courts/micourt/" class="sidebar-link" style="padding:10px 16px">
-          <span>MiCOURT Online Portal</span><span class="sl-arrow">›</span>
-        </a>
-        <a href="/courts/rules/" class="sidebar-link" style="padding:10px 16px">
-          <span>Court Rules</span><span class="sl-arrow">›</span>
-        </a>
+    <div class="sidebar-card" id="article-actions-card" style="display:none">
+      <div class="sidebar-card-header"><h3>This Article</h3></div>
+      <div class="article-actions">
+        <div class="last-updated-row" id="last-updated-wrap">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="10" cy="10" r="7"/><path d="M10 6v4l2.5 2.5"/></svg>
+          <span id="last-updated-text"></span>
+        </div>
+        <button class="print-btn" onclick="window.print()">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 7V3h10v4M5 15H3V9h14v6h-2M5 12h10v5H5z"/></svg>
+          Print This Article
+        </button>
       </div>
     </div>
     <div class="sidebar-card" id="related-card" style="display:none">
@@ -399,8 +383,8 @@ body{font-family:'DM Sans',sans-serif;background:#f4f1ec;color:#1a1a1a;min-heigh
         body.innerHTML = `<div class="article-content"><p style="color:#9a8f82;font-style:italic">No content available for this article.</p></div>`;
       }
 
-      // Footer bar — last updated + print button
-      document.getElementById('article-footer-bar').style.display = 'flex';
+      // Sidebar actions card — last updated + print
+      document.getElementById('article-actions-card').style.display = '';
       const luWrap = document.getElementById('last-updated-wrap');
       const luText = document.getElementById('last-updated-text');
       if (article.last_updated && article.last_updated.trim()) {
