@@ -75,7 +75,7 @@ body{font-family:'DM Sans',sans-serif;background:#f4f1ec;color:#1a1a1a;min-heigh
 
 /* Decision block */
 .adm-decision{padding:14px 28px;border-bottom:1px solid #f0ebe3}
-.adm-decision-top{display:flex;align-items:center;gap:10px;margin-bottom:0}
+.adm-decision-top{display:flex;align-items:center;gap:10px;margin-bottom:0;flex-wrap:wrap}
 .adm-decision-badge{font-size:10.5px;font-weight:700;letter-spacing:0.06em;padding:4px 11px;border-radius:2px;text-transform:uppercase;flex-shrink:0}
 .adm-decision-label{font-size:10px;color:#9a8f82;text-transform:uppercase;letter-spacing:0.08em}
 .adm-decision-notes{font-size:12.5px;color:#4a4035;line-height:1.6;margin-top:8px}
@@ -243,11 +243,13 @@ body{font-family:'DM Sans',sans-serif;background:#f4f1ec;color:#1a1a1a;min-heigh
     const cfg  = DECISIONS[key];
     if (!cfg) return '';
     const notes = (p.decision_notes || '').trim();
+    const decisionUrl = (p.decision_url || '').trim();
     return `
       <div class="adm-decision" style="background:${cfg.bg};border:1px solid ${cfg.border};border-left:3px solid ${cfg.color}">
         <div class="adm-decision-top">
           <span class="adm-decision-badge" style="background:${cfg.color};color:#fff">${cfg.icon} ${cfg.label}</span>
           <span class="adm-decision-label">Court Decision</span>
+          ${decisionUrl ? `<a href="${esc(decisionUrl)}" class="adm-proposal-link" target="_blank" rel="noopener" style="margin-left:auto">${PDF_ICON} View Decision (PDF)</a>` : ''}
         </div>
         ${notes ? `<div class="adm-decision-notes">${esc(notes)}</div>` : ''}
       </div>`;
