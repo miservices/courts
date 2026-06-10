@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Self-Help Center — Michigan Legal Help Program</title>
+
+<script src="/courts/shell.js" data-active="selfhelp"></script>
+
+<link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;1,300&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:#f4f1ec;color:#1a1a1a;min-height:100vh}
+
+/* ── Page Header ── */
+.page-header{background:#0a1628;padding:40px 40px 36px;border-bottom:3px solid #c8a84b}
+.breadcrumb{display:flex;align-items:center;gap:8px;margin-bottom:14px}
+.breadcrumb a{color:#7a9bbf;font-size:11.5px;text-decoration:none;letter-spacing:0.04em}
+.breadcrumb a:hover{color:#c8a84b}
+.breadcrumb span{color:#3a5878;font-size:11.5px}
+.page-header h2{font-family:'Merriweather',serif;color:#fff;font-size:26px;font-weight:300;line-height:1.3}
+.page-header p{color:#7a9bbf;font-size:13.5px;line-height:1.7;margin-top:10px;max-width:680px}
+
+/* ── Partner strip ── */
+.partner-strip{background:#fff;border-bottom:1px solid #e0d9cf;padding:14px 40px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.partner-label{font-size:10px;color:#9a8f82;text-transform:uppercase;letter-spacing:0.1em;font-weight:700;flex-shrink:0;margin-right:4px}
+.partner-badge{display:inline-flex;align-items:center;gap:6px;background:#f4f1ec;border:1px solid #e0d9cf;border-radius:2px;padding:5px 12px;font-size:11.5px;font-weight:600;color:#4a4035}
+.partner-badge span{font-size:13px}
+.partner-sep{color:#d6cfc4;font-size:11px}
+
+/* ── Search ── */
+.search-bar{background:#0d1f3c;padding:22px 40px;border-bottom:1px solid #1e3a5f}
+.search-inner{max-width:560px;position:relative}
+.search-inner svg{position:absolute;left:13px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:#7a9bbf;pointer-events:none}
+.search-inner input{width:100%;padding:12px 16px 12px 38px;border:1.5px solid #2d4f6e;border-radius:3px;font-family:'DM Sans',sans-serif;font-size:14px;color:#fff;background:#0a1628;outline:none;transition:border 0.15s}
+.search-inner input::placeholder{color:#4a6a8a}
+.search-inner input:focus{border-color:#c8a84b;background:#071220}
+
+/* ── Main wrap ── */
+.main-wrap{padding:36px 40px 56px}
+
+/* ── Section label ── */
+.section-label{display:flex;align-items:center;gap:12px;margin-bottom:20px}
+.section-label span{font-family:'Merriweather',serif;font-size:12.5px;font-weight:400;color:#6b5f4e;text-transform:uppercase;letter-spacing:0.12em;white-space:nowrap}
+.section-label::after{content:'';flex:1;height:1px;background:#d6cfc4}
+
+/* ── Category block ── */
+.category-block{margin-bottom:40px}
+.category-header{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.cat-icon{width:38px;height:38px;border-radius:4px;background:#0a1628;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.cat-info h3{font-family:'Merriweather',serif;font-size:16px;font-weight:400;color:#1a1a1a;line-height:1.2}
+.cat-info p{font-size:12px;color:#6b5f4e;margin-top:3px;line-height:1.5}
+
+/* ── Article cards grid ── */
+.articles-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.article-card{background:#fff;border:1px solid #e0d9cf;border-radius:4px;overflow:hidden;display:flex;flex-direction:column;text-decoration:none;color:inherit;transition:box-shadow 0.15s,border-color 0.15s}
+.article-card:hover{box-shadow:0 4px 18px rgba(10,22,40,0.1);border-color:#c8a84b}
+.article-card-body{padding:18px 20px;flex:1}
+.article-card-body h4{font-size:13.5px;font-weight:600;color:#1a1a1a;line-height:1.4;margin-bottom:6px}
+.article-card-body p{font-size:12px;color:#6b5f4e;line-height:1.6}
+.article-card-footer{padding:10px 20px;border-top:1px solid #f0ebe3;display:flex;align-items:center;justify-content:space-between}
+.article-date{font-size:10.5px;color:#9a8f82}
+.article-arrow{font-size:12px;color:#c8a84b;font-weight:700}
+
+/* ── No results ── */
+.no-results{text-align:center;padding:48px 20px;font-size:13px;color:#9a8f82;font-style:italic}
+
+/* ── Loading / error ── */
+.state-box{display:flex;align-items:center;gap:14px;padding:24px;background:#fff;border:1px solid #e0d9cf;border-radius:4px;margin-bottom:20px}
+.state-box.error{border-left:3px solid #dc2626;background:#fef2f2}
+.state-box.loading{border-left:3px solid #c8a84b}
+.spin{width:20px;height:20px;border:2.5px solid #e0d9cf;border-top-color:#0a1628;border-radius:50%;animation:spin 0.7s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+.state-box p{font-size:13px;color:#4a4035}
+.state-box.error p{color:#7f1d1d}
+
+/* ── Search results mode ── */
+.search-results-label{font-size:13px;color:#6b5f4e;margin-bottom:20px}
+.search-results-label strong{color:#1a1a1a}
+
+@media(max-width:900px){.articles-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:768px){
+  .page-header,.main-wrap,.search-bar,.partner-strip{padding-left:20px;padding-right:20px}
+  .articles-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <div class="breadcrumb">
+    <a href="/courts/">Home</a>
+    <span>/</span>
+    <span style="color:#a0b8d0">Self-Help Center</span>
+  </div>
+  <h2>Michigan Legal Help Program</h2>
+  <p>Free legal information for Michigan residents — covering courts, government services, housing, family law, and more. A joint program of the Michigan Supreme Court, the State Bar of Michigan, and the Michigan Attorney General.</p>
+</div>
+
+<div class="partner-strip">
+  <span class="partner-label">A program of</span>
+  <span class="partner-badge"><span>⚖️</span> Michigan Supreme Court</span>
+  <span class="partner-sep">·</span>
+  <span class="partner-badge"><span>🏛️</span> State Bar of Michigan</span>
+  <span class="partner-sep">·</span>
+  <span class="partner-badge"><span>🔒</span> Michigan Attorney General</span>
+</div>
+
+<div class="search-bar">
+  <div class="search-inner">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="9" r="5"/><path d="M15 15l-3-3"/></svg>
+    <input type="text" id="search-input" placeholder="Search legal topics, e.g. small claims, eviction, license…" oninput="onSearch()">
+  </div>
+</div>
+
+<div class="main-wrap" id="main-wrap">
+  <div class="state-box loading">
+    <div class="spin"></div>
+    <p>Loading articles…</p>
+  </div>
+</div>
+
+<script>
+  const ARTICLES_CSV   = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTzwWeNUUzDlV1CnIrHxuXKmCk0e__BaI-3qJahQZQX1rdtx2-oOK_0U8jNKirDMCvc8E9Wt7HxowrO/pub?gid=0&single=true&output=csv';
+  const CATEGORIES_CSV = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTzwWeNUUzDlV1CnIrHxuXKmCk0e__BaI-3qJahQZQX1rdtx2-oOK_0U8jNKirDMCvc8E9Wt7HxowrO/pub?gid=1630695542&single=true&output=csv';
+  const ARTICLE_PAGE   = '/courts/self-help/article.html';
+
+  let allArticles  = [];
+  let allCategories = [];
+
+  function parseCSV(text) {
+    const rows = [];
+    let col = '', row = [], inQ = false;
+    for (let i = 0; i < text.length; i++) {
+      const ch = text[i], nx = text[i+1];
+      if (inQ) {
+        if (ch === '"' && nx === '"') { col += '"'; i++; }
+        else if (ch === '"') { inQ = false; }
+        else { col += ch; }
+      } else {
+        if (ch === '"') { inQ = true; }
+        else if (ch === ',') { row.push(col.trim()); col = ''; }
+        else if (ch === '\n' || (ch === '\r' && nx === '\n')) {
+          row.push(col.trim()); col = '';
+          if (row.some(c => c !== '')) rows.push(row);
+          row = [];
+          if (ch === '\r') i++;
+        } else { col += ch; }
+      }
+    }
+    if (col || row.length) { row.push(col.trim()); if (row.some(c=>c!=='')) rows.push(row); }
+    return rows;
+  }
+
+  function csvToObjects(text) {
+    const rows = parseCSV(text);
+    if (rows.length < 2) return [];
+    const headers = rows[0].map(h => h.toLowerCase().replace(/\s+/g,'_'));
+    return rows.slice(1).map(row => {
+      const obj = {};
+      headers.forEach((h, i) => { obj[h] = row[i] || ''; });
+      return obj;
+    });
+  }
+
+  function esc(str) {
+    return String(str ?? '')
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function articleURL(slug) {
+    return `${ARTICLE_PAGE}?s=${encodeURIComponent(slug)}`;
+  }
+
+  function renderCard(a) {
+    return `
+      <a class="article-card" href="${articleURL(a.slug)}">
+        <div class="article-card-body">
+          <h4>${esc(a.title)}</h4>
+          ${a.summary ? `<p>${esc(a.summary)}</p>` : ''}
+        </div>
+        <div class="article-card-footer">
+          <span class="article-date">${esc(a.published)}</span>
+          <span class="article-arrow">→</span>
+        </div>
+      </a>`;
+  }
+
+  function renderByCategory(articles) {
+    const wrap = document.getElementById('main-wrap');
+
+    // Build ordered category list — use categories sheet order, then append any extras
+    const catOrder = allCategories.map(c => c.category);
+    const catMeta  = {};
+    allCategories.forEach(c => { catMeta[c.category] = c; });
+
+    // Collect categories from articles not in the categories sheet
+    articles.forEach(a => {
+      if (a.category && !catOrder.includes(a.category)) catOrder.push(a.category);
+    });
+
+    // Group articles
+    const groups = {};
+    articles.forEach(a => {
+      const cat = a.category || 'General';
+      if (!groups[cat]) groups[cat] = [];
+      groups[cat].push(a);
+    });
+
+    const usedCats = catOrder.filter(c => groups[c]);
+
+    if (!usedCats.length) {
+      wrap.innerHTML = '<div class="no-results">No articles found.</div>';
+      return;
+    }
+
+    wrap.innerHTML = usedCats.map(cat => {
+      const meta  = catMeta[cat] || {};
+      const icon  = meta.icon || '📄';
+      const desc  = meta.description || '';
+      const cards = groups[cat].map(renderCard).join('');
+      return `
+        <div class="category-block">
+          <div class="category-header">
+            <div class="cat-icon">${icon}</div>
+            <div class="cat-info">
+              <h3>${esc(cat)}</h3>
+              ${desc ? `<p>${esc(desc)}</p>` : ''}
+            </div>
+          </div>
+          <div class="articles-grid">${cards}</div>
+        </div>`;
+    }).join('');
+  }
+
+  function renderSearchResults(articles, query) {
+    const wrap = document.getElementById('main-wrap');
+    if (!articles.length) {
+      wrap.innerHTML = `<div class="no-results">No articles match "<strong>${esc(query)}</strong>".</div>`;
+      return;
+    }
+    const cards = articles.map(renderCard).join('');
+    wrap.innerHTML = `
+      <div class="search-results-label">Showing <strong>${articles.length}</strong> result${articles.length !== 1 ? 's' : ''} for "<strong>${esc(query)}</strong>"</div>
+      <div class="articles-grid">${cards}</div>`;
+  }
+
+  function onSearch() {
+    const q = document.getElementById('search-input').value.trim().toLowerCase();
+    if (!q) { renderByCategory(allArticles); return; }
+    const results = allArticles.filter(a =>
+      (a.title       || '').toLowerCase().includes(q) ||
+      (a.summary     || '').toLowerCase().includes(q) ||
+      (a.category    || '').toLowerCase().includes(q) ||
+      (a.content     || '').toLowerCase().includes(q)
+    );
+    renderSearchResults(results, q);
+  }
+
+  async function load() {
+    try {
+      const [aRes, cRes] = await Promise.all([
+        fetch(ARTICLES_CSV),
+        fetch(CATEGORIES_CSV)
+      ]);
+      if (!aRes.ok) throw new Error('Could not load articles.');
+      if (!cRes.ok) throw new Error('Could not load categories.');
+
+      const articles   = csvToObjects(await aRes.text());
+      const categories = csvToObjects(await cRes.text());
+
+      allCategories = categories;
+      allArticles   = articles.filter(a => (a.status || '').toLowerCase().trim() === 'published');
+
+      renderByCategory(allArticles);
+    } catch(err) {
+      document.getElementById('main-wrap').innerHTML = `
+        <div class="state-box error">
+          <p>⚠️ &nbsp;Could not load articles: ${esc(err.message)}. Please try refreshing.</p>
+        </div>`;
+    }
+  }
+
+  load();
+</script>
+</body>
+</html>
