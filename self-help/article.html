@@ -4,13 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Self-Help — Michigan Legal Help Program</title>
-
 <script src="/courts/shell.js" data-active="selfhelp"></script>
-
 <link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;1,300&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'DM Sans',sans-serif;background:#f4f1ec;color:#1a1a1a;min-height:100vh}
+
+/* ── Reading progress bar ── */
+#reading-progress{position:fixed;top:0;left:0;width:0%;height:3px;background:#c8a84b;z-index:9999;transition:width 0.1s linear}
 
 /* ── Article header ── */
 .article-header{background:#0a1628;padding:36px 40px 32px;border-bottom:3px solid #c8a84b}
@@ -22,17 +23,22 @@ body{font-family:'DM Sans',sans-serif;background:#f4f1ec;color:#1a1a1a;min-heigh
 .article-cat-badge{background:#c8a84b;color:#0a1628;font-size:10px;font-weight:700;letter-spacing:0.1em;padding:3px 10px;border-radius:2px;text-transform:uppercase}
 .article-date-badge{font-size:11.5px;color:#7a9bbf}
 .article-author-badge{font-size:11.5px;color:#4a6a8a}
-.article-header h1{font-family:'Merriweather',serif;color:#fff;font-size:26px;font-weight:300;line-height:1.35;max-width:720px}
-.article-summary{color:#7a9bbf;font-size:14px;line-height:1.7;margin-top:12px;max-width:660px}
+.article-header h1{font-family:'Merriweather',serif;color:#fff;font-size:26px;font-weight:300;line-height:1.35;max-width:860px}
+.article-summary{color:#7a9bbf;font-size:14px;line-height:1.7;margin-top:12px;max-width:760px}
 
 /* ── Layout ── */
-.article-wrap{display:grid;grid-template-columns:1fr 300px;gap:32px;padding:36px 40px 56px}
+.article-wrap{display:grid;grid-template-columns:1fr 300px;gap:32px;padding:28px 40px 56px}
+
+/* ── Back button ── */
+.back-btn{display:inline-flex;align-items:center;gap:7px;background:#0a1628;color:#c8a84b;font-size:12px;font-weight:700;padding:8px 16px;border-radius:3px;text-decoration:none;letter-spacing:0.04em;margin-bottom:18px;transition:background 0.15s}
+.back-btn:hover{background:#112240}
+.back-btn svg{width:12px;height:12px}
 
 /* ── Article body ── */
 .article-body{background:#fff;border:1px solid #e0d9cf;border-radius:4px;padding:36px 40px;min-width:0}
 
-/* Markdown-rendered content styles */
-.article-content h2{font-family:'Merriweather',serif;font-size:18px;font-weight:400;color:#1a1a1a;margin:28px 0 10px;padding-bottom:8px;border-bottom:1px solid #f0ebe3}
+/* ── Base content ── */
+.article-content h2{font-family:'Merriweather',serif;font-size:18px;font-weight:400;color:#1a1a1a;margin:32px 0 10px;padding-bottom:8px;border-bottom:1px solid #f0ebe3}
 .article-content h2:first-child{margin-top:0}
 .article-content h3{font-family:'Merriweather',serif;font-size:15px;font-weight:400;color:#1a1a1a;margin:22px 0 8px}
 .article-content p{font-size:14px;color:#2a2018;line-height:1.8;margin-bottom:14px}
@@ -40,74 +46,96 @@ body{font-family:'DM Sans',sans-serif;background:#f4f1ec;color:#1a1a1a;min-heigh
 .article-content ul,.article-content ol{padding-left:22px;margin-bottom:14px}
 .article-content li{font-size:14px;color:#2a2018;line-height:1.75;margin-bottom:4px}
 .article-content strong{font-weight:700;color:#1a1a1a}
+.article-content em{font-style:italic}
 .article-content a{color:#1a4a7a;font-weight:600;text-decoration:none}
 .article-content a:hover{text-decoration:underline}
-.article-content .tip-box{background:#fef9e7;border:1px solid #fde68a;border-left:3px solid #c8a84b;border-radius:3px;padding:14px 16px;margin:18px 0;font-size:13.5px;color:#78350f;line-height:1.65}
-.article-content .tip-box strong{color:#92400e}
-.article-content hr{border:none;border-top:1px solid #f0ebe3;margin:24px 0}
+.article-content hr{border:none;border-top:1px solid #f0ebe3;margin:28px 0}
+
+/* ── Callout boxes ── */
+.callout{border-radius:3px;padding:14px 16px;margin:18px 0;font-size:13.5px;line-height:1.65;border-left-width:3px;border-left-style:solid}
+.callout strong{display:block;margin-bottom:3px;font-size:12px;text-transform:uppercase;letter-spacing:0.07em}
+.callout.tip   {background:#fef9e7;border-color:#c8a84b;border:1px solid #fde68a;border-left:3px solid #c8a84b;color:#78350f}
+.callout.tip strong{color:#92400e}
+.callout.info  {background:#eff6ff;border:1px solid #bfdbfe;border-left:3px solid #3b82f6;color:#1e3a8a}
+.callout.info strong{color:#1d4ed8}
+.callout.warning{background:#fff7ed;border:1px solid #fed7aa;border-left:3px solid #f97316;color:#7c2d12}
+.callout.warning strong{color:#9a3412}
+.callout.danger {background:#fef2f2;border:1px solid #fecaca;border-left:3px solid #ef4444;color:#7f1d1d}
+.callout.danger strong{color:#991b1b}
+.callout.success{background:#f0fdf4;border:1px solid #bbf7d0;border-left:3px solid #22c55e;color:#14532d}
+.callout.success strong{color:#166534}
+
+/* ── Table ── */
+.article-content table{width:100%;border-collapse:collapse;margin:18px 0;font-size:13px}
+.article-content thead tr{background:#0a1628}
+.article-content thead th{padding:10px 14px;text-align:left;color:#c8a84b;font-size:10.5px;text-transform:uppercase;letter-spacing:0.08em;font-weight:700}
+.article-content tbody tr{border-bottom:1px solid #f0ebe3}
+.article-content tbody tr:last-child{border-bottom:none}
+.article-content tbody tr:hover{background:#faf8f5}
+.article-content td{padding:10px 14px;color:#2a2018;line-height:1.6;vertical-align:top}
+
+/* ── Pull quote ── */
+.pull-quote{border-left:4px solid #c8a84b;margin:24px 0;padding:4px 0 4px 20px}
+.pull-quote blockquote{font-family:'Merriweather',serif;font-size:17px;font-weight:300;font-style:italic;color:#0a1628;line-height:1.6}
+.pull-quote cite{display:block;font-size:11px;color:#9a8f82;text-transform:uppercase;letter-spacing:0.08em;margin-top:8px;font-style:normal}
+
+/* ── What You Need ── */
+.what-you-need{background:#0a1628;border-radius:4px;padding:20px 24px;margin:20px 0}
+.what-you-need .wyn-title{font-family:'Merriweather',serif;color:#c8a84b;font-size:14px;font-weight:400;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.what-you-need ul{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:8px}
+.what-you-need li{display:flex;align-items:flex-start;gap:10px;color:#a0b8d0;font-size:13px;line-height:1.55}
+.what-you-need li::before{content:'✓';color:#c8a84b;font-weight:700;flex-shrink:0;margin-top:1px}
+
+/* ── Process Timeline ── */
+.process-timeline{margin:20px 0;padding:0}
+.timeline-step{display:flex;gap:16px;margin-bottom:0;position:relative}
+.timeline-step:not(:last-child) .ts-line{position:absolute;left:16px;top:36px;width:2px;bottom:-2px;background:#e0d9cf;z-index:0}
+.ts-num{width:32px;height:32px;border-radius:50%;background:#0a1628;color:#c8a84b;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;position:relative;z-index:1;margin-top:2px}
+.ts-body{flex:1;padding-bottom:22px}
+.ts-title{font-size:14px;font-weight:700;color:#1a1a1a;margin-bottom:4px}
+.ts-desc{font-size:13px;color:#4a4035;line-height:1.65}
+
+/* ── FAQ ── */
+.faq-item{border:1px solid #e0d9cf;border-radius:3px;margin-bottom:8px;overflow:hidden}
+.faq-q{display:flex;align-items:center;justify-content:space-between;padding:13px 16px;cursor:pointer;background:#faf8f5;font-size:13.5px;font-weight:600;color:#1a1a1a;user-select:none;gap:12px;transition:background 0.12s}
+.faq-q:hover{background:#f2ede5}
+.faq-q.open{background:#0a1628;color:#fff}
+.faq-chevron{width:16px;height:16px;flex-shrink:0;transition:transform 0.2s;color:#c8a84b}
+.faq-q.open .faq-chevron{transform:rotate(180deg)}
+.faq-a{display:none;padding:14px 16px;font-size:13.5px;color:#2a2018;line-height:1.7;background:#fff;border-top:1px solid #f0ebe3}
+.faq-a.open{display:block}
 
 /* ── Sidebar ── */
-.sidebar{display:flex;flex-direction:column;gap:18px}
+.sidebar{display:flex;flex-direction:column;gap:16px}
 .sidebar-card{background:#fff;border:1px solid #e0d9cf;border-radius:4px;overflow:hidden}
 .sidebar-card-header{background:#0a1628;padding:12px 16px}
 .sidebar-card-header h3{font-family:'Merriweather',serif;color:#fff;font-size:13px;font-weight:400}
-.sidebar-card-body{padding:14px 16px}
-.sidebar-card-body p{font-size:12.5px;color:#4a4035;line-height:1.65;margin-bottom:10px}
-.sidebar-card-body p:last-child{margin-bottom:0}
-.sidebar-link{display:flex;align-items:center;gap:8px;padding:9px 0;border-bottom:1px solid #f0ebe3;text-decoration:none;color:#1a1a1a;font-size:12.5px;transition:color 0.1s}
-.sidebar-link:last-child{border-bottom:none;padding-bottom:0}
+.sidebar-link{display:flex;align-items:center;gap:8px;padding:10px 16px;border-bottom:1px solid #f0ebe3;text-decoration:none;color:#1a1a1a;font-size:12.5px;transition:color 0.1s}
+.sidebar-link:last-child{border-bottom:none}
 .sidebar-link:hover{color:#1a4a7a}
 .sidebar-link .sl-arrow{margin-left:auto;color:#c8a84b;font-size:11px;font-weight:700;flex-shrink:0}
-.back-link{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:#7a9bbf;text-decoration:none;font-weight:600;margin-bottom:4px}
-.back-link:hover{color:#c8a84b}
 
-/* ── Article actions sidebar card ── */
-.article-actions{display:flex;flex-direction:column;gap:10px;padding:16px}
-.last-updated-row{display:flex;align-items:center;gap:7px;font-size:12px;color:#6b5f4e}
-.last-updated-row svg{width:13px;height:13px;color:#c8a84b;flex-shrink:0}
-.print-btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;width:100%;background:#0a1628;border:none;color:#c8a84b;font-family:'DM Sans',sans-serif;font-size:12.5px;font-weight:600;padding:10px 16px;border-radius:3px;cursor:pointer;transition:background 0.15s;letter-spacing:0.02em}
-.print-btn:hover{background:#112240}
-.print-btn svg{width:13px;height:13px;flex-shrink:0}
+/* ── Quick Facts ── */
+.quick-facts{display:flex;flex-direction:column;gap:0}
+.qf-item{display:flex;flex-direction:column;padding:11px 16px;border-bottom:1px solid #f0ebe3}
+.qf-item:last-child{border-bottom:none}
+.qf-label{font-size:10px;color:#9a8f82;text-transform:uppercase;letter-spacing:0.08em;font-weight:700;margin-bottom:3px}
+.qf-value{font-size:13.5px;font-weight:700;color:#0a1628}
 
-/* ── Print styles ── */
-@media print{
-  /* Hide everything except what we want */
-  body{background:#fff !important}
-  .article-wrap{display:block !important;padding:0 !important}
-  .sidebar{display:none !important}
-  .back-link{display:none !important}
-  .article-footer-bar{display:none !important}
-  .article-body{border:none !important;padding:0 !important;box-shadow:none !important}
+/* ── This Article card ── */
+.article-actions{display:flex;flex-direction:column;gap:8px;padding:14px 16px}
+.last-updated-row{display:flex;align-items:center;gap:7px;font-size:11.5px;color:#6b5f4e;margin-bottom:2px}
+.last-updated-row svg{width:12px;height:12px;color:#c8a84b;flex-shrink:0}
+.action-btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;width:100%;border:none;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;padding:9px 14px;border-radius:3px;cursor:pointer;transition:all 0.15s;letter-spacing:0.02em}
+.action-btn.dark{background:#0a1628;color:#c8a84b}
+.action-btn.dark:hover{background:#112240}
+.action-btn.light{background:#f0ebe3;color:#4a4035;border:1px solid #d6cfc4}
+.action-btn.light:hover{background:#e0d9cf;border-color:#9a8f82}
+.action-btn svg{width:12px;height:12px;flex-shrink:0}
+.share-toast{display:none;font-size:11px;color:#2e7d32;text-align:center;padding:4px 0;font-weight:600}
+.share-toast.show{display:block}
 
-  /* Print header — shown only when printing */
-  .print-header{display:block !important}
-
-  /* Shell elements injected by shell.js */
-  nav, .rp-banner, .header, .footer, header, footer{display:none !important}
-
-  /* Article page header — simplify */
-  .article-header{background:#fff !important;border-bottom:2px solid #000 !important;padding:0 0 16px !important}
-  .breadcrumb{display:none !important}
-  .article-header h1{color:#000 !important;font-size:22px !important}
-  .article-summary{color:#333 !important}
-  .article-cat-badge{background:#000 !important;color:#fff !important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-  .article-date-badge,.article-author-badge{color:#444 !important}
-
-  /* Content */
-  .article-content h2{border-bottom:1px solid #ccc !important;color:#000 !important}
-  .article-content h3{color:#000 !important}
-  .article-content p,.article-content li{color:#000 !important;font-size:12px !important;line-height:1.6 !important}
-  .article-content .tip-box{border:1px solid #ccc !important;background:#f9f9f9 !important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-  .article-content a{color:#000 !important;text-decoration:underline !important}
-
-  /* Print footer */
-  .print-footer{display:block !important;margin-top:32px;padding-top:12px;border-top:1px solid #ccc;font-size:10px;color:#666}
-
-  @page{margin:1.8cm 2cm}
-}
-
-/* Hide print-only elements on screen */
-.print-header,.print-footer{display:none}
+/* ── Loading / error ── */
 .state-box{display:flex;align-items:center;gap:14px;padding:24px;background:#fff;border:1px solid #e0d9cf;border-radius:4px}
 .state-box.error{border-left:3px solid #dc2626;background:#fef2f2}
 .state-box.loading{border-left:3px solid #c8a84b}
@@ -116,308 +144,452 @@ body{font-family:'DM Sans',sans-serif;background:#f4f1ec;color:#1a1a1a;min-heigh
 .state-box p{font-size:13px;color:#4a4035}
 .state-box.error p{color:#7f1d1d}
 
+/* ── Print ── */
+.print-header,.print-footer{display:none}
+@media print{
+  #reading-progress{display:none}
+  body{background:#fff !important}
+  .article-wrap{display:block !important;padding:0 !important}
+  .sidebar{display:none !important}
+  .back-btn{display:none !important}
+  .article-body{border:none !important;padding:0 !important}
+  .print-header{display:block !important}
+  .print-footer{display:block !important;margin-top:32px;padding-top:12px;border-top:1px solid #ccc;font-size:10px;color:#555}
+  nav,.rp-banner,.header,.footer,header,footer{display:none !important}
+  .article-header{background:#fff !important;border-bottom:2px solid #000 !important;padding:0 0 16px !important}
+  .breadcrumb{display:none !important}
+  .article-header h1{color:#000 !important;font-size:22px !important}
+  .article-summary{color:#333 !important}
+  .article-cat-badge{background:#000 !important;color:#fff !important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .article-date-badge,.article-author-badge{color:#444 !important}
+  .article-content p,.article-content li{color:#000 !important;font-size:12px !important;line-height:1.6 !important}
+  .article-content h2{color:#000 !important;border-bottom-color:#ccc !important}
+  .article-content h3{color:#000 !important}
+  .callout{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .article-content a{color:#000 !important;text-decoration:underline !important}
+  .what-you-need{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .faq-a{display:block !important}
+  .faq-chevron{display:none !important}
+  @page{margin:1.8cm 2cm}
+}
+
 @media(max-width:900px){
-  .article-wrap{grid-template-columns:1fr;padding:24px 20px 40px}
+  .article-wrap{grid-template-columns:1fr;padding:20px 20px 40px}
   .sidebar{display:none}
   .article-header{padding:28px 20px 24px}
-  .article-body{padding:24px 22px}
+  .article-body{padding:24px 20px}
 }
 </style>
 </head>
 <body>
 
-<!-- Header injected by shell.js -->
+<div id="reading-progress"></div>
 
-<div id="article-header-wrap">
-  <div class="article-header" id="article-header">
-    <div class="breadcrumb">
-      <a href="/courts/">Home</a>
-      <span>/</span>
-      <a href="/courts/self-help/">Self-Help Center</a>
-      <span>/</span>
-      <span id="breadcrumb-title" style="color:#a0b8d0">Loading…</span>
-    </div>
-    <div class="article-meta" id="article-meta" style="display:none">
-      <span class="article-cat-badge" id="meta-cat"></span>
-      <span class="article-date-badge" id="meta-date"></span>
-      <span class="article-author-badge" id="meta-author"></span>
-    </div>
-    <h1 id="article-title" style="color:#7a9bbf;font-style:italic">Loading article…</h1>
-    <div class="article-summary" id="article-summary"></div>
+<div class="article-header" id="article-header">
+  <div class="breadcrumb">
+    <a href="/courts/">Home</a><span>/</span>
+    <a href="/courts/self-help/">Self-Help Center</a><span>/</span>
+    <span id="breadcrumb-title" style="color:#a0b8d0">Loading…</span>
   </div>
+  <div class="article-meta" id="article-meta" style="display:none">
+    <span class="article-cat-badge" id="meta-cat"></span>
+    <span class="article-date-badge" id="meta-date"></span>
+    <span class="article-author-badge" id="meta-author"></span>
+  </div>
+  <h1 id="article-title" style="color:#7a9bbf;font-style:italic">Loading article…</h1>
+  <div class="article-summary" id="article-summary"></div>
 </div>
 
 <div class="article-wrap">
+  <!-- Main column -->
   <div>
-    <!-- Print-only header (hidden on screen) -->
     <div class="print-header">
       <div style="font-size:11px;color:#666;margin-bottom:8px">Michigan Courts · Michigan Legal Help Program · michigancourts-rp.gov</div>
     </div>
 
-    <a href="/courts/self-help/" class="back-link">← Back to Self-Help Center</a>
-    <div class="article-body" id="article-body" style="margin-top:16px">
-      <div class="state-box loading">
-        <div class="spin"></div>
-        <p>Loading article…</p>
-      </div>
+    <a href="/courts/self-help/" class="back-btn">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M13 16l-6-6 6-6"/></svg>
+      Back to Self-Help Center
+    </a>
+
+    <div class="article-body" id="article-body">
+      <div class="state-box loading"><div class="spin"></div><p>Loading article…</p></div>
     </div>
 
-    <!-- Print-only footer (hidden on screen) -->
     <div class="print-footer" id="print-footer">
       Michigan Legal Help Program — A joint program of the Michigan Supreme Court, the State Bar of Michigan, and the Michigan Attorney General.<br>
-      This article is for informational purposes only and does not constitute legal advice. Printed: <span id="print-date"></span>
+      For informational purposes only. Not legal advice. Printed: <span id="print-date"></span>
     </div>
   </div>
+
+  <!-- Sidebar -->
   <div class="sidebar" id="sidebar">
-    <div class="sidebar-card">
-      <div class="sidebar-card-header"><h3>Michigan Legal Help Program</h3></div>
-      <div class="sidebar-card-body">
-        <p>A joint program of the Michigan Supreme Court, the State Bar of Michigan, and the Michigan Attorney General providing free legal information to residents.</p>
-      </div>
-    </div>
+
+    <!-- This Article card -->
     <div class="sidebar-card" id="article-actions-card" style="display:none">
       <div class="sidebar-card-header"><h3>This Article</h3></div>
       <div class="article-actions">
-        <div class="last-updated-row" id="last-updated-wrap">
+        <div class="last-updated-row" id="last-updated-wrap" style="display:none">
           <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="10" cy="10" r="7"/><path d="M10 6v4l2.5 2.5"/></svg>
           <span id="last-updated-text"></span>
         </div>
-        <button class="print-btn" onclick="window.print()">
+        <button class="action-btn dark" onclick="window.print()">
           <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 7V3h10v4M5 15H3V9h14v6h-2M5 12h10v5H5z"/></svg>
           Print This Article
         </button>
+        <button class="action-btn light" onclick="shareArticle()">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="15" cy="4" r="2"/><circle cx="5" cy="10" r="2"/><circle cx="15" cy="16" r="2"/><path d="M7 11l6 3.5M13 4.5L7 9"/></svg>
+          Copy Link
+        </button>
+        <div class="share-toast" id="share-toast">✓ Link copied to clipboard</div>
       </div>
     </div>
+
+    <!-- Quick Facts card (populated from content) -->
+    <div class="sidebar-card" id="quick-facts-card" style="display:none">
+      <div class="sidebar-card-header"><h3>Quick Facts</h3></div>
+      <div class="quick-facts" id="quick-facts-body"></div>
+    </div>
+
+    <!-- Related Articles -->
     <div class="sidebar-card" id="related-card" style="display:none">
       <div class="sidebar-card-header"><h3>Related Articles</h3></div>
-      <div class="sidebar-card-body" style="padding:6px 0" id="related-links"></div>
+      <div id="related-links"></div>
     </div>
+
   </div>
 </div>
 
 <script>
-  const ARTICLES_CSV = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTzwWeNUUzDlV1CnIrHxuXKmCk0e__BaI-3qJahQZQX1rdtx2-oOK_0U8jNKirDMCvc8E9Wt7HxowrO/pub?gid=0&single=true&output=csv';
+const ARTICLES_CSV = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTzwWeNUUzDlV1CnIrHxuXKmCk0e__BaI-3qJahQZQX1rdtx2-oOK_0U8jNKirDMCvc8E9Wt7HxowrO/pub?gid=0&single=true&output=csv';
 
-  function parseCSV(text) {
-    const rows = [];
-    let col = '', row = [], inQ = false;
-    for (let i = 0; i < text.length; i++) {
-      const ch = text[i], nx = text[i+1];
-      if (inQ) {
-        if (ch === '"' && nx === '"') { col += '"'; i++; }
-        else if (ch === '"') { inQ = false; }
-        else { col += ch; }
-      } else {
-        if (ch === '"') { inQ = true; }
-        else if (ch === ',') { row.push(col.trim()); col = ''; }
-        else if (ch === '\n' || (ch === '\r' && nx === '\n')) {
-          row.push(col.trim()); col = '';
-          if (row.some(c => c !== '')) rows.push(row);
-          row = [];
-          if (ch === '\r') i++;
-        } else { col += ch; }
-      }
-    }
-    if (col || row.length) { row.push(col.trim()); if (row.some(c=>c!=='')) rows.push(row); }
-    return rows;
+// ── CSV ──────────────────────────────────────────────────────
+function parseCSV(text){const rows=[];let col='',row=[],inQ=false;for(let i=0;i<text.length;i++){const ch=text[i],nx=text[i+1];if(inQ){if(ch==='"'&&nx==='"'){col+='"';i++;}else if(ch==='"'){inQ=false;}else{col+=ch;}}else{if(ch==='"'){inQ=true;}else if(ch===','){row.push(col.trim());col='';}else if(ch==='\n'||(ch==='\r'&&nx==='\n')){row.push(col.trim());col='';if(row.some(c=>c!==''))rows.push(row);row=[];if(ch==='\r')i++;}else{col+=ch;}}}if(col||row.length){row.push(col.trim());if(row.some(c=>c!==''))rows.push(row);}return rows;}
+function csvToObjects(text){const rows=parseCSV(text);if(rows.length<2)return[];const headers=rows[0].map(h=>h.toLowerCase().replace(/\s+/g,'_'));return rows.slice(1).map(row=>{const obj={};headers.forEach((h,i)=>{obj[h]=row[i]||'';});return obj;});}
+
+function esc(s){return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+// ── Inline formatting ────────────────────────────────────────
+function inline(s){
+  return s
+    .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g,'<em>$1</em>')
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g,'<a href="$2" target="_blank" rel="noopener">$1</a>');
+}
+
+// ── Markdown + custom block renderer ────────────────────────
+// Custom blocks (multi-line, delimited):
+//   :::tip / :::info / :::warning / :::danger / :::success
+//   :::what-you-need
+//   :::timeline
+//   :::faq
+//   :::facts (quick facts — also populates sidebar)
+//   :::quote / :::quote[Attribution]
+// All blocks end with :::
+//
+// Single-line:
+//   > text          → gold tip callout (legacy)
+//   ## / ### / ####
+//   - / 1.
+//   | table |
+//   --- hr
+//   >> "text" -- Attribution   → pull quote
+
+function renderMarkdown(raw){
+  const text = raw.replace(/\\n/g,'\n');
+  const lines = text.split('\n');
+  let html='', i=0;
+  const quickFacts=[];
+
+  function inBlock(tag){
+    // consume lines until ::: and return them
+    const body=[];
+    i++;
+    while(i<lines.length && lines[i].trim()!==':::'){body.push(lines[i]);i++;}
+    return body;
   }
 
-  function csvToObjects(text) {
-    const rows = parseCSV(text);
-    if (rows.length < 2) return [];
-    const headers = rows[0].map(h => h.toLowerCase().replace(/\s+/g,'_'));
-    return rows.slice(1).map(row => {
-      const obj = {};
-      headers.forEach((h, i) => { obj[h] = row[i] || ''; });
-      return obj;
+  function renderCallout(type, bodyLines){
+    const labels={tip:'Tip',info:'Note',warning:'Warning',danger:'Important',success:'Good to Know'};
+    const label=labels[type]||type;
+    const inner=bodyLines.map(l=>inline(esc(l.trim()))).filter(Boolean).join(' ');
+    return `<div class="callout ${type}"><strong>${label}</strong>${inner}</div>`;
+  }
+
+  function renderWhatYouNeed(bodyLines){
+    const items=bodyLines.filter(l=>l.trim().startsWith('-')).map(l=>`<li>${inline(esc(l.trim().slice(1).trim()))}</li>`).join('');
+    return `<div class="what-you-need"><div class="wyn-title">📋 What You'll Need</div><ul>${items}</ul></div>`;
+  }
+
+  function renderTimeline(bodyLines){
+    // Each step: "Step Title | description text"
+    const steps=bodyLines.filter(l=>l.trim()&&!l.trim().startsWith('#'));
+    let out='<div class="process-timeline">';
+    steps.forEach((s,idx)=>{
+      const parts=s.split('|');
+      const title=esc((parts[0]||'').trim());
+      const desc=inline(esc((parts[1]||'').trim()));
+      const isLast=idx===steps.length-1;
+      out+=`<div class="timeline-step">${isLast?'':'<div class="ts-line"></div>'}<div class="ts-num">${idx+1}</div><div class="ts-body"><div class="ts-title">${title}</div>${desc?`<div class="ts-desc">${desc}</div>`:''}</div></div>`;
     });
+    out+='</div>';
+    return out;
   }
 
-  function esc(str) {
-    return String(str ?? '')
-      .replace(/&/g,'&amp;').replace(/</g,'&lt;')
-      .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-  }
-
-  // ── Markdown renderer ────────────────────────────────────────
-  // Supports: ## h2, ### h3, **bold**, [text](url),
-  //           - bullets, 1. numbered, \n blank line, ---  hr
-  //           > tip boxes (blockquote style)
-  function renderMarkdown(raw) {
-    // Normalize line endings; \n in sheet cell = literal \n
-    const text = raw.replace(/\\n/g, '\n');
-    const lines = text.split('\n');
-    let html = '';
-    let inUL = false, inOL = false, inTip = false;
-
-    function closeLists() {
-      if (inUL) { html += '</ul>'; inUL = false; }
-      if (inOL) { html += '</ol>'; inOL = false; }
+  function renderFAQ(bodyLines){
+    // Q: question text / A: answer text
+    let out='<div class="faq-section">';
+    let q='',a='';
+    const id='faq'+Math.random().toString(36).slice(2,7);
+    let count=0;
+    function flush(){
+      if(!q)return;
+      const qid=id+count++;
+      out+=`<div class="faq-item"><div class="faq-q" onclick="toggleFAQ('${qid}')" id="q${qid}">${esc(q)}<svg class="faq-chevron" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 8l5 5 5-5"/></svg></div><div class="faq-a" id="${qid}">${inline(esc(a))}</div></div>`;
+      q='';a='';
     }
-    function closeTip() {
-      if (inTip) { html += '</div>'; inTip = false; }
-    }
-
-    function inlineFormat(s) {
-      return s
-        // bold
-        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-        // links
-        .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
-    }
-
-    lines.forEach(line => {
-      const trimmed = line.trim();
-
-      // HR
-      if (/^---+$/.test(trimmed)) {
-        closeLists(); closeTip();
-        html += '<hr>';
-        return;
-      }
-
-      // Tip / blockquote
-      if (trimmed.startsWith('> ')) {
-        closeLists();
-        if (!inTip) { html += '<div class="tip-box">'; inTip = true; }
-        else html += ' ';
-        html += inlineFormat(esc(trimmed.slice(2)));
-        return;
-      } else { closeTip(); }
-
-      // H2
-      if (trimmed.startsWith('## ')) {
-        closeLists();
-        html += `<h2>${inlineFormat(esc(trimmed.slice(3)))}</h2>`;
-        return;
-      }
-      // H3
-      if (trimmed.startsWith('### ')) {
-        closeLists();
-        html += `<h3>${inlineFormat(esc(trimmed.slice(4)))}</h3>`;
-        return;
-      }
-
-      // Unordered list
-      if (/^- /.test(trimmed)) {
-        if (inOL) { html += '</ol>'; inOL = false; }
-        if (!inUL) { html += '<ul>'; inUL = true; }
-        html += `<li>${inlineFormat(esc(trimmed.slice(2)))}</li>`;
-        return;
-      }
-
-      // Ordered list
-      if (/^\d+\. /.test(trimmed)) {
-        if (inUL) { html += '</ul>'; inUL = false; }
-        if (!inOL) { html += '<ol>'; inOL = true; }
-        html += `<li>${inlineFormat(esc(trimmed.replace(/^\d+\. /,'')))}</li>`;
-        return;
-      }
-
-      // Blank line — paragraph break
-      if (trimmed === '') {
-        closeLists(); closeTip();
-        return;
-      }
-
-      // Regular paragraph line
-      closeLists(); closeTip();
-      html += `<p>${inlineFormat(esc(trimmed))}</p>`;
+    bodyLines.forEach(l=>{
+      if(l.trim().startsWith('Q:')){flush();q=l.trim().slice(2).trim();}
+      else if(l.trim().startsWith('A:')){a=l.trim().slice(2).trim();}
+      else if(a&&l.trim()){a+=' '+l.trim();}
     });
-
-    closeLists(); closeTip();
-    return html;
+    flush();
+    out+='</div>';
+    return out;
   }
 
-  // ── Related articles sidebar ─────────────────────────────────
-  function showRelated(current, all) {
-    const related = all
-      .filter(a => a.slug !== current.slug && a.category === current.category)
-      .slice(0, 5);
-    if (!related.length) return;
-    const card  = document.getElementById('related-card');
-    const links = document.getElementById('related-links');
-    card.style.display = '';
-    links.innerHTML = related.map(a => `
-      <a href="/courts/self-help/article.html?s=${encodeURIComponent(a.slug)}" class="sidebar-link" style="padding:10px 16px">
-        <span>${esc(a.title)}</span><span class="sl-arrow">›</span>
-      </a>`).join('');
+  function renderFacts(bodyLines){
+    // label: value
+    let out='';
+    bodyLines.forEach(l=>{
+      const m=l.match(/^(.+?):\s*(.+)$/);
+      if(m){
+        quickFacts.push({label:m[1].trim(),value:m[2].trim()});
+        out+=`<div class="qf-item"><div class="qf-label">${esc(m[1].trim())}</div><div class="qf-value">${esc(m[2].trim())}</div></div>`;
+      }
+    });
+    return out ? `<div style="display:none" data-facts="1">${out}</div>` : '';
   }
 
-  // ── Main ─────────────────────────────────────────────────────
-  async function load() {
-    const slug = new URLSearchParams(window.location.search).get('s');
-    if (!slug) { showError('No article specified.'); return; }
+  function renderTable(tableLines){
+    const rows=tableLines.filter(l=>l.trim()&&!l.trim().match(/^\|[-| ]+\|$/));
+    if(!rows.length)return'';
+    const parseRow=l=>l.trim().replace(/^\||\|$/g,'').split('|').map(c=>c.trim());
+    const head=parseRow(rows[0]);
+    const body=rows.slice(1);
+    const ths=head.map(h=>`<th>${inline(esc(h))}</th>`).join('');
+    const trs=body.map(r=>`<tr>${parseRow(r).map(c=>`<td>${inline(esc(c))}</td>`).join('')}</tr>`).join('');
+    return `<table><thead><tr>${ths}</tr></thead><tbody>${trs}</tbody></table>`;
+  }
 
-    try {
-      const res = await fetch(ARTICLES_CSV);
-      if (!res.ok) throw new Error('Could not load articles data.');
-      const articles = csvToObjects(await res.text())
-        .filter(a => (a.status || '').toLowerCase().trim() === 'published');
+  // Collect table lines helper
+  function collectBlock(endFn){
+    const body=[];
+    i++;
+    while(i<lines.length && !endFn(lines[i])){body.push(lines[i]);i++;}
+    return body;
+  }
 
-      const article = articles.find(a => a.slug === slug);
-      if (!article) { showError('Article not found.'); return; }
+  let inUL=false,inOL=false;
+  function closeLists(){if(inUL){html+='</ul>';inUL=false;}if(inOL){html+='</ol>';inOL=false;}}
 
-      // Update page title
-      document.title = `${article.title} — Michigan Legal Help Program`;
+  // Table accumulator
+  let tableAcc=[];
+  function flushTable(){if(!tableAcc.length)return;html+=renderTable(tableAcc);tableAcc=[];}
 
-      // Header
-      document.getElementById('breadcrumb-title').textContent = article.title;
-      document.getElementById('article-title').textContent    = article.title;
-      document.getElementById('article-title').style.color    = '#fff';
-      document.getElementById('article-title').style.fontStyle = 'normal';
-      if (article.summary) {
-        document.getElementById('article-summary').textContent = article.summary;
+  while(i<lines.length){
+    const line=lines[i];
+    const t=line.trim();
+
+    // ── Custom blocks :::type ──
+    const blockMatch=t.match(/^:::(tip|info|warning|danger|success|what-you-need|timeline|faq|facts|quote)(.*)$/);
+    if(blockMatch){
+      closeLists();flushTable();
+      const type=blockMatch[1];
+      const extra=(blockMatch[2]||'').trim();
+      const body=inBlock();
+      if(type==='tip'||type==='info'||type==='warning'||type==='danger'||type==='success'){
+        html+=renderCallout(type,body);
+      } else if(type==='what-you-need'){
+        html+=renderWhatYouNeed(body);
+      } else if(type==='timeline'){
+        html+=renderTimeline(body);
+      } else if(type==='faq'){
+        html+=renderFAQ(body);
+      } else if(type==='facts'){
+        html+=renderFacts(body);
+      } else if(type==='quote'){
+        const attr=extra.replace(/^\[|\]$/g,'');
+        const qtext=body.map(l=>l.trim()).join(' ');
+        html+=`<div class="pull-quote"><blockquote>${inline(esc(qtext))}</blockquote>${attr?`<cite>— ${esc(attr)}</cite>`:''}</div>`;
       }
-      const metaEl = document.getElementById('article-meta');
-      metaEl.style.display = 'flex';
-      if (article.category) document.getElementById('meta-cat').textContent   = article.category;
-      if (article.published) document.getElementById('meta-date').textContent = article.published;
-      if (article.author)    document.getElementById('meta-author').textContent = 'By ' + article.author;
-
-      // Body
-      const body = document.getElementById('article-body');
-      if (article.content && article.content.trim()) {
-        body.innerHTML = `<div class="article-content">${renderMarkdown(article.content)}</div>`;
-      } else {
-        body.innerHTML = `<div class="article-content"><p style="color:#9a8f82;font-style:italic">No content available for this article.</p></div>`;
-      }
-
-      // Sidebar actions card — last updated + print
-      document.getElementById('article-actions-card').style.display = '';
-      const luWrap = document.getElementById('last-updated-wrap');
-      const luText = document.getElementById('last-updated-text');
-      if (article.last_updated && article.last_updated.trim()) {
-        luText.textContent = 'Last updated ' + article.last_updated;
-        luWrap.style.display = 'flex';
-      } else if (article.published && article.published.trim()) {
-        luText.textContent = 'Published ' + article.published;
-        luWrap.style.display = 'flex';
-      } else {
-        luWrap.style.display = 'none';
-      }
-
-      // Print date
-      document.getElementById('print-date').textContent =
-        new Date().toLocaleDateString('en-US', {month:'long', day:'numeric', year:'numeric'});
-
-      // Related
-      showRelated(article, articles);
-
-    } catch(err) {
-      showError(err.message);
+      i++;continue;
     }
-  }
 
-  function showError(msg) {
-    document.getElementById('article-title').textContent = 'Article Not Found';
-    document.getElementById('article-body').innerHTML = `
-      <div class="state-box error">
-        <p>⚠️ &nbsp;${esc(msg)} <a href="/courts/self-help/" style="color:#1a4a7a;font-weight:600">Return to Self-Help Center</a></p>
-      </div>`;
-  }
+    // ── Table ── (lines starting with |)
+    if(t.startsWith('|')){
+      closeLists();
+      tableAcc.push(line);
+      i++;continue;
+    } else { flushTable(); }
 
-  load();
+    // ── HR ──
+    if(/^---+$/.test(t)){closeLists();html+='<hr>';i++;continue;}
+
+    // ── Legacy tip > ──
+    if(t.startsWith('> ')&&!t.startsWith('>> ')){
+      closeLists();
+      html+=`<div class="callout tip"><strong>Tip</strong>${inline(esc(t.slice(2)))}</div>`;
+      i++;continue;
+    }
+
+    // ── Pull quote >> ──
+    if(t.startsWith('>> ')){
+      closeLists();
+      const inner=t.slice(3);
+      const parts=inner.split(' -- ');
+      const qtext=parts[0].replace(/^"|"$/g,'').trim();
+      const attr=(parts[1]||'').trim();
+      html+=`<div class="pull-quote"><blockquote>${inline(esc(qtext))}</blockquote>${attr?`<cite>— ${esc(attr)}</cite>`:''}</div>`;
+      i++;continue;
+    }
+
+    // ── Headings ──
+    if(t.startsWith('#### ')){closeLists();html+=`<h4 style="font-size:13px;font-weight:700;color:#1a1a1a;margin:16px 0 6px">${inline(esc(t.slice(5)))}</h4>`;i++;continue;}
+    if(t.startsWith('### ')){closeLists();html+=`<h3>${inline(esc(t.slice(4)))}</h3>`;i++;continue;}
+    if(t.startsWith('## ')){closeLists();html+=`<h2>${inline(esc(t.slice(3)))}</h2>`;i++;continue;}
+
+    // ── Lists ──
+    if(/^- /.test(t)){
+      if(inOL){html+='</ol>';inOL=false;}
+      if(!inUL){html+='<ul>';inUL=true;}
+      html+=`<li>${inline(esc(t.slice(2)))}</li>`;
+      i++;continue;
+    }
+    if(/^\d+\. /.test(t)){
+      if(inUL){html+='</ul>';inUL=false;}
+      if(!inOL){html+='<ol>';inOL=true;}
+      html+=`<li>${inline(esc(t.replace(/^\d+\. /','')))}</li>`;
+      i++;continue;
+    }
+
+    // ── Blank line ──
+    if(t===''){closeLists();i++;continue;}
+
+    // ── Paragraph ──
+    closeLists();
+    html+=`<p>${inline(esc(t))}</p>`;
+    i++;
+  }
+  closeLists();flushTable();
+
+  return {html, quickFacts};
+}
+
+// ── Reading progress bar ─────────────────────────────────────
+window.addEventListener('scroll',()=>{
+  const doc=document.documentElement;
+  const scrolled=doc.scrollTop;
+  const total=doc.scrollHeight-doc.clientHeight;
+  const pct=total>0?Math.min(100,Math.round(scrolled/total*100)):0;
+  document.getElementById('reading-progress').style.width=pct+'%';
+});
+
+// ── Share ────────────────────────────────────────────────────
+function shareArticle(){
+  navigator.clipboard.writeText(window.location.href).then(()=>{
+    const t=document.getElementById('share-toast');
+    t.classList.add('show');
+    setTimeout(()=>t.classList.remove('show'),2500);
+  });
+}
+window.shareArticle=shareArticle;
+
+// ── FAQ toggle ───────────────────────────────────────────────
+function toggleFAQ(id){
+  const a=document.getElementById(id);
+  const q=document.getElementById('q'+id);
+  const open=a.classList.contains('open');
+  a.classList.toggle('open',!open);
+  q.classList.toggle('open',!open);
+}
+window.toggleFAQ=toggleFAQ;
+
+// ── Related ──────────────────────────────────────────────────
+function showRelated(current,all){
+  const related=all.filter(a=>a.slug!==current.slug&&a.category===current.category).slice(0,5);
+  if(!related.length)return;
+  document.getElementById('related-card').style.display='';
+  document.getElementById('related-links').innerHTML=related.map(a=>`
+    <a href="/courts/self-help/article.html?s=${encodeURIComponent(a.slug)}" class="sidebar-link">
+      <span>${esc(a.title)}</span><span class="sl-arrow">›</span>
+    </a>`).join('');
+}
+
+// ── Main load ────────────────────────────────────────────────
+async function load(){
+  const slug=new URLSearchParams(window.location.search).get('s');
+  if(!slug){showError('No article specified.');return;}
+  try{
+    const res=await fetch(ARTICLES_CSV);
+    if(!res.ok)throw new Error('Could not load articles data.');
+    const articles=csvToObjects(await res.text()).filter(a=>(a.status||'').toLowerCase().trim()==='published');
+    const article=articles.find(a=>a.slug===slug);
+    if(!article){showError('Article not found.');return;}
+
+    document.title=`${article.title} — Michigan Legal Help Program`;
+    document.getElementById('breadcrumb-title').textContent=article.title;
+    document.getElementById('article-title').textContent=article.title;
+    document.getElementById('article-title').style.cssText='color:#fff;font-style:normal';
+    if(article.summary)document.getElementById('article-summary').textContent=article.summary;
+
+    const metaEl=document.getElementById('article-meta');
+    metaEl.style.display='flex';
+    if(article.category)document.getElementById('meta-cat').textContent=article.category;
+    if(article.published)document.getElementById('meta-date').textContent=article.published;
+    if(article.author)document.getElementById('meta-author').textContent='By '+article.author;
+
+    // Render content
+    const body=document.getElementById('article-body');
+    if(article.content&&article.content.trim()){
+      const {html,quickFacts}=renderMarkdown(article.content);
+      body.innerHTML=`<div class="article-content">${html}</div>`;
+
+      // Quick facts sidebar
+      if(quickFacts.length){
+        const card=document.getElementById('quick-facts-card');
+        const factBody=document.getElementById('quick-facts-body');
+        card.style.display='';
+        factBody.innerHTML=quickFacts.map(f=>`<div class="qf-item"><div class="qf-label">${esc(f.label)}</div><div class="qf-value">${esc(f.value)}</div></div>`).join('');
+      }
+    } else {
+      body.innerHTML=`<div class="article-content"><p style="color:#9a8f82;font-style:italic">No content available.</p></div>`;
+    }
+
+    // Actions card
+    document.getElementById('article-actions-card').style.display='';
+    const luWrap=document.getElementById('last-updated-wrap');
+    const luText=document.getElementById('last-updated-text');
+    const dateStr=article.last_updated&&article.last_updated.trim()?'Last updated '+article.last_updated
+      :article.published&&article.published.trim()?'Published '+article.published:'';
+    if(dateStr){luText.textContent=dateStr;luWrap.style.display='flex';}
+
+    document.getElementById('print-date').textContent=
+      new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
+
+    showRelated(article,articles);
+  } catch(err){showError(err.message);}
+}
+
+function showError(msg){
+  document.getElementById('article-title').textContent='Article Not Found';
+  document.getElementById('article-body').innerHTML=`
+    <div class="state-box error">
+      <p>⚠️ &nbsp;${esc(msg)} <a href="/courts/self-help/" style="color:#1a4a7a;font-weight:600">Return to Self-Help Center</a></p>
+    </div>`;
+}
+
+load();
 </script>
 </body>
 </html>
