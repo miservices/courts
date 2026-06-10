@@ -469,7 +469,7 @@ function renderMarkdown(raw){
     if(/^\d+\. /.test(t)){
       if(inUL){html+='</ul>';inUL=false;}
       if(!inOL){html+='<ol>';inOL=true;}
-      html+=`<li>${inline(esc(t.replace(/^\d+\. /','')))}</li>`;
+html+=`<li>${inline(esc(t.replace(/^\d+\. /,'')))}</li>`;
       i++;continue;
     }
 
