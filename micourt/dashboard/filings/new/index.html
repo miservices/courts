@@ -7,220 +7,250 @@
 <link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;1,300&family=DM+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root {
-  --navy:       #0a1628;
-  --navy-mid:   #0d1f3c;
-  --navy-light: #112240;
-  --border:     #1e3a5f;
-  --gold:       #c8a84b;
-  --gold-dim:   rgba(200,168,75,0.15);
-  --cream:      #f4f1ec;
-  --cream-dark: #ede9e1;
-  --white:      #ffffff;
-  --text:       #1a1a1a;
-  --muted:      #6b5f4e;
-  --line:       #e0d9cf;
-  --blue-muted: #7a9bbf;
-  --green:      #15803d;
-  --green-bg:   #f0fdf4;
-  --green-bdr:  #dcfce7;
-  --red:        #dc2626;
-  --red-bg:     #fef2f2;
-  --red-bdr:    #fee2e2;
-  --amber:      #a16207;
-  --amber-bg:   #fef9e7;
-  --amber-bdr:  #fde68a;
-  --blue:       #1d4ed8;
-  --blue-bg:    #eff6ff;
-  --blue-bdr:   #dbeafe;
+  --navy:#0a1628; --navy-mid:#0d1f3c; --navy-light:#112240; --border:#1e3a5f;
+  --gold:#c8a84b; --gold-dim:rgba(200,168,75,0.15);
+  --cream:#f4f1ec; --cream-dark:#ede9e1; --white:#ffffff;
+  --text:#1a1a1a; --muted:#6b5f4e; --line:#e0d9cf; --blue-muted:#7a9bbf;
+  --green:#15803d; --green-bg:#f0fdf4; --green-bdr:#dcfce7;
+  --red:#dc2626; --red-bg:#fef2f2; --red-bdr:#fee2e2;
+  --amber:#a16207; --amber-bg:#fef9e7; --amber-bdr:#fde68a;
+  --blue:#1d4ed8; --blue-bg:#eff6ff; --blue-bdr:#dbeafe;
 }
-* { margin:0; padding:0; box-sizing:border-box; }
-body { font-family:'DM Sans',sans-serif; background:var(--cream); color:var(--text); min-height:100vh; }
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);min-height:100vh}
 
-/* ── Top bar ── */
-.topbar { background:var(--navy); border-bottom:1px solid var(--border); padding:0 40px; height:58px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:100; }
-.topbar-brand { display:flex; align-items:center; gap:12px; text-decoration:none; }
-.topbar-seal { width:30px; height:30px; background:var(--gold); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:14px; flex-shrink:0; }
-.topbar-name { font-family:'Merriweather',serif; color:#fff; font-size:14px; font-weight:400; }
-.topbar-right { display:flex; align-items:center; gap:12px; }
-.topbar-back { color:var(--blue-muted); font-size:12.5px; text-decoration:none; display:flex; align-items:center; gap:5px; transition:color 0.12s; }
-.topbar-back:hover { color:var(--gold); }
-.topbar-user { color:var(--blue-muted); font-size:12.5px; }
+/* Topbar */
+.topbar{background:var(--navy);border-bottom:1px solid var(--border);padding:0 36px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:300}
+.topbar-brand{display:flex;align-items:center;gap:11px;text-decoration:none}
+.topbar-seal{width:28px;height:28px;background:var(--gold);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+.topbar-name{font-family:'Merriweather',serif;color:#fff;font-size:13.5px;font-weight:400}
+.topbar-right{display:flex;align-items:center;gap:12px}
+.topbar-user{color:var(--blue-muted);font-size:12px}
 
-/* ── Page layout ── */
-.page-wrap { max-width:860px; margin:0 auto; padding:40px 24px 80px; }
+/* Back bar */
+.back-bar{background:var(--navy-mid);border-bottom:2px solid var(--gold);padding:0 36px;display:flex;align-items:center;height:46px;gap:0}
+.back-bar a{display:inline-flex;align-items:center;gap:8px;color:var(--gold);text-decoration:none;font-size:13px;font-weight:700;letter-spacing:0.02em;transition:opacity 0.12s}
+.back-bar a:hover{opacity:0.75}
+.back-bar-sep{width:1px;height:20px;background:var(--border);margin:0 16px}
+.back-bar-label{color:var(--blue-muted);font-size:12px}
 
-/* ── Auth overlay ── */
-.auth-overlay { position:fixed; inset:0; background:var(--navy); display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:9999; gap:18px; }
-.auth-overlay.hidden { display:none; }
-.ao-seal { width:52px; height:52px; background:var(--gold); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:24px; }
-.ao-title { font-family:'Merriweather',serif; color:#fff; font-size:17px; font-weight:300; }
-.ao-spin { width:28px; height:28px; border:3px solid #1e3a5f; border-top-color:var(--gold); border-radius:50%; animation:spin 0.8s linear infinite; }
-.ao-msg { color:var(--blue-muted); font-size:12px; }
+/* Auth overlay */
+.auth-overlay{position:fixed;inset:0;background:var(--navy);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;gap:16px}
+.auth-overlay.hidden{display:none}
+.ao-seal{width:50px;height:50px;background:var(--gold);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px}
+.ao-title{font-family:'Merriweather',serif;color:#fff;font-size:16px;font-weight:300}
+.ao-spin{width:26px;height:26px;border:3px solid #1e3a5f;border-top-color:var(--gold);border-radius:50%;animation:spin .8s linear infinite}
+.ao-msg{color:var(--blue-muted);font-size:12px}
 
-/* ── Page header ── */
-.page-header { margin-bottom:32px; }
-.page-header h1 { font-family:'Merriweather',serif; font-size:26px; font-weight:300; color:var(--text); margin-bottom:6px; }
-.page-header p { font-size:13.5px; color:var(--muted); line-height:1.6; }
-.breadcrumb { display:flex; align-items:center; gap:7px; margin-bottom:14px; }
-.breadcrumb a { color:var(--muted); font-size:11.5px; text-decoration:none; }
-.breadcrumb a:hover { color:var(--navy); }
-.breadcrumb span { color:#b0a898; font-size:11px; }
-.breadcrumb .bc-current { color:var(--text); font-size:11.5px; font-weight:600; }
+/* Page */
+.page-wrap{max-width:880px;margin:0 auto;padding:32px 24px 80px}
+.page-header{margin-bottom:24px}
+.page-header h1{font-family:'Merriweather',serif;font-size:24px;font-weight:300;color:var(--text);margin-bottom:5px}
+.page-header p{font-size:13px;color:var(--muted);line-height:1.6}
+.breadcrumb{display:flex;align-items:center;gap:6px;margin-bottom:10px}
+.breadcrumb a{color:var(--muted);font-size:11px;text-decoration:none}
+.breadcrumb a:hover{color:var(--navy)}
+.breadcrumb span{color:#b0a898;font-size:10px}
+.breadcrumb .bc-cur{color:var(--text);font-size:11px;font-weight:600}
 
-/* ── Progress steps ── */
-.steps { display:flex; align-items:center; gap:0; margin-bottom:36px; }
-.step { display:flex; align-items:center; gap:10px; flex:1; }
-.step-circle { width:30px; height:30px; border-radius:50%; border:2px solid var(--line); background:var(--white); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; color:var(--muted); flex-shrink:0; transition:all 0.2s; }
-.step.done .step-circle { border-color:var(--green); background:var(--green); color:#fff; }
-.step.active .step-circle { border-color:var(--navy); background:var(--navy); color:#fff; }
-.step-label { font-size:12px; color:var(--muted); font-weight:500; transition:color 0.2s; }
-.step.active .step-label { color:var(--text); font-weight:700; }
-.step.done .step-label { color:var(--green); }
-.step-line { flex:1; height:2px; background:var(--line); margin:0 10px; transition:background 0.2s; }
-.step-line.done { background:var(--green); }
+/* Steps */
+.steps{display:flex;align-items:center;margin-bottom:28px}
+.step{display:flex;align-items:center;gap:8px;flex:1}
+.step-circle{width:27px;height:27px;border-radius:50%;border:2px solid var(--line);background:var(--white);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--muted);flex-shrink:0;transition:all .2s}
+.step.done .step-circle{border-color:var(--green);background:var(--green);color:#fff}
+.step.active .step-circle{border-color:var(--navy);background:var(--navy);color:#fff}
+.step-label{font-size:11px;color:var(--muted);font-weight:500;white-space:nowrap}
+.step.active .step-label{color:var(--text);font-weight:700}
+.step.done .step-label{color:var(--green)}
+.step-line{flex:1;height:2px;background:var(--line);margin:0 6px;transition:background .2s}
+.step-line.done{background:var(--green)}
 
-/* ── Cards ── */
-.card { background:var(--white); border:1px solid var(--line); border-radius:5px; overflow:hidden; margin-bottom:20px; }
-.card-hdr { padding:18px 24px; border-bottom:1px solid var(--line); display:flex; align-items:center; gap:12px; }
-.card-hdr-icon { font-size:18px; }
-.card-hdr h2 { font-family:'Merriweather',serif; font-size:16px; font-weight:400; color:var(--text); }
-.card-hdr p { font-size:12px; color:var(--muted); margin-top:2px; }
-.card-body { padding:24px; }
+/* Cards */
+.card{background:var(--white);border:1px solid var(--line);border-radius:5px;overflow:hidden;margin-bottom:14px}
+.card-hdr{padding:15px 20px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px}
+.card-hdr-icon{font-size:15px}
+.card-hdr h2{font-family:'Merriweather',serif;font-size:14.5px;font-weight:400;color:var(--text)}
+.card-hdr p{font-size:11.5px;color:var(--muted);margin-top:2px}
+.card-body{padding:20px}
 
-/* ── Form elements ── */
-.form-group { margin-bottom:20px; }
-.form-group:last-child { margin-bottom:0; }
-.form-label { display:block; font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:0.08em; font-weight:700; margin-bottom:6px; }
-.form-label .req { color:var(--red); margin-left:2px; }
-.form-input, .form-select, .form-textarea {
-  width:100%; padding:11px 14px; border:1.5px solid var(--line); border-radius:4px;
-  font-family:'DM Sans',sans-serif; font-size:14px; color:var(--text); background:var(--white);
-  transition:border-color 0.15s, box-shadow 0.15s; outline:none;
-}
-.form-input:focus, .form-select:focus, .form-textarea:focus {
-  border-color:var(--navy); box-shadow:0 0 0 3px rgba(10,22,40,0.07);
-}
-.form-input.error, .form-select.error, .form-textarea.error { border-color:var(--red); }
-.form-textarea { resize:vertical; min-height:90px; line-height:1.6; }
-.form-select { appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236b5f4e' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 12px center; padding-right:36px; }
-.form-hint { font-size:11.5px; color:var(--muted); margin-top:5px; line-height:1.5; }
-.form-error-msg { font-size:11.5px; color:var(--red); margin-top:5px; display:none; }
-.form-error-msg.show { display:block; }
-.form-row { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
-.form-row-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; }
+/* Forms */
+.form-group{margin-bottom:16px}
+.form-group:last-child{margin-bottom:0}
+.form-label{display:flex;align-items:center;gap:4px;font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-weight:700;margin-bottom:6px}
+.form-label .req{color:var(--red)}
+.form-input,.form-textarea{width:100%;padding:10px 13px;border:1.5px solid var(--line);border-radius:4px;font-family:'DM Sans',sans-serif;font-size:13.5px;color:var(--text);background:var(--white);transition:border-color .15s,box-shadow .15s;outline:none}
+.form-input:focus,.form-textarea:focus{border-color:var(--navy);box-shadow:0 0 0 3px rgba(10,22,40,.07)}
+.form-input[readonly]{background:var(--cream);color:var(--muted);cursor:not-allowed}
+.form-input.err{border-color:var(--red)}
+.form-textarea{resize:vertical;min-height:78px;line-height:1.6}
+.form-hint{font-size:11.5px;color:var(--muted);margin-top:4px;line-height:1.5}
+.form-err{font-size:11.5px;color:var(--red);margin-top:4px;display:none}
+.form-err.show{display:block}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.form-row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
 
-/* ── File upload ── */
-.upload-zone { border:2px dashed var(--line); border-radius:4px; padding:32px 24px; text-align:center; cursor:pointer; transition:all 0.2s; position:relative; background:var(--cream); }
-.upload-zone:hover, .upload-zone.drag-over { border-color:var(--navy); background:#ece8e0; }
-.upload-zone input[type=file] { position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%; }
-.upload-icon { font-size:32px; margin-bottom:10px; }
-.upload-title { font-size:14px; font-weight:700; color:var(--text); margin-bottom:4px; }
-.upload-sub { font-size:12.5px; color:var(--muted); line-height:1.5; }
-.upload-sub strong { color:var(--navy); }
-.upload-files { margin-top:16px; display:flex; flex-direction:column; gap:8px; }
-.upload-file-row { display:flex; align-items:center; gap:10px; background:var(--white); border:1px solid var(--line); border-radius:3px; padding:10px 14px; }
-.uf-icon { font-size:16px; flex-shrink:0; }
-.uf-name { flex:1; font-size:13px; font-weight:600; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.uf-size { font-size:11px; color:var(--muted); flex-shrink:0; }
-.uf-remove { width:22px; height:22px; border-radius:50%; border:none; background:var(--red-bg); color:var(--red); cursor:pointer; font-size:12px; display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:background 0.12s; }
-.uf-remove:hover { background:var(--red-bdr); }
+/* PIN help */
+.pin-help{display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;border-radius:50%;background:var(--navy);color:#fff;font-size:9px;font-weight:700;cursor:pointer;text-decoration:none;flex-shrink:0;transition:background .12s}
+.pin-help:hover{background:var(--gold);color:var(--navy)}
 
-/* ── Radio / checkbox groups ── */
-.radio-group, .check-group { display:flex; flex-direction:column; gap:8px; }
-.radio-opt, .check-opt { display:flex; align-items:flex-start; gap:10px; padding:12px 14px; border:1.5px solid var(--line); border-radius:4px; cursor:pointer; transition:all 0.15s; }
-.radio-opt:hover, .check-opt:hover { border-color:#b0a898; background:#faf9f7; }
-.radio-opt.selected, .check-opt.selected { border-color:var(--navy); background:var(--blue-bg); }
-.radio-opt input, .check-opt input { margin-top:2px; accent-color:var(--navy); flex-shrink:0; }
-.ro-label { font-size:13.5px; font-weight:600; color:var(--text); }
-.ro-sub   { font-size:12px; color:var(--muted); margin-top:2px; line-height:1.4; }
+/* Searchable select */
+.ss-wrap{position:relative;width:100%}
+.ss-trigger{display:flex;align-items:center;justify-content:space-between;padding:10px 13px;border:1.5px solid var(--line);border-radius:4px;background:var(--white);cursor:pointer;transition:border-color .15s,box-shadow .15s;user-select:none;min-height:41px}
+.ss-trigger:hover{border-color:#b0a898}
+.ss-trigger.open{border-color:var(--navy);box-shadow:0 0 0 3px rgba(10,22,40,.07)}
+.ss-trigger.ss-err{border-color:var(--red)}
+.ss-val{font-size:13.5px;color:var(--text);flex:1}
+.ss-val.ph{color:var(--muted)}
+.ss-caret{font-size:9px;color:var(--muted);margin-left:8px;flex-shrink:0;transition:transform .15s;line-height:1}
+.ss-trigger.open .ss-caret{transform:rotate(180deg)}
+.ss-panel{position:absolute;top:calc(100% + 4px);left:0;right:0;background:var(--white);border:1.5px solid var(--navy);border-radius:4px;z-index:500;box-shadow:0 8px 28px rgba(10,22,40,.14);max-height:300px;overflow:hidden;display:flex;flex-direction:column}
+.ss-search-wrap{padding:8px 10px;border-bottom:1px solid var(--line);background:var(--cream);flex-shrink:0}
+.ss-search-input{width:100%;padding:7px 11px;border:1.5px solid var(--line);border-radius:3px;font-family:'DM Sans',sans-serif;font-size:13px;outline:none}
+.ss-search-input:focus{border-color:var(--navy)}
+.ss-list{overflow-y:auto;flex:1}
+.ss-group{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.09em;font-weight:700;padding:9px 13px 3px;background:#faf9f7;border-bottom:1px solid var(--line)}
+.ss-opt{padding:10px 13px;cursor:pointer;transition:background .1s;border-bottom:1px solid #faf9f7}
+.ss-opt:last-child{border-bottom:none}
+.ss-opt:hover{background:var(--cream)}
+.ss-opt.ss-sel{background:var(--blue-bg)}
+.ss-opt-lbl{font-size:13px;color:var(--text);font-weight:600}
+.ss-opt-desc{font-size:11.5px;color:var(--muted);margin-top:2px;line-height:1.4}
+.ss-none{padding:18px;text-align:center;color:var(--muted);font-size:13px}
 
-/* ── Buttons ── */
-.btn-primary { display:inline-flex; align-items:center; gap:8px; background:var(--navy); color:#fff; border:none; padding:12px 28px; border-radius:4px; font-size:13.5px; font-weight:700; cursor:pointer; font-family:'DM Sans',sans-serif; transition:background 0.12s; letter-spacing:0.02em; text-decoration:none; }
-.btn-primary:hover { background:var(--navy-mid); }
-.btn-primary:disabled { opacity:0.5; cursor:not-allowed; }
-.btn-outline { display:inline-flex; align-items:center; gap:8px; background:none; color:var(--navy); border:1.5px solid var(--navy); padding:11px 24px; border-radius:4px; font-size:13.5px; font-weight:700; cursor:pointer; font-family:'DM Sans',sans-serif; transition:all 0.12s; }
-.btn-outline:hover { background:var(--navy); color:#fff; }
-.btn-ghost { display:inline-flex; align-items:center; gap:7px; background:none; color:var(--muted); border:1.5px solid var(--line); padding:11px 20px; border-radius:4px; font-size:13px; font-weight:600; cursor:pointer; font-family:'DM Sans',sans-serif; transition:all 0.12s; }
-.btn-ghost:hover { border-color:#b0a898; color:var(--text); }
+/* Radio / check */
+.radio-group,.check-group{display:flex;flex-direction:column;gap:8px}
+.radio-opt,.check-opt{display:flex;align-items:flex-start;gap:10px;padding:11px 13px;border:1.5px solid var(--line);border-radius:4px;cursor:pointer;transition:all .15s}
+.radio-opt:hover,.check-opt:hover{border-color:#b0a898;background:#faf9f7}
+.radio-opt.sel,.check-opt.sel{border-color:var(--navy);background:var(--blue-bg)}
+.radio-opt input,.check-opt input{margin-top:2px;accent-color:var(--navy);flex-shrink:0}
+.ro-lbl{font-size:13px;font-weight:600;color:var(--text)}
+.ro-sub{font-size:11.5px;color:var(--muted);margin-top:2px;line-height:1.4}
+.inline-radio-group{display:flex;gap:8px;flex-wrap:wrap}
+.inline-radio{display:flex;align-items:center;gap:6px;padding:8px 13px;border:1.5px solid var(--line);border-radius:3px;cursor:pointer;font-size:13px;color:var(--text);transition:all .15s;user-select:none}
+.inline-radio:hover{border-color:#b0a898}
+.inline-radio.sel{border-color:var(--navy);background:var(--blue-bg)}
+.inline-radio input{accent-color:var(--navy)}
 
-/* ── Navigation footer ── */
-.step-nav { display:flex; align-items:center; justify-content:space-between; margin-top:28px; padding-top:24px; border-top:1px solid var(--line); }
+/* Party cards */
+.party-card{background:var(--white);border:1.5px solid var(--line);border-radius:5px;margin-bottom:12px;overflow:hidden}
+.party-card-hdr{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:var(--cream);border-bottom:1px solid var(--line)}
+.pch-left{display:flex;align-items:center;gap:10px}
+.pch-num{font-size:10px;color:var(--gold);font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+.pch-role{font-size:12px;font-weight:700;color:var(--navy)}
+.party-remove-btn{background:none;border:1px solid var(--red-bdr);color:var(--red);font-size:11px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;padding:4px 10px;border-radius:3px;transition:background .12s}
+.party-remove-btn:hover{background:var(--red-bg)}
+.party-card-body{padding:16px}
+.add-party-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;border:2px dashed var(--line);background:none;color:var(--muted);padding:12px;border-radius:4px;font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;margin-bottom:14px}
+.add-party-btn:hover{border-color:var(--navy);color:var(--navy);background:#faf9f7}
+.counsel-flag{display:flex;align-items:center;gap:8px;margin-top:12px;padding:9px 12px;background:var(--gold-dim);border:1px solid rgba(200,168,75,.3);border-radius:3px;cursor:pointer;user-select:none}
+.counsel-flag input{accent-color:var(--navy)}
+.counsel-flag span{font-size:12.5px;font-weight:600;color:var(--text)}
 
-/* ── Info callout ── */
-.callout { display:flex; gap:12px; padding:14px 16px; border-radius:4px; margin-bottom:20px; }
-.callout-info { background:var(--blue-bg); border:1px solid var(--blue-bdr); }
-.callout-warn { background:var(--amber-bg); border:1px solid var(--amber-bdr); }
-.callout-icon { font-size:16px; flex-shrink:0; margin-top:1px; }
-.callout-text { font-size:13px; line-height:1.6; }
-.callout-info .callout-text { color:#1e40af; }
-.callout-warn .callout-text { color:var(--amber); }
+/* File upload */
+.upload-zone{border:2px dashed var(--line);border-radius:4px;padding:26px 18px;text-align:center;cursor:pointer;transition:all .2s;position:relative;background:var(--cream)}
+.upload-zone:hover,.upload-zone.drag-over{border-color:var(--navy);background:#ece8e0}
+.upload-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.upload-icon{font-size:26px;margin-bottom:7px}
+.upload-title{font-size:13.5px;font-weight:700;color:var(--text);margin-bottom:3px}
+.upload-sub{font-size:12px;color:var(--muted);line-height:1.5}
+.upload-sub strong{color:var(--navy)}
+.file-list{margin-top:10px;display:flex;flex-direction:column;gap:6px}
+.file-row{display:flex;align-items:center;gap:10px;background:var(--white);border:1px solid var(--line);border-radius:3px;padding:8px 12px}
+.fr-icon{font-size:14px;flex-shrink:0}
+.fr-name{flex:1;font-size:12.5px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fr-size{font-size:11px;color:var(--muted);flex-shrink:0}
+.fr-rm{width:19px;height:19px;border-radius:50%;border:none;background:var(--red-bg);color:var(--red);cursor:pointer;font-size:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.fr-rm:hover{background:var(--red-bdr)}
 
-/* ── Review section ── */
-.review-section { margin-bottom:20px; }
-.review-section-label { font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:0.1em; font-weight:700; margin-bottom:10px; padding-bottom:6px; border-bottom:1px solid var(--line); }
-.review-row { display:flex; justify-content:space-between; align-items:flex-start; padding:8px 0; gap:16px; border-bottom:1px solid #f8f5f0; }
-.review-row:last-child { border-bottom:none; }
-.review-key { font-size:12px; color:var(--muted); flex-shrink:0; width:160px; }
-.review-val { font-size:13px; color:var(--text); font-weight:500; text-align:right; flex:1; line-height:1.4; }
-.review-file { display:flex; align-items:center; gap:8px; background:var(--cream); border:1px solid var(--line); border-radius:3px; padding:8px 12px; margin-bottom:6px; }
-.rf-name { font-size:13px; font-weight:600; color:var(--text); flex:1; }
-.rf-size { font-size:11px; color:var(--muted); }
+/* GDrive */
+.gdrive-box{margin-top:14px;background:var(--amber-bg);border:1px solid var(--amber-bdr);border-radius:4px;padding:14px}
+.gdrive-box-title{font-size:12px;font-weight:700;color:var(--amber);margin-bottom:6px;display:flex;align-items:center;gap:6px}
+.gdrive-box p{font-size:12px;color:var(--amber);line-height:1.6;margin-bottom:10px}
 
-/* ── Success screen ── */
-.success-screen { display:none; }
-.success-screen.active { display:block; }
-.filing-wizard { display:block; }
-.filing-wizard.hidden { display:none; }
-.success-card { background:var(--white); border:1px solid var(--line); border-radius:5px; padding:48px 40px; text-align:center; }
-.success-icon { font-size:52px; margin-bottom:18px; }
-.success-title { font-family:'Merriweather',serif; font-size:26px; font-weight:300; color:var(--text); margin-bottom:8px; }
-.success-sub { font-size:14px; color:var(--muted); line-height:1.7; max-width:520px; margin:0 auto 24px; }
-.conf-number { background:var(--navy); color:var(--gold); font-family:'Merriweather',serif; font-size:20px; padding:16px 28px; border-radius:4px; display:inline-block; margin-bottom:28px; letter-spacing:0.04em; }
-.conf-label { font-size:10px; color:var(--blue-muted); text-transform:uppercase; letter-spacing:0.1em; margin-bottom:6px; display:block; }
-.success-actions { display:flex; gap:12px; justify-content:center; flex-wrap:wrap; }
+/* Buttons */
+.btn-primary{display:inline-flex;align-items:center;gap:7px;background:var(--navy);color:#fff;border:none;padding:11px 22px;border-radius:4px;font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background .12s;letter-spacing:.02em;text-decoration:none}
+.btn-primary:hover{background:var(--navy-mid)}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed}
+.btn-outline{display:inline-flex;align-items:center;gap:7px;background:none;color:var(--navy);border:1.5px solid var(--navy);padding:10px 20px;border-radius:4px;font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .12s}
+.btn-outline:hover{background:var(--navy);color:#fff}
+.btn-ghost{display:inline-flex;align-items:center;gap:7px;background:none;color:var(--muted);border:1.5px solid var(--line);padding:10px 16px;border-radius:4px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .12s}
+.btn-ghost:hover{border-color:#b0a898;color:var(--text)}
+.step-nav{display:flex;align-items:center;justify-content:space-between;margin-top:22px;padding-top:18px;border-top:1px solid var(--line)}
 
-/* ── Loading spinner ── */
-.spin { display:inline-block; width:18px; height:18px; border:2px solid rgba(255,255,255,0.3); border-top-color:#fff; border-radius:50%; animation:spin 0.8s linear infinite; vertical-align:middle; }
+/* Callouts */
+.callout{display:flex;gap:10px;padding:12px 14px;border-radius:4px;margin-bottom:14px}
+.c-info{background:var(--blue-bg);border:1px solid var(--blue-bdr)}
+.c-warn{background:var(--amber-bg);border:1px solid var(--amber-bdr)}
+.c-green{background:var(--green-bg);border:1px solid var(--green-bdr)}
+.callout-icon{font-size:14px;flex-shrink:0;margin-top:1px}
+.callout-text{font-size:12.5px;line-height:1.6}
+.c-info .callout-text{color:#1e40af}
+.c-warn .callout-text{color:var(--amber)}
+.c-green .callout-text{color:var(--green)}
 
-/* ── Case type tag ── */
-.type-tag { font-size:10px; font-weight:700; letter-spacing:0.06em; padding:2px 8px; border-radius:2px; text-transform:uppercase; }
-.tt-criminal  { background:#fef2f2; color:#dc2626; border:1px solid #fee2e2; }
-.tt-civil     { background:#eff6ff; color:#1d4ed8; border:1px solid #dbeafe; }
-.tt-appellate { background:#f5f3ff; color:#6d28d9; border:1px solid #ede9fe; }
-.tt-traffic   { background:#fff7ed; color:#c2410c; border:1px solid #fed7aa; }
-.tt-admin     { background:#f0fdf4; color:#15803d; border:1px solid #dcfce7; }
+/* Review */
+.rv-sec{margin-bottom:16px}
+.rv-sec-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;font-weight:700;margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid var(--line)}
+.rv-row{display:flex;justify-content:space-between;align-items:flex-start;padding:6px 0;gap:12px;border-bottom:1px solid #f8f5f0}
+.rv-row:last-child{border-bottom:none}
+.rv-k{font-size:12px;color:var(--muted);flex-shrink:0;width:140px}
+.rv-v{font-size:13px;color:var(--text);font-weight:500;text-align:right;flex:1;line-height:1.4}
+.rv-file{display:flex;align-items:center;gap:8px;background:var(--cream);border:1px solid var(--line);border-radius:3px;padding:6px 10px;margin-bottom:5px}
+.rf-n{font-size:12.5px;font-weight:600;color:var(--text);flex:1}
+.rf-s{font-size:11px;color:var(--muted)}
+.fee-notice{background:var(--green-bg);border:1px solid var(--green-bdr);border-radius:4px;padding:13px 15px;margin-bottom:14px;display:flex;gap:9px}
+.fee-notice-text{font-size:12.5px;color:var(--green);line-height:1.6}
 
-/* ── Case option card ── */
-.case-opt { display:flex; align-items:flex-start; gap:12px; padding:14px 16px; border:1.5px solid var(--line); border-radius:4px; cursor:pointer; transition:all 0.15s; margin-bottom:8px; }
-.case-opt:hover { border-color:#b0a898; background:#faf9f7; }
-.case-opt.selected { border-color:var(--navy); background:var(--blue-bg); }
-.case-opt input { margin-top:3px; accent-color:var(--navy); flex-shrink:0; }
-.co-body { flex:1; }
-.co-num { font-size:10.5px; color:var(--gold); font-weight:700; letter-spacing:0.06em; margin-bottom:3px; }
-.co-title { font-size:13.5px; font-weight:600; color:var(--text); margin-bottom:4px; }
-.co-meta { font-size:12px; color:var(--muted); display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
-.co-right { text-align:right; flex-shrink:0; }
+/* Case select */
+.case-opt{display:flex;align-items:flex-start;gap:10px;padding:12px 14px;border:1.5px solid var(--line);border-radius:4px;cursor:pointer;transition:all .15s;margin-bottom:7px}
+.case-opt:hover{border-color:#b0a898;background:#faf9f7}
+.case-opt.sel{border-color:var(--navy);background:var(--blue-bg)}
+.case-opt input{margin-top:3px;accent-color:var(--navy);flex-shrink:0}
+.co-num{font-size:10px;color:var(--gold);font-weight:700;letter-spacing:.06em;margin-bottom:2px}
+.co-title{font-size:13px;font-weight:600;color:var(--text);margin-bottom:3px}
+.co-meta{font-size:11.5px;color:var(--muted);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.type-tag{font-size:10px;font-weight:700;letter-spacing:.05em;padding:2px 7px;border-radius:2px;text-transform:uppercase}
+.tt-cr{background:#fef2f2;color:#dc2626;border:1px solid #fee2e2}
+.tt-ci{background:#eff6ff;color:#1d4ed8;border:1px solid #dbeafe}
+.tt-ap{background:#f5f3ff;color:#6d28d9;border:1px solid #ede9fe}
+.tt-tr{background:#fff7ed;color:#c2410c;border:1px solid #fed7aa}
+.tt-ad{background:#f0fdf4;color:#15803d;border:1px solid #dcfce7}
+.tt-df{background:#eff6ff;color:#1d4ed8;border:1px solid #dbeafe}
+.or-div{display:flex;align-items:center;gap:10px;margin:14px 0}
+.or-div::before,.or-div::after{content:'';flex:1;height:1px;background:var(--line)}
+.or-div span{font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.07em}
 
-/* ── New case section ── */
-.or-divider { display:flex; align-items:center; gap:12px; margin:20px 0; }
-.or-divider::before, .or-divider::after { content:''; flex:1; height:1px; background:var(--line); }
-.or-divider span { font-size:12px; color:var(--muted); font-weight:700; text-transform:uppercase; letter-spacing:0.08em; white-space:nowrap; }
+/* Jurisdiction other */
+.jur-manual{margin-top:8px;display:none}
 
-@keyframes spin { to { transform:rotate(360deg); } }
-@keyframes fadeUp { from{opacity:0;transform:translateY(10px)} to{opacity:1;transform:translateY(0)} }
+/* Success */
+.success-screen{display:none}
+.success-screen.active{display:block}
+.filing-wizard.hidden{display:none}
+.success-card{background:var(--white);border:1px solid var(--line);border-radius:5px;padding:44px 36px;text-align:center}
+.success-icon{font-size:46px;margin-bottom:14px}
+.success-title{font-family:'Merriweather',serif;font-size:24px;font-weight:300;color:var(--text);margin-bottom:6px}
+.success-sub{font-size:13.5px;color:var(--muted);line-height:1.7;max-width:480px;margin:0 auto 20px}
+.conf-lbl{font-size:10px;color:var(--blue-muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:5px;display:block}
+.conf-num{background:var(--navy);color:var(--gold);font-family:'Merriweather',serif;font-size:18px;padding:13px 24px;border-radius:4px;display:inline-block;margin-bottom:22px;letter-spacing:.04em}
+.success-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.spin{display:inline-block;width:15px;height:15px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite;vertical-align:middle}
+
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 
 @media(max-width:640px){
-  .page-wrap { padding:24px 16px 60px; }
-  .topbar { padding:0 18px; }
-  .form-row, .form-row-3 { grid-template-columns:1fr; }
-  .steps { gap:0; }
-  .step-label { display:none; }
+  .page-wrap{padding:24px 14px 60px}
+  .back-bar{padding:0 16px}
+  .topbar{padding:0 16px}
+  .form-row,.form-row-3{grid-template-columns:1fr}
+  .step-label{display:none}
+  .inline-radio-group{flex-direction:column}
 }
 </style>
 </head>
 <body>
 
-<!-- Top bar -->
 <div class="topbar">
   <a class="topbar-brand" href="/courts/micourt/">
     <div class="topbar-seal">⚖️</div>
@@ -228,11 +258,15 @@ body { font-family:'DM Sans',sans-serif; background:var(--cream); color:var(--te
   </a>
   <div class="topbar-right">
     <span class="topbar-user" id="topbar-user">Loading…</span>
-    <a class="topbar-back" href="/courts/micourt/dashboard/">← Back to Dashboard</a>
   </div>
 </div>
 
-<!-- Auth overlay -->
+<div class="back-bar">
+  <a href="/courts/micourt/dashboard/">⬅ Back to Dashboard</a>
+  <div class="back-bar-sep"></div>
+  <span class="back-bar-label">Electronic Filing</span>
+</div>
+
 <div class="auth-overlay" id="auth-overlay">
   <div class="ao-seal">⚖️</div>
   <div class="ao-title">MiCOURT</div>
@@ -241,94 +275,79 @@ body { font-family:'DM Sans',sans-serif; background:var(--cream); color:var(--te
 </div>
 
 <div class="page-wrap">
-
-  <!-- Page header -->
   <div class="page-header">
     <div class="breadcrumb">
       <a href="/courts/micourt/dashboard/">Dashboard</a>
       <span>›</span>
-      <span class="bc-current">Electronic Filing</span>
+      <span class="bc-cur">Electronic Filing</span>
     </div>
     <h1>Electronic Filing</h1>
-    <p>Submit documents and initiate cases electronically with the court. All filings are reviewed by the clerk's office before being entered into the official record.</p>
+    <p>Submit documents and initiate cases electronically. All filings are reviewed by the clerk's office before entering the official record.</p>
   </div>
 
-  <!-- ── WIZARD ── -->
+  <!-- WIZARD -->
   <div class="filing-wizard" id="filing-wizard">
 
-    <!-- Progress steps -->
+    <!-- Steps bar -->
     <div class="steps" id="steps-bar">
-      <div class="step active" id="step-ind-1">
-        <div class="step-circle" id="step-circle-1">1</div>
-        <span class="step-label">Filing Type</span>
-      </div>
-      <div class="step-line" id="line-1-2"></div>
-      <div class="step" id="step-ind-2">
-        <div class="step-circle" id="step-circle-2">2</div>
-        <span class="step-label">Case</span>
-      </div>
-      <div class="step-line" id="line-2-3"></div>
-      <div class="step" id="step-ind-3">
-        <div class="step-circle" id="step-circle-3">3</div>
-        <span class="step-label">Document</span>
-      </div>
-      <div class="step-line" id="line-3-4"></div>
-      <div class="step" id="step-ind-4">
-        <div class="step-circle" id="step-circle-4">4</div>
-        <span class="step-label">Details</span>
-      </div>
-      <div class="step-line" id="line-4-5"></div>
-      <div class="step" id="step-ind-5">
-        <div class="step-circle" id="step-circle-5">5</div>
-        <span class="step-label">Review</span>
-      </div>
+      <div class="step active" id="si-1"><div class="step-circle" id="sc-1">1</div><span class="step-label">Filing Type</span></div>
+      <div class="step-line" id="ln-12"></div>
+      <div class="step" id="si-2"><div class="step-circle" id="sc-2">2</div><span class="step-label">Case / Parties</span></div>
+      <div class="step-line" id="ln-23"></div>
+      <div class="step" id="si-3"><div class="step-circle" id="sc-3">3</div><span class="step-label">Document</span></div>
+      <div class="step-line" id="ln-34"></div>
+      <div class="step" id="si-4"><div class="step-circle" id="sc-4">4</div><span class="step-label">Details</span></div>
+      <div class="step-line" id="ln-45"></div>
+      <div class="step" id="si-5"><div class="step-circle" id="sc-5">5</div><span class="step-label">Review</span></div>
     </div>
 
-    <!-- ── STEP 1: Filing Type ── -->
+    <!-- ── STEP 1 ── -->
     <div id="step-1">
-      <div class="card">
-        <div class="card-hdr">
-          <span class="card-hdr-icon">📋</span>
-          <div><h2>What are you filing?</h2><p>Choose whether this is a new case or a document in an existing matter.</p></div>
+
+      <!-- Attorney counsel card (shown for attorneys) -->
+      <div class="card" id="atty-card" style="display:none">
+        <div class="card-hdr"><span class="card-hdr-icon">⚖️</span><div><h2>Attorney Filing</h2><p>Indicate your role as counsel in this filing.</p></div></div>
+        <div class="card-body">
+          <label class="check-opt" id="chk-counsel-opt" onclick="toggleEl(this,'cb-counsel',v=>isFilingAsCounsel=v)">
+            <input type="checkbox" id="cb-counsel">
+            <div>
+              <div class="ro-lbl">I am filing as counsel of record (representing a client)</div>
+              <div class="ro-sub" id="atty-bar-sub">Check this if you are an attorney filing on behalf of a client. Your bar number will be associated with this filing.</div>
+            </div>
+          </label>
         </div>
+      </div>
+
+      <!-- Filing type selection -->
+      <div class="card">
+        <div class="card-hdr"><span class="card-hdr-icon">📋</span><div><h2>What are you filing?</h2></div></div>
         <div class="card-body">
           <div class="radio-group">
-            <label class="radio-opt" id="opt-existing" onclick="selectFilingType('existing',this)">
-              <input type="radio" name="filing_type" value="existing" id="ft-existing">
-              <div>
-                <div class="ro-label">File in an Existing Case</div>
-                <div class="ro-sub">Submit a motion, response, brief, exhibit, or other document into a case already on the court's docket.</div>
-              </div>
+            <label class="radio-opt" id="opt-new" onclick="selectFT('new',this)">
+              <input type="radio" name="ft" value="new" id="ft-new">
+              <div><div class="ro-lbl">Initiate a New Case</div><div class="ro-sub">File a complaint, petition, or other initiating document to open a new matter with the court.</div></div>
             </label>
-            <label class="radio-opt" id="opt-new" onclick="selectFilingType('new',this)">
-              <input type="radio" name="filing_type" value="new" id="ft-new">
-              <div>
-                <div class="ro-label">Initiate a New Case</div>
-                <div class="ro-sub">File a complaint, petition, or other initiating document to open a new matter with the court.</div>
-              </div>
+            <label class="radio-opt" id="opt-existing" onclick="selectFT('existing',this)">
+              <input type="radio" name="ft" value="existing" id="ft-existing">
+              <div><div class="ro-lbl">File in an Existing Case</div><div class="ro-sub">Submit a motion, response, brief, or other document in a case already on the docket.</div></div>
             </label>
           </div>
 
-          <!-- New case sub-options (hidden until selected) -->
-          <div id="new-case-options" style="display:none;margin-top:16px">
+          <!-- New case sub-options -->
+          <div id="new-opts" style="display:none;margin-top:16px">
             <div class="form-group">
-              <label class="form-label">Case Type <span class="req">*</span></label>
-              <select class="form-select" id="new-case-type">
-                <option value="">Select a case type…</option>
-                <option value="Civil">Civil — Lawsuit or monetary dispute between parties</option>
-                <option value="Criminal">Criminal — Misdemeanor or felony charges (prosecutorial filing)</option>
-                <option value="Traffic">Traffic — Ordinance or civil infraction</option>
-                <option value="Administrative">Administrative — Agency or regulatory matter</option>
-                <option value="Appellate">Appellate — Appeal of a lower court decision</option>
-              </select>
-            </div>
-            <div class="form-group" id="new-court-group">
               <label class="form-label">Court <span class="req">*</span></label>
-              <select class="form-select" id="new-court">
-                <option value="">Select a court…</option>
-                <option value="Genesee Co. District Court">Genesee County District Court</option>
-                <option value="Michigan Supreme Court">Michigan Supreme Court</option>
-              </select>
+              <div class="ss-wrap" id="ss-court">
+                <div class="ss-trigger" onclick="ssOpen('court')"><span class="ss-val ph" id="ss-court-val">Select a court…</span><span class="ss-caret">▾</span></div>
+                <div class="ss-panel" style="display:none"><div class="ss-search-wrap"><input class="ss-search-input" placeholder="Search courts…" oninput="ssFilter('court',this.value)"></div><div class="ss-list"></div></div>
+              </div>
+            </div>
+            <div class="form-group" id="case-type-grp" style="display:none">
+              <label class="form-label">Case Type <span class="req">*</span></label>
+              <div class="ss-wrap" id="ss-case-type">
+                <div class="ss-trigger" onclick="ssOpen('case-type')"><span class="ss-val ph" id="ss-case-type-val">Select a case type…</span><span class="ss-caret">▾</span></div>
+                <div class="ss-panel" style="display:none"><div class="ss-search-wrap"><input class="ss-search-input" placeholder="Search case types…" oninput="ssFilter('case-type',this.value)"></div><div class="ss-list"></div></div>
+              </div>
             </div>
           </div>
         </div>
@@ -336,719 +355,1171 @@ body { font-family:'DM Sans',sans-serif; background:var(--cream); color:var(--te
 
       <div class="step-nav">
         <span></span>
-        <button class="btn-primary" onclick="goStep(2)" id="btn-step1-next">Continue <span style="font-size:16px">→</span></button>
+        <button class="btn-primary" onclick="goStep(2)">Continue →</button>
       </div>
-    </div>
+    </div><!-- /step-1 -->
 
-    <!-- ── STEP 2: Case Selection ── -->
+    <!-- ── STEP 2 ── -->
     <div id="step-2" style="display:none">
-      <div class="card" id="step2-existing-card">
-        <div class="card-hdr">
-          <span class="card-hdr-icon">⚖️</span>
-          <div><h2>Select the Case</h2><p>Choose the case this filing is associated with.</p></div>
+      <!-- Existing case -->
+      <div id="s2-existing" style="display:none">
+        <div class="card">
+          <div class="card-hdr"><span class="card-hdr-icon">⚖️</span><div><h2>Select the Case</h2><p>Choose the case this filing is associated with.</p></div></div>
+          <div class="card-body">
+            <div class="form-group">
+              <label class="form-label">Search Cases</label>
+              <input class="form-input" id="case-search" placeholder="Case number or party name…" oninput="filterCases(this.value)">
+            </div>
+            <div id="case-list"><div style="color:var(--muted);font-size:13px;padding:18px;text-align:center">Loading cases…</div></div>
+            <div class="or-div"><span>or</span></div>
+            <div style="text-align:center">
+              <p style="font-size:12.5px;color:var(--muted);margin-bottom:10px">Can't find your case? You may need to initiate a new filing.</p>
+              <button class="btn-ghost" onclick="selectFT('new');goStep(1)">Initiate a New Case instead</button>
+            </div>
+          </div>
         </div>
-        <div class="card-body">
-          <div class="form-group">
-            <label class="form-label">Search Cases</label>
-            <input class="form-input" id="case-search" placeholder="Enter case number or party name…" oninput="filterCases(this.value)">
-          </div>
-          <div id="case-list">
-            <div style="color:var(--muted);font-size:13px;padding:20px;text-align:center">Loading cases…</div>
-          </div>
-          <div class="or-divider"><span>or</span></div>
-          <div style="text-align:center">
-            <p style="font-size:13px;color:var(--muted);margin-bottom:12px">Can't find your case? It may not be in the system yet, or you may need to initiate a new filing.</p>
-            <button class="btn-ghost" onclick="selectFilingTypeNew()">Initiate a New Case instead</button>
+        <!-- Attorney party representation (for attorneys on existing cases) -->
+        <div class="card" id="atty-rep-card" style="display:none">
+          <div class="card-hdr"><span class="card-hdr-icon">⚖️</span><div><h2>Your Representation</h2><p>Indicate which party you represent in this case.</p></div></div>
+          <div class="card-body">
+            <div class="form-group">
+              <label class="form-label">Party You Represent <span class="req">*</span></label>
+              <input class="form-input" id="counsel-represents" placeholder="Name of the party you represent in this case…">
+              <div class="form-hint">This will be recorded in the filing and linked to your bar number.</div>
+            </div>
           </div>
         </div>
       </div>
 
-      <div class="card" id="step2-new-card" style="display:none">
-        <div class="card-hdr">
-          <span class="card-hdr-icon">📋</span>
-          <div><h2>New Case — Initiating Parties</h2><p>Provide the primary party information for the new matter.</p></div>
-        </div>
-        <div class="card-body">
-          <div class="callout callout-info">
-            <span class="callout-icon">ℹ️</span>
-            <div class="callout-text">A case number will be assigned by the clerk's office after your filing is reviewed and accepted. You will receive confirmation by email.</div>
-          </div>
-          <!-- Filing party -->
-          <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;font-weight:700;margin-bottom:12px" id="new-party1-label">Plaintiff / Petitioner</div>
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label">First Name <span class="req">*</span></label>
-              <input class="form-input" id="party1-first" placeholder="First name">
+      <!-- New case parties -->
+      <div id="s2-new" style="display:none">
+        <div class="card">
+          <div class="card-hdr"><span class="card-hdr-icon">👥</span><div><h2>Case Parties</h2><p id="party-card-sub">Add all parties to this new case.</p></div></div>
+          <div class="card-body">
+            <div class="callout c-info">
+              <span class="callout-icon">ℹ️</span>
+              <div class="callout-text">A case number will be assigned by the clerk's office after your filing is reviewed and accepted.</div>
             </div>
-            <div class="form-group">
-              <label class="form-label">Last Name <span class="req">*</span></label>
-              <input class="form-input" id="party1-last" placeholder="Last name">
-            </div>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Representing (if attorney)</label>
-            <input class="form-input" id="party1-representing" placeholder="Leave blank if filing on your own behalf">
-          </div>
-
-          <hr style="border:none;border-top:1px solid var(--line);margin:20px 0">
-
-          <div style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;font-weight:700;margin-bottom:12px" id="new-party2-label">Defendant / Respondent</div>
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label">First Name <span class="req">*</span></label>
-              <input class="form-input" id="party2-first" placeholder="First name">
-            </div>
-            <div class="form-group">
-              <label class="form-label">Last Name <span class="req">*</span></label>
-              <input class="form-input" id="party2-last" placeholder="Last name">
-            </div>
-          </div>
-          <div class="form-group">
-            <label class="form-label">Address (if known)</label>
-            <input class="form-input" id="party2-address" placeholder="Street address">
-          </div>
-          <div class="form-row">
-            <div class="form-group">
-              <label class="form-label">City</label>
-              <input class="form-input" id="party2-city" placeholder="City">
-            </div>
-            <div class="form-group">
-              <label class="form-label">ZIP Code</label>
-              <input class="form-input" id="party2-zip" placeholder="48xxx">
-            </div>
+            <div id="parties-container"></div>
+            <button class="add-party-btn" id="add-party-btn" onclick="addParty()">＋ Add Another Party</button>
           </div>
         </div>
       </div>
 
       <div class="step-nav">
         <button class="btn-ghost" onclick="goStep(1)">← Back</button>
-        <button class="btn-primary" onclick="goStep(3)">Continue <span style="font-size:16px">→</span></button>
+        <button class="btn-primary" onclick="goStep(3)">Continue →</button>
       </div>
-    </div>
+    </div><!-- /step-2 -->
 
-    <!-- ── STEP 3: Document Upload ── -->
+    <!-- ── STEP 3 ── -->
     <div id="step-3" style="display:none">
       <div class="card">
-        <div class="card-hdr">
-          <span class="card-hdr-icon">📄</span>
-          <div><h2>Attach Documents</h2><p>Upload the document(s) you are filing with the court.</p></div>
-        </div>
+        <div class="card-hdr"><span class="card-hdr-icon">📄</span><div><h2>Document</h2><p>Select the document type and upload your filing.</p></div></div>
         <div class="card-body">
-          <div class="callout callout-warn">
+          <div class="callout c-warn">
             <span class="callout-icon">⚠️</span>
-            <div class="callout-text">Documents must be in <strong>PDF format</strong>, under <strong>25 MB</strong> each. Ensure all signatures are in place before uploading. Filings with missing signatures will be rejected.</div>
+            <div class="callout-text">Per MCR 2.119, documents must be <strong>PDF format</strong> and <strong>under 5 MB</strong> each. All signatures must be in place before uploading — filings with missing signatures will be rejected.</div>
           </div>
 
           <div class="form-group">
             <label class="form-label">Document Type <span class="req">*</span></label>
-            <select class="form-select" id="doc-type">
-              <option value="">Select document type…</option>
-              <optgroup label="Initiating Documents">
-                <option value="Complaint">Complaint</option>
-                <option value="Petition">Petition</option>
-                <option value="Notice of Appeal">Notice of Appeal</option>
-                <option value="Application for Leave to Appeal">Application for Leave to Appeal</option>
-              </optgroup>
-              <optgroup label="Motions">
-                <option value="Motion">Motion (General)</option>
-                <option value="Motion to Dismiss">Motion to Dismiss</option>
-                <option value="Motion for Summary Judgment">Motion for Summary Judgment</option>
-                <option value="Motion in Limine">Motion in Limine</option>
-                <option value="Motion to Adjourn">Motion to Adjourn</option>
-                <option value="Emergency Motion">Emergency Motion</option>
-              </optgroup>
-              <optgroup label="Briefs & Responses">
-                <option value="Brief">Brief</option>
-                <option value="Response Brief">Response / Answer Brief</option>
-                <option value="Reply Brief">Reply Brief</option>
-                <option value="Answer to Complaint">Answer to Complaint</option>
-                <option value="Affidavit">Affidavit / Declaration</option>
-              </optgroup>
-              <optgroup label="Orders & Judgments">
-                <option value="Proposed Order">Proposed Order</option>
-                <option value="Consent Judgment">Consent Judgment</option>
-                <option value="Stipulation">Stipulation</option>
-              </optgroup>
-              <optgroup label="Other">
-                <option value="Exhibit">Exhibit</option>
-                <option value="Subpoena">Subpoena</option>
-                <option value="Notice">Notice</option>
-                <option value="Proof of Service">Proof of Service</option>
-                <option value="Other">Other</option>
-              </optgroup>
-            </select>
+            <div class="ss-wrap" id="ss-doc-type">
+              <div class="ss-trigger" onclick="ssOpen('doc-type')"><span class="ss-val ph" id="ss-doc-type-val">Select document type…</span><span class="ss-caret">▾</span></div>
+              <div class="ss-panel" style="display:none"><div class="ss-search-wrap"><input class="ss-search-input" placeholder="Search document types…" oninput="ssFilter('doc-type',this.value)"></div><div class="ss-list"></div></div>
+            </div>
+            <div class="form-err" id="doctype-err">Please select a document type.</div>
           </div>
 
           <div class="form-group">
             <label class="form-label">Upload Document(s) <span class="req">*</span></label>
-            <div class="upload-zone" id="upload-zone" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
-              <input type="file" id="file-input" accept=".pdf,application/pdf" multiple onchange="handleFileSelect(this)">
+            <div class="upload-zone" id="upload-zone" ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event)">
+              <input type="file" id="file-input" accept=".pdf,application/pdf" multiple onchange="onFileSelect(this)">
               <div class="upload-icon">📁</div>
               <div class="upload-title">Drag &amp; drop PDF files here</div>
-              <div class="upload-sub">or <strong>click to browse</strong> · PDF only · Max 25 MB per file</div>
+              <div class="upload-sub">or <strong>click to browse</strong> · PDF only · Max <strong>5 MB</strong> per file (MCR 2.119)</div>
             </div>
-            <div class="upload-files" id="upload-files-list"></div>
-            <div class="form-error-msg" id="upload-error">Please attach at least one document before continuing.</div>
+            <div class="file-list" id="file-list"></div>
+            <div class="form-err" id="upload-err">Please attach at least one document.</div>
+          </div>
+
+          <!-- Image exhibits / GDrive -->
+          <div class="form-group">
+            <label class="form-label" style="margin-bottom:10px">Image Exhibits &amp; Attachments</label>
+            <label class="check-opt" id="chk-exhibits-opt" onclick="toggleEl(this,'cb-exhibits',v=>{ hasExhibits=v; document.getElementById('gdrive-section').style.display=v?'block':'none'; })">
+              <input type="checkbox" id="cb-exhibits">
+              <div>
+                <div class="ro-lbl">This filing includes image exhibits or photo attachments</div>
+                <div class="ro-sub">Photographs, scanned images, and non-text exhibits (excluding signatures, seals, and stamps) must be uploaded to Google Drive per MCR 2.119(C).</div>
+              </div>
+            </label>
+            <div class="gdrive-box" id="gdrive-section" style="display:none">
+              <div class="gdrive-box-title">🔗 Google Drive Link Required</div>
+              <p>Upload your image exhibits to Google Drive, then paste the sharing link below. Set access to <strong>"Anyone with the link can view"</strong> — filings with restricted access will be rejected by the clerk.</p>
+              <div class="form-group" style="margin:0">
+                <input class="form-input" id="gdrive-link" placeholder="https://drive.google.com/…">
+                <div class="form-hint">Paste your Google Drive sharing link above.</div>
+                <div class="form-err" id="gdrive-err">Please provide a Google Drive link for your image exhibits.</div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
-
       <div class="step-nav">
         <button class="btn-ghost" onclick="goStep(2)">← Back</button>
-        <button class="btn-primary" onclick="goStep(4)">Continue <span style="font-size:16px">→</span></button>
+        <button class="btn-primary" onclick="goStep(4)">Continue →</button>
       </div>
-    </div>
+    </div><!-- /step-3 -->
 
-    <!-- ── STEP 4: Details ── -->
+    <!-- ── STEP 4 ── -->
     <div id="step-4" style="display:none">
       <div class="card">
-        <div class="card-hdr">
-          <span class="card-hdr-icon">✏️</span>
-          <div><h2>Filing Details</h2><p>Provide additional information about this submission.</p></div>
-        </div>
+        <div class="card-hdr"><span class="card-hdr-icon">✏️</span><div><h2>Filing Details</h2></div></div>
         <div class="card-body">
-          <div class="form-group">
+          <div class="form-group" id="title-grp">
             <label class="form-label">Filing Title <span class="req">*</span></label>
-            <input class="form-input" id="filing-title" placeholder="e.g. Defendant's Motion to Dismiss — Count II">
-            <div class="form-hint">This will appear as the document title in the case record.</div>
-            <div class="form-error-msg" id="title-error">Please enter a filing title.</div>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">Filed On Behalf Of</label>
-            <input class="form-input" id="filed-behalf" placeholder="Leave blank if filing as a pro se party (self-represented)">
-            <div class="form-hint">If you are an attorney, enter the client's name.</div>
+            <input class="form-input" id="filing-title" placeholder="Filing title…">
+            <div class="form-hint" id="title-hint"></div>
+            <div class="form-err" id="title-err">Please enter a filing title.</div>
           </div>
 
           <div class="form-group">
             <label class="form-label">Filer Role</label>
-            <select class="form-select" id="filer-role">
+            <select class="form-input" style="appearance:auto" id="filer-role">
               <option value="">Select your role in this case…</option>
-              <option value="Plaintiff">Plaintiff</option>
-              <option value="Defendant">Defendant</option>
-              <option value="Petitioner">Petitioner</option>
-              <option value="Respondent">Respondent</option>
-              <option value="Appellant">Appellant</option>
-              <option value="Appellee">Appellee</option>
-              <option value="Attorney for Plaintiff">Attorney for Plaintiff</option>
-              <option value="Attorney for Defendant">Attorney for Defendant</option>
-              <option value="Attorney for Petitioner">Attorney for Petitioner</option>
-              <option value="Prosecuting Attorney">Prosecuting Attorney</option>
-              <option value="Other">Other</option>
+              <option>Plaintiff</option><option>Defendant</option><option>Petitioner</option>
+              <option>Respondent</option><option>Appellant</option><option>Appellee</option>
+              <option>Attorney for Plaintiff</option><option>Attorney for Defendant</option>
+              <option>Attorney for Petitioner</option><option>Prosecuting Attorney</option><option>Other</option>
             </select>
           </div>
 
           <div class="form-group">
             <label class="form-label">Notes to the Clerk (optional)</label>
-            <textarea class="form-textarea" id="filing-notes" placeholder="Any special instructions, explanations, or context for the clerk reviewing this filing…"></textarea>
+            <textarea class="form-textarea" id="filing-notes" placeholder="Any special instructions or context for the reviewing clerk…"></textarea>
           </div>
 
           <div class="form-group">
             <label class="form-label">Contact Email for Confirmation <span class="req">*</span></label>
             <input class="form-input" type="email" id="contact-email" placeholder="your@email.com">
-            <div class="form-hint">A confirmation will be sent to this address when your filing is accepted or if action is needed.</div>
-            <div class="form-error-msg" id="email-error">Please enter a valid email address.</div>
+            <div class="form-hint">Confirmation sent here when your filing is accepted or if action is needed.</div>
+            <div class="form-err" id="email-err">Please enter a valid email address.</div>
           </div>
 
-          <!-- Service / notice -->
           <div class="form-group">
-            <label class="form-label" style="margin-bottom:10px">Service Confirmation</label>
-            <div class="check-group">
-              <label class="check-opt" id="check-served" onclick="toggleCheck(this)">
-                <input type="checkbox" id="cb-served">
-                <div>
-                  <div class="ro-label">I have served all opposing parties</div>
-                  <div class="ro-sub">I confirm that a copy of this filing has been or will be served on all parties of record in accordance with court rules.</div>
-                </div>
-              </label>
-              <label class="check-opt" id="check-accurate" onclick="toggleCheck(this)">
-                <input type="checkbox" id="cb-accurate">
-                <div>
-                  <div class="ro-label">This filing is accurate and complete</div>
-                  <div class="ro-sub">I certify that the information and documents submitted are true, accurate, and complete to the best of my knowledge.</div>
-                </div>
-              </label>
-            </div>
+            <label class="form-label" style="margin-bottom:10px">Certification <span class="req">*</span></label>
+            <label class="check-opt" id="chk-accurate-opt" onclick="toggleEl(this,'cb-accurate',v=>certifiedAccurate=v)">
+              <input type="checkbox" id="cb-accurate">
+              <div>
+                <div class="ro-lbl">This filing is accurate and complete</div>
+                <div class="ro-sub">I certify that the information and documents submitted are true, accurate, and complete to the best of my knowledge, and that I am authorized to make this filing with the court.</div>
+              </div>
+            </label>
+            <div class="form-err" id="cert-err">You must certify the accuracy of this filing before continuing.</div>
           </div>
         </div>
       </div>
-
       <div class="step-nav">
         <button class="btn-ghost" onclick="goStep(3)">← Back</button>
-        <button class="btn-primary" onclick="goStep(5)">Review Filing <span style="font-size:16px">→</span></button>
+        <button class="btn-primary" onclick="goStep(5)">Review Filing →</button>
       </div>
-    </div>
+    </div><!-- /step-4 -->
 
-    <!-- ── STEP 5: Review & Submit ── -->
+    <!-- ── STEP 5 ── -->
     <div id="step-5" style="display:none">
       <div class="card">
-        <div class="card-hdr">
-          <span class="card-hdr-icon">🔍</span>
-          <div><h2>Review Your Filing</h2><p>Confirm all details before submitting to the clerk's office.</p></div>
-        </div>
-        <div class="card-body">
-          <div id="review-content"></div>
-        </div>
+        <div class="card-hdr"><span class="card-hdr-icon">🔍</span><div><h2>Review Your Filing</h2><p>Confirm all details before submitting to the clerk's office.</p></div></div>
+        <div class="card-body" id="review-content"></div>
       </div>
-
-      <div class="callout callout-warn">
+      <div class="fee-notice">
+        <span class="fee-notice-text">💰</span>
+        <div class="fee-notice-text"><strong>Filing Fee: FREE</strong> — There is no initial filing fee for electronic submissions. Additional fees (e.g. filing fees, service costs) may be assessed by the court clerk after review. You will be notified before your filing is accepted if any fees are required.</div>
+      </div>
+      <div class="callout c-warn">
         <span class="callout-icon">⚠️</span>
-        <div class="callout-text">Once submitted, your filing will be placed in the clerk's review queue. Submissions cannot be edited after submission — if you need to make changes, contact the court directly.</div>
+        <div class="callout-text">Once submitted, your filing is placed in the clerk's review queue and <strong>cannot be edited</strong>. Contact the court directly if changes are needed after submission.</div>
       </div>
-
       <div class="step-nav">
         <button class="btn-ghost" onclick="goStep(4)">← Back</button>
-        <button class="btn-primary" id="submit-btn" onclick="submitFiling()">
-          <span id="submit-label">Submit Filing</span>
-        </button>
+        <button class="btn-primary" id="submit-btn" onclick="submitFiling()"><span id="submit-lbl">Submit Filing</span></button>
       </div>
-    </div>
+    </div><!-- /step-5 -->
 
-  </div><!-- end .filing-wizard -->
+  </div><!-- /filing-wizard -->
 
-  <!-- ── SUCCESS ── -->
+  <!-- SUCCESS -->
   <div class="success-screen" id="success-screen">
     <div class="success-card">
       <div class="success-icon">✅</div>
       <div class="success-title">Filing Submitted</div>
       <div class="success-sub">Your filing has been received and placed in the clerk's review queue. You will be notified by email once it is reviewed.</div>
-      <div>
-        <span class="conf-label">Confirmation Number</span>
-        <div class="conf-number" id="conf-number">MCR-2026-000000</div>
-      </div>
-      <div style="margin-bottom:28px">
-        <div id="success-case-info" style="font-size:13px;color:var(--muted);line-height:1.7"></div>
-      </div>
+      <span class="conf-lbl">Confirmation Number</span>
+      <div class="conf-num" id="conf-num">MCR-2026-000000</div>
+      <div style="margin-bottom:22px"><div id="success-case-info" style="font-size:13px;color:var(--muted);line-height:1.7"></div></div>
       <div class="success-actions">
         <a href="/courts/micourt/dashboard/" class="btn-primary">← Return to Dashboard</a>
-        <button class="btn-outline" onclick="startNewFiling()">File Another Document</button>
+        <button class="btn-outline" onclick="resetWizard()">File Another Document</button>
       </div>
     </div>
   </div>
-
-</div><!-- end .page-wrap -->
+</div><!-- /page-wrap -->
 
 <script>
-// ── State ──
-let currentStep = 1;
-let filingType  = null;   // 'existing' | 'new'
-let selectedCase = null;  // case object
-let uploadedFiles = [];   // File[]
-let userData = { name:'—', email:'—', uid:null, role:'Portal User', barNumber:null };
-let allCases = [];
-let casesLoaded = false;
+// ══════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════
+let currentStep=1, filingType=null, isFilingAsCounsel=false;
+let selectedCourt=null, selectedCaseType=null, selectedDocType=null;
+let selectedCase=null;
+let parties=[], nextPartyId=1;
+let uploadedFiles=[], hasExhibits=false, gdriveLink='';
+let certifiedAccurate=false;
+let userData={name:'—',email:'—',uid:null,role:'Portal User',barNumber:null};
+let allCases=[], casesLoaded=false;
 
-// ── Helpers ──
-function fmtDate(s) {
-  if (!s) return '—';
-  const d = new Date(s);
-  return isNaN(d) ? s : d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
-}
-function getCaseTitle(c) {
-  const t = (c.caseType||'').toLowerCase();
-  const p = c.parties||{};
-  if (t==='criminal'||t==='traffic') {
-    const def=p.primaryDefendant?.name;
-    return def?`State of Michigan v. ${def}`:'State of Michigan v. Unknown';
-  }
-  if (t==='civil') {
-    const pl=p.primaryPlaintiff?.name, df=p.primaryDefendant?.name;
-    if (pl&&df) return `${pl} v. ${df}`;
-    if (pl) return `Ex parte ${pl}`;
-  }
-  if (t==='appellate'||t==='appeal') {
-    const ap=p.appellant?.name, apl=p.appellee?.name;
-    if (ap&&apl) return `${ap} v. ${apl}`;
-    const s=c.docketSummary?.split('.')[0]?.trim();
-    return (s&&s.length<80)?s:(c.caseId||'Appellate Matter');
-  }
-  if (t==='administrative') {
-    const pet=p.primaryPetitioner?.name||p.petitioner?.name, res=p.respondent?.name;
-    if (pet&&res) return `${pet} v. ${res}`;
-    return c.administrativeSubtype||'Administrative Matter';
-  }
-  return c.caseId||'Case Record';
-}
-function fmtFileSize(bytes) {
-  if (bytes < 1024) return bytes + ' B';
-  if (bytes < 1024*1024) return (bytes/1024).toFixed(1) + ' KB';
-  return (bytes/(1024*1024)).toFixed(1) + ' MB';
-}
-function confNum() {
-  const yr=new Date().getFullYear();
-  const n=Math.floor(100000+Math.random()*900000);
-  return `MCR-${yr}-${n}`;
-}
-function typeBadgeCls(t) {
-  const l=(t||'').toLowerCase();
-  if(l==='criminal')return'tt-criminal';
-  if(l==='civil')return'tt-civil';
-  if(l==='appellate'||l==='appeal')return'tt-appellate';
-  if(l==='traffic')return'tt-traffic';
-  if(l==='administrative')return'tt-admin';
-  return'tt-civil';
+// ══════════════════════════════════════════════════
+// DATA
+// ══════════════════════════════════════════════════
+const COURTS = [
+  {v:'Genesee Co. District Court', l:'Genesee County District Court', d:'The trial court serving Genesee County, Michigan. Handles criminal, civil, traffic, and other matters.'},
+  {v:'Michigan Supreme Court', l:'Michigan Supreme Court', d:'The highest court in Michigan. Handles appeals, original actions, and extraordinary writs.'},
+];
+
+const CASE_TYPES = {
+  'Genesee Co. District Court': [
+    {v:'Small Claims', l:'Small Claims Action', d:'Civil cases involving $20,000 or less in monetary damages. Simplified procedures.'},
+    {v:'General Civil', l:'General Civil', d:'Standard civil lawsuits involving disputes over $20,000 or complex legal issues.'},
+    {v:'Civil Infraction', l:'Civil Infraction', d:'Contesting non-criminal violations: traffic tickets, local ordinance violations, etc.'},
+    {v:'Expungement', l:'Expungement', d:'Petition to set aside a criminal conviction and remove it from public records.'},
+    {v:'Criminal', l:'Criminal', d:'Misdemeanor or felony charges. Restricted to prosecuting (state) attorneys.', staffOnly:true},
+    {v:'Administrative', l:'Administrative', d:'Appeals from government agency decisions, licensing matters, and other administrative proceedings.'},
+    {v:'Special Proceeding', l:'Special Proceeding', d:'Forfeiture proceedings, writs of garnishment, habeas corpus, contempt, foreign judgment enforcement, etc.'},
+  ],
+  'Michigan Supreme Court': [
+    {v:'Appellate', l:'Appellate', d:'Appeals from lower court decisions, by right (notice of appeal) or by leave (application for leave to appeal).'},
+    {v:'Administrative Appeal', l:'Administrative Appeal', d:'Direct appeals of final administrative agency orders to the Supreme Court.'},
+    {v:'Original Action', l:'Original Action', d:'Cases originating directly in the Supreme Court, not arising from a lower court.'},
+    {v:'Extraordinary Writ', l:'Extraordinary Writ', d:'Petitions for mandamus, prohibition, superintending control, quo warranto, and other extraordinary relief. Does not include certiorari — use Appellate filing for that.'},
+  ],
+};
+
+const DOC_TYPES = {
+  'Small Claims':[
+    {g:'Initiating Documents',v:'Small Claims Complaint (DC 84)',d:'The standard DC 84 form to initiate a small claims action.'},
+    {g:'Motions',v:'Motion to Set Aside Default',d:''},
+    {g:'Motions',v:'Motion to Transfer to Civil Division',d:''},
+    {g:'Motions',v:'Motion (General)',d:''},
+    {g:'Responses',v:'Response / Answer',d:''},
+    {g:'Other',v:'Notice of Appeal',d:''},{g:'Other',v:'Proof of Service',d:''},{g:'Other',v:'Other',d:''},
+  ],
+  'General Civil':[
+    {g:'Initiating Documents',v:'Civil Complaint',d:'Initiating document for a general civil lawsuit.'},
+    {g:'Motions',v:'Motion to Dismiss',d:''},{g:'Motions',v:'Motion for Summary Judgment',d:''},
+    {g:'Motions',v:'Motion in Limine',d:''},{g:'Motions',v:'Motion to Adjourn',d:''},
+    {g:'Motions',v:'Emergency Motion',d:''},{g:'Motions',v:'Motion (General)',d:''},
+    {g:'Responses & Briefs',v:'Answer to Complaint',d:''},{g:'Responses & Briefs',v:'Brief',d:''},
+    {g:'Responses & Briefs',v:'Response / Answer Brief',d:''},{g:'Responses & Briefs',v:'Reply Brief',d:''},
+    {g:'Supporting Documents',v:'Affidavit / Declaration',d:''},{g:'Supporting Documents',v:'Proposed Order',d:''},
+    {g:'Supporting Documents',v:'Consent Judgment',d:''},{g:'Supporting Documents',v:'Stipulation',d:''},
+    {g:'Other',v:'Notice of Appeal',d:''},{g:'Other',v:'Subpoena',d:''},{g:'Other',v:'Proof of Service',d:''},
+    {g:'Other',v:'Notice',d:''},{g:'Other',v:'Other',d:''},
+  ],
+  'Civil Infraction':[
+    {g:'Initiating Documents',v:'Demand for Formal Hearing',d:'Request a formal court hearing to contest a civil infraction citation.'},
+    {g:'Motions',v:'Motion to Dismiss',d:''},{g:'Motions',v:'Motion (General)',d:''},
+    {g:'Responses & Briefs',v:'Brief',d:''},{g:'Responses & Briefs',v:'Response',d:''},
+    {g:'Other',v:'Notice',d:''},{g:'Other',v:'Proof of Service',d:''},{g:'Other',v:'Other',d:''},
+  ],
+  'Expungement':[
+    {g:'Initiating Documents',v:'Petition to Set Aside Conviction (MC 227)',d:'The standard MC 227 form to petition for expungement of a criminal conviction.'},
+    {g:'Motions',v:'Motion (General)',d:''},
+    {g:'Responses & Briefs',v:'Brief',d:''},{g:'Responses & Briefs',v:'Response',d:''},
+    {g:'Other',v:'Proof of Service',d:''},{g:'Other',v:'Other',d:''},
+  ],
+  'Criminal':[
+    {g:'Initiating Documents',v:'Criminal Complaint / Information',d:'Formal charging document initiating criminal proceedings.'},
+    {g:'Motions',v:'Motion to Dismiss',d:''},{g:'Motions',v:'Motion to Suppress',d:'Motion to suppress unlawfully obtained evidence.'},
+    {g:'Motions',v:'Motion in Limine',d:''},{g:'Motions',v:'Motion to Adjourn',d:''},
+    {g:'Motions',v:'Emergency Motion',d:''},{g:'Motions',v:'Motion (General)',d:''},
+    {g:'Responses & Briefs',v:'Brief',d:''},{g:'Responses & Briefs',v:'Response Brief',d:''},
+    {g:'Responses & Briefs',v:'Reply Brief',d:''},
+    {g:'Supporting Documents',v:'Affidavit / Declaration',d:''},{g:'Supporting Documents',v:'Proposed Order',d:''},
+    {g:'Supporting Documents',v:'Plea Agreement',d:''},
+    {g:'Other',v:'Subpoena',d:''},{g:'Other',v:'Proof of Service',d:''},{g:'Other',v:'Notice',d:''},{g:'Other',v:'Other',d:''},
+  ],
+  'Administrative':[
+    {g:'Initiating Documents',v:'Petition',d:'Initiating petition for administrative proceedings.'},
+    {g:'Motions',v:'Motion (General)',d:''},
+    {g:'Responses & Briefs',v:'Brief',d:''},{g:'Responses & Briefs',v:'Response',d:''},{g:'Responses & Briefs',v:'Reply Brief',d:''},
+    {g:'Supporting Documents',v:'Affidavit / Declaration',d:''},{g:'Supporting Documents',v:'Proposed Order',d:''},
+    {g:'Other',v:'Proof of Service',d:''},{g:'Other',v:'Notice',d:''},{g:'Other',v:'Other',d:''},
+  ],
+  'Special Proceeding':[
+    {g:'Initiating Documents',v:'Petition',d:'General petition for a special proceeding.'},
+    {g:'Initiating Documents',v:'Application for Writ of Garnishment',d:'Application to garnish wages or assets to satisfy a judgment.'},
+    {g:'Initiating Documents',v:'Application for Writ of Habeas Corpus',d:'Petition challenging unlawful detention.'},
+    {g:'Initiating Documents',v:'Petition for Order of Contempt',d:'Petition to hold a party in contempt of court.'},
+    {g:'Motions',v:'Motion (General)',d:''},
+    {g:'Responses & Briefs',v:'Brief',d:''},{g:'Responses & Briefs',v:'Response',d:''},
+    {g:'Supporting Documents',v:'Affidavit / Declaration',d:''},{g:'Supporting Documents',v:'Proposed Order',d:''},
+    {g:'Other',v:'Proof of Service',d:''},{g:'Other',v:'Notice',d:''},{g:'Other',v:'Other',d:''},
+  ],
+  'Appellate':[
+    {g:'Initiating Documents',v:'Application for Leave to Appeal',d:'Request for the Supreme Court to exercise discretionary jurisdiction.'},
+    {g:'Initiating Documents',v:'Notice of Appeal (as of right)',d:'Notice for appeals where right of appeal is guaranteed by court rule.'},
+    {g:'Briefs',v:'Brief (Appellant/Applicant)',d:''},{g:'Briefs',v:'Brief (Appellee/Respondent)',d:''},
+    {g:'Briefs',v:'Reply Brief',d:''},{g:'Briefs',v:'Amicus Curiae Brief',d:'Brief filed by a non-party with a strong interest in the case.'},
+    {g:'Motions',v:'Motion for Oral Argument',d:''},{g:'Motions',v:'Motion (General)',d:''},
+    {g:'Other',v:'Response',d:''},{g:'Other',v:'Proposed Order',d:''},{g:'Other',v:'Proof of Service',d:''},{g:'Other',v:'Other',d:''},
+  ],
+  'Administrative Appeal':[
+    {g:'Initiating Documents',v:'Petition for Review',d:'Petition to review a final administrative agency order.'},
+    {g:'Briefs',v:'Brief',d:''},{g:'Briefs',v:'Response',d:''},{g:'Briefs',v:'Reply Brief',d:''},
+    {g:'Motions',v:'Motion (General)',d:''},
+    {g:'Other',v:'Proof of Service',d:''},{g:'Other',v:'Other',d:''},
+  ],
+  'Original Action':[
+    {g:'Initiating Documents',v:'Complaint',d:'Complaint originating directly in the Supreme Court.'},
+    {g:'Motions',v:'Motion (General)',d:''},
+    {g:'Responses & Briefs',v:'Brief',d:''},{g:'Responses & Briefs',v:'Response',d:''},
+    {g:'Supporting Documents',v:'Affidavit / Declaration',d:''},{g:'Supporting Documents',v:'Proposed Order',d:''},
+    {g:'Other',v:'Other',d:''},
+  ],
+  'Extraordinary Writ':[
+    {g:'Initiating Documents',v:'Petition for Writ of Mandamus',d:'Petition compelling a government official or lower court to perform a required duty.'},
+    {g:'Initiating Documents',v:'Petition for Writ of Prohibition',d:'Petition prohibiting a lower court from exceeding its jurisdiction.'},
+    {g:'Initiating Documents',v:'Petition for Superintending Control',d:'Petition for the Supreme Court to supervise a lower court or tribunal.'},
+    {g:'Initiating Documents',v:'Petition for Quo Warranto',d:"Petition challenging a person's authority to hold public office."},
+    {g:'Briefs & Responses',v:'Brief',d:''},{g:'Briefs & Responses',v:'Response',d:''},
+    {g:'Motions',v:'Motion (General)',d:''},
+    {g:'Supporting Documents',v:'Affidavit / Declaration',d:''},
+    {g:'Other',v:'Other',d:''},
+  ],
+};
+
+// Role names by case type
+function getRoles(ct){
+  const m={
+    'Small Claims':['Plaintiff','Defendant'],
+    'General Civil':['Plaintiff','Defendant'],
+    'Civil Infraction':['Defendant','Prosecuting Authority'],
+    'Expungement':['Petitioner','Respondent'],
+    'Criminal':['Prosecution','Defendant'],
+    'Administrative':['Petitioner','Respondent'],
+    'Special Proceeding':['Petitioner','Respondent'],
+    'Appellate':['Appellant','Appellee'],
+    'Administrative Appeal':['Petitioner','Respondent'],
+    'Original Action':['Plaintiff','Defendant'],
+    'Extraordinary Writ':['Petitioner','Respondent'],
+  };
+  return m[ct]||['Plaintiff','Defendant'];
 }
 
-// ── Steps ──
-function updateStepUI() {
-  for (let i=1;i<=5;i++) {
-    const ind = document.getElementById('step-ind-'+i);
-    const circ= document.getElementById('step-circle-'+i);
-    ind.classList.remove('active','done');
-    circ.textContent = i < currentStep ? '✓' : i;
-    if (i < currentStep) { ind.classList.add('done'); }
-    else if (i === currentStep) { ind.classList.add('active'); }
-    if (i < 5) {
-      const line = document.getElementById(`line-${i}-${i+1}`);
-      if (i < currentStep) line.classList.add('done');
-      else line.classList.remove('done');
+function canFileCriminal(role){
+  return ['State Attorney','Clerk','Magistrate Judge','Judge','Chief Judge'].includes(role);
+}
+
+// ══════════════════════════════════════════════════
+// SEARCHABLE SELECT
+// ══════════════════════════════════════════════════
+const SS={};
+
+function ssInit(id, opts){
+  SS[id]={opts:opts||[], value:null, label:null};
+}
+
+function ssOpen(id){
+  Object.keys(SS).forEach(k=>{ if(k!==id && document.getElementById('ss-'+k)?.querySelector('.ss-panel')?.style.display!=='none') ssClose(k); });
+  const wrap=document.getElementById('ss-'+id);
+  if(!wrap) return;
+  wrap.querySelector('.ss-trigger').classList.add('open');
+  const panel=wrap.querySelector('.ss-panel');
+  panel.style.display='flex';
+  const inp=panel.querySelector('.ss-search-input');
+  inp.value='';
+  ssRenderOpts(id,'');
+  inp.focus();
+}
+
+function ssClose(id){
+  const wrap=document.getElementById('ss-'+id);
+  if(!wrap) return;
+  wrap.querySelector('.ss-trigger').classList.remove('open');
+  wrap.querySelector('.ss-panel').style.display='none';
+}
+
+function ssFilter(id,q){
+  ssRenderOpts(id,q);
+}
+
+function ssRenderOpts(id,q){
+  if(!SS[id]) return;
+  const list=document.getElementById('ss-'+id)?.querySelector('.ss-list');
+  if(!list) return;
+  const lq=(q||'').toLowerCase().trim();
+  const opts=SS[id].opts.filter(o=>!lq||o.l.toLowerCase().includes(lq)||(o.d||'').toLowerCase().includes(lq)||(o.v||'').toLowerCase().includes(lq));
+  if(!opts.length){list.innerHTML='<div class="ss-none">No options found</div>';return;}
+  
+  // Group rendering
+  const groups=[];
+  const seen={};
+  opts.forEach(o=>{
+    const g=o.g||'';
+    if(!seen[g]){seen[g]=true;groups.push(g);}
+  });
+  
+  let html='';
+  if(groups.length===1&&groups[0]===''){
+    opts.forEach(o=>{html+=ssOptHtml(id,o);});
+  } else {
+    groups.forEach(g=>{
+      if(g) html+=`<div class="ss-group">${g}</div>`;
+      opts.filter(o=>(o.g||'')===(g)).forEach(o=>{html+=ssOptHtml(id,o);});
+    });
+  }
+  list.innerHTML=html;
+}
+
+function ssOptHtml(id,o){
+  const sel=SS[id]?.value===o.v?' ss-sel':'';
+  return `<div class="ss-opt${sel}" onclick="ssPick('${id}','${esc(o.v)}','${esc(o.l)}')">
+    <div class="ss-opt-lbl">${o.l}</div>
+    ${o.d?`<div class="ss-opt-desc">${o.d}</div>`:''}
+  </div>`;
+}
+
+function ssPick(id,value,label){
+  if(!SS[id]) return;
+  SS[id].value=value; SS[id].label=label;
+  const vEl=document.getElementById('ss-'+id+'-val');
+  if(vEl){vEl.textContent=label;vEl.classList.remove('ph');}
+  ssClose(id);
+  // Trigger change handlers
+  if(id==='court') onCourtChange(value);
+  if(id==='case-type') onCaseTypeChange(value);
+  if(id==='doc-type') onDocTypeChange(value);
+  document.getElementById('ss-'+id)?.querySelector('.ss-trigger')?.classList.remove('ss-err');
+}
+
+function ssGet(id){ return SS[id]?.value||null; }
+function ssGetLabel(id){ return SS[id]?.label||null; }
+
+function ssSetOpts(id,opts){
+  if(!SS[id]) SS[id]={};
+  SS[id].opts=opts;
+  SS[id].value=null; SS[id].label=null;
+  const vEl=document.getElementById('ss-'+id+'-val');
+  if(vEl){vEl.textContent=id==='court'?'Select a court…':id==='case-type'?'Select a case type…':'Select document type…'; vEl.classList.add('ph');}
+}
+
+function ssReset(id){
+  if(!SS[id]) return;
+  SS[id].value=null; SS[id].label=null;
+  const vEl=document.getElementById('ss-'+id+'-val');
+  if(vEl){vEl.textContent=id==='doc-type'?'Select document type…':id==='case-type'?'Select a case type…':'Select a court…';vEl.classList.add('ph');}
+  document.getElementById('ss-'+id)?.querySelector('.ss-trigger')?.classList.remove('ss-err');
+}
+
+function ssErr(id){ document.getElementById('ss-'+id)?.querySelector('.ss-trigger')?.classList.add('ss-err'); }
+
+function esc(s){ return (s||'').replace(/'/g,"\\'").replace(/"/g,'&quot;'); }
+
+// Close on outside click
+document.addEventListener('click',e=>{
+  Object.keys(SS).forEach(id=>{
+    const wrap=document.getElementById('ss-'+id);
+    if(wrap && !wrap.contains(e.target)) ssClose(id);
+  });
+});
+
+// ══════════════════════════════════════════════════
+// CHANGE HANDLERS
+// ══════════════════════════════════════════════════
+function onCourtChange(court){
+  selectedCourt=court;
+  const ctGrp=document.getElementById('case-type-grp');
+  ctGrp.style.display='block';
+  // Build case type options
+  let rawTypes=(CASE_TYPES[court]||[]);
+  if(!canFileCriminal(userData.role)){
+    rawTypes=rawTypes.filter(t=>!t.staffOnly);
+  }
+  ssSetOpts('case-type', rawTypes.map(t=>({v:t.v,l:t.l,d:t.d,g:''})));
+  ssReset('case-type');
+  selectedCaseType=null;
+  // Reset doc type too
+  ssReset('doc-type');
+  selectedDocType=null;
+  // Reset parties
+  parties=[];nextPartyId=1;
+  document.getElementById('add-party-btn')?.addEventListener;
+}
+
+function onCaseTypeChange(ct){
+  selectedCaseType=ct;
+  // Set doc types
+  const docs=DOC_TYPES[ct]||[];
+  ssSetOpts('doc-type', docs.map(d=>({v:d.v,l:d.v,d:d.d,g:d.g})));
+  ssReset('doc-type');
+  selectedDocType=null;
+  // Update party card subtitle
+  const roles=getRoles(ct);
+  const sub=document.getElementById('party-card-sub');
+  if(sub) sub.textContent=`Add all parties — primary parties are ${roles[0]} and ${roles[1]}.`;
+  // Re-init parties with correct roles
+  initParties(ct);
+}
+
+function onDocTypeChange(dt){
+  selectedDocType=dt;
+  document.getElementById('doctype-err').classList.remove('show');
+  // Auto-fill title
+  refreshTitle();
+}
+
+function refreshTitle(){
+  const dt=ssGet('doc-type')||selectedDocType||'';
+  const inp=document.getElementById('filing-title');
+  if(!inp) return;
+  if(filingType==='new'){
+    inp.value=computeAutoTitle(dt);
+    inp.readOnly=true;
+    document.getElementById('title-hint').textContent='Auto-generated from document type and party names. Not editable for new cases.';
+  } else {
+    if(!inp.dataset.userEdited){
+      inp.value=computeAutoTitle(dt);
     }
-    document.getElementById('step-'+i).style.display = (i===currentStep)?'block':'none';
+    inp.readOnly=false;
+    document.getElementById('title-hint').textContent='Auto-filled from document type. You may edit this.';
+    inp.addEventListener('input',()=>{ inp.dataset.userEdited='1'; },{ once:true });
   }
 }
 
-function goStep(n) {
-  if (n > currentStep && !validateStep(currentStep)) return;
-  currentStep = n;
-  if (n === 2) setupStep2();
-  if (n === 5) buildReview();
+function computeAutoTitle(dt){
+  if(!dt) return '';
+  if(filingType==='new'){
+    const name1=getPartyName(parties[0]);
+    const name2=getPartyName(parties[1]);
+    if(name1&&name2) return `${dt} — ${name1} v. ${name2}`;
+    if(name1) return `${dt} — ${name1}`;
+    return dt;
+  } else if(selectedCase){
+    return `${dt} — ${getCaseTitle(selectedCase)}`;
+  }
+  return dt;
+}
+
+// ══════════════════════════════════════════════════
+// PARTY MANAGEMENT
+// ══════════════════════════════════════════════════
+function initParties(ct){
+  const roles=getRoles(ct||selectedCaseType||'');
+  parties=[];
+  nextPartyId=1;
+  // Special cases
+  if(ct==='Criminal'&&canFileCriminal(userData.role)){
+    // Party 1 = State of Michigan (prosecution), pre-filled
+    parties.push({
+      id:nextPartyId++, role:roles[0], actorType:'Governmental Entity',
+      govType:'Jurisdiction', jurisdiction:'State of Michigan', jurisdictionManual:'', publicBodyName:'',
+      firstName:'', lastName:'', pin:'', orgName:'', repName:'', repPin:'',
+      isRepresented:false, locked:true
+    });
+    parties.push({id:nextPartyId++, role:roles[1], actorType:'Natural Person', firstName:'', lastName:'', pin:'', orgName:'', repName:'', repPin:'', govType:'', jurisdiction:'', jurisdictionManual:'', publicBodyName:'', isRepresented:false});
+  } else if(ct==='Expungement'){
+    parties.push({id:nextPartyId++, role:roles[0], actorType:'Natural Person', firstName:'', lastName:'', pin:'', orgName:'', repName:'', repPin:'', govType:'', jurisdiction:'', jurisdictionManual:'', publicBodyName:'', isRepresented:false});
+    // Auto-add State of Michigan as respondent
+    parties.push({
+      id:nextPartyId++, role:roles[1], actorType:'Governmental Entity',
+      govType:'Jurisdiction', jurisdiction:'State of Michigan', jurisdictionManual:'', publicBodyName:'',
+      firstName:'', lastName:'', pin:'', orgName:'', repName:'', repPin:'',
+      isRepresented:false, locked:true
+    });
+  } else {
+    parties.push({id:nextPartyId++, role:roles[0], actorType:'Natural Person', firstName:'', lastName:'', pin:'', orgName:'', repName:'', repPin:'', govType:'', jurisdiction:'', jurisdictionManual:'', publicBodyName:'', isRepresented:false});
+    parties.push({id:nextPartyId++, role:roles[1], actorType:'Natural Person', firstName:'', lastName:'', pin:'', orgName:'', repName:'', repPin:'', govType:'', jurisdiction:'', jurisdictionManual:'', publicBodyName:'', isRepresented:false});
+  }
+  renderParties();
+}
+
+function addParty(){
+  const roles=getRoles(selectedCaseType||'');
+  parties.push({id:nextPartyId++, role:roles[1], actorType:'Natural Person', firstName:'', lastName:'', pin:'', orgName:'', repName:'', repPin:'', govType:'', jurisdiction:'', jurisdictionManual:'', publicBodyName:'', isRepresented:false});
+  renderParties();
+}
+window.addParty=addParty;
+
+function removeParty(id){
+  parties=parties.filter(p=>p.id!==id);
+  renderParties();
+  refreshTitle();
+}
+window.removeParty=removeParty;
+
+function getParty(id){ return parties.find(p=>p.id===id); }
+
+function setPartyField(id, field, value){
+  const p=getParty(id);
+  if(p){ p[field]=value; refreshTitle(); }
+}
+window.setPartyField=setPartyField;
+
+function setPartyActorType(id, type){
+  const p=getParty(id);
+  if(p){ p.actorType=type; renderParties(); }
+}
+window.setPartyActorType=setPartyActorType;
+
+function setPartyRole(id, role){
+  const p=getParty(id);
+  if(p){ p.role=role; renderParties(); }
+}
+window.setPartyRole=setPartyRole;
+
+function setPartyGovType(id, type){
+  const p=getParty(id);
+  if(p){
+    p.govType=type;
+    const jurDiv=document.getElementById('jur-'+id);
+    const pbDiv=document.getElementById('pb-'+id);
+    if(jurDiv) jurDiv.style.display=type==='Jurisdiction'?'block':'none';
+    if(pbDiv) pbDiv.style.display=type==='Public Body'?'block':'none';
+  }
+}
+window.setPartyGovType=setPartyGovType;
+
+function setPartyJurisdiction(id, val){
+  const p=getParty(id);
+  if(p){
+    p.jurisdiction=val;
+    const manual=document.getElementById('jur-manual-'+id);
+    if(manual) manual.style.display=val==='Other'?'block':'none';
+  }
+}
+window.setPartyJurisdiction=setPartyJurisdiction;
+
+function toggleCounselParty(id, checked){
+  const p=getParty(id);
+  if(p) p.isRepresented=checked;
+}
+window.toggleCounselParty=toggleCounselParty;
+
+function getPartyName(p){
+  if(!p) return '';
+  if(p.actorType==='Natural Person') return [p.firstName,p.lastName].filter(Boolean).join(' ');
+  if(p.actorType==='Business or Organization') return p.orgName||'';
+  if(p.actorType==='Governmental Entity'){
+    if(p.govType==='Jurisdiction') return p.jurisdictionManual||p.jurisdiction||'';
+    return p.publicBodyName||'';
+  }
+  return '';
+}
+
+function renderParties(){
+  const ct=document.getElementById('parties-container');
+  if(!ct) return;
+  const roles=getRoles(selectedCaseType||'');
+  ct.innerHTML=parties.map((p,i)=>renderPartyCard(p,i,roles)).join('');
+}
+
+function renderPartyCard(p,i,roles){
+  const isFirst=i===0;
+  const locked=p.locked;
+  const roleOpts=roles.map(r=>`<option${p.role===r?' selected':''}>${r}</option>`).join('');
+  const addRoles=['Third Party','Intervenor','Cross-Claimant','Cross-Defendant','Counter-Claimant','Counter-Defendant'];
+  const extraOpts=i>=2?addRoles.map(r=>`<option${p.role===r?' selected':''}>${r}</option>`).join(''):'';
+
+  const actorTypes=['Natural Person','Business or Organization','Governmental Entity'];
+  const actorRadios=actorTypes.map(t=>`
+    <label class="inline-radio${p.actorType===t?' sel':''}" onclick="this.classList.toggle('sel',true);document.querySelectorAll('#at-grp-${p.id} .inline-radio').forEach(x=>x!=this&&x.classList.remove('sel'));setPartyActorType(${p.id},'${t}')">
+      <input type="radio" name="at-${p.id}" value="${t}"${p.actorType===t?' checked':''}> ${t}
+    </label>`).join('');
+
+  let fields='';
+  if(p.actorType==='Natural Person'){
+    fields=`
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">First Name <span class="req">*</span></label>
+          <input class="form-input" value="${esc(p.firstName)}" oninput="setPartyField(${p.id},'firstName',this.value)"${locked?' readonly':''}>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Last Name <span class="req">*</span></label>
+          <input class="form-input" value="${esc(p.lastName)}" oninput="setPartyField(${p.id},'lastName',this.value)"${locked?' readonly':''}>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Personal Identification Number (PIN) <span class="req">*</span> <a class="pin-help" href="https://example.com" target="_blank" title="What is a PIN?">?</a></label>
+        <input class="form-input" value="${esc(p.pin)}" placeholder="Michigan PIN" oninput="setPartyField(${p.id},'pin',this.value)"${locked?' readonly':''}>
+        <div class="form-hint">The Michigan state-issued personal identification number. <a href="https://example.com" target="_blank" style="color:var(--blue)">Learn what a PIN is →</a></div>
+      </div>`;
+  } else if(p.actorType==='Business or Organization'){
+    fields=`
+      <div class="form-group">
+        <label class="form-label">Organization Name <span class="req">*</span></label>
+        <input class="form-input" value="${esc(p.orgName)}" oninput="setPartyField(${p.id},'orgName',this.value)"${locked?' readonly':''}>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Representative Name <span class="req">*</span></label>
+          <input class="form-input" value="${esc(p.repName)}" oninput="setPartyField(${p.id},'repName',this.value)"${locked?' readonly':''}>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Representative PIN <span class="req">*</span> <a class="pin-help" href="https://example.com" target="_blank">?</a></label>
+          <input class="form-input" value="${esc(p.repPin)}" placeholder="Michigan PIN" oninput="setPartyField(${p.id},'repPin',this.value)"${locked?' readonly':''}>
+        </div>
+      </div>`;
+  } else {
+    // Governmental Entity
+    const jurs=['City of Flint','Genesee County','State of Michigan','Other'];
+    const jurOpts=jurs.map(j=>`<option value="${j}"${p.jurisdiction===j?' selected':''}>${j}</option>`).join('');
+    fields=`
+      <div class="form-group">
+        <label class="form-label">Government Type <span class="req">*</span></label>
+        <div class="inline-radio-group">
+          <label class="inline-radio${p.govType==='Jurisdiction'?' sel':''}" onclick="this.closest('.inline-radio-group').querySelectorAll('.inline-radio').forEach(x=>x.classList.remove('sel'));this.classList.add('sel');setPartyGovType(${p.id},'Jurisdiction')">
+            <input type="radio" name="gt-${p.id}" value="Jurisdiction"${p.govType==='Jurisdiction'?' checked':''}> Jurisdiction
+          </label>
+          <label class="inline-radio${p.govType==='Public Body'?' sel':''}" onclick="this.closest('.inline-radio-group').querySelectorAll('.inline-radio').forEach(x=>x.classList.remove('sel'));this.classList.add('sel');setPartyGovType(${p.id},'Public Body')">
+            <input type="radio" name="gt-${p.id}" value="Public Body"${p.govType==='Public Body'?' checked':''}> Public Body
+          </label>
+        </div>
+      </div>
+      <div id="jur-${p.id}" style="display:${p.govType==='Jurisdiction'?'block':'none'}">
+        <div class="form-group">
+          <label class="form-label">Jurisdiction <span class="req">*</span></label>
+          <select class="form-input" style="appearance:auto" onchange="setPartyJurisdiction(${p.id},this.value)"${locked?' disabled':''}>
+            <option value="">Select…</option>${jurOpts}
+          </select>
+        </div>
+        <div id="jur-manual-${p.id}" class="form-group jur-manual" style="display:${p.jurisdiction==='Other'?'block':'none'}">
+          <label class="form-label">Jurisdiction Name <span class="req">*</span></label>
+          <input class="form-input" value="${esc(p.jurisdictionManual)}" placeholder="Enter jurisdiction name" oninput="setPartyField(${p.id},'jurisdictionManual',this.value)">
+        </div>
+      </div>
+      <div id="pb-${p.id}" style="display:${p.govType==='Public Body'?'block':'none'}">
+        <div class="form-group">
+          <label class="form-label">Public Body Name <span class="req">*</span></label>
+          <input class="form-input" value="${esc(p.publicBodyName)}" placeholder="e.g. Flint Water Advisory Task Force" oninput="setPartyField(${p.id},'publicBodyName',this.value)">
+        </div>
+      </div>`;
+  }
+
+  const counselRow=isFilingAsCounsel&&!locked?`
+    <label class="counsel-flag" onclick="this.querySelector('input').checked=!this.querySelector('input').checked;toggleCounselParty(${p.id},this.querySelector('input').checked)">
+      <input type="checkbox"${p.isRepresented?' checked':''}> <span>I represent this party (as counsel of record)</span>
+    </label>`:'';
+
+  return `
+    <div class="party-card" id="pc-${p.id}">
+      <div class="party-card-hdr">
+        <div class="pch-left">
+          <span class="pch-num">Party ${i+1}</span>
+          <span class="pch-role">${p.role}</span>
+        </div>
+        ${!locked&&i>0?`<button class="party-remove-btn" onclick="removeParty(${p.id})">× Remove</button>`:'<span style="font-size:11px;color:var(--muted)">'+(locked?'Auto-added':'Required')+'</span>'}
+      </div>
+      <div class="party-card-body">
+        ${i>=2?`<div class="form-group"><label class="form-label">Role <span class="req">*</span></label><select class="form-input" style="appearance:auto" onchange="setPartyRole(${p.id},this.value)"><optgroup label="Standard">${roleOpts}</optgroup><optgroup label="Additional">${extraOpts}</optgroup></select></div>`:''}
+        <div class="form-group">
+          <label class="form-label">Actor Type <span class="req">*</span></label>
+          <div class="inline-radio-group" id="at-grp-${p.id}">${actorRadios}</div>
+        </div>
+        ${fields}
+        ${counselRow}
+      </div>
+    </div>`;
+}
+
+// ══════════════════════════════════════════════════
+// STEP 1 HANDLERS
+// ══════════════════════════════════════════════════
+function selectFT(type, el){
+  filingType=type;
+  document.querySelectorAll('.radio-opt').forEach(o=>o.classList.remove('sel'));
+  if(el) el.classList.add('sel');
+  else {
+    document.getElementById('opt-'+type)?.classList.add('sel');
+    document.getElementById('ft-'+type).checked=true;
+  }
+  document.getElementById('new-opts').style.display=type==='new'?'block':'none';
+}
+window.selectFT=selectFT;
+
+function toggleEl(opt, cbId, onChange){
+  const cb=document.getElementById(cbId);
+  cb.checked=!cb.checked;
+  opt.classList.toggle('sel',cb.checked);
+  onChange(cb.checked);
+}
+window.toggleEl=toggleEl;
+
+function toggleCounselCheck(el){
+  const cb=document.getElementById('cb-counsel');
+  cb.checked=!cb.checked;
+  el.classList.toggle('sel',cb.checked);
+  isFilingAsCounsel=cb.checked;
+  if(parties.length) renderParties();
+}
+window.toggleCounselCheck=toggleCounselCheck;
+
+// ══════════════════════════════════════════════════
+// STEP NAVIGATION
+// ══════════════════════════════════════════════════
+function updateStepUI(){
+  for(let i=1;i<=5;i++){
+    const ind=document.getElementById('si-'+i);
+    const circ=document.getElementById('sc-'+i);
+    ind.classList.remove('active','done');
+    circ.textContent=i<currentStep?'✓':String(i);
+    if(i<currentStep){ind.classList.add('done');}
+    else if(i===currentStep){ind.classList.add('active');}
+    if(i<5){
+      const ln=document.getElementById('ln-'+i+(i+1));
+      if(ln) i<currentStep?ln.classList.add('done'):ln.classList.remove('done');
+    }
+    document.getElementById('step-'+i).style.display=i===currentStep?'block':'none';
+  }
+}
+
+function goStep(n){
+  if(n>currentStep&&!validateStep(currentStep)) return;
+  currentStep=n;
+  if(n===2) setupStep2();
+  if(n===3) setupStep3();
+  if(n===4) setupStep4();
+  if(n===5) buildReview();
   updateStepUI();
   window.scrollTo({top:0,behavior:'smooth'});
 }
+window.goStep=goStep;
 
-function validateStep(s) {
-  if (s===1) {
-    if (!filingType) { alert('Please select a filing type.'); return false; }
-    if (filingType==='new') {
-      const ct=document.getElementById('new-case-type').value;
-      const co=document.getElementById('new-court').value;
-      if (!ct||!co) { alert('Please select a case type and court.'); return false; }
+function validateStep(s){
+  if(s===1){
+    if(!filingType){alert('Please select whether you are filing a new case or in an existing case.');return false;}
+    if(filingType==='new'){
+      if(!ssGet('court')){ssErr('court');alert('Please select a court.');return false;}
+      if(!ssGet('case-type')){ssErr('case-type');alert('Please select a case type.');return false;}
     }
     return true;
   }
-  if (s===2) {
-    if (filingType==='existing' && !selectedCase) { alert('Please select a case to file in.'); return false; }
-    if (filingType==='new') {
-      const f=document.getElementById('party1-first').value.trim();
-      const l=document.getElementById('party1-last').value.trim();
-      const f2=document.getElementById('party2-first').value.trim();
-      const l2=document.getElementById('party2-last').value.trim();
-      if(!f||!l||!f2||!l2){alert('Please enter names for both parties.');return false;}
+  if(s===2){
+    if(filingType==='existing'){
+      if(!selectedCase){alert('Please select a case.');return false;}
+      if(isFilingAsCounsel&&!document.getElementById('counsel-represents')?.value?.trim()){
+        alert('Please indicate which party you represent in this case.');return false;
+      }
+    }
+    if(filingType==='new'){
+      for(let i=0;i<parties.length;i++){
+        const p=parties[i];
+        if(p.locked) continue;
+        if(p.actorType==='Natural Person'){
+          if(!p.firstName.trim()||!p.lastName.trim()||!p.pin.trim()){
+            alert(`Please complete all required fields for Party ${i+1} (${p.role}).`);return false;
+          }
+        } else if(p.actorType==='Business or Organization'){
+          if(!p.orgName.trim()||!p.repName.trim()||!p.repPin.trim()){
+            alert(`Please complete all required fields for Party ${i+1} (${p.role}).`);return false;
+          }
+        } else if(p.actorType==='Governmental Entity'){
+          if(!p.govType){alert(`Please select government type for Party ${i+1}.`);return false;}
+          if(p.govType==='Jurisdiction'&&!p.jurisdiction){alert(`Please select jurisdiction for Party ${i+1}.`);return false;}
+          if(p.govType==='Jurisdiction'&&p.jurisdiction==='Other'&&!p.jurisdictionManual.trim()){alert(`Please enter jurisdiction name for Party ${i+1}.`);return false;}
+          if(p.govType==='Public Body'&&!p.publicBodyName.trim()){alert(`Please enter public body name for Party ${i+1}.`);return false;}
+        }
+      }
     }
     return true;
   }
-  if (s===3) {
-    if (!document.getElementById('doc-type').value) { alert('Please select a document type.'); return false; }
-    if (uploadedFiles.length===0) {
-      document.getElementById('upload-error').classList.add('show');
-      return false;
-    }
-    return true;
-  }
-  if (s===4) {
-    const title=document.getElementById('filing-title').value.trim();
-    const email=document.getElementById('contact-email').value.trim();
+  if(s===3){
     let ok=true;
-    if(!title){ document.getElementById('title-error').classList.add('show'); ok=false; }
-    else document.getElementById('title-error').classList.remove('show');
-    if(!email||!email.includes('@')){ document.getElementById('email-error').classList.add('show'); ok=false; }
-    else document.getElementById('email-error').classList.remove('show');
+    if(!ssGet('doc-type')){ssErr('doc-type');document.getElementById('doctype-err').classList.add('show');ok=false;}
+    if(!uploadedFiles.length){document.getElementById('upload-err').classList.add('show');ok=false;}
+    if(hasExhibits){
+      const lnk=document.getElementById('gdrive-link')?.value?.trim();
+      if(!lnk){document.getElementById('gdrive-err').classList.add('show');ok=false;}
+    }
+    return ok;
+  }
+  if(s===4){
+    let ok=true;
+    const title=document.getElementById('filing-title')?.value?.trim();
+    const email=document.getElementById('contact-email')?.value?.trim();
+    if(!title){document.getElementById('title-err').classList.add('show');ok=false;}
+    else document.getElementById('title-err').classList.remove('show');
+    if(!email||!email.includes('@')){document.getElementById('email-err').classList.add('show');ok=false;}
+    else document.getElementById('email-err').classList.remove('show');
+    if(!certifiedAccurate){document.getElementById('cert-err').classList.add('show');ok=false;}
+    else document.getElementById('cert-err').classList.remove('show');
     return ok;
   }
   return true;
 }
 
-// ── Step 1 ──
-function selectFilingType(type, el) {
-  filingType = type;
-  document.querySelectorAll('.radio-opt').forEach(o=>o.classList.remove('selected'));
-  el.classList.add('selected');
-  document.getElementById('ft-'+type).checked = true;
-  document.getElementById('new-case-options').style.display = type==='new'?'block':'none';
-}
-window.selectFilingType=selectFilingType;
-
-function selectFilingTypeNew() {
-  filingType='new';
-  document.querySelectorAll('.radio-opt').forEach(o=>o.classList.remove('selected'));
-  document.getElementById('opt-new').classList.add('selected');
-  document.getElementById('ft-new').checked=true;
-  document.getElementById('new-case-options').style.display='block';
-  goStep(1);
-}
-window.selectFilingTypeNew=selectFilingTypeNew;
-
-// Update party labels based on case type
-document.getElementById('new-case-type').addEventListener('change', function(){
-  const t=this.value.toLowerCase();
-  const l1=document.getElementById('new-party1-label');
-  const l2=document.getElementById('new-party2-label');
-  if(t==='criminal'){l1.textContent='Prosecutor';l2.textContent='Defendant';}
-  else if(t==='appellate'){l1.textContent='Appellant';l2.textContent='Appellee';}
-  else if(t==='administrative'){l1.textContent='Petitioner';l2.textContent='Respondent';}
-  else{l1.textContent='Plaintiff / Petitioner';l2.textContent='Defendant / Respondent';}
-});
-
-// ── Step 2 ──
-function setupStep2() {
-  const existingCard = document.getElementById('step2-existing-card');
-  const newCard = document.getElementById('step2-new-card');
-  if (filingType==='new') {
-    existingCard.style.display='none';
-    newCard.style.display='block';
-  } else {
-    existingCard.style.display='block';
-    newCard.style.display='none';
+function setupStep2(){
+  const existDiv=document.getElementById('s2-existing');
+  const newDiv=document.getElementById('s2-new');
+  if(filingType==='existing'){
+    existDiv.style.display='block'; newDiv.style.display='none';
     renderCaseList('');
+    const repCard=document.getElementById('atty-rep-card');
+    if(repCard) repCard.style.display=isFilingAsCounsel?'block':'none';
+  } else {
+    existDiv.style.display='none'; newDiv.style.display='block';
+    if(!parties.length) initParties(selectedCaseType);
+    else renderParties();
   }
 }
 
-function renderCaseList(query) {
-  const container = document.getElementById('case-list');
-  if (!casesLoaded) { container.innerHTML='<div style="color:var(--muted);font-size:13px;padding:20px;text-align:center">Loading cases…</div>'; return; }
-  const q=(query||'').toLowerCase().trim();
-  // Filter to user-related cases
+function setupStep3(){
+  // Set doc type options based on case type (for existing cases we need to determine case type)
+  let ct = selectedCaseType;
+  if(filingType==='existing'&&selectedCase){
+    ct=selectedCase.caseType||selectedCase.type||'General Civil';
+  }
+  if(ct&&DOC_TYPES[ct]){
+    ssSetOpts('doc-type', DOC_TYPES[ct].map(d=>({v:d.v,l:d.v,d:d.d,g:d.g})));
+  } else {
+    // Fallback: show all doc types
+    const all=[];
+    Object.values(DOC_TYPES).forEach(arr=>arr.forEach(d=>{if(!all.find(x=>x.v===d.v))all.push(d);}));
+    ssSetOpts('doc-type', all.map(d=>({v:d.v,l:d.v,d:d.d,g:d.g})));
+  }
+  ssInit('doc-type', SS['doc-type']?.opts||[]);
+}
+
+function setupStep4(){
+  refreshTitle();
+  const emailInp=document.getElementById('contact-email');
+  if(emailInp&&!emailInp.value) emailInp.value=userData.email||'';
+}
+
+// ══════════════════════════════════════════════════
+// CASE LIST (existing case selection)
+// ══════════════════════════════════════════════════
+function renderCaseList(q){
+  const ct=document.getElementById('case-list');
+  if(!casesLoaded){ct.innerHTML='<div style="color:var(--muted);font-size:13px;padding:18px;text-align:center">Loading…</div>';return;}
   const name=(userData.name||'').toLowerCase();
   let cases=allCases.filter(c=>{
-    const ps=JSON.stringify(c.parties||{}).toLowerCase();
-    if(name&&ps.includes(name)) return true;
+    if(name&&name!=='—'&&JSON.stringify(c.parties||{}).toLowerCase().includes(name)) return true;
     if(userData.uid&&Array.isArray(c.relatedUserIds)&&c.relatedUserIds.includes(userData.uid)) return true;
     return false;
   });
-  if(q) cases=cases.filter(c=>getCaseTitle(c).toLowerCase().includes(q)||(c.caseId||'').toLowerCase().includes(q));
+  const lq=(q||'').toLowerCase().trim();
+  if(lq) cases=cases.filter(c=>getCaseTitle(c).toLowerCase().includes(lq)||(c.caseId||'').toLowerCase().includes(lq));
   if(!cases.length){
-    container.innerHTML=`<div style="color:var(--muted);font-size:13px;padding:20px;text-align:center">No cases found matching your search. ${!q?'No cases are linked to your account.':''}</div>`;
+    ct.innerHTML=`<div style="color:var(--muted);font-size:13px;padding:18px;text-align:center">No cases linked to your account${lq?' matching "'+lq+'"':''}.</div>`;
     return;
   }
-  container.innerHTML=cases.map(c=>{
+  ct.innerHTML=cases.map(c=>{
     const title=getCaseTitle(c);
-    const tc=typeBadgeCls(c.caseType);
-    return `<label class="case-opt${selectedCase&&selectedCase._id===c._id?' selected':''}" id="co-${c._id}" onclick="selectCase(${JSON.stringify(c).replace(/"/g,'&quot;')})">
-      <input type="radio" name="selected_case" value="${c._id}" ${selectedCase&&selectedCase._id===c._id?'checked':''}>
-      <div class="co-body">
+    const tc=ttCls(c.caseType);
+    const sel=selectedCase&&selectedCase._id===c._id?' sel':'';
+    return `<label class="case-opt${sel}" id="co-${c._id}" onclick="pickCase(event,${JSON.stringify(c).replace(/"/g,'&quot;')})">
+      <input type="radio" name="sel_case" value="${c._id}"${sel?' checked':''}>
+      <div>
         <div class="co-num">${c.caseId}</div>
         <div class="co-title">${title}</div>
-        <div class="co-meta">
-          <span class="type-tag ${tc}">${c.caseType}</span>
-          <span>${c.court}</span>
-          <span>Filed ${fmtDate(c.dates?.filed)}</span>
-          <span style="color:${c.status==='Closed'?'#9a8f82':c.status==='Active'?'var(--amber)':'var(--blue)'};font-weight:600">${c.status}</span>
-        </div>
+        <div class="co-meta"><span class="type-tag ${tc}">${c.caseType}</span><span>${c.court}</span><span>Filed ${fmtDate(c.dates?.filed)}</span><span style="color:var(--amber);font-weight:600">${c.status}</span></div>
       </div>
     </label>`;
   }).join('');
 }
 
-function selectCase(c) {
-  selectedCase = c;
-  document.querySelectorAll('.case-opt').forEach(o=>o.classList.remove('selected'));
-  const el = document.getElementById('co-'+c._id);
-  if(el) el.classList.add('selected');
+function pickCase(e,c){
+  e.preventDefault();
+  selectedCase=c;
+  document.querySelectorAll('.case-opt').forEach(o=>o.classList.remove('sel'));
+  document.getElementById('co-'+c._id)?.classList.add('sel');
 }
-window.selectCase=selectCase;
+window.pickCase=pickCase;
 
-function filterCases(q) { renderCaseList(q); }
+function filterCases(q){ renderCaseList(q); }
 window.filterCases=filterCases;
 
-// ── Step 3: File upload ──
-function handleFileSelect(input) {
-  Array.from(input.files).forEach(addFile);
-  input.value='';
-}
-window.handleFileSelect=handleFileSelect;
+// ══════════════════════════════════════════════════
+// FILE UPLOAD
+// ══════════════════════════════════════════════════
+function onFileSelect(inp){Array.from(inp.files).forEach(addFile);inp.value='';}
+window.onFileSelect=onFileSelect;
+function onDragOver(e){e.preventDefault();document.getElementById('upload-zone').classList.add('drag-over');}
+window.onDragOver=onDragOver;
+function onDragLeave(){document.getElementById('upload-zone').classList.remove('drag-over');}
+window.onDragLeave=onDragLeave;
+function onDrop(e){e.preventDefault();document.getElementById('upload-zone').classList.remove('drag-over');Array.from(e.dataTransfer.files).forEach(f=>{if(f.type==='application/pdf')addFile(f);});}
+window.onDrop=onDrop;
 
-function handleDragOver(e) { e.preventDefault(); document.getElementById('upload-zone').classList.add('drag-over'); }
-window.handleDragOver=handleDragOver;
-function handleDragLeave(e) { document.getElementById('upload-zone').classList.remove('drag-over'); }
-window.handleDragLeave=handleDragLeave;
-function handleDrop(e) {
-  e.preventDefault();
-  document.getElementById('upload-zone').classList.remove('drag-over');
-  Array.from(e.dataTransfer.files).forEach(f=>{ if(f.type==='application/pdf') addFile(f); });
-}
-window.handleDrop=handleDrop;
-
-function addFile(file) {
-  if(file.type!=='application/pdf'&&!file.name.toLowerCase().endsWith('.pdf')){
-    alert(`${file.name} is not a PDF. Only PDF files are accepted.`); return;
-  }
-  if(file.size>25*1024*1024){ alert(`${file.name} exceeds the 25 MB limit.`); return; }
-  if(uploadedFiles.find(f=>f.name===file.name)) return;
-  uploadedFiles.push(file);
-  document.getElementById('upload-error').classList.remove('show');
+function addFile(f){
+  if(f.type!=='application/pdf'&&!f.name.toLowerCase().endsWith('.pdf')){alert(`${f.name} is not a PDF file. Only PDFs are accepted.`);return;}
+  if(f.size>5*1024*1024){alert(`${f.name} exceeds the 5 MB limit per MCR 2.119. Please reduce the file size before uploading.`);return;}
+  if(uploadedFiles.find(x=>x.name===f.name)) return;
+  uploadedFiles.push(f);
+  document.getElementById('upload-err').classList.remove('show');
   renderFileList();
 }
 
-function removeFile(name) {
-  uploadedFiles=uploadedFiles.filter(f=>f.name!==name);
-  renderFileList();
-}
+function removeFile(name){uploadedFiles=uploadedFiles.filter(f=>f.name!==name);renderFileList();}
 window.removeFile=removeFile;
 
-function renderFileList() {
-  const container=document.getElementById('upload-files-list');
-  if(!uploadedFiles.length){container.innerHTML='';return;}
-  container.innerHTML=uploadedFiles.map(f=>`<div class="upload-file-row">
-    <span class="uf-icon">📄</span>
-    <span class="uf-name">${f.name}</span>
-    <span class="uf-size">${fmtFileSize(f.size)}</span>
-    <button class="uf-remove" onclick="removeFile('${f.name.replace(/'/g,"\\'")}')">×</button>
+function renderFileList(){
+  const ct=document.getElementById('file-list');
+  if(!uploadedFiles.length){ct.innerHTML='';return;}
+  ct.innerHTML=uploadedFiles.map(f=>`<div class="file-row">
+    <span class="fr-icon">📄</span>
+    <span class="fr-name">${f.name}</span>
+    <span class="fr-size">${fmtSize(f.size)}</span>
+    <button class="fr-rm" onclick="removeFile('${esc(f.name)}')">×</button>
   </div>`).join('');
 }
 
-// ── Step 4: checkboxes ──
-function toggleCheck(el) {
-  const cb=el.querySelector('input[type=checkbox]');
-  cb.checked=!cb.checked;
-  el.classList.toggle('selected',cb.checked);
-}
-window.toggleCheck=toggleCheck;
-
-// ── Step 5: Review ──
-function buildReview() {
+// ══════════════════════════════════════════════════
+// REVIEW
+// ══════════════════════════════════════════════════
+function buildReview(){
   const el=document.getElementById('review-content');
-  const isNew = filingType==='new';
-  const docType=document.getElementById('doc-type').value;
-  const title=document.getElementById('filing-title').value.trim();
-  const role=document.getElementById('filer-role').value;
-  const behalf=document.getElementById('filed-behalf').value.trim();
-  const notes=document.getElementById('filing-notes').value.trim();
-  const email=document.getElementById('contact-email').value.trim();
-  const newCT=document.getElementById('new-case-type').value;
-  const newCO=document.getElementById('new-court').value;
-  const p1f=document.getElementById('party1-first').value.trim();
-  const p1l=document.getElementById('party1-last').value.trim();
-  const p2f=document.getElementById('party2-first').value.trim();
-  const p2l=document.getElementById('party2-last').value.trim();
+  const title=document.getElementById('filing-title')?.value?.trim()||'';
+  const role=document.getElementById('filer-role')?.value||'';
+  const notes=document.getElementById('filing-notes')?.value?.trim()||'';
+  const email=document.getElementById('contact-email')?.value?.trim()||'';
+  const gdl=document.getElementById('gdrive-link')?.value?.trim()||'';
 
   let caseBlock='';
-  if(isNew){
-    caseBlock=`<div class="review-section">
-      <div class="review-section-label">New Case</div>
-      <div class="review-row"><span class="review-key">Case Type</span><span class="review-val">${newCT}</span></div>
-      <div class="review-row"><span class="review-key">Court</span><span class="review-val">${newCO}</span></div>
-      <div class="review-row"><span class="review-key">Party 1</span><span class="review-val">${p1f} ${p1l}</span></div>
-      <div class="review-row"><span class="review-key">Party 2</span><span class="review-val">${p2f} ${p2l}</span></div>
+  if(filingType==='new'){
+    const roles=getRoles(selectedCaseType||'');
+    caseBlock=`<div class="rv-sec">
+      <div class="rv-sec-lbl">New Case</div>
+      <div class="rv-row"><span class="rv-k">Court</span><span class="rv-v">${selectedCourt}</span></div>
+      <div class="rv-row"><span class="rv-k">Case Type</span><span class="rv-v">${selectedCaseType}</span></div>
+      ${parties.map((p,i)=>`<div class="rv-row"><span class="rv-k">Party ${i+1} (${p.role})</span><span class="rv-v">${getPartyName(p)||'—'}${p.isRepresented?' <span style="color:var(--gold);font-size:11px;font-weight:700">(Your Client)</span>':''}</span></div>`).join('')}
     </div>`;
-  } else if(selectedCase) {
-    const tc=typeBadgeCls(selectedCase.caseType);
-    caseBlock=`<div class="review-section">
-      <div class="review-section-label">Case</div>
-      <div class="review-row"><span class="review-key">Case Number</span><span class="review-val" style="font-family:monospace">${selectedCase.caseId}</span></div>
-      <div class="review-row"><span class="review-key">Caption</span><span class="review-val">${getCaseTitle(selectedCase)}</span></div>
-      <div class="review-row"><span class="review-key">Court</span><span class="review-val">${selectedCase.court}</span></div>
-      <div class="review-row"><span class="review-key">Type</span><span class="review-val"><span class="type-tag ${tc}">${selectedCase.caseType}</span></span></div>
+  } else if(selectedCase){
+    const tc=ttCls(selectedCase.caseType);
+    caseBlock=`<div class="rv-sec">
+      <div class="rv-sec-lbl">Case</div>
+      <div class="rv-row"><span class="rv-k">Case Number</span><span class="rv-v" style="font-family:monospace">${selectedCase.caseId}</span></div>
+      <div class="rv-row"><span class="rv-k">Caption</span><span class="rv-v">${getCaseTitle(selectedCase)}</span></div>
+      <div class="rv-row"><span class="rv-k">Court</span><span class="rv-v">${selectedCase.court}</span></div>
+      <div class="rv-row"><span class="rv-k">Type</span><span class="rv-v"><span class="type-tag ${tc}">${selectedCase.caseType}</span></span></div>
+      ${isFilingAsCounsel&&document.getElementById('counsel-represents')?.value?`<div class="rv-row"><span class="rv-k">You Represent</span><span class="rv-v">${document.getElementById('counsel-represents').value}</span></div>`:''}
     </div>`;
   }
 
-  const docsBlock=`<div class="review-section">
-    <div class="review-section-label">Documents</div>
-    <div class="review-row"><span class="review-key">Document Type</span><span class="review-val">${docType}</span></div>
-    ${uploadedFiles.map(f=>`<div class="review-file"><span style="font-size:14px">📄</span><span class="rf-name">${f.name}</span><span class="rf-size">${fmtFileSize(f.size)}</span></div>`).join('')}
+  const docBlock=`<div class="rv-sec">
+    <div class="rv-sec-lbl">Document</div>
+    <div class="rv-row"><span class="rv-k">Document Type</span><span class="rv-v">${ssGetLabel('doc-type')||ssGet('doc-type')||'—'}</span></div>
+    ${uploadedFiles.map(f=>`<div class="rv-file"><span style="font-size:13px">📄</span><span class="rf-n">${f.name}</span><span class="rf-s">${fmtSize(f.size)}</span></div>`).join('')}
+    ${gdl?`<div class="rv-row"><span class="rv-k">Exhibit Drive Link</span><span class="rv-v" style="word-break:break-all;font-size:11.5px">${gdl}</span></div>`:''}
   </div>`;
 
-  const detailsBlock=`<div class="review-section">
-    <div class="review-section-label">Filing Details</div>
-    <div class="review-row"><span class="review-key">Filing Title</span><span class="review-val">${title}</span></div>
-    ${role?`<div class="review-row"><span class="review-key">Filer Role</span><span class="review-val">${role}</span></div>`:''}
-    ${behalf?`<div class="review-row"><span class="review-key">Filed on Behalf of</span><span class="review-val">${behalf}</span></div>`:''}
-    ${notes?`<div class="review-row"><span class="review-key">Notes to Clerk</span><span class="review-val">${notes}</span></div>`:''}
-    <div class="review-row"><span class="review-key">Confirmation Email</span><span class="review-val">${email}</span></div>
-    <div class="review-row"><span class="review-key">Filed By</span><span class="review-val">${userData.name}</span></div>
+  const detailsBlock=`<div class="rv-sec">
+    <div class="rv-sec-lbl">Filing Details</div>
+    <div class="rv-row"><span class="rv-k">Title</span><span class="rv-v">${title}</span></div>
+    ${role?`<div class="rv-row"><span class="rv-k">Filer Role</span><span class="rv-v">${role}</span></div>`:''}
+    ${isFilingAsCounsel?`<div class="rv-row"><span class="rv-k">Bar Number</span><span class="rv-v">${userData.barNumber||'—'}</span></div>`:''}
+    ${notes?`<div class="rv-row"><span class="rv-k">Notes to Clerk</span><span class="rv-v">${notes}</span></div>`:''}
+    <div class="rv-row"><span class="rv-k">Confirmation Email</span><span class="rv-v">${email}</span></div>
+    <div class="rv-row"><span class="rv-k">Filed By</span><span class="rv-v">${userData.name}</span></div>
   </div>`;
 
-  el.innerHTML=caseBlock+docsBlock+detailsBlock;
+  el.innerHTML=caseBlock+docBlock+detailsBlock;
 }
 
-// ── Submit ──
-async function submitFiling() {
+// ══════════════════════════════════════════════════
+// SUBMIT
+// ══════════════════════════════════════════════════
+async function submitFiling(){
   const btn=document.getElementById('submit-btn');
-  const lbl=document.getElementById('submit-label');
+  const lbl=document.getElementById('submit-lbl');
   btn.disabled=true;
   lbl.innerHTML='<span class="spin"></span> Submitting…';
-
   try {
-    // Build filing object for Firestore
-    const docType=document.getElementById('doc-type').value;
-    const title=document.getElementById('filing-title').value.trim();
-    const role=document.getElementById('filer-role').value;
-    const behalf=document.getElementById('filed-behalf').value.trim();
-    const notes=document.getElementById('filing-notes').value.trim();
-    const email=document.getElementById('contact-email').value.trim();
+    const conf=confNum();
     const now=new Date().toISOString();
-    const confirmation=confNum();
+    const title=document.getElementById('filing-title')?.value?.trim()||computeAutoTitle(ssGet('doc-type')||'');
+    const role=document.getElementById('filer-role')?.value||null;
+    const notes=document.getElementById('filing-notes')?.value?.trim()||null;
+    const email=document.getElementById('contact-email')?.value?.trim()||'';
+    const gdl=document.getElementById('gdrive-link')?.value?.trim()||null;
+    const counselRep=isFilingAsCounsel?(document.getElementById('counsel-represents')?.value?.trim()||null):null;
 
-    const filingData = {
-      confirmationNumber: confirmation,
+    const partyData=parties.map(p=>{
+      const base={role:p.role, actorType:p.actorType};
+      if(p.actorType==='Natural Person'){Object.assign(base,{firstName:p.firstName,lastName:p.lastName,pin:p.pin});}
+      else if(p.actorType==='Business or Organization'){Object.assign(base,{orgName:p.orgName,repName:p.repName,repPin:p.repPin});}
+      else {Object.assign(base,{govType:p.govType, jurisdiction:p.jurisdiction==='Other'?p.jurisdictionManual:p.jurisdiction, publicBodyName:p.publicBodyName});}
+      if(p.isRepresented&&isFilingAsCounsel){
+        base.attorney={name:userData.name,uid:userData.uid,barNumber:userData.barNumber||null};
+      }
+      return base;
+    });
+
+    const filingObj={
+      confirmationNumber:conf,
       filingType,
-      documentType: docType,
+      court:selectedCourt||(selectedCase?.court)||'',
+      caseType:selectedCaseType||(selectedCase?.caseType)||'',
+      documentType:ssGet('doc-type')||'',
       title,
-      filedBy: userData.name,
-      filedByUid: userData.uid,
-      filedOnBehalfOf: behalf||null,
-      role: role||null,
-      notesToClerk: notes||null,
-      confirmationEmail: email,
-      dateFiled: now,
-      status: 'Pending',
-      accepted: false,
-      documents: uploadedFiles.map(f=>({name:f.name,size:f.size})),
+      parties:filingType==='new'?partyData:[],
+      documents:uploadedFiles.map(f=>({name:f.name,size:f.size})),
+      gdrivLink:gdl,
+      notesToClerk:notes,
+      confirmationEmail:email,
+      filerRole:role,
+      filedBy:userData.name,
+      filedByUid:userData.uid,
+      isFilingAsCounsel,
+      counselRepresents:counselRep,
+      barNumber:isFilingAsCounsel?(userData.barNumber||null):null,
+      dateFiled:now,
+      status:'Pending',
+      accepted:false,
     };
 
-    if (filingType==='existing' && selectedCase) {
-      filingData.caseId = selectedCase.caseId;
-      filingData.caseFirestoreId = selectedCase._id;
-    } else if (filingType==='new') {
-      const ct=document.getElementById('new-case-type').value;
-      const co=document.getElementById('new-court').value;
-      const p1f=document.getElementById('party1-first').value.trim();
-      const p1l=document.getElementById('party1-last').value.trim();
-      const p2f=document.getElementById('party2-first').value.trim();
-      const p2l=document.getElementById('party2-last').value.trim();
-      filingData.newCaseData = { caseType:ct, court:co, party1:`${p1f} ${p1l}`, party2:`${p2f} ${p2l}` };
+    if(filingType==='existing'&&selectedCase){
+      filingObj.caseId=selectedCase.caseId;
+      filingObj.caseFirestoreId=selectedCase._id;
     }
 
-    // Save to Firestore
-    if (window._db) {
-      const { collection, addDoc } = await import("https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js");
-      await addDoc(collection(window._db,'pendingFilings'), filingData);
-
-      // Also append to existing case doc if filing in existing case
-      if (filingType==='existing' && selectedCase?._id) {
-        const { doc, updateDoc, arrayUnion } = await import("https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js");
-        await updateDoc(doc(window._db,'cases',selectedCase._id), {
-          filings: arrayUnion({
-            title,
-            documentType: docType,
-            filedBy: userData.name,
-            filedByUid: userData.uid,
-            role: role||null,
-            dateFiled: now,
-            status: 'Pending',
-            accepted: false,
-            notes: notes||null,
-            documentLink: null,
-          })
-        });
+    if(window._db){
+      const {collection,addDoc,doc,updateDoc,arrayUnion}=await import('https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js');
+      await addDoc(collection(window._db,'pendingFilings'),filingObj);
+      if(filingType==='existing'&&selectedCase?._id){
+        const filingEntry={
+          title, documentType:ssGet('doc-type')||'', filedBy:userData.name, filedByUid:userData.uid,
+          role:role||null, dateFiled:now, status:'Pending', accepted:false, notes:notes||null,
+          documentLink:null,
+          ...(isFilingAsCounsel?{attorney:{name:userData.name,uid:userData.uid,barNumber:userData.barNumber||null},counselRepresents:counselRep}:{})
+        };
+        await updateDoc(doc(window._db,'cases',selectedCase._id),{filings:arrayUnion(filingEntry)});
+        // If attorney, also update party record
+        if(isFilingAsCounsel&&counselRep){
+          try{
+            await updateDoc(doc(window._db,'cases',selectedCase._id),{
+              [`parties.counselOfRecord.${userData.uid}`]:{name:userData.name,barNumber:userData.barNumber||null,represents:counselRep,addedOn:now}
+            });
+          }catch(e){}
+        }
       }
     }
 
     // Show success
-    document.getElementById('conf-number').textContent = confirmation;
-    let caseInfo = '';
-    if (filingType==='existing'&&selectedCase) {
+    document.getElementById('conf-num').textContent=conf;
+    let caseInfo='';
+    if(filingType==='existing'&&selectedCase){
       caseInfo=`<strong>${getCaseTitle(selectedCase)}</strong><br>${selectedCase.caseId} · ${selectedCase.court}`;
-    } else if (filingType==='new') {
-      const ct=document.getElementById('new-case-type').value;
-      const co=document.getElementById('new-court').value;
-      caseInfo=`New ${ct} case · ${co}<br>Parties: ${document.getElementById('party1-first').value} ${document.getElementById('party1-last').value} &amp; ${document.getElementById('party2-first').value} ${document.getElementById('party2-last').value}`;
+    } else {
+      const n1=getPartyName(parties[0])||'—';
+      const n2=getPartyName(parties[1])||'—';
+      caseInfo=`New ${selectedCaseType} case · ${selectedCourt}<br>${n1} v. ${n2}`;
     }
     document.getElementById('success-case-info').innerHTML=caseInfo;
     document.getElementById('filing-wizard').classList.add('hidden');
     document.getElementById('success-screen').classList.add('active');
-
-  } catch(err) {
-    console.error('Filing error:', err);
+  } catch(err){
+    console.error(err);
     btn.disabled=false;
     lbl.textContent='Submit Filing';
     alert('There was an error submitting your filing. Please try again or contact the court directly.');
@@ -1056,105 +1527,127 @@ async function submitFiling() {
 }
 window.submitFiling=submitFiling;
 
-function startNewFiling() {
-  currentStep=1;
-  filingType=null;
-  selectedCase=null;
-  uploadedFiles=[];
-  document.querySelectorAll('.radio-opt').forEach(o=>o.classList.remove('selected'));
+function resetWizard(){
+  currentStep=1; filingType=null; isFilingAsCounsel=false;
+  selectedCourt=null; selectedCaseType=null; selectedDocType=null;
+  selectedCase=null; parties=[]; nextPartyId=1;
+  uploadedFiles=[]; hasExhibits=false; gdriveLink=''; certifiedAccurate=false;
+  document.querySelectorAll('.radio-opt').forEach(o=>o.classList.remove('sel'));
   document.querySelectorAll('input[type=radio]').forEach(r=>r.checked=false);
-  document.getElementById('new-case-options').style.display='none';
-  document.getElementById('new-case-type').value='';
-  document.getElementById('new-court').value='';
-  document.getElementById('doc-type').value='';
-  document.getElementById('upload-files-list').innerHTML='';
+  document.getElementById('cb-counsel').checked=false;
+  document.getElementById('chk-counsel-opt').classList.remove('sel');
+  document.getElementById('new-opts').style.display='none';
+  document.getElementById('case-type-grp').style.display='none';
+  ssReset('court'); ssReset('case-type'); ssReset('doc-type');
+  document.getElementById('cb-exhibits').checked=false;
+  document.getElementById('chk-exhibits-opt').classList.remove('sel');
+  document.getElementById('gdrive-section').style.display='none';
+  document.getElementById('file-list').innerHTML='';
+  document.getElementById('upload-err').classList.remove('show');
+  document.getElementById('doctype-err').classList.remove('show');
+  ['title-err','email-err','cert-err'].forEach(id=>document.getElementById(id)?.classList.remove('show'));
   document.getElementById('filing-title').value='';
-  document.getElementById('filed-behalf').value='';
   document.getElementById('filer-role').value='';
   document.getElementById('filing-notes').value='';
-  document.getElementById('contact-email').value='';
-  document.getElementById('cb-served').checked=false;
+  document.getElementById('contact-email').value=userData.email||'';
   document.getElementById('cb-accurate').checked=false;
-  document.querySelectorAll('.check-opt').forEach(o=>o.classList.remove('selected'));
+  document.getElementById('chk-accurate-opt').classList.remove('sel');
   document.getElementById('success-screen').classList.remove('active');
   document.getElementById('filing-wizard').classList.remove('hidden');
   updateStepUI();
   window.scrollTo({top:0,behavior:'smooth'});
 }
-window.startNewFiling=startNewFiling;
+window.resetWizard=resetWizard;
+
+// ══════════════════════════════════════════════════
+// UTILS
+// ══════════════════════════════════════════════════
+function fmtDate(s){
+  if(!s) return '—';
+  const d=new Date(s);
+  return isNaN(d)?s:d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+}
+function fmtSize(b){
+  if(b<1024) return b+' B';
+  if(b<1024*1024) return (b/1024).toFixed(1)+' KB';
+  return (b/(1024*1024)).toFixed(1)+' MB';
+}
+function confNum(){return `MCR-${new Date().getFullYear()}-${Math.floor(100000+Math.random()*900000)}`;}
+function ttCls(t){
+  const l=(t||'').toLowerCase();
+  if(l==='criminal') return 'tt-cr';
+  if(l==='civil'||l.includes('civil')||l.includes('small claims')) return 'tt-ci';
+  if(l==='appellate'||l==='appeal') return 'tt-ap';
+  if(l==='traffic') return 'tt-tr';
+  if(l==='administrative'||l.includes('admin')) return 'tt-ad';
+  return 'tt-df';
+}
+function getCaseTitle(c){
+  const t=(c.caseType||'').toLowerCase();
+  const p=c.parties||{};
+  if(t==='criminal'||t==='traffic'){const def=p.primaryDefendant?.name;return def?`State of Michigan v. ${def}`:'State of Michigan v. Unknown';}
+  if(t==='civil'||t.includes('civil')||t.includes('small claims')){const pl=p.primaryPlaintiff?.name,df=p.primaryDefendant?.name;if(pl&&df)return`${pl} v. ${df}`;if(pl)return`Ex parte ${pl}`;}
+  if(t==='appellate'||t==='appeal'){const ap=p.appellant?.name,apl=p.appellee?.name;if(ap&&apl)return`${ap} v. ${apl}`;const s=c.docketSummary?.split('.')[0]?.trim();return(s&&s.length<80)?s:(c.caseId||'Appellate Matter');}
+  if(t.includes('admin')){const pet=p.primaryPetitioner?.name||p.petitioner?.name,res=p.respondent?.name;if(pet&&res)return`${pet} v. ${res}`;}
+  return c.caseId||'Case Record';
+}
+
+// Init SS
+ssInit('court', COURTS.map(c=>({v:c.v,l:c.l,d:c.d,g:''})));
+ssInit('case-type', []);
+ssInit('doc-type', []);
 </script>
 
 <!-- Firebase -->
 <script type="module">
-import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
-import { getAuth, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
-import { getFirestore, doc, getDoc, getDocs, collection } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
-
-const cfg = {
-  apiKey:"AIzaSyA8sUFIq81cs6uQvqduardpGJ4R2DxO8NQ",
-  authDomain:"micourt-dada6.firebaseapp.com",
-  projectId:"micourt-dada6",
-  storageBucket:"micourt-dada6.firebasestorage.app",
-  messagingSenderId:"1013564619997",
-  appId:"1:1013564619997:web:8f259dab457915758f6f34"
-};
-
-const app  = getApps().length ? getApp() : initializeApp(cfg);
-const auth = getAuth(app);
-const db   = getFirestore(app);
-window._db = db;
-
-await setPersistence(auth, browserLocalPersistence);
-
-function setMsg(m) { document.getElementById('ao-msg').textContent=m; }
-
-const unsub = onAuthStateChanged(auth, async (user) => {
+import{initializeApp,getApps,getApp}from"https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
+import{getAuth,onAuthStateChanged,setPersistence,browserLocalPersistence}from"https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
+import{getFirestore,doc,getDoc,getDocs,collection}from"https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+const cfg={apiKey:"AIzaSyA8sUFIq81cs6uQvqduardpGJ4R2DxO8NQ",authDomain:"micourt-dada6.firebaseapp.com",projectId:"micourt-dada6",storageBucket:"micourt-dada6.firebasestorage.app",messagingSenderId:"1013564619997",appId:"1:1013564619997:web:8f259dab457915758f6f34"};
+const app=getApps().length?getApp():initializeApp(cfg);
+const auth=getAuth(app);
+const db=getFirestore(app);
+window._db=db;
+await setPersistence(auth,browserLocalPersistence);
+function setMsg(m){document.getElementById('ao-msg').textContent=m;}
+const unsub=onAuthStateChanged(auth,async(user)=>{
   unsub();
-  if (!user) {
-    setMsg('Session expired. Redirecting…');
-    setTimeout(()=>{ window.location.href='/courts/micourt/'; },1500);
-    return;
-  }
+  if(!user){setMsg('Session expired. Redirecting…');setTimeout(()=>{window.location.href='/courts/micourt/';},1500);return;}
   setMsg('Loading your profile…');
-  try {
+  try{
     const snap=await getDoc(doc(db,'accounts',user.uid));
-    if (!snap.exists()){
-      setMsg('Account not found. Redirecting…');
-      setTimeout(()=>{ window.location.href='/courts/micourt/'; },1500);
-      return;
-    }
+    if(!snap.exists()){setMsg('Account not found. Redirecting…');setTimeout(()=>{window.location.href='/courts/micourt/';},1500);return;}
     const data=snap.data();
-    userData.uid       = user.uid;
-    userData.name      = data.name      || user.displayName || 'Unknown User';
-    userData.email     = data.email     || user.email       || '';
-    userData.role      = data.role      || 'Portal User';
-    userData.barNumber = data.barNumber || null;
-
-    document.getElementById('topbar-user').textContent = userData.name;
+    userData.uid=user.uid;
+    userData.name=data.name||user.displayName||'Unknown User';
+    userData.email=data.email||user.email||'';
+    userData.role=data.role||'Portal User';
+    userData.barNumber=data.barNumber||null;
+    document.getElementById('topbar-user').textContent=userData.name;
+    // Show attorney card if applicable
+    const isAtty=['Licensed Attorney','State Attorney'].includes(userData.role);
+    const attyCard=document.getElementById('atty-card');
+    if(attyCard) attyCard.style.display=isAtty?'block':'none';
+    const attyBarSub=document.getElementById('atty-bar-sub');
+    if(attyBarSub&&userData.barNumber) attyBarSub.textContent=`Check this if you are an attorney filing on behalf of a client. Your bar number (${userData.barNumber}) will be associated with this filing.`;
     // Pre-fill email
-    document.getElementById('contact-email').value = userData.email;
-
+    document.getElementById('contact-email').value=userData.email||'';
     // Load cases
-    setMsg('Loading cases…');
-    try {
-      const cs = await getDocs(collection(db,'cases'));
+    setMsg('Loading case records…');
+    try{
+      const cs=await getDocs(collection(db,'cases'));
       allCases=[];
       cs.forEach(d=>allCases.push({...d.data(),_id:d.id}));
       casesLoaded=true;
-    } catch(e) { casesLoaded=true; }
-
+    }catch(e){casesLoaded=true;}
     document.getElementById('auth-overlay').classList.add('hidden');
     updateStepUI();
-  } catch(err) {
+  }catch(err){
     setMsg('Error loading profile. Retrying…');
-    setTimeout(()=>{ window.location.reload(); },3000);
+    setTimeout(()=>{window.location.reload();},3000);
   }
 });
-
-setTimeout(()=>{
-  if(!document.getElementById('auth-overlay').classList.contains('hidden'))
-    window.location.reload();
-},12000);
+setTimeout(()=>{if(!document.getElementById('auth-overlay').classList.contains('hidden'))window.location.reload();},12000);
 </script>
 </body>
 </html>
