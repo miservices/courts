@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Article Generator — Michigan Legal Help Program</title>
-<script src="/courts/shell.js" data-active="selfhelp"></script>
 <link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;1,300&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -28,15 +27,6 @@ body{font-family:'DM Sans',sans-serif;background:#f4f1ec;color:#1a1a1a;min-heigh
 .editor-card-header .hdr-note{font-size:11px;color:#4a6a8a}
 .editor-card-body{padding:20px}
 
-/* Form fields */
-.field-group{margin-bottom:16px}
-.field-group:last-child{margin-bottom:0}
-.field-group label{display:block;font-size:10px;color:#9a8f82;text-transform:uppercase;letter-spacing:0.09em;font-weight:700;margin-bottom:6px}
-.field-group input,.field-group select,.field-group textarea{width:100%;padding:10px 13px;border:1.5px solid #e0d9cf;border-radius:3px;font-family:'DM Sans',sans-serif;font-size:13.5px;color:#1a1a1a;background:#faf9f7;outline:none;transition:border 0.15s;resize:vertical}
-.field-group input:focus,.field-group select:focus,.field-group textarea:focus{border-color:#0a1628;background:#fff}
-.field-note{font-size:11px;color:#9a8f82;margin-top:5px;line-height:1.5}
-.field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-
 /* Block inserter */
 .block-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:0}
 .block-btn{display:flex;flex-direction:column;align-items:flex-start;gap:3px;padding:10px 12px;background:#faf9f7;border:1.5px solid #e0d9cf;border-radius:3px;cursor:pointer;transition:all 0.13s;text-align:left}
@@ -45,14 +35,115 @@ body{font-family:'DM Sans',sans-serif;background:#f4f1ec;color:#1a1a1a;min-heigh
 .block-btn .bb-label{font-size:12px;font-weight:700;color:#1a1a1a}
 .block-btn .bb-sub{font-size:10.5px;color:#9a8f82;line-height:1.35}
 
-/* Content textarea */
-#content-area{font-family:'DM Mono',monospace,sans-serif;font-size:13px;line-height:1.75;min-height:420px;background:#fafaf8;border:1.5px solid #e0d9cf;border-radius:3px;padding:14px;width:100%;resize:vertical;outline:none;color:#1a1a1a;transition:border 0.15s}
-#content-area:focus{border-color:#0a1628;background:#fff}
-
-/* Toolbar above textarea */
-.content-toolbar{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+/* Toolbar above WYSIWYG */
+.content-toolbar{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;align-items:center}
 .ct-btn{padding:5px 10px;background:#faf9f7;border:1.5px solid #e0d9cf;border-radius:2px;font-size:11.5px;font-weight:700;cursor:pointer;color:#4a4035;transition:all 0.12s;font-family:'DM Sans',sans-serif}
 .ct-btn:hover{border-color:#0a1628;color:#0a1628;background:#f0ede8}
+
+/* ── WYSIWYG canvas ── */
+#wysiwyg-canvas{
+  min-height:420px;
+  border:1.5px solid #e0d9cf;
+  border-radius:3px;
+  padding:20px;
+  background:#fafaf8;
+  outline:none;
+  font-family:'DM Sans',sans-serif;
+  font-size:14px;
+  color:#2a2018;
+  line-height:1.8;
+  cursor:text;
+  transition:border 0.15s;
+}
+#wysiwyg-canvas:focus-within{border-color:#0a1628;background:#fff}
+
+/* Block wrappers inside canvas */
+.ws-block{position:relative;margin-bottom:4px}
+.ws-block:hover .ws-controls{opacity:1}
+.ws-controls{
+  position:absolute;
+  right:-38px;top:0;
+  display:flex;flex-direction:column;gap:3px;
+  opacity:0;transition:opacity .15s;
+  z-index:10;
+}
+.ws-cb{
+  width:26px;height:26px;
+  display:flex;align-items:center;justify-content:center;
+  background:#fff;border:1px solid #e0d9cf;border-radius:3px;
+  cursor:pointer;font-size:12px;color:#4a4035;
+  transition:all .12s;
+}
+.ws-cb:hover{background:#0a1628;color:#c8a84b;border-color:#0a1628}
+.ws-cb.del:hover{background:#dc2626;color:#fff;border-color:#dc2626}
+
+/* Editable regions */
+[contenteditable]{outline:none;caret-color:#0a1628;min-height:1em}
+[contenteditable]:empty:before{content:attr(data-ph);color:#c0b8ae;pointer-events:none;font-style:italic}
+
+/* Article typography inside canvas */
+.ws-h2{font-family:'Merriweather',serif;font-size:18px;font-weight:400;border-bottom:1px solid #f0ebe3;padding-bottom:6px;margin:4px 0 2px;color:#0a1628}
+.ws-h3{font-family:'Merriweather',serif;font-size:15px;font-weight:400;margin:4px 0 2px;color:#1a1a1a}
+.ws-p{font-size:14px;line-height:1.8;color:#2a2018;min-height:1.8em}
+.ws-ul{padding-left:20px;margin:2px 0}
+.ws-ul li,.ws-ol li{font-size:14px;line-height:1.75;color:#2a2018;margin-bottom:2px}
+.ws-ol{padding-left:22px;margin:2px 0}
+.ws-hr{border:none;border-top:1px solid #e8e0d5;margin:12px 0;cursor:default}
+
+/* Callouts */
+.ws-callout{padding:12px 15px;border-radius:3px;border-left:3px solid;margin:4px 0;font-size:13.5px;line-height:1.65}
+.ws-callout .callout-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;opacity:.75}
+.ws-callout.tip{background:#fef9e7;border-color:#c8a84b;color:#78581a}
+.ws-callout.info{background:#eff6ff;border-color:#3b82f6;color:#1e40af}
+.ws-callout.warning{background:#fff7ed;border-color:#f97316;color:#7c2d12}
+.ws-callout.danger{background:#fef2f2;border-color:#ef4444;color:#7f1d1d}
+.ws-callout.success{background:#f0fdf4;border-color:#22c55e;color:#14532d}
+
+/* What You Need */
+.ws-wyn{background:#0a1628;border-radius:4px;padding:14px 18px;margin:4px 0}
+.ws-wyn-title{color:#c8a84b;font-weight:700;font-size:13px;margin-bottom:8px}
+.ws-wyn-list{list-style:none;padding:0}
+.ws-wyn-list li{color:#a0b8d0;font-size:13.5px;display:flex;align-items:baseline;gap:8px;margin-bottom:5px}
+.ws-wyn-list li:before{content:"✓";color:#c8a84b;font-size:11px;flex-shrink:0}
+
+/* Timeline */
+.ws-timeline{margin:4px 0}
+.ws-tl-step{display:flex;gap:12px;margin-bottom:14px;align-items:flex-start}
+.ws-tl-num{width:26px;height:26px;border-radius:50%;background:#0a1628;color:#c8a84b;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
+.ws-tl-title{font-size:14px;font-weight:700;color:#1a1a1a}
+.ws-tl-desc{font-size:13.5px;color:#4a4035;margin-top:2px;line-height:1.6}
+
+/* FAQ */
+.ws-faq{margin:4px 0}
+.ws-faq-q{font-weight:700;font-size:14px;color:#1a1a1a;padding:8px 0 3px;border-top:1px solid #f0ebe3}
+.ws-faq-q:first-child{border-top:none}
+.ws-faq-a{font-size:13.5px;color:#4a4035;padding-bottom:6px;line-height:1.65}
+
+/* Facts */
+.ws-facts{background:#f4f1ec;border:1px solid #e0d9cf;border-radius:3px;padding:12px 14px;margin:4px 0}
+.ws-fact-label{font-size:10px;color:#9a8f82;text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:2px}
+.ws-fact-value{font-size:14px;font-weight:700;color:#1a1a1a;display:block;margin-bottom:8px}
+
+/* Pull quote */
+.ws-quote{border-left:4px solid #c8a84b;padding:4px 0 4px 18px;margin:12px 0}
+.ws-quote-text{font-family:'Merriweather',serif;font-size:16px;font-style:italic;color:#0a1628;line-height:1.6}
+.ws-quote-attr{font-size:11px;color:#9a8f82;text-transform:uppercase;margin-top:5px}
+
+/* Table */
+.ws-table-wrap{margin:4px 0;overflow-x:auto}
+.ws-table-toolbar{display:flex;gap:5px;margin-bottom:5px;flex-wrap:wrap}
+.ws-table-toolbar button{padding:3px 9px;font-size:11px;background:#faf9f7;border:1px solid #e0d9cf;border-radius:2px;cursor:pointer;color:#4a4035;font-family:'DM Sans',sans-serif}
+.ws-table-toolbar button:hover{background:#f0ede8;border-color:#0a1628}
+.ws-table-toolbar button.del-btn:hover{background:#fee2e2;border-color:#dc2626;color:#dc2626}
+.ws-table{border-collapse:collapse;width:100%;table-layout:fixed}
+.ws-table th{background:#f4f1ec;font-weight:700;text-align:left;padding:7px 10px;border:1px solid #e0d9cf;font-size:13px;color:#1a1a1a;position:relative}
+.ws-table td{padding:7px 10px;border:1px solid #e0d9cf;font-size:13px;color:#2a2018;vertical-align:top;position:relative}
+.ws-table tr:hover td{background:#faf9f7}
+/* Col resize handle */
+.col-resize{position:absolute;right:0;top:0;width:5px;height:100%;cursor:col-resize;z-index:5}
+.col-resize:hover,.col-resize.active{background:rgba(10,22,40,.2)}
+.ws-add-btn{display:block;width:100%;padding:7px;margin-top:4px;background:transparent;border:1.5px dashed #d4cdc5;border-radius:3px;color:#9a8f82;font-size:12px;cursor:pointer;text-align:center;font-family:'DM Sans',sans-serif;transition:all .12s}
+.ws-add-btn:hover{border-color:#0a1628;color:#0a1628;background:#f4f1ec}
 
 /* Output */
 .output-box{background:#071220;border-radius:3px;padding:16px;font-family:monospace;font-size:12px;line-height:1.7;color:#a0c8a0;white-space:pre-wrap;word-break:break-all;min-height:80px;max-height:300px;overflow-y:auto;border:1px solid #1e3a5f}
@@ -73,16 +164,6 @@ body{font-family:'DM Sans',sans-serif;background:#f4f1ec;color:#1a1a1a;min-heigh
 .ref-item{margin-bottom:8px}
 .ref-syntax{font-family:monospace;font-size:11.5px;background:#f4f1ec;border:1px solid #e0d9cf;border-radius:2px;padding:3px 7px;color:#0a1628;display:inline-block;margin-bottom:2px}
 .ref-desc{font-size:11.5px;color:#6b5f4e;line-height:1.5}
-.ref-block{background:#f4f1ec;border:1px solid #e0d9cf;border-radius:3px;padding:10px 12px;margin-bottom:8px}
-.ref-block code{font-family:monospace;font-size:11px;color:#0a1628;line-height:1.8;display:block;white-space:pre}
-.ref-block .rd{font-size:11px;color:#6b5f4e;margin-top:4px}
-
-/* Live preview */
-.preview-toggle{display:flex;align-items:center;gap:10px;margin-bottom:10px}
-.preview-toggle label{font-size:12px;font-weight:600;color:#4a4035;cursor:pointer;display:flex;align-items:center;gap:6px}
-.preview-toggle input[type=checkbox]{width:15px;height:15px;cursor:pointer}
-#live-preview{display:none;background:#fff;border:1px solid #e0d9cf;border-radius:3px;padding:20px;margin-top:0;font-family:'DM Sans',sans-serif}
-#live-preview.show{display:block}
 
 /* ── Generate button ── */
 .generate-btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;background:#0a1628;color:#c8a84b;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:700;padding:14px;border:none;border-radius:3px;cursor:pointer;letter-spacing:0.04em;transition:background 0.15s;margin-top:4px}
@@ -103,198 +184,107 @@ body{font-family:'DM Sans',sans-serif;background:#f4f1ec;color:#1a1a1a;min-heigh
     <span style="color:#a0b8d0">Article Generator</span>
   </div>
   <h2>Article Generator</h2>
-  <p>Write your article here using the visual editor, then click Generate to produce the spreadsheet-ready content text. Copy it into the <strong style="color:#fff">content</strong> column of your Google Sheet.</p>
+  <p>Write your article using the visual editor below. Click any text to edit it directly. Use the Insert Block buttons to add sections, then click Generate to produce spreadsheet-ready content.</p>
 </div>
 
 <div class="gen-wrap">
-  <!-- Left: Editor -->
   <div class="editor-panel">
-
-    <!-- Metadata -->
-    <div class="editor-card">
-      <div class="editor-card-header">
-        <h3>Article Details</h3>
-        <span class="hdr-note">Paste these values into your Google Sheet columns</span>
-      </div>
-      <div class="editor-card-body">
-        <div class="field-row">
-          <div class="field-group">
-            <label>Slug</label>
-            <input type="text" id="f-slug" placeholder="how-to-file-small-claims" oninput="autoSlug(false)">
-            <div class="field-note">Lowercase, hyphens only. Used in the URL.</div>
-          </div>
-          <div class="field-group">
-            <label>Category</label>
-            <input type="text" id="f-category" placeholder="Civil Court">
-          </div>
-        </div>
-        <div class="field-group">
-          <label>Title</label>
-          <input type="text" id="f-title" placeholder="How to File a Small Claims Case" oninput="autoSlug(true)">
-        </div>
-        <div class="field-group">
-          <label>Summary (1–2 sentences shown on index page)</label>
-          <textarea id="f-summary" rows="2" placeholder="Small claims court is a simple, low-cost way to resolve disputes involving $7,000 or less."></textarea>
-        </div>
-        <div class="field-row">
-          <div class="field-group">
-            <label>Author</label>
-            <input type="text" id="f-author" placeholder="Court Staff">
-          </div>
-          <div class="field-group">
-            <label>Published Date</label>
-            <input type="text" id="f-published" placeholder="June 1, 2026">
-          </div>
-        </div>
-        <div class="field-row">
-          <div class="field-group">
-            <label>Last Updated (optional)</label>
-            <input type="text" id="f-updated" placeholder="Leave blank if same as published">
-          </div>
-          <div class="field-group">
-            <label>Status</label>
-            <select id="f-status">
-              <option value="published">published</option>
-              <option value="draft">draft</option>
-            </select>
-          </div>
-        </div>
-      </div>
-    </div>
 
     <!-- Block inserter -->
     <div class="editor-card">
       <div class="editor-card-header"><h3>Insert Block</h3></div>
       <div class="editor-card-body">
         <div class="block-grid">
-          <button class="block-btn" onclick="insertBlock('heading2')">
-            <span class="bb-icon">H2</span>
-            <span class="bb-label">Section Heading</span>
-            <span class="bb-sub">Major section</span>
+          <button class="block-btn" onclick="insertBlock('h2')">
+            <span class="bb-icon">H2</span><span class="bb-label">Section Heading</span><span class="bb-sub">Major section</span>
           </button>
-          <button class="block-btn" onclick="insertBlock('heading3')">
-            <span class="bb-icon">H3</span>
-            <span class="bb-label">Subheading</span>
-            <span class="bb-sub">Minor section</span>
+          <button class="block-btn" onclick="insertBlock('h3')">
+            <span class="bb-icon">H3</span><span class="bb-label">Subheading</span><span class="bb-sub">Minor section</span>
           </button>
-          <button class="block-btn" onclick="insertBlock('paragraph')">
-            <span class="bb-icon">¶</span>
-            <span class="bb-label">Paragraph</span>
-            <span class="bb-sub">Body text</span>
+          <button class="block-btn" onclick="insertBlock('p')">
+            <span class="bb-icon">¶</span><span class="bb-label">Paragraph</span><span class="bb-sub">Body text</span>
           </button>
-          <button class="block-btn" onclick="insertBlock('bullet')">
-            <span class="bb-icon">•</span>
-            <span class="bb-label">Bullet List</span>
-            <span class="bb-sub">Unordered</span>
+          <button class="block-btn" onclick="insertBlock('ul')">
+            <span class="bb-icon">•</span><span class="bb-label">Bullet List</span><span class="bb-sub">Unordered</span>
           </button>
-          <button class="block-btn" onclick="insertBlock('numbered')">
-            <span class="bb-icon">1.</span>
-            <span class="bb-label">Numbered List</span>
-            <span class="bb-sub">Ordered steps</span>
+          <button class="block-btn" onclick="insertBlock('ol')">
+            <span class="bb-icon">1.</span><span class="bb-label">Numbered List</span><span class="bb-sub">Ordered steps</span>
           </button>
           <button class="block-btn" onclick="insertBlock('tip')">
-            <span class="bb-icon">💡</span>
-            <span class="bb-label">Tip Box</span>
-            <span class="bb-sub">Gold callout</span>
+            <span class="bb-icon">💡</span><span class="bb-label">Tip Box</span><span class="bb-sub">Gold callout</span>
           </button>
           <button class="block-btn" onclick="insertBlock('info')">
-            <span class="bb-icon">ℹ️</span>
-            <span class="bb-label">Info Box</span>
-            <span class="bb-sub">Blue callout</span>
+            <span class="bb-icon">ℹ️</span><span class="bb-label">Info Box</span><span class="bb-sub">Blue callout</span>
           </button>
           <button class="block-btn" onclick="insertBlock('warning')">
-            <span class="bb-icon">⚠️</span>
-            <span class="bb-label">Warning Box</span>
-            <span class="bb-sub">Orange callout</span>
+            <span class="bb-icon">⚠️</span><span class="bb-label">Warning Box</span><span class="bb-sub">Orange callout</span>
           </button>
           <button class="block-btn" onclick="insertBlock('danger')">
-            <span class="bb-icon">🚨</span>
-            <span class="bb-label">Important Box</span>
-            <span class="bb-sub">Red callout</span>
+            <span class="bb-icon">🚨</span><span class="bb-label">Important Box</span><span class="bb-sub">Red callout</span>
           </button>
           <button class="block-btn" onclick="insertBlock('success')">
-            <span class="bb-icon">✅</span>
-            <span class="bb-label">Good to Know</span>
-            <span class="bb-sub">Green callout</span>
+            <span class="bb-icon">✅</span><span class="bb-label">Good to Know</span><span class="bb-sub">Green callout</span>
           </button>
-          <button class="block-btn" onclick="insertBlock('what-you-need')">
-            <span class="bb-icon">📋</span>
-            <span class="bb-label">What You Need</span>
-            <span class="bb-sub">Checklist</span>
+          <button class="block-btn" onclick="insertBlock('wyn')">
+            <span class="bb-icon">📋</span><span class="bb-label">What You Need</span><span class="bb-sub">Checklist</span>
           </button>
           <button class="block-btn" onclick="insertBlock('timeline')">
-            <span class="bb-icon">🔢</span>
-            <span class="bb-label">Process Timeline</span>
-            <span class="bb-sub">Numbered steps</span>
+            <span class="bb-icon">🔢</span><span class="bb-label">Process Timeline</span><span class="bb-sub">Numbered steps</span>
           </button>
           <button class="block-btn" onclick="insertBlock('faq')">
-            <span class="bb-icon">❓</span>
-            <span class="bb-label">FAQ Section</span>
-            <span class="bb-sub">Expandable Q&amp;A</span>
+            <span class="bb-icon">❓</span><span class="bb-label">FAQ Section</span><span class="bb-sub">Q&amp;A pairs</span>
           </button>
           <button class="block-btn" onclick="insertBlock('facts')">
-            <span class="bb-icon">📌</span>
-            <span class="bb-label">Quick Facts</span>
-            <span class="bb-sub">Sidebar facts</span>
+            <span class="bb-icon">📌</span><span class="bb-label">Quick Facts</span><span class="bb-sub">Sidebar facts</span>
           </button>
           <button class="block-btn" onclick="insertBlock('quote')">
-            <span class="bb-icon">"</span>
-            <span class="bb-label">Pull Quote</span>
-            <span class="bb-sub">Court-style quote</span>
+            <span class="bb-icon">"</span><span class="bb-label">Pull Quote</span><span class="bb-sub">Court-style quote</span>
           </button>
           <button class="block-btn" onclick="insertBlock('table')">
-            <span class="bb-icon">⊞</span>
-            <span class="bb-label">Table</span>
-            <span class="bb-sub">Rows &amp; columns</span>
+            <span class="bb-icon">⊞</span><span class="bb-label">Table</span><span class="bb-sub">Rows &amp; columns</span>
           </button>
           <button class="block-btn" onclick="insertBlock('hr')">
-            <span class="bb-icon">—</span>
-            <span class="bb-label">Divider</span>
-            <span class="bb-sub">Horizontal rule</span>
+            <span class="bb-icon">—</span><span class="bb-label">Divider</span><span class="bb-sub">Horizontal rule</span>
           </button>
         </div>
       </div>
     </div>
 
-    <!-- Content editor -->
+    <!-- WYSIWYG Content Editor -->
     <div class="editor-card">
-      <div class="editor-card-header"><h3>Article Content</h3></div>
+      <div class="editor-card-header"><h3>Article Content</h3><span class="hdr-note">Click any text to edit • Use toolbar for inline formatting</span></div>
       <div class="editor-card-body">
         <div class="content-toolbar">
-          <button class="ct-btn" onclick="wrapSelection('**','**')" title="Bold">B</button>
-          <button class="ct-btn" onclick="wrapSelection('*','*')" title="Italic" style="font-style:italic">I</button>
-          <button class="ct-btn" onclick="insertLink()" title="Link">🔗 Link</button>
-          <button class="ct-btn" onclick="clearContent()" title="Clear" style="margin-left:auto;color:#dc2626;border-color:#fecaca">Clear</button>
+          <button class="ct-btn" onclick="fmt('bold')"><b>B</b></button>
+          <button class="ct-btn" onclick="fmt('italic')"><i>I</i></button>
+          <button class="ct-btn" onclick="fmtLink()">🔗 Link</button>
+          <button class="ct-btn" onclick="clearAll()" style="margin-left:auto;color:#dc2626;border-color:#fecaca">Clear</button>
         </div>
-        <textarea id="content-area" placeholder="Start writing your article here, or use the Insert Block buttons above to add formatted sections…" oninput="updatePreview()"></textarea>
-        <div class="preview-toggle" style="margin-top:12px">
-          <label><input type="checkbox" id="preview-toggle" onchange="togglePreview()"> Live Preview</label>
+        <div id="wysiwyg-canvas" onclick="canvasClick(event)">
+          <div style="color:#c0b8ae;font-style:italic;text-align:center;padding:40px 0;font-size:13px" id="canvas-hint">
+            Use the Insert Block buttons above to start building your article…
+          </div>
         </div>
-        <div id="live-preview"></div>
       </div>
     </div>
 
-    <!-- Generate output -->
+    <!-- Generate -->
     <div class="editor-card">
       <div class="editor-card-header"><h3>Generate Sheet Content</h3></div>
       <div class="editor-card-body">
-        <p style="font-size:13px;color:#4a4035;margin-bottom:14px;line-height:1.6">Click Generate to produce the spreadsheet-ready text. Copy each value into the matching column in your Google Sheet.</p>
+        <p style="font-size:13px;color:#4a4035;margin-bottom:14px;line-height:1.6">Click Generate to produce the spreadsheet-ready text. Copy it into the <strong>content</strong> column of your Google Sheet.</p>
         <button class="generate-btn" onclick="generate()">
           <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12l4 4L16 6"/></svg>
           Generate Sheet Content
         </button>
         <div id="output-wrap" style="margin-top:16px;display:none">
-          <div style="font-size:10px;color:#9a8f82;text-transform:uppercase;letter-spacing:0.09em;font-weight:700;margin-bottom:6px">Content Column Value — paste this into column H of your sheet</div>
+          <div style="font-size:10px;color:#9a8f82;text-transform:uppercase;letter-spacing:0.09em;font-weight:700;margin-bottom:6px">Content Column Value</div>
           <div class="output-box" id="output-box"></div>
           <button class="copy-output-btn" onclick="copyOutput()">
             <svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><rect x="7" y="7" width="10" height="10" rx="1"/><path d="M3 13V3h10"/></svg>
             Copy Content to Clipboard
           </button>
           <div class="copy-toast" id="copy-toast">✓ Copied!</div>
-          <div style="margin-top:16px;background:#f4f1ec;border:1px solid #e0d9cf;border-radius:3px;padding:14px 16px">
-            <div style="font-size:10px;color:#9a8f82;text-transform:uppercase;letter-spacing:0.09em;font-weight:700;margin-bottom:10px">Other Column Values</div>
-            <div id="meta-output" style="display:grid;grid-template-columns:120px 1fr;gap:6px 12px;font-size:12.5px;line-height:1.6"></div>
-          </div>
         </div>
       </div>
     </div>
@@ -303,182 +293,434 @@ body{font-family:'DM Sans',sans-serif;background:#f4f1ec;color:#1a1a1a;min-heigh
 
   <!-- Right: Reference -->
   <div class="ref-panel">
-
-    <div class="ref-card">
-      <div class="ref-card-header"><h3>Syntax Reference</h3></div>
-      <div class="ref-card-body">
-
-        <div class="ref-section">
-          <h4>Text Formatting</h4>
-          <div class="ref-item"><div class="ref-syntax">**bold**</div><div class="ref-desc">Bold text</div></div>
-          <div class="ref-item"><div class="ref-syntax">*italic*</div><div class="ref-desc">Italic text</div></div>
-          <div class="ref-item"><div class="ref-syntax">[text](url)</div><div class="ref-desc">Hyperlink</div></div>
-          <div class="ref-item"><div class="ref-syntax">## Heading</div><div class="ref-desc">Section heading (H2)</div></div>
-          <div class="ref-item"><div class="ref-syntax">### Subheading</div><div class="ref-desc">Sub-section (H3)</div></div>
-          <div class="ref-item"><div class="ref-syntax">---</div><div class="ref-desc">Horizontal divider</div></div>
-        </div>
-
-        <div class="ref-section">
-          <h4>Lists</h4>
-          <div class="ref-item"><div class="ref-syntax">- Item</div><div class="ref-desc">Bullet list item</div></div>
-          <div class="ref-item"><div class="ref-syntax">1. Item</div><div class="ref-desc">Numbered list item</div></div>
-        </div>
-
-        <div class="ref-section">
-          <h4>Callout Boxes</h4>
-          <div class="ref-block"><code>:::tip\nYour tip text here.\n:::</code><div class="rd">Also: info, warning, danger, success</div></div>
-        </div>
-
-        <div class="ref-section">
-          <h4>What You Need</h4>
-          <div class="ref-block"><code>:::what-you-need\n- Government-issued ID\n- Proof of address\n:::</code></div>
-        </div>
-
-        <div class="ref-section">
-          <h4>Process Timeline</h4>
-          <div class="ref-block"><code>:::timeline\nFile Your Complaint | Go to the clerk's office.\nServe the Defendant | Mail copies within 7 days.\n:::</code><div class="rd">Format: Step Title | description</div></div>
-        </div>
-
-        <div class="ref-section">
-          <h4>FAQ</h4>
-          <div class="ref-block"><code>:::faq\nQ: Do I need a lawyer?\nA: No, most people represent themselves.\nQ: How long does it take?\nA: Usually 30–70 days.\n:::</code></div>
-        </div>
-
-        <div class="ref-section">
-          <h4>Quick Facts (Sidebar)</h4>
-          <div class="ref-block"><code>:::facts\nFiling Fee: $30–$70\nTime Limit: 6 years\nCourt: District Court\n:::</code><div class="rd">Format: Label: Value</div></div>
-        </div>
-
-        <div class="ref-section">
-          <h4>Pull Quote</h4>
-          <div class="ref-block"><code>:::quote[MCL 600.8401]\nNo person shall be denied access to the courts.\n:::</code><div class="rd">The [ ] is the attribution/citation</div></div>
-        </div>
-
-        <div class="ref-section">
-          <h4>Table</h4>
-          <div class="ref-block"><code>| Column 1 | Column 2 |\n| --- | --- |\n| Value | Value |</code></div>
-        </div>
-
-      </div>
-    </div>
-
     <div class="ref-card">
       <div class="ref-card-header"><h3>How It Works</h3></div>
       <div class="ref-card-body" style="font-size:12.5px;color:#4a4035;line-height:1.7">
-        <p style="margin-bottom:10px">1. Fill in the article details at the top.</p>
-        <p style="margin-bottom:10px">2. Write your content using the editor and block inserter.</p>
-        <p style="margin-bottom:10px">3. Click <strong>Generate Sheet Content</strong>.</p>
-        <p style="margin-bottom:10px">4. Copy the output and paste it into column H (content) of your Google Sheet. Copy the other values into their matching columns.</p>
-        <p>5. Set status to <strong>published</strong> when ready to go live.</p>
+        <p style="margin-bottom:10px">1. Click a block type above to insert it into the canvas.</p>
+        <p style="margin-bottom:10px">2. <strong>Click any text</strong> in the canvas to edit it in place — what you see is exactly what will render.</p>
+        <p style="margin-bottom:10px">3. Hover a block to reveal <strong>↑ ↓ ✕</strong> controls to reorder or delete.</p>
+        <p style="margin-bottom:10px">4. For lists, timelines, FAQs and facts, use the <strong>+ Add</strong> button to add more rows/items.</p>
+        <p style="margin-bottom:10px">5. For tables, drag column borders to resize, and use the Add/Delete row and column buttons.</p>
+        <p>6. Click <strong>Generate Sheet Content</strong> and copy into column H of your Google Sheet.</p>
       </div>
     </div>
 
+    <div class="ref-card">
+      <div class="ref-card-header"><h3>Inline Formatting</h3></div>
+      <div class="ref-card-body">
+        <div class="ref-section">
+          <div class="ref-item"><div class="ref-syntax">Select text → B</div><div class="ref-desc">Bold</div></div>
+          <div class="ref-item"><div class="ref-syntax">Select text → I</div><div class="ref-desc">Italic</div></div>
+          <div class="ref-item"><div class="ref-syntax">Select text → 🔗 Link</div><div class="ref-desc">Hyperlink</div></div>
+        </div>
+        <div class="ref-section">
+          <h4>Output Syntax (auto-generated)</h4>
+          <div class="ref-item"><div class="ref-syntax">## Heading</div><div class="ref-desc">H2 section</div></div>
+          <div class="ref-item"><div class="ref-syntax">:::tip … :::</div><div class="ref-desc">Callout boxes</div></div>
+          <div class="ref-item"><div class="ref-syntax">:::timeline … :::</div><div class="ref-desc">Process steps</div></div>
+          <div class="ref-item"><div class="ref-syntax">:::faq … :::</div><div class="ref-desc">FAQ pairs</div></div>
+          <div class="ref-item"><div class="ref-syntax">| col | col |</div><div class="ref-desc">Tables</div></div>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
 <script>
-// ── Block templates ──────────────────────────────────────────
-const BLOCKS = {
-  heading2:      '## Section Heading\n',
-  heading3:      '### Subheading\n',
-  paragraph:     'Your paragraph text here.\n',
-  bullet:        '- First item\n- Second item\n- Third item\n',
-  numbered:      '1. First step\n2. Second step\n3. Third step\n',
-  tip:           ':::tip\nYour tip text here.\n:::\n',
-  info:          ':::info\nYour note text here.\n:::\n',
-  warning:       ':::warning\nYour warning text here.\n:::\n',
-  danger:        ':::danger\nImportant information here.\n:::\n',
-  success:       ':::success\nGood news or confirmation here.\n:::\n',
-  'what-you-need':':::what-you-need\n- Government-issued ID\n- Proof of address\n- Filing fee payment\n:::\n',
-  timeline:      ':::timeline\nStep One | Description of what to do in this step.\nStep Two | Description of what to do in this step.\nStep Three | Description of what to do in this step.\n:::\n',
-  faq:           ':::faq\nQ: First frequently asked question?\nA: Answer to the first question.\nQ: Second frequently asked question?\nA: Answer to the second question.\n:::\n',
-  facts:         ':::facts\nFiling Fee: $30–$70\nTime Limit: 6 years\nCourt: District Court\nForm Needed: DC 84\n:::\n',
-  quote:         ':::quote[Citation or Attribution]\nThe quoted text goes here, such as a statute or ruling.\n:::\n',
-  table:         '| Column One | Column Two | Column Three |\n| --- | --- | --- |\n| Value | Value | Value |\n| Value | Value | Value |\n',
-  hr:            '---\n',
-};
+// ─── Block data store ────────────────────────────────────────
+let blocks = [];
+let uidC = 0;
+function nid(){ return 'bl'+(uidC++); }
 
+// ─── Column resize state ─────────────────────────────────────
+let resizeState = null;
+
+// ─── Insert a block ──────────────────────────────────────────
 function insertBlock(type){
-  const ta=document.getElementById('content-area');
-  const val=BLOCKS[type]||'';
-  const start=ta.selectionStart;
-  const before=ta.value.slice(0,start);
-  const after=ta.value.slice(ta.selectionEnd);
-  const prefix=(before.length>0&&!before.endsWith('\n'))?'\n':'';
-  ta.value=before+prefix+val+after;
-  ta.focus();
-  const newPos=start+prefix.length+val.length;
-  ta.setSelectionRange(newPos,newPos);
-  updatePreview();
+  const hint = document.getElementById('canvas-hint');
+  if(hint) hint.remove();
+
+  const defaults = {
+    h2:       { type:'h2', text:'Section Heading' },
+    h3:       { type:'h3', text:'Subheading' },
+    p:        { type:'p', text:'Your paragraph text here.' },
+    ul:       { type:'ul', items:['First item','Second item','Third item'] },
+    ol:       { type:'ol', items:['First step','Second step','Third step'] },
+    hr:       { type:'hr' },
+    tip:      { type:'callout', variant:'tip',     label:'Tip',        text:'Your tip text here.' },
+    info:     { type:'callout', variant:'info',    label:'Info',       text:'Your note text here.' },
+    warning:  { type:'callout', variant:'warning', label:'Warning',    text:'Your warning here.' },
+    danger:   { type:'callout', variant:'danger',  label:'Important',  text:'Important information here.' },
+    success:  { type:'callout', variant:'success', label:'Good to Know',text:'Good news or confirmation here.' },
+    wyn:      { type:'wyn', items:['Government-issued ID','Proof of address','Filing fee payment'] },
+    timeline: { type:'timeline', steps:[
+      {title:'Step One', desc:'Description of what to do in this step.'},
+      {title:'Step Two', desc:'Description of what to do in this step.'},
+    ]},
+    faq:      { type:'faq', items:[
+      {q:'First frequently asked question?', a:'Answer to the first question.'},
+      {q:'Second frequently asked question?', a:'Answer to the second question.'},
+    ]},
+    facts:    { type:'facts', items:[
+      {label:'Filing Fee', value:'$30–$70'},
+      {label:'Time Limit', value:'6 years'},
+      {label:'Court', value:'District Court'},
+    ]},
+    quote:    { type:'quote', text:'The quoted text goes here.', attr:'Citation or Attribution' },
+    table:    { type:'table',
+      headers:['Column One','Column Two','Column Three'],
+      rows:[['Value','Value','Value'],['Value','Value','Value']],
+      colWidths:['33%','33%','34%']
+    },
+  };
+
+  const b = { id: nid(), ...JSON.parse(JSON.stringify(defaults[type])) };
+  blocks.push(b);
+  renderBlock(b, true);
 }
 
-function wrapSelection(before,after){
-  const ta=document.getElementById('content-area');
-  const s=ta.selectionStart,e=ta.selectionEnd;
-  const sel=ta.value.slice(s,e)||'text';
-  ta.value=ta.value.slice(0,s)+before+sel+after+ta.value.slice(e);
-  ta.focus();
-  ta.setSelectionRange(s+before.length,s+before.length+sel.length);
-  updatePreview();
+// ─── Render a single block into the canvas ───────────────────
+function renderBlock(b, focus){
+  const canvas = document.getElementById('wysiwyg-canvas');
+  const el = buildEl(b);
+  canvas.appendChild(el);
+  if(focus){
+    const first = el.querySelector('[contenteditable]');
+    if(first){ first.focus(); selectAll(first); }
+    el.scrollIntoView({behavior:'smooth',block:'nearest'});
+  }
 }
 
-function insertLink(){
-  const url=prompt('URL:','https://');
-  if(!url)return;
-  const ta=document.getElementById('content-area');
-  const s=ta.selectionStart,e=ta.selectionEnd;
-  const sel=ta.value.slice(s,e)||'link text';
-  const link=`[${sel}](${url})`;
-  ta.value=ta.value.slice(0,s)+link+ta.value.slice(e);
-  ta.focus();
-  updatePreview();
+function buildEl(b){
+  const wrap = document.createElement('div');
+  wrap.className = 'ws-block';
+  wrap.dataset.id = b.id;
+  wrap.innerHTML = blockInnerHTML(b);
+
+  // controls
+  if(b.type !== 'hr'){
+    const ctrl = document.createElement('div');
+    ctrl.className = 'ws-controls';
+    ctrl.innerHTML = `
+      <button class="ws-cb" title="Move up" onclick="moveBlock('${b.id}',-1)">↑</button>
+      <button class="ws-cb" title="Move down" onclick="moveBlock('${b.id}',1)">↓</button>
+      <button class="ws-cb del" title="Delete" onclick="deleteBlock('${b.id}')">✕</button>`;
+    wrap.appendChild(ctrl);
+  } else {
+    const ctrl = document.createElement('div');
+    ctrl.className = 'ws-controls';
+    ctrl.innerHTML = `<button class="ws-cb del" title="Delete" onclick="deleteBlock('${b.id}')">✕</button>`;
+    wrap.appendChild(ctrl);
+  }
+
+  attachBlockListeners(wrap, b);
+  return wrap;
 }
 
-function clearContent(){
-  if(!confirm('Clear all content?'))return;
-  document.getElementById('content-area').value='';
-  updatePreview();
+function blockInnerHTML(b){
+  switch(b.type){
+    case 'h2':
+      return `<h2 class="ws-h2" contenteditable="true" data-field="text" data-ph="Section Heading">${esc(b.text)}</h2>`;
+    case 'h3':
+      return `<h3 class="ws-h3" contenteditable="true" data-field="text" data-ph="Subheading">${esc(b.text)}</h3>`;
+    case 'p':
+      return `<p class="ws-p" contenteditable="true" data-field="text" data-ph="Start typing…">${esc(b.text)}</p>`;
+    case 'ul':
+      return `<ul class="ws-ul">${b.items.map((it,i)=>`<li contenteditable="true" data-field="item" data-idx="${i}" data-ph="List item">${esc(it)}</li>`).join('')}</ul>
+        <button class="ws-add-btn" onclick="addItem('${b.id}','ul')">+ Add item</button>`;
+    case 'ol':
+      return `<ol class="ws-ol">${b.items.map((it,i)=>`<li contenteditable="true" data-field="item" data-idx="${i}" data-ph="Step">${esc(it)}</li>`).join('')}</ol>
+        <button class="ws-add-btn" onclick="addItem('${b.id}','ol')">+ Add step</button>`;
+    case 'hr':
+      return `<hr class="ws-hr">`;
+    case 'callout':
+      return `<div class="ws-callout ${b.variant}">
+        <div class="callout-label">${esc(b.label)}</div>
+        <div contenteditable="true" data-field="text" data-ph="Enter text…">${esc(b.text)}</div>
+      </div>`;
+    case 'wyn':
+      return `<div class="ws-wyn">
+        <div class="ws-wyn-title">📋 What You'll Need</div>
+        <ul class="ws-wyn-list">${b.items.map((it,i)=>`<li><span contenteditable="true" data-field="item" data-idx="${i}" data-ph="Item">${esc(it)}</span></li>`).join('')}</ul>
+      </div>
+      <button class="ws-add-btn" onclick="addItem('${b.id}','wyn')">+ Add item</button>`;
+    case 'timeline':
+      return `<div class="ws-timeline">
+        ${b.steps.map((s,i)=>`
+        <div class="ws-tl-step">
+          <div class="ws-tl-num">${i+1}</div>
+          <div>
+            <div class="ws-tl-title" contenteditable="true" data-field="step-title" data-idx="${i}" data-ph="Step title">${esc(s.title)}</div>
+            <div class="ws-tl-desc" contenteditable="true" data-field="step-desc" data-idx="${i}" data-ph="Description">${esc(s.desc)}</div>
+          </div>
+        </div>`).join('')}
+      </div>
+      <button class="ws-add-btn" onclick="addTimelineStep('${b.id}')">+ Add step</button>`;
+    case 'faq':
+      return `<div class="ws-faq">
+        ${b.items.map((it,i)=>`
+        <div class="ws-faq-q" contenteditable="true" data-field="faq-q" data-idx="${i}" data-ph="Question?">${esc(it.q)}</div>
+        <div class="ws-faq-a" contenteditable="true" data-field="faq-a" data-idx="${i}" data-ph="Answer">${esc(it.a)}</div>
+        `).join('')}
+      </div>
+      <button class="ws-add-btn" onclick="addFaqItem('${b.id}')">+ Add Q&amp;A</button>`;
+    case 'facts':
+      return `<div class="ws-facts">
+        ${b.items.map((it,i)=>`
+        <span class="ws-fact-label" contenteditable="true" data-field="fact-label" data-idx="${i}" data-ph="Label">${esc(it.label)}</span>
+        <span class="ws-fact-value" contenteditable="true" data-field="fact-value" data-idx="${i}" data-ph="Value">${esc(it.value)}</span>
+        `).join('')}
+      </div>
+      <button class="ws-add-btn" onclick="addFactItem('${b.id}')">+ Add fact</button>`;
+    case 'quote':
+      return `<div class="ws-quote">
+        <div class="ws-quote-text" contenteditable="true" data-field="text" data-ph="Enter quote">${esc(b.text)}</div>
+        <div class="ws-quote-attr" contenteditable="true" data-field="attr" data-ph="Citation or Attribution">— ${esc(b.attr)}</div>
+      </div>`;
+    case 'table':
+      return buildTableHTML(b);
+    default: return '';
+  }
 }
 
-// ── Auto slug ────────────────────────────────────────────────
-function autoSlug(fromTitle){
-  if(!fromTitle)return;
-  const title=document.getElementById('f-title').value;
-  const slug=title.toLowerCase().replace(/[^a-z0-9\s-]/g,'').trim().replace(/\s+/g,'-').replace(/-+/g,'-');
-  document.getElementById('f-slug').value=slug;
+function buildTableHTML(b){
+  const cw = b.colWidths || b.headers.map(()=>Math.floor(100/b.headers.length)+'%');
+  return `<div class="ws-table-wrap">
+    <div class="ws-table-toolbar">
+      <button onclick="tblAddCol('${b.id}')">+ Column</button>
+      <button onclick="tblAddRow('${b.id}')">+ Row</button>
+      <button class="del-btn" onclick="tblDelCol('${b.id}')">− Last Col</button>
+      <button class="del-btn" onclick="tblDelRow('${b.id}')">− Last Row</button>
+    </div>
+    <table class="ws-table" id="tbl-${b.id}">
+      <colgroup>${cw.map((w,ci)=>`<col id="tcol-${b.id}-${ci}" style="width:${w}">`).join('')}</colgroup>
+      <thead><tr>
+        ${b.headers.map((h,ci)=>`<th>
+          <div contenteditable="true" data-field="th" data-cidx="${ci}" data-ph="Header">${esc(h)}</div>
+          <div class="col-resize" data-bid="${b.id}" data-cidx="${ci}"></div>
+        </th>`).join('')}
+      </tr></thead>
+      <tbody>
+        ${b.rows.map((row,ri)=>`<tr>${row.map((cell,ci)=>`<td><div contenteditable="true" data-field="td" data-ridx="${ri}" data-cidx="${ci}" data-ph="Cell">${esc(cell)}</div></td>`).join('')}</tr>`).join('')}
+      </tbody>
+    </table>
+  </div>`;
 }
 
-// ── Content → sheet format (newlines → \n literal) ──────────
-function toSheetContent(raw){
-  return raw.replace(/\r\n/g,'\n').replace(/\r/g,'\n').replace(/\n/g,'\\n');
+// ─── Attach live listeners ───────────────────────────────────
+function attachBlockListeners(wrap, b){
+  // contenteditable → sync to block data
+  wrap.querySelectorAll('[contenteditable]').forEach(el=>{
+    el.addEventListener('input', ()=> syncEl(el, b));
+    // Enter in single-line blocks → insert new paragraph
+    if(['h2','h3'].includes(b.type)){
+      el.addEventListener('keydown', e=>{
+        if(e.key==='Enter'){ e.preventDefault(); insertAfter('p', b.id); }
+      });
+    }
+  });
+
+  // Column resize handles
+  wrap.querySelectorAll('.col-resize').forEach(handle=>{
+    handle.addEventListener('mousedown', e=>{
+      e.preventDefault();
+      const bid = handle.dataset.bid;
+      const ci = parseInt(handle.dataset.cidx);
+      const col = document.getElementById(`tcol-${bid}-${ci}`);
+      const tbl = document.getElementById(`tbl-${bid}`);
+      if(!col||!tbl) return;
+      resizeState = { bid, ci, col, startX: e.clientX, startW: col.getBoundingClientRect().width };
+      handle.classList.add('active');
+    });
+  });
 }
 
-// ── Generate ─────────────────────────────────────────────────
+document.addEventListener('mousemove', e=>{
+  if(!resizeState) return;
+  const dx = e.clientX - resizeState.startX;
+  const newW = Math.max(50, resizeState.startW + dx);
+  resizeState.col.style.width = newW + 'px';
+  // persist
+  const b = blocks.find(x=>x.id===resizeState.bid);
+  if(b){ if(!b.colWidths) b.colWidths=b.headers.map(()=>null); b.colWidths[resizeState.ci]=newW+'px'; }
+});
+document.addEventListener('mouseup', ()=>{
+  if(resizeState){
+    document.querySelectorAll('.col-resize.active').forEach(h=>h.classList.remove('active'));
+    resizeState=null;
+  }
+});
+
+function syncEl(el, b){
+  const field = el.dataset.field;
+  const val = el.innerHTML; // preserve bold/italic/links
+  const txt = el.innerText;
+  if(field==='text') b.text = val;
+  else if(field==='attr') b.attr = txt.replace(/^—\s*/,'');
+  else if(field==='item'){ const i=parseInt(el.dataset.idx); if(b.items) b.items[i]=val; }
+  else if(field==='step-title'){ const i=parseInt(el.dataset.idx); if(b.steps) b.steps[i].title=val; }
+  else if(field==='step-desc'){ const i=parseInt(el.dataset.idx); if(b.steps) b.steps[i].desc=val; }
+  else if(field==='faq-q'){ const i=parseInt(el.dataset.idx); if(b.items) b.items[i].q=val; }
+  else if(field==='faq-a'){ const i=parseInt(el.dataset.idx); if(b.items) b.items[i].a=val; }
+  else if(field==='fact-label'){ const i=parseInt(el.dataset.idx); if(b.items) b.items[i].label=txt; }
+  else if(field==='fact-value'){ const i=parseInt(el.dataset.idx); if(b.items) b.items[i].value=txt; }
+  else if(field==='th'){ const ci=parseInt(el.dataset.cidx); if(b.headers) b.headers[ci]=txt; }
+  else if(field==='td'){ const ri=parseInt(el.dataset.ridx),ci=parseInt(el.dataset.cidx); if(b.rows&&b.rows[ri]) b.rows[ri][ci]=val; }
+}
+
+// ─── Add items ───────────────────────────────────────────────
+function addItem(bid, listType){
+  const b=blocks.find(x=>x.id===bid); if(!b) return;
+  b.items.push(listType==='ol'?'New step':'New item');
+  reRenderBlock(bid);
+  setTimeout(()=>{
+    const wrap=document.querySelector(`[data-id="${bid}"]`);
+    if(wrap){ const items=wrap.querySelectorAll('[data-field="item"]'); const last=items[items.length-1]; if(last){last.focus();selectAll(last);} }
+  },30);
+}
+
+function addTimelineStep(bid){
+  const b=blocks.find(x=>x.id===bid); if(!b) return;
+  b.steps.push({title:'New Step',desc:'Description.'});
+  reRenderBlock(bid);
+}
+
+function addFaqItem(bid){
+  const b=blocks.find(x=>x.id===bid); if(!b) return;
+  b.items.push({q:'New question?',a:'Answer here.'});
+  reRenderBlock(bid);
+}
+
+function addFactItem(bid){
+  const b=blocks.find(x=>x.id===bid); if(!b) return;
+  b.items.push({label:'Label',value:'Value'});
+  reRenderBlock(bid);
+}
+
+// ─── Table operations ────────────────────────────────────────
+function tblAddCol(bid){
+  const b=blocks.find(x=>x.id===bid); if(!b) return;
+  b.headers.push('New Column');
+  b.rows.forEach(r=>r.push(''));
+  const pct = Math.floor(100/b.headers.length)+'%';
+  b.colWidths = b.headers.map(()=>pct);
+  reRenderBlock(bid);
+}
+function tblAddRow(bid){
+  const b=blocks.find(x=>x.id===bid); if(!b) return;
+  b.rows.push(b.headers.map(()=>''));
+  reRenderBlock(bid);
+}
+function tblDelCol(bid){
+  const b=blocks.find(x=>x.id===bid); if(!b||b.headers.length<=1) return;
+  b.headers.pop(); b.rows.forEach(r=>r.pop()); if(b.colWidths) b.colWidths.pop();
+  reRenderBlock(bid);
+}
+function tblDelRow(bid){
+  const b=blocks.find(x=>x.id===bid); if(!b||b.rows.length===0) return;
+  b.rows.pop();
+  reRenderBlock(bid);
+}
+
+// ─── Re-render a block in place ──────────────────────────────
+function reRenderBlock(bid){
+  const old=document.querySelector(`[data-id="${bid}"]`); if(!old) return;
+  const b=blocks.find(x=>x.id===bid); if(!b) return;
+  const fresh=buildEl(b);
+  old.replaceWith(fresh);
+}
+
+// ─── Move / delete blocks ────────────────────────────────────
+function moveBlock(bid, dir){
+  const idx=blocks.findIndex(x=>x.id===bid);
+  const newIdx=idx+dir;
+  if(newIdx<0||newIdx>=blocks.length) return;
+  [blocks[idx],blocks[newIdx]]=[blocks[newIdx],blocks[idx]];
+  const canvas=document.getElementById('wysiwyg-canvas');
+  const els=Array.from(canvas.querySelectorAll('.ws-block'));
+  const a=els[idx], bEl=els[newIdx];
+  if(!a||!bEl) return;
+  if(dir<0){ canvas.insertBefore(a,bEl); } else { canvas.insertBefore(bEl,a); }
+}
+
+function deleteBlock(bid){
+  blocks=blocks.filter(x=>x.id!==bid);
+  const el=document.querySelector(`[data-id="${bid}"]`);
+  if(el) el.remove();
+  if(blocks.length===0){
+    const canvas=document.getElementById('wysiwyg-canvas');
+    canvas.innerHTML=`<div style="color:#c0b8ae;font-style:italic;text-align:center;padding:40px 0;font-size:13px" id="canvas-hint">Use the Insert Block buttons above to start building your article…</div>`;
+  }
+}
+
+// ─── Insert after a specific block ───────────────────────────
+function insertAfter(type, afterId){
+  const hint=document.getElementById('canvas-hint'); if(hint) hint.remove();
+  const defaults={
+    p:{ type:'p', text:'' },
+  };
+  const b={ id:nid(), ...JSON.parse(JSON.stringify(defaults[type])) };
+  const idx=blocks.findIndex(x=>x.id===afterId);
+  if(idx>=0) blocks.splice(idx+1,0,b);
+  else blocks.push(b);
+  const ref=document.querySelector(`[data-id="${afterId}"]`);
+  const fresh=buildEl(b);
+  if(ref) ref.after(fresh);
+  else document.getElementById('wysiwyg-canvas').appendChild(fresh);
+  setTimeout(()=>{ const ed=fresh.querySelector('[contenteditable]'); if(ed) ed.focus(); },20);
+}
+
+// ─── Canvas click (focus nearest editable) ───────────────────
+function canvasClick(e){
+  if(e.target.id==='wysiwyg-canvas'){
+    // clicked empty area — focus last block's last editable
+    const eds=document.querySelectorAll('#wysiwyg-canvas [contenteditable]');
+    if(eds.length) eds[eds.length-1].focus();
+  }
+}
+
+// ─── Inline formatting ───────────────────────────────────────
+function fmt(cmd){ document.execCommand(cmd); }
+function fmtLink(){
+  const url=prompt('URL:','https://'); if(!url) return;
+  document.execCommand('createLink',false,url);
+}
+function clearAll(){
+  if(!confirm('Clear all content?')) return;
+  blocks=[];
+  document.getElementById('wysiwyg-canvas').innerHTML=`<div style="color:#c0b8ae;font-style:italic;text-align:center;padding:40px 0;font-size:13px" id="canvas-hint">Use the Insert Block buttons above to start building your article…</div>`;
+}
+
+// ─── Generate output ─────────────────────────────────────────
 function generate(){
-  const content=document.getElementById('content-area').value.trim();
-  if(!content){alert('Please write some content first.');return;}
-
-  const sheetContent=toSheetContent(content);
-  document.getElementById('output-box').textContent=sheetContent;
+  if(blocks.length===0){ alert('Please add some content first.'); return; }
+  const raw = blocks.map(b=>blockToMarkup(b)).join('\n');
+  const sheet = raw.replace(/\r\n/g,'\n').replace(/\r/g,'\n').replace(/\n/g,'\\n');
+  document.getElementById('output-box').textContent=sheet;
   document.getElementById('output-wrap').style.display='block';
-
-  // Other meta values
-  const fields=[
-    ['A — slug',       document.getElementById('f-slug').value],
-    ['B — title',      document.getElementById('f-title').value],
-    ['C — category',   document.getElementById('f-category').value],
-    ['D — summary',    document.getElementById('f-summary').value],
-    ['E — author',     document.getElementById('f-author').value],
-    ['F — published',  document.getElementById('f-published').value],
-    ['G — status',     document.getElementById('f-status').value],
-    ['I — last_updated',document.getElementById('f-updated').value||'(leave blank)'],
-  ];
-  document.getElementById('meta-output').innerHTML=fields.map(([col,val])=>`
-    <span style="color:#9a8f82;font-weight:700">${col}</span>
-    <span style="color:#1a1a1a">${val||'<em style="color:#b0a89e">not filled</em>'}</span>
-  `).join('');
-
   document.getElementById('output-wrap').scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function blockToMarkup(b){
+  const stripHtml = s => (s||'').replace(/<br\s*\/?>/gi,'\n').replace(/<[^>]+>/g,'').replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&nbsp;/g,' ');
+  const innerHTML = s => (s||'').replace(/<br\s*\/?>/gi,'\n').replace(/<b>(.*?)<\/b>/gi,'**$1**').replace(/<strong>(.*?)<\/strong>/gi,'**$1**').replace(/<i>(.*?)<\/i>/gi,'*$1*').replace(/<em>(.*?)<\/em>/gi,'*$1*').replace(/<a href="([^"]+)"[^>]*>(.*?)<\/a>/gi,'[$2]($1)').replace(/<[^>]+>/g,'');
+
+  switch(b.type){
+    case 'h2': return `## ${stripHtml(b.text)}`;
+    case 'h3': return `### ${stripHtml(b.text)}`;
+    case 'p':  return innerHTML(b.text);
+    case 'ul': return b.items.map(i=>`- ${stripHtml(i)}`).join('\n');
+    case 'ol': return b.items.map((i,n)=>`${n+1}. ${stripHtml(i)}`).join('\n');
+    case 'hr': return '---';
+    case 'callout': return `:::${b.variant}\n${stripHtml(b.text)}\n:::`;
+    case 'wyn': return `:::what-you-need\n${b.items.map(i=>`- ${stripHtml(i)}`).join('\n')}\n:::`;
+    case 'timeline': return `:::timeline\n${b.steps.map(s=>`${stripHtml(s.title)} | ${stripHtml(s.desc)}`).join('\n')}\n:::`;
+    case 'faq': return `:::faq\n${b.items.map(i=>`Q: ${stripHtml(i.q)}\nA: ${stripHtml(i.a)}`).join('\n')}\n:::`;
+    case 'facts': return `:::facts\n${b.items.map(i=>`${i.label}: ${i.value}`).join('\n')}\n:::`;
+    case 'quote': return `:::quote[${b.attr}]\n${stripHtml(b.text)}\n:::`;
+    case 'table': return `| ${b.headers.join(' | ')} |\n| ${b.headers.map(()=>'---').join(' | ')} |\n${b.rows.map(r=>`| ${r.map(c=>stripHtml(c)).join(' | ')} |`).join('\n')}`;
+    default: return '';
+  }
 }
 
 function copyOutput(){
@@ -490,72 +732,12 @@ function copyOutput(){
   });
 }
 
-// ── Live preview (simple pass-through to article renderer) ───
-function togglePreview(){
-  const show=document.getElementById('preview-toggle').checked;
-  const pv=document.getElementById('live-preview');
-  pv.classList.toggle('show',show);
-  if(show)updatePreview();
-}
-
-function updatePreview(){
-  if(!document.getElementById('preview-toggle').checked)return;
-  const raw=document.getElementById('content-area').value;
-  // Lightweight inline preview — mirrors article.html renderer logic
-  const pv=document.getElementById('live-preview');
-  pv.innerHTML=`<div style="font-family:'DM Sans',sans-serif;font-size:14px;color:#2a2018;line-height:1.8">${previewRender(raw)}</div>`;
-}
-
-function previewRender(raw){
-  const text=raw.replace(/\\n/g,'\n');
-  const lines=text.split('\n');
-  let html='',i=0;
-  while(i<lines.length){
-    const t=lines[i].trim();
-    if(!t){i++;continue;}
-    if(t===':::'){i++;continue;}
-    const bm=t.match(/^:::(tip|info|warning|danger|success|what-you-need|timeline|faq|facts|quote)(.*)?$/);
-    if(bm){
-      const body=[];i++;
-      while(i<lines.length&&lines[i].trim()!==':::'){body.push(lines[i]);i++;}
-      const colors={tip:'#fef9e7',info:'#eff6ff',warning:'#fff7ed',danger:'#fef2f2',success:'#f0fdf4'};
-      const borders={tip:'#c8a84b',info:'#3b82f6',warning:'#f97316',danger:'#ef4444',success:'#22c55e'};
-      const type=bm[1];
-      if(colors[type]){
-        html+=`<div style="background:${colors[type]};border-left:3px solid ${borders[type]};padding:12px 14px;margin:12px 0;border-radius:3px;font-size:13.5px">${body.map(l=>l.trim()).join(' ')}</div>`;
-      } else if(type==='what-you-need'){
-        const items=body.filter(l=>l.trim().startsWith('-')).map(l=>`<li style="margin-bottom:4px">${l.trim().slice(1).trim()}</li>`).join('');
-        html+=`<div style="background:#0a1628;padding:16px 18px;border-radius:4px;margin:12px 0"><div style="color:#c8a84b;font-weight:700;margin-bottom:8px;font-size:13px">📋 What You'll Need</div><ul style="list-style:none;padding:0;color:#a0b8d0;font-size:13px">${items}</ul></div>`;
-      } else if(type==='timeline'){
-        const steps=body.filter(l=>l.trim());
-        html+=`<div style="margin:12px 0">${steps.map((s,idx)=>{const p=s.split('|');return`<div style="display:flex;gap:12px;margin-bottom:14px"><div style="width:26px;height:26px;border-radius:50%;background:#0a1628;color:#c8a84b;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0">${idx+1}</div><div><strong style="font-size:13.5px">${(p[0]||'').trim()}</strong>${p[1]?`<div style="font-size:13px;color:#4a4035;margin-top:2px">${p[1].trim()}</div>`:''}</div></div>`}).join('')}</div>`;
-      } else if(type==='faq'){
-        let fhtml='<div style="margin:12px 0">';
-        let q='';
-        body.forEach(l=>{
-          if(l.trim().startsWith('Q:')){q=l.trim().slice(2).trim();fhtml+=`<div style="font-weight:700;font-size:13.5px;color:#1a1a1a;padding:10px 0 4px;border-top:1px solid #f0ebe3">${q}</div>`;}
-          else if(l.trim().startsWith('A:')){fhtml+=`<div style="font-size:13px;color:#4a4035;padding-bottom:8px">${l.trim().slice(2).trim()}</div>`;}
-        });
-        fhtml+='</div>';html+=fhtml;
-      } else if(type==='facts'){
-        html+=`<div style="background:#f4f1ec;border:1px solid #e0d9cf;border-radius:3px;padding:12px 14px;margin:12px 0;font-size:13px">${body.filter(l=>l.trim()).map(l=>{const m=l.match(/^(.+?):\s*(.+)$/);return m?`<div style="margin-bottom:6px"><span style="color:#9a8f82;font-size:10px;text-transform:uppercase;letter-spacing:.06em;display:block">${m[1].trim()}</span><strong>${m[2].trim()}</strong></div>`:''}).join('')}</div>`;
-      } else if(type==='quote'){
-        const attr=(bm[2]||'').trim().replace(/^\[|\]$/g,'');
-        html+=`<div style="border-left:4px solid #c8a84b;padding:4px 0 4px 18px;margin:16px 0"><div style="font-family:'Merriweather',serif;font-size:16px;font-style:italic;color:#0a1628">${body.join(' ')}</div>${attr?`<div style="font-size:11px;color:#9a8f82;text-transform:uppercase;margin-top:6px">— ${attr}</div>`:''}</div>`;
-      }
-      i++;continue;
-    }
-    if(t.startsWith('## ')){html+=`<h2 style="font-family:'Merriweather',serif;font-size:17px;font-weight:400;border-bottom:1px solid #f0ebe3;padding-bottom:6px;margin:20px 0 8px">${t.slice(3)}</h2>`;i++;continue;}
-    if(t.startsWith('### ')){html+=`<h3 style="font-family:'Merriweather',serif;font-size:14.5px;font-weight:400;margin:16px 0 6px">${t.slice(4)}</h3>`;i++;continue;}
-    if(t.startsWith('---')){html+=`<hr style="border:none;border-top:1px solid #f0ebe3;margin:20px 0">`;i++;continue;}
-    if(t.startsWith('> ')){html+=`<div style="background:#fef9e7;border-left:3px solid #c8a84b;padding:10px 14px;margin:12px 0;font-size:13.5px;color:#78350f">${t.slice(2)}</div>`;i++;continue;}
-    if(t.startsWith('| ')){html+=`<div style="font-size:12px;color:#9a8f82;font-style:italic;margin:8px 0">[Table]</div>`;i++;continue;}
-    if(/^- /.test(t)){html+=`<ul style="padding-left:20px;margin-bottom:10px"><li style="margin-bottom:3px">${t.slice(2)}</li></ul>`;i++;continue;}
-    if(/^\d+\. /.test(t)){html+=`<ol style="padding-left:20px;margin-bottom:10px"><li style="margin-bottom:3px">${t.replace(/^\d+\. /,'')}</li></ol>`;i++;continue;}
-    html+=`<p style="margin-bottom:12px">${t}</p>`;
-    i++;
-  }
-  return html||'<p style="color:#9a8f82;font-style:italic">Start writing to see a preview…</p>';
+// ─── Helpers ─────────────────────────────────────────────────
+function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function selectAll(el){
+  el.focus();
+  const r=document.createRange(); r.selectNodeContents(el);
+  const s=window.getSelection(); s.removeAllRanges(); s.addRange(r);
 }
 </script>
 </body>
