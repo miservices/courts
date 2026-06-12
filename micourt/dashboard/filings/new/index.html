@@ -154,13 +154,16 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);
 .upload-title{font-size:13.5px;font-weight:700;color:var(--text);margin-bottom:3px}
 .upload-sub{font-size:12px;color:var(--muted);line-height:1.5}
 .upload-sub strong{color:var(--navy)}
-.file-list{margin-top:10px;display:flex;flex-direction:column;gap:6px}
-.file-row{display:flex;align-items:center;gap:10px;background:var(--white);border:1px solid var(--line);border-radius:3px;padding:8px 12px}
+.file-list{margin-top:10px;display:flex;flex-direction:column;gap:10px}
+.file-row-card{background:var(--white);border:1.5px solid var(--line);border-radius:4px;padding:12px}
+.file-row-card.err{border-color:var(--red)}
+.file-row{display:flex;align-items:center;gap:10px}
 .fr-icon{font-size:14px;flex-shrink:0}
 .fr-name{flex:1;font-size:12.5px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .fr-size{font-size:11px;color:var(--muted);flex-shrink:0}
 .fr-rm{width:19px;height:19px;border-radius:50%;border:none;background:var(--red-bg);color:var(--red);cursor:pointer;font-size:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .fr-rm:hover{background:var(--red-bdr)}
+.fr-detected{font-size:10.5px;color:var(--green);font-weight:700;margin-top:6px;display:flex;align-items:center;gap:4px}
 
 /* GDrive */
 .gdrive-box{margin-top:14px;background:var(--amber-bg);border:1px solid var(--amber-bdr);border-radius:4px;padding:14px}
@@ -422,14 +425,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);
             <div class="callout-text">Per MCR 2.119, documents must be <strong>PDF format</strong> and <strong>under 5 MB</strong> each. All signatures must be in place before uploading — filings with missing signatures will be rejected.</div>
           </div>
 
-          <div class="form-group">
-            <label class="form-label">Document Type <span class="req">*</span></label>
-            <div class="ss-wrap" id="ss-doc-type">
-              <div class="ss-trigger" onclick="ssOpen('doc-type')"><span class="ss-val ph" id="ss-doc-type-val">Select document type…</span><span class="ss-caret">▾</span></div>
-              <div class="ss-panel" style="display:none"><div class="ss-search-wrap"><input class="ss-search-input" placeholder="Search document types…" oninput="ssFilter('doc-type',this.value)"></div><div class="ss-list"></div></div>
-            </div>
-            <div class="form-err" id="doctype-err">Please select a document type.</div>
-          </div>
+          <div class="callout c-info" id="doc-restriction-note" style="display:none"></div>
 
           <div class="form-group">
             <label class="form-label">Upload Document(s) <span class="req">*</span></label>
@@ -439,23 +435,28 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);
               <div class="upload-title">Drag &amp; drop PDF files here</div>
               <div class="upload-sub">or <strong>click to browse</strong> · PDF only · Max <strong>5 MB</strong> per file (MCR 2.119)</div>
             </div>
-            <div class="file-list" id="file-list"></div>
             <div class="form-err" id="upload-err">Please attach at least one document.</div>
+            <div class="file-list" id="file-list"></div>
           </div>
 
           <!-- Image exhibits / GDrive -->
           <div class="form-group">
             <label class="form-label" style="margin-bottom:10px">Image Exhibits &amp; Attachments</label>
-            <label class="check-opt" id="chk-exhibits-opt" onclick="toggleEl(this,'cb-exhibits',v=>{ hasExhibits=v; document.getElementById('gdrive-section').style.display=v?'block':'none'; })">
+            <label class="check-opt" id="chk-exhibits-opt" onclick="toggleEl(this,'cb-exhibits',v=>{ hasExhibits=v; document.getElementById('gdrive-section').style.display=v?'block':'none'; if(v) renderGdriveDocType(); })">
               <input type="checkbox" id="cb-exhibits">
               <div>
-                <div class="ro-lbl">This filing includes image exhibits or photo attachments</div>
-                <div class="ro-sub">Photographs, scanned images, and non-text exhibits (excluding signatures, seals, and stamps) must be uploaded to Google Drive per MCR 2.119(C).</div>
+                <div class="ro-lbl">One or more of the documents includes image exhibits or photo attachments</div>
+                <div class="ro-sub">Documents that contain photographs, scanned images, and other non-text items (excluding signatures, seals, and stamps) must be uploaded to Google Drive and cannot be uploaded as a file per MCR 2.119(C).</div>
               </div>
             </label>
             <div class="gdrive-box" id="gdrive-section" style="display:none">
               <div class="gdrive-box-title">🔗 Google Drive Link Required</div>
-              <p>Upload your image exhibits to Google Drive, then paste the sharing link below. Set access to <strong>"Anyone with the link can view"</strong> — filings with restricted access will be rejected by the clerk.</p>
+              <p>Upload any documents that contain photographs, scanned images, and any other non-text items to Google Drive, then paste the sharing link below. Set access to <strong>"Anyone with the link can view"</strong> — filings with restricted access will be rejected by the clerk.</p>
+              <div class="form-group">
+                <label class="form-label">Document Type <span class="req">*</span></label>
+                <div id="gdrive-doctype-wrap"></div>
+                <div class="form-err" id="gdrive-doctype-err">Please select a document type for the documents in this Google Drive folder.</div>
+              </div>
               <div class="form-group" style="margin:0">
                 <input class="form-input" id="gdrive-link" placeholder="https://drive.google.com/…">
                 <div class="form-hint">Paste your Google Drive sharing link above.</div>
@@ -569,12 +570,13 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);
 // STATE
 // ══════════════════════════════════════════════════
 let currentStep=1, filingType=null, isFilingAsCounsel=false;
-let selectedCourt=null, selectedCaseType=null, selectedDocType=null;
+let selectedCourt=null, selectedCaseType=null;
 let selectedCase=null;
 let parties=[], nextPartyId=1;
-let uploadedFiles=[], hasExhibits=false, gdriveLink='';
+let uploadedFiles=[], nextFileId=1, hasExhibits=false, gdriveLink='', gdriveDocType=null;
+let currentDocTypeOptions=[];
 let certifiedAccurate=false;
-let userData={name:'—',email:'—',uid:null,role:'Portal User',barNumber:null};
+let userData={name:'—',email:'—',uid:null,role:'Portal User',barNumber:null,mipassPin:null,robloxUser:null};
 let allCases=[], casesLoaded=false;
 
 // ══════════════════════════════════════════════════
@@ -605,7 +607,9 @@ const CASE_TYPES = {
 
 const DOC_TYPES = {
   'Small Claims':[
-    {g:'Initiating Documents',v:'Small Claims Complaint (DC 84)',d:'The standard DC 84 form to initiate a small claims action.'},
+    {g:'Initiating Documents',v:'Complaint',f:'DC 84',d:'The standard DC 84 form to initiate a small claims action.'},
+    {g:'Initiating Documents',v:'Summons',f:'MC 01',d:'Formal notice issued to the defendant requiring a court appearance or response.'},
+    {g:'Initiating Documents',v:'Fee Waiver Request',f:'MC 20',d:'Request to waive court filing fees and costs based on inability to pay.'},
     {g:'Motions',v:'Motion to Set Aside Default',d:''},
     {g:'Motions',v:'Motion to Transfer to Civil Division',d:''},
     {g:'Motions',v:'Motion (General)',d:''},
@@ -613,7 +617,9 @@ const DOC_TYPES = {
     {g:'Other',v:'Notice of Appeal',d:''},{g:'Other',v:'Proof of Service',d:''},{g:'Other',v:'Other',d:''},
   ],
   'General Civil':[
-    {g:'Initiating Documents',v:'Civil Complaint',d:'Initiating document for a general civil lawsuit.'},
+    {g:'Initiating Documents',v:'Complaint',d:'Initiating document for a general civil lawsuit.'},
+    {g:'Initiating Documents',v:'Summons',f:'MC 01',d:'Formal notice issued to the defendant requiring a court appearance or response.'},
+    {g:'Initiating Documents',v:'Fee Waiver Request',f:'MC 20',d:'Request to waive court filing fees and costs based on inability to pay.'},
     {g:'Motions',v:'Motion to Dismiss',d:''},{g:'Motions',v:'Motion for Summary Judgment',d:''},
     {g:'Motions',v:'Motion in Limine',d:''},{g:'Motions',v:'Motion to Adjourn',d:''},
     {g:'Motions',v:'Emergency Motion',d:''},{g:'Motions',v:'Motion (General)',d:''},
@@ -625,13 +631,16 @@ const DOC_TYPES = {
     {g:'Other',v:'Notice',d:''},{g:'Other',v:'Other',d:''},
   ],
   'Civil Infraction':[
+    {g:'Initiating Documents',v:'Appeal of Civil Infraction',f:'DC 102',d:'Appeals a civil infraction determination to circuit court.'},
+    {g:'Initiating Documents',v:'Fee Waiver Request',f:'MC 20',d:'Request to waive court filing fees and costs based on inability to pay.'},
     {g:'Initiating Documents',v:'Demand for Formal Hearing',d:'Request a formal court hearing to contest a civil infraction citation.'},
     {g:'Motions',v:'Motion to Dismiss',d:''},{g:'Motions',v:'Motion (General)',d:''},
     {g:'Responses & Briefs',v:'Brief',d:''},{g:'Responses & Briefs',v:'Response',d:''},
     {g:'Other',v:'Notice',d:''},{g:'Other',v:'Proof of Service',d:''},{g:'Other',v:'Other',d:''},
   ],
   'Expungement':[
-    {g:'Initiating Documents',v:'Petition to Set Aside Conviction (MC 227)',d:'The standard MC 227 form to petition for expungement of a criminal conviction.'},
+    {g:'Initiating Documents',v:'Application to Set Aside a Conviction or Arrest',f:'MC 227',d:'The standard MC 227 form to apply for expungement of a criminal conviction or arrest.'},
+    {g:'Initiating Documents',v:'Fee Waiver Request',f:'MC 20',d:'Request to waive court filing fees and costs based on inability to pay.'},
     {g:'Motions',v:'Motion (General)',d:''},
     {g:'Responses & Briefs',v:'Brief',d:''},{g:'Responses & Briefs',v:'Response',d:''},
     {g:'Other',v:'Proof of Service',d:''},{g:'Other',v:'Other',d:''},
@@ -697,6 +706,15 @@ const DOC_TYPES = {
   ],
 };
 
+// Document types that may be filed when INITIATING a new case of the given type.
+// If a case type has no entry here, there is no restriction (all doc types apply).
+const RESTRICTED_DOC_TYPES = {
+  'Small Claims': ['Complaint','Summons','Fee Waiver Request'],
+  'General Civil': ['Complaint','Summons','Fee Waiver Request'],
+  'Civil Infraction': ['Appeal of Civil Infraction','Fee Waiver Request'],
+  'Expungement': ['Application to Set Aside a Conviction or Arrest','Fee Waiver Request'],
+};
+
 // Role names by case type
 function getRoles(ct){
   const m={
@@ -717,6 +735,16 @@ function getRoles(ct){
 
 function canFileCriminal(role){
   return ['State Attorney','Clerk','Magistrate Judge','Judge','Chief Judge'].includes(role);
+}
+
+function isFilerRole(role){
+  return ['Plaintiff','Petitioner','Appellant'].includes(role);
+}
+
+function splitName(full){
+  const parts=(full||'').trim().split(/\s+/).filter(Boolean);
+  if(!parts.length) return {first:'',last:''};
+  return {first:parts[0], last:parts.slice(1).join(' ')};
 }
 
 // ══════════════════════════════════════════════════
@@ -757,7 +785,7 @@ function ssRenderOpts(id,q){
   const list=document.getElementById('ss-'+id)?.querySelector('.ss-list');
   if(!list) return;
   const lq=(q||'').toLowerCase().trim();
-  const opts=SS[id].opts.filter(o=>!lq||o.l.toLowerCase().includes(lq)||(o.d||'').toLowerCase().includes(lq)||(o.v||'').toLowerCase().includes(lq));
+  const opts=SS[id].opts.filter(o=>!lq||o.l.toLowerCase().includes(lq)||(o.d||'').toLowerCase().includes(lq)||(o.v||'').toLowerCase().includes(lq)||(o.f||'').toLowerCase().includes(lq));
   if(!opts.length){list.innerHTML='<div class="ss-none">No options found</div>';return;}
   
   // Group rendering
@@ -796,8 +824,9 @@ function ssPick(id,value,label){
   ssClose(id);
   // Trigger change handlers
   if(id==='court') onCourtChange(value);
-  if(id==='case-type') onCaseTypeChange(value);
-  if(id==='doc-type') onDocTypeChange(value);
+  else if(id==='case-type') onCaseTypeChange(value);
+  else if(id==='doctype-gdrive') onGdriveDocTypeChange(value,label);
+  else if(id.startsWith('doctype-file-')) onFileDocTypeChange(id,value,label);
   document.getElementById('ss-'+id)?.querySelector('.ss-trigger')?.classList.remove('ss-err');
 }
 
@@ -816,7 +845,7 @@ function ssReset(id){
   if(!SS[id]) return;
   SS[id].value=null; SS[id].label=null;
   const vEl=document.getElementById('ss-'+id+'-val');
-  if(vEl){vEl.textContent=id==='doc-type'?'Select document type…':id==='case-type'?'Select a case type…':'Select a court…';vEl.classList.add('ph');}
+  if(vEl){vEl.textContent=id==='case-type'?'Select a case type…':'Select a court…';vEl.classList.add('ph');}
   document.getElementById('ss-'+id)?.querySelector('.ss-trigger')?.classList.remove('ss-err');
 }
 
@@ -847,21 +876,12 @@ function onCourtChange(court){
   ssSetOpts('case-type', rawTypes.map(t=>({v:t.v,l:t.l,d:t.d,g:''})));
   ssReset('case-type');
   selectedCaseType=null;
-  // Reset doc type too
-  ssReset('doc-type');
-  selectedDocType=null;
   // Reset parties
   parties=[];nextPartyId=1;
-  document.getElementById('add-party-btn')?.addEventListener;
 }
 
 function onCaseTypeChange(ct){
   selectedCaseType=ct;
-  // Set doc types
-  const docs=DOC_TYPES[ct]||[];
-  ssSetOpts('doc-type', docs.map(d=>({v:d.v,l:d.v,d:d.d,g:d.g})));
-  ssReset('doc-type');
-  selectedDocType=null;
   // Update party card subtitle
   const roles=getRoles(ct);
   const sub=document.getElementById('party-card-sub');
@@ -870,15 +890,87 @@ function onCaseTypeChange(ct){
   initParties(ct);
 }
 
-function onDocTypeChange(dt){
-  selectedDocType=dt;
-  document.getElementById('doctype-err').classList.remove('show');
-  // Auto-fill title
+// ══════════════════════════════════════════════════
+// DOCUMENT TYPE HELPERS
+// ══════════════════════════════════════════════════
+
+// Returns the list of document type options { v, l, d, g, f } available
+// for the current case context, with restrictions applied for new filings.
+function getDocTypeOptions(){
+  let ct = selectedCaseType;
+  if(filingType==='existing' && selectedCase){
+    ct = selectedCase.caseType || selectedCase.type || 'General Civil';
+  }
+  let docs = DOC_TYPES[ct] || [];
+  if(filingType==='new' && RESTRICTED_DOC_TYPES[ct]){
+    const allowed = RESTRICTED_DOC_TYPES[ct];
+    docs = docs.filter(d=>allowed.includes(d.v));
+  }
+  if(!docs.length){
+    const all=[];
+    Object.values(DOC_TYPES).forEach(arr=>arr.forEach(d=>{if(!all.find(x=>x.v===d.v))all.push(d);}));
+    docs=all;
+  }
+  return docs.map(d=>({v:d.v, l:d.f?`${d.v} (${d.f})`:d.v, d:d.d, g:d.g, f:d.f||null}));
+}
+
+// Try to auto-detect a document type from a filename by matching court form numbers
+// (e.g. a file named "MC_01_Summons.pdf" matches the "Summons (MC 01)" doc type).
+function detectDocTypeFromFilename(filename, options){
+  const norm = s => (s||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
+  const fn = norm(filename);
+  if(!fn) return null;
+  for(const o of options){
+    if(o.f){
+      const fnorm = norm(o.f);
+      if(fnorm && fn.includes(fnorm)) return o;
+    }
+  }
+  return null;
+}
+
+// Returns the document type that should drive the auto-generated filing title:
+// the first uploaded file with a selected type, falling back to the Google Drive doc type.
+function getPrimaryDocType(){
+  const f = uploadedFiles.find(x=>x.docType);
+  if(f) return f.docType.value;
+  if(hasExhibits && gdriveDocType) return gdriveDocType.value;
+  return '';
+}
+
+function renderDocRestrictionNote(){
+  const el=document.getElementById('doc-restriction-note');
+  if(!el) return;
+  const ct=selectedCaseType;
+  if(filingType==='new' && RESTRICTED_DOC_TYPES[ct]){
+    const list=DOC_TYPES[ct]||[];
+    const allowedLabels=RESTRICTED_DOC_TYPES[ct].map(v=>{
+      const d=list.find(x=>x.v===v);
+      return d&&d.f?`${v} (${d.f})`:v;
+    });
+    el.style.display='flex';
+    el.innerHTML=`<span class="callout-icon">ℹ️</span><div class="callout-text">Because this filing <strong>opens a new ${ct} case</strong>, only the following document types may be submitted at this stage: <strong>${allowedLabels.join(', ')}</strong>. Once the clerk's office opens the case, you'll be able to file motions, briefs, and other documents under "File in an Existing Case."</div>`;
+  } else {
+    el.style.display='none';
+  }
+}
+
+function onFileDocTypeChange(id,value,label){
+  const fid=parseInt(id.replace('doctype-file-',''),10);
+  const f=uploadedFiles.find(x=>x.id===fid);
+  if(f){ f.docType={value,label}; f._typeErr=false; }
+  renderFileList();
+  refreshTitle();
+}
+
+function onGdriveDocTypeChange(value,label){
+  gdriveDocType={value,label};
+  document.getElementById('gdrive-doctype-err')?.classList.remove('show');
   refreshTitle();
 }
 
 function refreshTitle(){
-  const dt=ssGet('doc-type')||selectedDocType||'';
+  const dt=getPrimaryDocType();
   const inp=document.getElementById('filing-title');
   if(!inp) return;
   if(filingType==='new'){
@@ -939,7 +1031,23 @@ function initParties(ct){
     parties.push({id:nextPartyId++, role:roles[0], actorType:'Natural Person', firstName:'', lastName:'', pin:'', orgName:'', repName:'', repPin:'', govType:'', jurisdiction:'', jurisdictionManual:'', publicBodyName:'', isRepresented:false});
     parties.push({id:nextPartyId++, role:roles[1], actorType:'Natural Person', firstName:'', lastName:'', pin:'', orgName:'', repName:'', repPin:'', govType:'', jurisdiction:'', jurisdictionManual:'', publicBodyName:'', isRepresented:false});
   }
+  autofillFilerParty();
   renderParties();
+}
+
+// Pre-fill the filer's own party (Plaintiff/Petitioner/Appellant) with their
+// account name (split into first/last) and Michigan PIN (mipassPin).
+function autofillFilerParty(){
+  if(!parties.length) return;
+  const p=parties[0];
+  if(p.locked) return;
+  if(p.actorType!=='Natural Person') return;
+  if(!isFilerRole(p.role)) return;
+  if(p.firstName||p.lastName) return;
+  const {first,last}=splitName(userData.name);
+  p.firstName=first;
+  p.lastName=last;
+  if(userData.mipassPin) p.pin=userData.mipassPin;
 }
 
 function addParty(){
@@ -1234,11 +1342,29 @@ function validateStep(s){
   }
   if(s===3){
     let ok=true;
-    if(!ssGet('doc-type')){ssErr('doc-type');document.getElementById('doctype-err').classList.add('show');ok=false;}
-    if(!uploadedFiles.length){document.getElementById('upload-err').classList.add('show');ok=false;}
+    if(!uploadedFiles.length){
+      document.getElementById('upload-err').classList.add('show');
+      ok=false;
+    } else {
+      document.getElementById('upload-err').classList.remove('show');
+    }
+    let anyFileTypeErr=false;
+    uploadedFiles.forEach(f=>{
+      if(!f.docType){ f._typeErr=true; anyFileTypeErr=true; ok=false; }
+      else f._typeErr=false;
+    });
+    if(anyFileTypeErr) renderFileList();
     if(hasExhibits){
       const lnk=document.getElementById('gdrive-link')?.value?.trim();
       if(!lnk){document.getElementById('gdrive-err').classList.add('show');ok=false;}
+      else document.getElementById('gdrive-err').classList.remove('show');
+      if(!gdriveDocType){
+        document.getElementById('gdrive-doctype-err').classList.add('show');
+        document.getElementById('ss-doctype-gdrive')?.querySelector('.ss-trigger')?.classList.add('ss-err');
+        ok=false;
+      } else {
+        document.getElementById('gdrive-doctype-err').classList.remove('show');
+      }
     }
     return ok;
   }
@@ -1273,20 +1399,23 @@ function setupStep2(){
 }
 
 function setupStep3(){
-  // Set doc type options based on case type (for existing cases we need to determine case type)
-  let ct = selectedCaseType;
-  if(filingType==='existing'&&selectedCase){
-    ct=selectedCase.caseType||selectedCase.type||'General Civil';
+  currentDocTypeOptions = getDocTypeOptions();
+  renderDocRestrictionNote();
+  // Re-evaluate any existing selections / auto-detections against the (possibly new) option set
+  uploadedFiles.forEach(f=>{
+    if(!f.docType){
+      const detected=detectDocTypeFromFilename(f.file.name, currentDocTypeOptions);
+      if(detected) f.docType={value:detected.v,label:detected.l};
+    } else if(!currentDocTypeOptions.find(o=>o.v===f.docType.value)){
+      f.docType=null;
+    }
+  });
+  if(gdriveDocType && !currentDocTypeOptions.find(o=>o.v===gdriveDocType.value)){
+    gdriveDocType=null;
   }
-  if(ct&&DOC_TYPES[ct]){
-    ssSetOpts('doc-type', DOC_TYPES[ct].map(d=>({v:d.v,l:d.v,d:d.d,g:d.g})));
-  } else {
-    // Fallback: show all doc types
-    const all=[];
-    Object.values(DOC_TYPES).forEach(arr=>arr.forEach(d=>{if(!all.find(x=>x.v===d.v))all.push(d);}));
-    ssSetOpts('doc-type', all.map(d=>({v:d.v,l:d.v,d:d.d,g:d.g})));
-  }
-  ssInit('doc-type', SS['doc-type']?.opts||[]);
+  renderFileList();
+  if(hasExhibits) renderGdriveDocType();
+  refreshTitle();
 }
 
 function setupStep4(){
@@ -1351,27 +1480,66 @@ window.onDragLeave=onDragLeave;
 function onDrop(e){e.preventDefault();document.getElementById('upload-zone').classList.remove('drag-over');Array.from(e.dataTransfer.files).forEach(f=>{if(f.type==='application/pdf')addFile(f);});}
 window.onDrop=onDrop;
 
-function addFile(f){
-  if(f.type!=='application/pdf'&&!f.name.toLowerCase().endsWith('.pdf')){alert(`${f.name} is not a PDF file. Only PDFs are accepted.`);return;}
-  if(f.size>5*1024*1024){alert(`${f.name} exceeds the 5 MB limit per MCR 2.119. Please reduce the file size before uploading.`);return;}
-  if(uploadedFiles.find(x=>x.name===f.name)) return;
-  uploadedFiles.push(f);
+function addFile(file){
+  if(file.type!=='application/pdf'&&!file.name.toLowerCase().endsWith('.pdf')){alert(`${file.name} is not a PDF file. Only PDFs are accepted.`);return;}
+  if(file.size>5*1024*1024){alert(`${file.name} exceeds the 5 MB limit per MCR 2.119. Please reduce the file size before uploading.`);return;}
+  if(uploadedFiles.find(x=>x.file.name===file.name)) return;
+  const opts = currentDocTypeOptions.length?currentDocTypeOptions:getDocTypeOptions();
+  const detected=detectDocTypeFromFilename(file.name, opts);
+  uploadedFiles.push({id:nextFileId++, file, docType: detected?{value:detected.v,label:detected.l}:null, _typeErr:false});
   document.getElementById('upload-err').classList.remove('show');
   renderFileList();
+  refreshTitle();
 }
 
-function removeFile(name){uploadedFiles=uploadedFiles.filter(f=>f.name!==name);renderFileList();}
+function removeFile(id){
+  uploadedFiles=uploadedFiles.filter(f=>f.id!==id);
+  renderFileList();
+  refreshTitle();
+}
 window.removeFile=removeFile;
 
 function renderFileList(){
   const ct=document.getElementById('file-list');
   if(!uploadedFiles.length){ct.innerHTML='';return;}
-  ct.innerHTML=uploadedFiles.map(f=>`<div class="file-row">
-    <span class="fr-icon">📄</span>
-    <span class="fr-name">${f.name}</span>
-    <span class="fr-size">${fmtSize(f.size)}</span>
-    <button class="fr-rm" onclick="removeFile('${esc(f.name)}')">×</button>
-  </div>`).join('');
+  const opts=currentDocTypeOptions.length?currentDocTypeOptions:getDocTypeOptions();
+  ct.innerHTML=uploadedFiles.map(f=>{
+    const ssId='doctype-file-'+f.id;
+    SS[ssId]={opts:opts, value:f.docType?.value||null, label:f.docType?.label||null};
+    const valTxt=f.docType?.label||'Select document type…';
+    const phCls=f.docType?'':' ph';
+    const errCls=f._typeErr?' ss-err':'';
+    return `<div class="file-row-card${f._typeErr?' err':''}" id="frc-${f.id}">
+      <div class="file-row">
+        <span class="fr-icon">📄</span>
+        <span class="fr-name">${esc(f.file.name)}</span>
+        <span class="fr-size">${fmtSize(f.file.size)}</span>
+        <button class="fr-rm" onclick="removeFile(${f.id})">×</button>
+      </div>
+      ${f.docType&&detectDocTypeFromFilename(f.file.name,opts)?.v===f.docType.value?`<div class="fr-detected">✓ Document type auto-detected from filename</div>`:''}
+      <div class="form-group" style="margin:10px 0 0">
+        <label class="form-label">Document Type <span class="req">*</span></label>
+        <div class="ss-wrap" id="ss-${ssId}">
+          <div class="ss-trigger${errCls}" onclick="ssOpen('${ssId}')"><span class="ss-val${phCls}" id="ss-${ssId}-val">${valTxt}</span><span class="ss-caret">▾</span></div>
+          <div class="ss-panel" style="display:none"><div class="ss-search-wrap"><input class="ss-search-input" placeholder="Search document types or form numbers…" oninput="ssFilter('${ssId}',this.value)"></div><div class="ss-list"></div></div>
+        </div>
+        <div class="form-err${f._typeErr?' show':''}">Please select a document type for this file.</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderGdriveDocType(){
+  const wrap=document.getElementById('gdrive-doctype-wrap');
+  if(!wrap) return;
+  const opts=currentDocTypeOptions.length?currentDocTypeOptions:getDocTypeOptions();
+  SS['doctype-gdrive']={opts:opts, value:gdriveDocType?.value||null, label:gdriveDocType?.label||null};
+  const valTxt=gdriveDocType?.label||'Select document type…';
+  const phCls=gdriveDocType?'':' ph';
+  wrap.innerHTML=`<div class="ss-wrap" id="ss-doctype-gdrive">
+    <div class="ss-trigger" onclick="ssOpen('doctype-gdrive')"><span class="ss-val${phCls}" id="ss-doctype-gdrive-val">${valTxt}</span><span class="ss-caret">▾</span></div>
+    <div class="ss-panel" style="display:none"><div class="ss-search-wrap"><input class="ss-search-input" placeholder="Search document types or form numbers…" oninput="ssFilter('doctype-gdrive',this.value)"></div><div class="ss-list"></div></div>
+  </div>`;
 }
 
 // ══════════════════════════════════════════════════
@@ -1407,10 +1575,9 @@ function buildReview(){
   }
 
   const docBlock=`<div class="rv-sec">
-    <div class="rv-sec-lbl">Document</div>
-    <div class="rv-row"><span class="rv-k">Document Type</span><span class="rv-v">${ssGetLabel('doc-type')||ssGet('doc-type')||'—'}</span></div>
-    ${uploadedFiles.map(f=>`<div class="rv-file"><span style="font-size:13px">📄</span><span class="rf-n">${f.name}</span><span class="rf-s">${fmtSize(f.size)}</span></div>`).join('')}
-    ${gdl?`<div class="rv-row"><span class="rv-k">Exhibit Drive Link</span><span class="rv-v" style="word-break:break-all;font-size:11.5px">${gdl}</span></div>`:''}
+    <div class="rv-sec-lbl">Documents</div>
+    ${uploadedFiles.map(f=>`<div class="rv-file"><span style="font-size:13px">📄</span><span class="rf-n">${esc(f.file.name)} <span style="color:var(--muted);font-weight:400">— ${f.docType?.label||'—'}</span></span><span class="rf-s">${fmtSize(f.file.size)}</span></div>`).join('')}
+    ${hasExhibits&&gdl?`<div class="rv-file"><span style="font-size:13px">🔗</span><span class="rf-n">Documents in Google Drive <span style="color:var(--muted);font-weight:400">— ${gdriveDocType?.label||'—'}</span></span></div><div class="rv-row"><span class="rv-k">Drive Link</span><span class="rv-v" style="word-break:break-all;font-size:11.5px">${gdl}</span></div>`:''}
   </div>`;
 
   const detailsBlock=`<div class="rv-sec">
@@ -1437,7 +1604,7 @@ async function submitFiling(){
   try {
     const conf=confNum();
     const now=new Date().toISOString();
-    const title=document.getElementById('filing-title')?.value?.trim()||computeAutoTitle(ssGet('doc-type')||'');
+    const title=document.getElementById('filing-title')?.value?.trim()||computeAutoTitle(getPrimaryDocType());
     const role=document.getElementById('filer-role')?.value||null;
     const notes=document.getElementById('filing-notes')?.value?.trim()||null;
     const email=document.getElementById('contact-email')?.value?.trim()||'';
@@ -1460,11 +1627,12 @@ async function submitFiling(){
       filingType,
       court:selectedCourt||(selectedCase?.court)||'',
       caseType:selectedCaseType||(selectedCase?.caseType)||'',
-      documentType:ssGet('doc-type')||'',
+      documentType:getPrimaryDocType(),
       title,
       parties:filingType==='new'?partyData:[],
-      documents:uploadedFiles.map(f=>({name:f.name,size:f.size})),
+      documents:uploadedFiles.map(f=>({name:f.file.name,size:f.file.size,documentType:f.docType?.value||null})),
       gdrivLink:gdl,
+      gdriveDocumentType:hasExhibits?(gdriveDocType?.value||null):null,
       notesToClerk:notes,
       confirmationEmail:email,
       filerRole:role,
@@ -1488,7 +1656,7 @@ async function submitFiling(){
       await addDoc(collection(window._db,'pendingFilings'),filingObj);
       if(filingType==='existing'&&selectedCase?._id){
         const filingEntry={
-          title, documentType:ssGet('doc-type')||'', filedBy:userData.name, filedByUid:userData.uid,
+          title, documentType:getPrimaryDocType(), filedBy:userData.name, filedByUid:userData.uid,
           role:role||null, dateFiled:now, status:'Pending', accepted:false, notes:notes||null,
           documentLink:null,
           ...(isFilingAsCounsel?{attorney:{name:userData.name,uid:userData.uid,barNumber:userData.barNumber||null},counselRepresents:counselRep}:{})
@@ -1529,24 +1697,28 @@ window.submitFiling=submitFiling;
 
 function resetWizard(){
   currentStep=1; filingType=null; isFilingAsCounsel=false;
-  selectedCourt=null; selectedCaseType=null; selectedDocType=null;
+  selectedCourt=null; selectedCaseType=null;
   selectedCase=null; parties=[]; nextPartyId=1;
-  uploadedFiles=[]; hasExhibits=false; gdriveLink=''; certifiedAccurate=false;
+  uploadedFiles=[]; nextFileId=1; hasExhibits=false; gdriveLink=''; gdriveDocType=null; certifiedAccurate=false;
+  currentDocTypeOptions=[];
   document.querySelectorAll('.radio-opt').forEach(o=>o.classList.remove('sel'));
   document.querySelectorAll('input[type=radio]').forEach(r=>r.checked=false);
   document.getElementById('cb-counsel').checked=false;
   document.getElementById('chk-counsel-opt').classList.remove('sel');
   document.getElementById('new-opts').style.display='none';
   document.getElementById('case-type-grp').style.display='none';
-  ssReset('court'); ssReset('case-type'); ssReset('doc-type');
+  ssReset('court'); ssReset('case-type');
   document.getElementById('cb-exhibits').checked=false;
   document.getElementById('chk-exhibits-opt').classList.remove('sel');
   document.getElementById('gdrive-section').style.display='none';
+  document.getElementById('gdrive-link').value='';
+  document.getElementById('gdrive-doctype-wrap').innerHTML='';
   document.getElementById('file-list').innerHTML='';
   document.getElementById('upload-err').classList.remove('show');
-  document.getElementById('doctype-err').classList.remove('show');
-  ['title-err','email-err','cert-err'].forEach(id=>document.getElementById(id)?.classList.remove('show'));
+  document.getElementById('doc-restriction-note').style.display='none';
+  ['title-err','email-err','cert-err','gdrive-err','gdrive-doctype-err'].forEach(id=>document.getElementById(id)?.classList.remove('show'));
   document.getElementById('filing-title').value='';
+  document.getElementById('filing-title').dataset.userEdited='';
   document.getElementById('filer-role').value='';
   document.getElementById('filing-notes').value='';
   document.getElementById('contact-email').value=userData.email||'';
@@ -1595,7 +1767,6 @@ function getCaseTitle(c){
 // Init SS
 ssInit('court', COURTS.map(c=>({v:c.v,l:c.l,d:c.d,g:''})));
 ssInit('case-type', []);
-ssInit('doc-type', []);
 </script>
 
 <!-- Firebase -->
@@ -1623,6 +1794,8 @@ const unsub=onAuthStateChanged(auth,async(user)=>{
     userData.email=data.email||user.email||'';
     userData.role=data.role||'Portal User';
     userData.barNumber=data.barNumber||null;
+    userData.mipassPin=data.mipassPin||null;
+    userData.robloxUser=data.robloxUser||null;
     document.getElementById('topbar-user').textContent=userData.name;
     // Show attorney card if applicable
     const isAtty=['Licensed Attorney','State Attorney'].includes(userData.role);
