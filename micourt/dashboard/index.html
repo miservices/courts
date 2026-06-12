@@ -422,6 +422,7 @@ body { font-family:'DM Sans',sans-serif; background:var(--cream); color:var(--te
 const CURRENT_USER = { name:'—', email:'—', pin:'—', role:'Portal User', barNumber:null, uid:null };
 let ALL_CASES    = [];
 let CASES_LOADED = false;
+let ALL_PENDING_FILINGS = [];
 let currentRole  = 'Portal User';
 let currentCourt = 'Genesee Co. District Court';
 let activePage   = 'overview';
@@ -1110,12 +1111,17 @@ function renderQueue() {
   const el=document.getElementById('queue-content');
   if(!CASES_LOADED){el.innerHTML=loadingHtml();return;}
   const cf=isScRole(currentRole)?'Michigan Supreme Court':'Genesee Co. District Court';
-  const cases=ALL_CASES.filter(c=>c.court===cf);
-  const pending=getAllFilings(cases).filter(f=>{
+
+  const pending=ALL_PENDING_FILINGS.filter(f=>{
     const st=(f.status||'').toLowerCase();
-    return !f.accepted && st!=='accepted' && st!=='rejected';
-  });
-  el.innerHTML=`<div class="card"><div class="card-hdr"><h3>Processing Queue</h3><span class="card-tag">${pending.length} items</span></div><div class="card-body">${pending.length?pending.map(f=>`<div class="queue-row"><div class="queue-priority qp-med"></div><div class="queue-info"><div class="queue-title">${f.title||'Untitled Filing'}</div><div class="queue-meta">From: ${f.filedBy||'—'} · Filed: ${fmtDate(f.dateFiled)} · Case ${f._caseId||'—'}</div></div><a class="queue-action" href="/courts/micourt/filings/${encodeURIComponent(f._caseId||'')}/">Review →</a></div>`).join(''):`<div class="empty-state"><div class="ei">📥</div><h4>Queue Empty</h4><p>No pending items to review.</p></div>`}</div></div>`;
+    return f.court===cf && !f.accepted && st!=='accepted' && st!=='rejected';
+  }).sort((a,b)=>new Date(b.dateFiled)-new Date(a.dateFiled));
+
+  el.innerHTML=`<div class="card"><div class="card-hdr"><h3>Processing Queue</h3><span class="card-tag">${pending.length} items</span></div><div class="card-body">${pending.length?pending.map(f=>{
+    const isNewCase=f.filingType==='new';
+    const caption=isNewCase?`New ${f.caseType} case · ${f.court}`:`${f.caseId||'Existing case'} · ${f.caseType||''}`;
+    return `<div class="queue-row"><div class="queue-priority qp-med"></div><div class="queue-info"><div class="queue-title">${f.documentType||'Filing'}${isNewCase?' <span style="color:var(--gold);font-weight:700">(New Case)</span>':''}</div><div class="queue-meta">From: ${f.filedBy||'—'}${f.isFilingAsCounsel?' (Attorney)':''} · Filed: ${fmtDate(f.dateFiled)} · ${caption}</div></div><a class="queue-action" href="/courts/micourt/filings/${encodeURIComponent(f._id)}/">Review →</a></div>`;
+  }).join(''):`<div class="empty-state"><div class="ei">📥</div><h4>Queue Empty</h4><p>No pending items to review.</p></div>`}</div></div>`;
 }
 
 function renderAdmin() {
@@ -1291,6 +1297,14 @@ const unsub = onAuthStateChanged(auth, async (user) => {
     } catch(err) {
       console.warn('Could not load cases:', err);
       CASES_LOADED = true;
+    }
+
+    try {
+      const pfSnap = await getDocs(collection(db,'pendingFilings'));
+      ALL_PENDING_FILINGS = [];
+      pfSnap.forEach(d => ALL_PENDING_FILINGS.push({...d.data(), _id:d.id}));
+    } catch(err) {
+      console.warn('Could not load pending filings:', err);
     }
 
     document.getElementById('auth-overlay').classList.add('hidden');
