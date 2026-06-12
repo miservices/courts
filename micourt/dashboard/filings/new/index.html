@@ -435,7 +435,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);
               <div class="upload-title">Drag &amp; drop PDF files here</div>
               <div class="upload-sub">or <strong>click to browse</strong> · PDF only · Max <strong>5 MB</strong> per file (MCR 2.119)</div>
             </div>
-            <div class="form-err" id="upload-err">Please attach at least one document.</div>
+            <div class="form-err" id="upload-err">Please attach at least one PDF, or check the box below and provide a Google Drive link.</div>
             <div class="file-list" id="file-list"></div>
           </div>
 
@@ -452,6 +452,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);
             <div class="gdrive-box" id="gdrive-section" style="display:none">
               <div class="gdrive-box-title">🔗 Google Drive Link Required</div>
               <p>Upload any documents that contain photographs, scanned images, and any other non-text items to Google Drive, then paste the sharing link below. Set access to <strong>"Anyone with the link can view"</strong> — filings with restricted access will be rejected by the clerk.</p>
+              <p style="margin-top:-6px"><strong>Note:</strong> only one Google Drive link may be provided per filing — combine all image/photo exhibits into a single shared folder or document.</p>
               <div class="form-group">
                 <label class="form-label">Document Type <span class="req">*</span></label>
                 <div id="gdrive-doctype-wrap"></div>
@@ -477,22 +478,10 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);
       <div class="card">
         <div class="card-hdr"><span class="card-hdr-icon">✏️</span><div><h2>Filing Details</h2></div></div>
         <div class="card-body">
-          <div class="form-group" id="title-grp">
-            <label class="form-label">Filing Title <span class="req">*</span></label>
-            <input class="form-input" id="filing-title" placeholder="Filing title…">
-            <div class="form-hint" id="title-hint"></div>
-            <div class="form-err" id="title-err">Please enter a filing title.</div>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">Filer Role</label>
-            <select class="form-input" style="appearance:auto" id="filer-role">
-              <option value="">Select your role in this case…</option>
-              <option>Plaintiff</option><option>Defendant</option><option>Petitioner</option>
-              <option>Respondent</option><option>Appellant</option><option>Appellee</option>
-              <option>Attorney for Plaintiff</option><option>Attorney for Defendant</option>
-              <option>Attorney for Petitioner</option><option>Prosecuting Attorney</option><option>Other</option>
-            </select>
+          <div class="form-group" id="filer-role-grp">
+            <label class="form-label">Filing As</label>
+            <input class="form-input" id="filer-role-display" readonly>
+            <div class="form-hint" id="filer-role-hint"></div>
           </div>
 
           <div class="form-group">
@@ -531,10 +520,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);
       <div class="card">
         <div class="card-hdr"><span class="card-hdr-icon">🔍</span><div><h2>Review Your Filing</h2><p>Confirm all details before submitting to the clerk's office.</p></div></div>
         <div class="card-body" id="review-content"></div>
-      </div>
-      <div class="fee-notice">
-        <span class="fee-notice-text">💰</span>
-        <div class="fee-notice-text"><strong>Filing Fee: FREE</strong> — There is no initial filing fee for electronic submissions. Additional fees (e.g. filing fees, service costs) may be assessed by the court clerk after review. You will be notified before your filing is accepted if any fees are required.</div>
       </div>
       <div class="callout c-warn">
         <span class="callout-icon">⚠️</span>
@@ -929,7 +914,7 @@ function detectDocTypeFromFilename(filename, options){
   return null;
 }
 
-// Returns the document type that should drive the auto-generated filing title:
+// Returns the document type that summarizes this filing for clerk/sorting purposes:
 // the first uploaded file with a selected type, falling back to the Google Drive doc type.
 function getPrimaryDocType(){
   const f = uploadedFiles.find(x=>x.docType);
@@ -960,45 +945,64 @@ function onFileDocTypeChange(id,value,label){
   const f=uploadedFiles.find(x=>x.id===fid);
   if(f){ f.docType={value,label}; f._typeErr=false; }
   renderFileList();
-  refreshTitle();
 }
 
 function onGdriveDocTypeChange(value,label){
   gdriveDocType={value,label};
   document.getElementById('gdrive-doctype-err')?.classList.remove('show');
-  refreshTitle();
 }
 
-function refreshTitle(){
-  const dt=getPrimaryDocType();
-  const inp=document.getElementById('filing-title');
-  if(!inp) return;
+// ══════════════════════════════════════════════════
+// FEE SCHEDULE (MCR fee schedule)
+// ══════════════════════════════════════════════════
+// Returns the filing fee in dollars for a given document type entry,
+// based on the court and case type context.
+function getDocumentFee(docTypeValue, formNo){
+  const isSupreme = selectedCourt==='Michigan Supreme Court' || (filingType==='existing' && selectedCase?.court==='Michigan Supreme Court');
+  const ct = filingType==='new' ? selectedCaseType : (selectedCase?.caseType||'');
+  const v = docTypeValue;
+
+  if(v==='Fee Waiver Request') return 0; // no fee to request a fee waiver
+  if(v==='Complaint'){
+    if(formNo==='DC 84') return 30; // small claims complaint
+    if(ct==='Original Action') return 150; // original jurisdiction complaint
+    return 75; // general civil complaint
+  }
+  if(v==='Application to Set Aside a Conviction or Arrest') return 40;
+  if(v==='Appeal of Civil Infraction') return 20; // petition for appeal of booking conviction
+  if(v==='Criminal Complaint / Information') return 0; // no fee for prosecuting attorney / AG
+  if(v==='Notice of Appeal (as of right)') return 100; // claim of appeal
+  if(v==='Application for Leave to Appeal') return 100;
+  if(v.startsWith('Petition for Writ')||v==='Petition for Superintending Control'||v==='Petition for Quo Warranto') return 100;
+  if(v==='Petition for Review') return 50; // notice of appeal from administrative agency decision
+  if(v==='Motion for Summary Judgment') return 35;
+  if(v==='Motion to Suppress') return 35;
+  if(v==='Emergency Motion') return isSupreme?75:25;
+  if(v.startsWith('Motion')) return isSupreme?50:25;
+  return isSupreme?50:25; // all other filings not otherwise specified
+}
+
+// ══════════════════════════════════════════════════
+// FILER ROLE
+// ══════════════════════════════════════════════════
+// The filer's role is no longer a free-form selection. For new cases it's
+// the filer's own party role (Plaintiff/Petitioner/Appellant, etc.) unless
+// they're filing as counsel, in which case it's derived from who they represent.
+function getFilerRoleDisplay(){
   if(filingType==='new'){
-    inp.value=computeAutoTitle(dt);
-    inp.readOnly=true;
-    document.getElementById('title-hint').textContent='Auto-generated from document type and party names. Not editable for new cases.';
-  } else {
-    if(!inp.dataset.userEdited){
-      inp.value=computeAutoTitle(dt);
+    if(isFilingAsCounsel){
+      const rep=parties.find(p=>p.isRepresented);
+      if(rep) return `Attorney for ${getPartyName(rep)||rep.role}`;
+      return 'Attorney of Record';
     }
-    inp.readOnly=false;
-    document.getElementById('title-hint').textContent='Auto-filled from document type. You may edit this.';
-    inp.addEventListener('input',()=>{ inp.dataset.userEdited='1'; },{ once:true });
+    return parties[0]?.role || 'Plaintiff';
+  } else {
+    if(isFilingAsCounsel){
+      const rep=document.getElementById('counsel-represents')?.value?.trim();
+      return rep?`Attorney for ${rep}`:'Attorney of Record';
+    }
+    return 'Party of Record';
   }
-}
-
-function computeAutoTitle(dt){
-  if(!dt) return '';
-  if(filingType==='new'){
-    const name1=getPartyName(parties[0]);
-    const name2=getPartyName(parties[1]);
-    if(name1&&name2) return `${dt} — ${name1} v. ${name2}`;
-    if(name1) return `${dt} — ${name1}`;
-    return dt;
-  } else if(selectedCase){
-    return `${dt} — ${getCaseTitle(selectedCase)}`;
-  }
-  return dt;
 }
 
 // ══════════════════════════════════════════════════
@@ -1060,7 +1064,6 @@ window.addParty=addParty;
 function removeParty(id){
   parties=parties.filter(p=>p.id!==id);
   renderParties();
-  refreshTitle();
 }
 window.removeParty=removeParty;
 
@@ -1068,7 +1071,7 @@ function getParty(id){ return parties.find(p=>p.id===id); }
 
 function setPartyField(id, field, value){
   const p=getParty(id);
-  if(p){ p[field]=value; refreshTitle(); }
+  if(p){ p[field]=value; }
 }
 window.setPartyField=setPartyField;
 
@@ -1137,7 +1140,10 @@ function renderPartyCard(p,i,roles){
   const addRoles=['Third Party','Intervenor','Cross-Claimant','Cross-Defendant','Counter-Claimant','Counter-Defendant'];
   const extraOpts=i>=2?addRoles.map(r=>`<option${p.role===r?' selected':''}>${r}</option>`).join(''):'';
 
-  const actorTypes=['Natural Person','Business or Organization','Governmental Entity'];
+  let actorTypes=['Natural Person','Business or Organization','Governmental Entity'];
+  if(userData.role!=='State Attorney' && p.actorType!=='Governmental Entity'){
+    actorTypes=actorTypes.filter(t=>t!=='Governmental Entity');
+  }
   const actorRadios=actorTypes.map(t=>`
     <label class="inline-radio${p.actorType===t?' sel':''}" onclick="this.classList.toggle('sel',true);document.querySelectorAll('#at-grp-${p.id} .inline-radio').forEach(x=>x!=this&&x.classList.remove('sel'));setPartyActorType(${p.id},'${t}')">
       <input type="radio" name="at-${p.id}" value="${t}"${p.actorType===t?' checked':''}> ${t}
@@ -1342,7 +1348,8 @@ function validateStep(s){
   }
   if(s===3){
     let ok=true;
-    if(!uploadedFiles.length){
+    const gdriveHasLink=hasExhibits && document.getElementById('gdrive-link')?.value?.trim();
+    if(!uploadedFiles.length && !gdriveHasLink){
       document.getElementById('upload-err').classList.add('show');
       ok=false;
     } else {
@@ -1370,10 +1377,7 @@ function validateStep(s){
   }
   if(s===4){
     let ok=true;
-    const title=document.getElementById('filing-title')?.value?.trim();
     const email=document.getElementById('contact-email')?.value?.trim();
-    if(!title){document.getElementById('title-err').classList.add('show');ok=false;}
-    else document.getElementById('title-err').classList.remove('show');
     if(!email||!email.includes('@')){document.getElementById('email-err').classList.add('show');ok=false;}
     else document.getElementById('email-err').classList.remove('show');
     if(!certifiedAccurate){document.getElementById('cert-err').classList.add('show');ok=false;}
@@ -1415,13 +1419,21 @@ function setupStep3(){
   }
   renderFileList();
   if(hasExhibits) renderGdriveDocType();
-  refreshTitle();
 }
 
 function setupStep4(){
-  refreshTitle();
   const emailInp=document.getElementById('contact-email');
   if(emailInp&&!emailInp.value) emailInp.value=userData.email||'';
+  const roleInp=document.getElementById('filer-role-display');
+  const roleHint=document.getElementById('filer-role-hint');
+  if(roleInp){
+    roleInp.value=getFilerRoleDisplay();
+    if(roleHint){
+      roleHint.textContent = isFilingAsCounsel
+        ? 'Determined by the party you indicated you represent.'
+        : 'Determined by your role in this case.';
+    }
+  }
 }
 
 // ══════════════════════════════════════════════════
@@ -1489,13 +1501,11 @@ function addFile(file){
   uploadedFiles.push({id:nextFileId++, file, docType: detected?{value:detected.v,label:detected.l}:null, _typeErr:false});
   document.getElementById('upload-err').classList.remove('show');
   renderFileList();
-  refreshTitle();
 }
 
 function removeFile(id){
   uploadedFiles=uploadedFiles.filter(f=>f.id!==id);
   renderFileList();
-  refreshTitle();
 }
 window.removeFile=removeFile;
 
@@ -1547,11 +1557,10 @@ function renderGdriveDocType(){
 // ══════════════════════════════════════════════════
 function buildReview(){
   const el=document.getElementById('review-content');
-  const title=document.getElementById('filing-title')?.value?.trim()||'';
-  const role=document.getElementById('filer-role')?.value||'';
   const notes=document.getElementById('filing-notes')?.value?.trim()||'';
   const email=document.getElementById('contact-email')?.value?.trim()||'';
   const gdl=document.getElementById('gdrive-link')?.value?.trim()||'';
+  const filerRole=getFilerRoleDisplay();
 
   let caseBlock='';
   if(filingType==='new'){
@@ -1574,23 +1583,49 @@ function buildReview(){
     </div>`;
   }
 
+  // Each document's title is simply its document type (e.g. "Complaint", "Summons").
+  const fileDocs=uploadedFiles.map(f=>{
+    const opt=currentDocTypeOptions.find(o=>o.v===f.docType?.value);
+    return {
+      name:f.file.name, size:f.file.size,
+      title:f.docType?.value||'—',
+      fee:f.docType?getDocumentFee(f.docType.value,opt?.f):0,
+      hasType:!!f.docType,
+    };
+  });
+  let gdriveDoc=null;
+  if(hasExhibits&&gdl&&gdriveDocType){
+    const opt=currentDocTypeOptions.find(o=>o.v===gdriveDocType.value);
+    gdriveDoc={title:gdriveDocType.value, fee:getDocumentFee(gdriveDocType.value,opt?.f)};
+  }
+
   const docBlock=`<div class="rv-sec">
     <div class="rv-sec-lbl">Documents</div>
-    ${uploadedFiles.map(f=>`<div class="rv-file"><span style="font-size:13px">📄</span><span class="rf-n">${esc(f.file.name)} <span style="color:var(--muted);font-weight:400">— ${f.docType?.label||'—'}</span></span><span class="rf-s">${fmtSize(f.file.size)}</span></div>`).join('')}
-    ${hasExhibits&&gdl?`<div class="rv-file"><span style="font-size:13px">🔗</span><span class="rf-n">Documents in Google Drive <span style="color:var(--muted);font-weight:400">— ${gdriveDocType?.label||'—'}</span></span></div><div class="rv-row"><span class="rv-k">Drive Link</span><span class="rv-v" style="word-break:break-all;font-size:11.5px">${gdl}</span></div>`:''}
+    ${fileDocs.map(d=>`<div class="rv-file"><span style="font-size:13px">📄</span><span class="rf-n">${esc(d.name)}<br><span style="color:var(--muted);font-weight:400">Title: ${d.title}</span></span><span class="rf-s">${fmtSize(d.size)}</span></div>`).join('')}
+    ${gdriveDoc?`<div class="rv-file"><span style="font-size:13px">🔗</span><span class="rf-n">Documents in Google Drive<br><span style="color:var(--muted);font-weight:400">Title: ${gdriveDoc.title}</span></span></div><div class="rv-row"><span class="rv-k">Drive Link</span><span class="rv-v" style="word-break:break-all;font-size:11.5px">${gdl}</span></div>`:''}
+  </div>`;
+
+  const allFees=fileDocs.map(d=>({label:d.title,fee:d.fee}));
+  if(gdriveDoc) allFees.push({label:gdriveDoc.title,fee:gdriveDoc.fee});
+  const totalFee=allFees.reduce((s,d)=>s+(d.fee||0),0);
+
+  const feesBlock=`<div class="rv-sec">
+    <div class="rv-sec-lbl">Filing Fees</div>
+    ${allFees.map(d=>`<div class="rv-row"><span class="rv-k">${d.label}</span><span class="rv-v">${d.fee?('$'+d.fee.toFixed(2)):'No fee'}</span></div>`).join('')}
+    <div class="rv-row"><span class="rv-k" style="font-weight:700;color:var(--text)">Total Estimated Fees</span><span class="rv-v" style="font-weight:700">$${totalFee.toFixed(2)}</span></div>
+    <div class="rv-row"><span class="rv-k">Payment</span><span class="rv-v">Not required to file — you'll have 14 days to pay in person at the courthouse</span></div>
   </div>`;
 
   const detailsBlock=`<div class="rv-sec">
     <div class="rv-sec-lbl">Filing Details</div>
-    <div class="rv-row"><span class="rv-k">Title</span><span class="rv-v">${title}</span></div>
-    ${role?`<div class="rv-row"><span class="rv-k">Filer Role</span><span class="rv-v">${role}</span></div>`:''}
+    <div class="rv-row"><span class="rv-k">Filing As</span><span class="rv-v">${filerRole}</span></div>
     ${isFilingAsCounsel?`<div class="rv-row"><span class="rv-k">Bar Number</span><span class="rv-v">${userData.barNumber||'—'}</span></div>`:''}
     ${notes?`<div class="rv-row"><span class="rv-k">Notes to Clerk</span><span class="rv-v">${notes}</span></div>`:''}
     <div class="rv-row"><span class="rv-k">Confirmation Email</span><span class="rv-v">${email}</span></div>
     <div class="rv-row"><span class="rv-k">Filed By</span><span class="rv-v">${userData.name}</span></div>
   </div>`;
 
-  el.innerHTML=caseBlock+docBlock+detailsBlock;
+  el.innerHTML=caseBlock+docBlock+feesBlock+detailsBlock;
 }
 
 // ══════════════════════════════════════════════════
@@ -1604,8 +1639,7 @@ async function submitFiling(){
   try {
     const conf=confNum();
     const now=new Date().toISOString();
-    const title=document.getElementById('filing-title')?.value?.trim()||computeAutoTitle(getPrimaryDocType());
-    const role=document.getElementById('filer-role')?.value||null;
+    const role=getFilerRoleDisplay();
     const notes=document.getElementById('filing-notes')?.value?.trim()||null;
     const email=document.getElementById('contact-email')?.value?.trim()||'';
     const gdl=document.getElementById('gdrive-link')?.value?.trim()||null;
@@ -1622,17 +1656,36 @@ async function submitFiling(){
       return base;
     });
 
+    // Each document (file or Google Drive submission) carries its own title/type and fee.
+    const documents=uploadedFiles.map(f=>{
+      const opt=currentDocTypeOptions.find(o=>o.v===f.docType?.value);
+      return {
+        name:f.file.name, size:f.file.size,
+        documentType:f.docType?.value||null,
+        title:f.docType?.value||null,
+        fee:f.docType?getDocumentFee(f.docType.value,opt?.f):0,
+      };
+    });
+    if(hasExhibits&&gdl&&gdriveDocType){
+      const opt=currentDocTypeOptions.find(o=>o.v===gdriveDocType.value);
+      documents.push({
+        name:'Documents (Google Drive)', size:null, link:gdl,
+        documentType:gdriveDocType.value, title:gdriveDocType.value,
+        fee:getDocumentFee(gdriveDocType.value,opt?.f),
+      });
+    }
+    const totalFee=documents.reduce((s,d)=>s+(d.fee||0),0);
+
     const filingObj={
       confirmationNumber:conf,
       filingType,
       court:selectedCourt||(selectedCase?.court)||'',
       caseType:selectedCaseType||(selectedCase?.caseType)||'',
       documentType:getPrimaryDocType(),
-      title,
       parties:filingType==='new'?partyData:[],
-      documents:uploadedFiles.map(f=>({name:f.file.name,size:f.file.size,documentType:f.docType?.value||null})),
-      gdrivLink:gdl,
-      gdriveDocumentType:hasExhibits?(gdriveDocType?.value||null):null,
+      documents,
+      totalFee,
+      paymentDue:'Not required at filing — due in person at the courthouse within 14 days.',
       notesToClerk:notes,
       confirmationEmail:email,
       filerRole:role,
@@ -1655,13 +1708,15 @@ async function submitFiling(){
       const {collection,addDoc,doc,updateDoc,arrayUnion}=await import('https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js');
       await addDoc(collection(window._db,'pendingFilings'),filingObj);
       if(filingType==='existing'&&selectedCase?._id){
-        const filingEntry={
-          title, documentType:getPrimaryDocType(), filedBy:userData.name, filedByUid:userData.uid,
+        // Push one docket entry per document, each with its own title/type and fee.
+        const filingEntries=documents.map(d=>({
+          title:d.title, documentType:d.documentType, fee:d.fee,
+          filedBy:userData.name, filedByUid:userData.uid,
           role:role||null, dateFiled:now, status:'Pending', accepted:false, notes:notes||null,
-          documentLink:null,
+          documentLink:d.link||null,
           ...(isFilingAsCounsel?{attorney:{name:userData.name,uid:userData.uid,barNumber:userData.barNumber||null},counselRepresents:counselRep}:{})
-        };
-        await updateDoc(doc(window._db,'cases',selectedCase._id),{filings:arrayUnion(filingEntry)});
+        }));
+        await updateDoc(doc(window._db,'cases',selectedCase._id),{filings:arrayUnion(...filingEntries)});
         // If attorney, also update party record
         if(isFilingAsCounsel&&counselRep){
           try{
@@ -1716,10 +1771,7 @@ function resetWizard(){
   document.getElementById('file-list').innerHTML='';
   document.getElementById('upload-err').classList.remove('show');
   document.getElementById('doc-restriction-note').style.display='none';
-  ['title-err','email-err','cert-err','gdrive-err','gdrive-doctype-err'].forEach(id=>document.getElementById(id)?.classList.remove('show'));
-  document.getElementById('filing-title').value='';
-  document.getElementById('filing-title').dataset.userEdited='';
-  document.getElementById('filer-role').value='';
+  ['email-err','cert-err','gdrive-err','gdrive-doctype-err'].forEach(id=>document.getElementById(id)?.classList.remove('show'));
   document.getElementById('filing-notes').value='';
   document.getElementById('contact-email').value=userData.email||'';
   document.getElementById('cb-accurate').checked=false;
