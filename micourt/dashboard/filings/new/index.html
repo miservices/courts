@@ -19,7 +19,6 @@
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);min-height:100vh}
 
-/* Topbar */
 .topbar{background:var(--navy);border-bottom:1px solid var(--border);padding:0 36px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:300}
 .topbar-brand{display:flex;align-items:center;gap:11px;text-decoration:none}
 .topbar-seal{width:28px;height:28px;background:var(--gold);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
@@ -27,14 +26,12 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);
 .topbar-right{display:flex;align-items:center;gap:12px}
 .topbar-user{color:var(--blue-muted);font-size:12px}
 
-/* Back bar */
 .back-bar{background:var(--navy-mid);border-bottom:2px solid var(--gold);padding:0 36px;display:flex;align-items:center;height:46px;gap:0}
 .back-bar a{display:inline-flex;align-items:center;gap:8px;color:var(--gold);text-decoration:none;font-size:13px;font-weight:700;letter-spacing:0.02em;transition:opacity 0.12s}
 .back-bar a:hover{opacity:0.75}
 .back-bar-sep{width:1px;height:20px;background:var(--border);margin:0 16px}
 .back-bar-label{color:var(--blue-muted);font-size:12px}
 
-/* Auth overlay */
 .auth-overlay{position:fixed;inset:0;background:var(--navy);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;gap:16px}
 .auth-overlay.hidden{display:none}
 .ao-seal{width:50px;height:50px;background:var(--gold);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px}
@@ -42,7 +39,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);
 .ao-spin{width:26px;height:26px;border:3px solid #1e3a5f;border-top-color:var(--gold);border-radius:50%;animation:spin .8s linear infinite}
 .ao-msg{color:var(--blue-muted);font-size:12px}
 
-/* Page */
 .page-wrap{max-width:880px;margin:0 auto;padding:32px 24px 80px}
 .page-header{margin-bottom:24px}
 .page-header h1{font-family:'Merriweather',serif;font-size:24px;font-weight:300;color:var(--text);margin-bottom:5px}
@@ -53,7 +49,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);
 .breadcrumb span{color:#b0a898;font-size:10px}
 .breadcrumb .bc-cur{color:var(--text);font-size:11px;font-weight:600}
 
-/* Steps */
 .steps{display:flex;align-items:center;margin-bottom:28px}
 .step{display:flex;align-items:center;gap:8px;flex:1}
 .step-circle{width:27px;height:27px;border-radius:50%;border:2px solid var(--line);background:var(--white);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--muted);flex-shrink:0;transition:all .2s}
@@ -65,7 +60,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);
 .step-line{flex:1;height:2px;background:var(--line);margin:0 6px;transition:background .2s}
 .step-line.done{background:var(--green)}
 
-/* Cards */
 .card{background:var(--white);border:1px solid var(--line);border-radius:5px;margin-bottom:14px}
 .card-hdr{padding:15px 20px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px}
 .card-hdr-icon{font-size:15px}
@@ -73,7 +67,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);
 .card-hdr p{font-size:11.5px;color:var(--muted);margin-top:2px}
 .card-body{padding:20px}
 
-/* Forms */
 .form-group{margin-bottom:16px}
 .form-group:last-child{margin-bottom:0}
 .form-label{display:flex;align-items:center;gap:4px;font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-weight:700;margin-bottom:6px}
@@ -89,11 +82,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 .form-row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
 
-/* PIN help */
 .pin-help{display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;border-radius:50%;background:var(--navy);color:#fff;font-size:9px;font-weight:700;cursor:pointer;text-decoration:none;flex-shrink:0;transition:background .12s}
 .pin-help:hover{background:var(--gold);color:var(--navy)}
 
-/* Searchable select */
 .ss-wrap{position:relative;width:100%}
 .ss-trigger{display:flex;align-items:center;justify-content:space-between;padding:10px 13px;border:1.5px solid var(--line);border-radius:4px;background:var(--white);cursor:pointer;transition:border-color .15s,box-shadow .15s;user-select:none;min-height:41px}
 .ss-trigger:hover{border-color:#b0a898}
@@ -117,7 +108,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);
 .ss-opt-desc{font-size:11.5px;color:var(--muted);margin-top:2px;line-height:1.4}
 .ss-none{padding:18px;text-align:center;color:var(--muted);font-size:13px}
 
-/* Radio / check */
 .radio-group,.check-group{display:flex;flex-direction:column;gap:8px}
 .radio-opt,.check-opt{display:flex;align-items:flex-start;gap:10px;padding:11px 13px;border:1.5px solid var(--line);border-radius:4px;cursor:pointer;transition:all .15s}
 .radio-opt:hover,.check-opt:hover{border-color:#b0a898;background:#faf9f7}
@@ -131,7 +121,10 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);
 .inline-radio.sel{border-color:var(--navy);background:var(--blue-bg)}
 .inline-radio input{accent-color:var(--navy)}
 
-/* Party cards */
+/* locked actor type display */
+.actor-type-locked{display:inline-flex;align-items:center;gap:7px;padding:8px 13px;background:var(--cream);border:1.5px solid var(--line);border-radius:3px;font-size:13px;color:var(--muted);font-weight:600}
+.actor-type-locked .lock-icon{font-size:11px;opacity:.6}
+
 .party-card{background:var(--white);border:1.5px solid var(--line);border-radius:5px;margin-bottom:12px;overflow:hidden}
 .party-card-hdr{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:var(--cream);border-bottom:1px solid var(--line)}
 .pch-left{display:flex;align-items:center;gap:10px}
@@ -146,7 +139,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);
 .counsel-flag input{accent-color:var(--navy)}
 .counsel-flag span{font-size:12.5px;font-weight:600;color:var(--text)}
 
-/* File upload */
 .upload-zone{border:2px dashed var(--line);border-radius:4px;padding:26px 18px;text-align:center;cursor:pointer;transition:all .2s;position:relative;background:var(--cream)}
 .upload-zone:hover,.upload-zone.drag-over{border-color:var(--navy);background:#ece8e0}
 .upload-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
@@ -165,12 +157,10 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);
 .fr-rm:hover{background:var(--red-bdr)}
 .fr-detected{font-size:10.5px;color:var(--green);font-weight:700;margin-top:6px;display:flex;align-items:center;gap:4px}
 
-/* GDrive */
 .gdrive-box{margin-top:14px;background:var(--amber-bg);border:1px solid var(--amber-bdr);border-radius:4px;padding:14px}
 .gdrive-box-title{font-size:12px;font-weight:700;color:var(--amber);margin-bottom:6px;display:flex;align-items:center;gap:6px}
 .gdrive-box p{font-size:12px;color:var(--amber);line-height:1.6;margin-bottom:10px}
 
-/* Buttons */
 .btn-primary{display:inline-flex;align-items:center;gap:7px;background:var(--navy);color:#fff;border:none;padding:11px 22px;border-radius:4px;font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background .12s;letter-spacing:.02em;text-decoration:none}
 .btn-primary:hover{background:var(--navy-mid)}
 .btn-primary:disabled{opacity:.5;cursor:not-allowed}
@@ -180,7 +170,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);
 .btn-ghost:hover{border-color:#b0a898;color:var(--text)}
 .step-nav{display:flex;align-items:center;justify-content:space-between;margin-top:22px;padding-top:18px;border-top:1px solid var(--line)}
 
-/* Callouts */
 .callout{display:flex;gap:10px;padding:12px 14px;border-radius:4px;margin-bottom:14px}
 .c-info{background:var(--blue-bg);border:1px solid var(--blue-bdr)}
 .c-warn{background:var(--amber-bg);border:1px solid var(--amber-bdr)}
@@ -191,7 +180,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);
 .c-warn .callout-text{color:var(--amber)}
 .c-green .callout-text{color:var(--green)}
 
-/* Review */
 .rv-sec{margin-bottom:16px}
 .rv-sec-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;font-weight:700;margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid var(--line)}
 .rv-row{display:flex;justify-content:space-between;align-items:flex-start;padding:6px 0;gap:12px;border-bottom:1px solid #f8f5f0}
@@ -201,10 +189,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);
 .rv-file{display:flex;align-items:center;gap:8px;background:var(--cream);border:1px solid var(--line);border-radius:3px;padding:6px 10px;margin-bottom:5px}
 .rf-n{font-size:12.5px;font-weight:600;color:var(--text);flex:1}
 .rf-s{font-size:11px;color:var(--muted)}
-.fee-notice{background:var(--green-bg);border:1px solid var(--green-bdr);border-radius:4px;padding:13px 15px;margin-bottom:14px;display:flex;gap:9px}
-.fee-notice-text{font-size:12.5px;color:var(--green);line-height:1.6}
 
-/* Case select */
 .case-opt{display:flex;align-items:flex-start;gap:10px;padding:12px 14px;border:1.5px solid var(--line);border-radius:4px;cursor:pointer;transition:all .15s;margin-bottom:7px}
 .case-opt:hover{border-color:#b0a898;background:#faf9f7}
 .case-opt.sel{border-color:var(--navy);background:var(--blue-bg)}
@@ -223,10 +208,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);
 .or-div::before,.or-div::after{content:'';flex:1;height:1px;background:var(--line)}
 .or-div span{font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.07em}
 
-/* Jurisdiction other */
 .jur-manual{margin-top:8px;display:none}
 
-/* Success */
 .success-screen{display:none}
 .success-screen.active{display:block}
 .filing-wizard.hidden{display:none}
@@ -240,7 +223,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);
 .spin{display:inline-block;width:15px;height:15px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite;vertical-align:middle}
 
 @keyframes spin{to{transform:rotate(360deg)}}
-@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 
 @media(max-width:640px){
   .page-wrap{padding:24px 14px 60px}
@@ -288,10 +270,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);
     <p>Submit documents and initiate cases electronically. All filings are reviewed by the clerk's office before entering the official record.</p>
   </div>
 
-  <!-- WIZARD -->
   <div class="filing-wizard" id="filing-wizard">
 
-    <!-- Steps bar -->
     <div class="steps" id="steps-bar">
       <div class="step active" id="si-1"><div class="step-circle" id="sc-1">1</div><span class="step-label">Filing Type</span></div>
       <div class="step-line" id="ln-12"></div>
@@ -304,10 +284,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);
       <div class="step" id="si-5"><div class="step-circle" id="sc-5">5</div><span class="step-label">Review</span></div>
     </div>
 
-    <!-- ── STEP 1 ── -->
+    <!-- STEP 1 -->
     <div id="step-1">
-
-      <!-- Attorney counsel card (shown for attorneys) -->
       <div class="card" id="atty-card" style="display:none">
         <div class="card-hdr"><span class="card-hdr-icon">⚖️</span><div><h2>Attorney Filing</h2><p>Indicate your role as counsel in this filing.</p></div></div>
         <div class="card-body">
@@ -321,7 +299,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);
         </div>
       </div>
 
-      <!-- Filing type selection -->
       <div class="card">
         <div class="card-hdr"><span class="card-hdr-icon">📋</span><div><h2>What are you filing?</h2></div></div>
         <div class="card-body">
@@ -335,8 +312,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);
               <div><div class="ro-lbl">File in an Existing Case</div><div class="ro-sub">Submit a motion, response, brief, or other document in a case already on the docket.</div></div>
             </label>
           </div>
-
-          <!-- New case sub-options -->
           <div id="new-opts" style="display:none;margin-top:16px">
             <div class="form-group">
               <label class="form-label">Court <span class="req">*</span></label>
@@ -360,11 +335,10 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);
         <span></span>
         <button class="btn-primary" onclick="goStep(2)">Continue →</button>
       </div>
-    </div><!-- /step-1 -->
+    </div>
 
-    <!-- ── STEP 2 ── -->
+    <!-- STEP 2 -->
     <div id="step-2" style="display:none">
-      <!-- Existing case -->
       <div id="s2-existing" style="display:none">
         <div class="card">
           <div class="card-hdr"><span class="card-hdr-icon">⚖️</span><div><h2>Select the Case</h2><p>Choose the case this filing is associated with.</p></div></div>
@@ -381,7 +355,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);
             </div>
           </div>
         </div>
-        <!-- Attorney party representation (for attorneys on existing cases) -->
         <div class="card" id="atty-rep-card" style="display:none">
           <div class="card-hdr"><span class="card-hdr-icon">⚖️</span><div><h2>Your Representation</h2><p>Indicate which party you represent in this case.</p></div></div>
           <div class="card-body">
@@ -394,7 +367,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);
         </div>
       </div>
 
-      <!-- New case parties -->
       <div id="s2-new" style="display:none">
         <div class="card">
           <div class="card-hdr"><span class="card-hdr-icon">👥</span><div><h2>Case Parties</h2><p id="party-card-sub">Add all parties to this new case.</p></div></div>
@@ -413,9 +385,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);
         <button class="btn-ghost" onclick="goStep(1)">← Back</button>
         <button class="btn-primary" onclick="goStep(3)">Continue →</button>
       </div>
-    </div><!-- /step-2 -->
+    </div>
 
-    <!-- ── STEP 3 ── -->
+    <!-- STEP 3 -->
     <div id="step-3" style="display:none">
       <div class="card">
         <div class="card-hdr"><span class="card-hdr-icon">📄</span><div><h2>Document</h2><p>Select the document type and upload your filing.</p></div></div>
@@ -424,9 +396,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);
             <span class="callout-icon">⚠️</span>
             <div class="callout-text">Per MCR 2.119, documents must be <strong>PDF format</strong> and <strong>under 5 MB</strong> each. All signatures must be in place before uploading — filings with missing signatures will be rejected.</div>
           </div>
-
           <div class="callout c-info" id="doc-restriction-note" style="display:none"></div>
-
           <div class="form-group">
             <label class="form-label">Upload Document(s) <span class="req">*</span></label>
             <div class="upload-zone" id="upload-zone" ondragover="onDragOver(event)" ondragleave="onDragLeave(event)" ondrop="onDrop(event)">
@@ -438,8 +408,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);
             <div class="form-err" id="upload-err">Please attach at least one PDF, or check the box below and provide a Google Drive link.</div>
             <div class="file-list" id="file-list"></div>
           </div>
-
-          <!-- Image exhibits / GDrive -->
           <div class="form-group">
             <label class="form-label" style="margin-bottom:10px">Image Exhibits &amp; Attachments</label>
             <label class="check-opt" id="chk-exhibits-opt" onclick="toggleEl(this,'cb-exhibits',v=>{ hasExhibits=v; document.getElementById('gdrive-section').style.display=v?'block':'none'; if(v) renderGdriveDocType(); })">
@@ -471,9 +439,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);
         <button class="btn-ghost" onclick="goStep(2)">← Back</button>
         <button class="btn-primary" onclick="goStep(4)">Continue →</button>
       </div>
-    </div><!-- /step-3 -->
+    </div>
 
-    <!-- ── STEP 4 ── -->
+    <!-- STEP 4 -->
     <div id="step-4" style="display:none">
       <div class="card">
         <div class="card-hdr"><span class="card-hdr-icon">✏️</span><div><h2>Filing Details</h2></div></div>
@@ -483,19 +451,16 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);
             <input class="form-input" id="filer-role-display" readonly>
             <div class="form-hint" id="filer-role-hint"></div>
           </div>
-
           <div class="form-group">
             <label class="form-label">Notes to the Clerk (optional)</label>
             <textarea class="form-textarea" id="filing-notes" placeholder="Any special instructions or context for the reviewing clerk…"></textarea>
           </div>
-
           <div class="form-group">
             <label class="form-label">Contact Email for Confirmation <span class="req">*</span></label>
             <input class="form-input" type="email" id="contact-email" placeholder="your@email.com">
             <div class="form-hint">Confirmation sent here when your filing is accepted or if action is needed.</div>
             <div class="form-err" id="email-err">Please enter a valid email address.</div>
           </div>
-
           <div class="form-group">
             <label class="form-label" style="margin-bottom:10px">Certification <span class="req">*</span></label>
             <label class="check-opt" id="chk-accurate-opt" onclick="toggleEl(this,'cb-accurate',v=>certifiedAccurate=v)">
@@ -513,9 +478,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);
         <button class="btn-ghost" onclick="goStep(3)">← Back</button>
         <button class="btn-primary" onclick="goStep(5)">Review Filing →</button>
       </div>
-    </div><!-- /step-4 -->
+    </div>
 
-    <!-- ── STEP 5 ── -->
+    <!-- STEP 5 -->
     <div id="step-5" style="display:none">
       <div class="card">
         <div class="card-hdr"><span class="card-hdr-icon">🔍</span><div><h2>Review Your Filing</h2><p>Confirm all details before submitting to the clerk's office.</p></div></div>
@@ -529,11 +494,10 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);
         <button class="btn-ghost" onclick="goStep(4)">← Back</button>
         <button class="btn-primary" id="submit-btn" onclick="submitFiling()"><span id="submit-lbl">Submit Filing</span></button>
       </div>
-    </div><!-- /step-5 -->
+    </div>
 
-  </div><!-- /filing-wizard -->
+  </div>
 
-  <!-- SUCCESS -->
   <div class="success-screen" id="success-screen">
     <div class="success-card">
       <div class="success-icon">✅</div>
@@ -548,12 +512,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);
       </div>
     </div>
   </div>
-</div><!-- /page-wrap -->
+</div>
 
 <script>
-// ══════════════════════════════════════════════════
-// STATE
-// ══════════════════════════════════════════════════
 let currentStep=1, filingType=null, isFilingAsCounsel=false;
 let selectedCourt=null, selectedCaseType=null;
 let selectedCase=null;
@@ -564,81 +525,68 @@ let certifiedAccurate=false;
 let userData={name:'—',email:'—',uid:null,role:'Portal User',barNumber:null,mipassPin:null,robloxUser:null};
 let allCases=[], casesLoaded=false;
 
-// ══════════════════════════════════════════════════
-// DATA
-// ══════════════════════════════════════════════════
 const COURTS = [
-  {v:'Genesee Co. District Court', l:'Genesee County District Court', d:'The trial court serving Genesee County, Michigan. Handles criminal, civil, traffic, and other matters.'},
-  {v:'Michigan Supreme Court', l:'Michigan Supreme Court', d:'The highest court in Michigan. Handles appeals, original actions, and extraordinary writs.'},
+  {v:'Genesee Co. District Court', l:'Genesee County District Court', d:'The trial court serving Genesee County, Michigan.'},
+  {v:'Michigan Supreme Court', l:'Michigan Supreme Court', d:'The highest court in Michigan.'},
 ];
 
 const CASE_TYPES = {
   'Genesee Co. District Court': [
-    {v:'Small Claims', l:'Small Claims Action', d:'Civil cases involving $20,000 or less in monetary damages. Simplified procedures.'},
-    {v:'General Civil', l:'General Civil', d:'Standard civil lawsuits involving disputes over $20,000 or complex legal issues.'},
-    {v:'Civil Infraction', l:'Civil Infraction', d:'Contesting non-criminal violations: traffic tickets, local ordinance violations, etc.'},
-    {v:'Expungement', l:'Expungement', d:'Petition to set aside a criminal conviction and remove it from public records.'},
-    {v:'Criminal', l:'Criminal', d:'Misdemeanor or felony charges. Restricted to prosecuting (state) attorneys.', staffOnly:true},
-    {v:'Administrative', l:'Administrative', d:'Appeals from government agency decisions, licensing matters, and other administrative proceedings.'},
-    {v:'Special Proceeding', l:'Special Proceeding', d:'Forfeiture proceedings, writs of garnishment, habeas corpus, contempt, foreign judgment enforcement, etc.'},
+    {v:'Small Claims', l:'Small Claims Action', d:'Civil cases involving $20,000 or less.'},
+    {v:'General Civil', l:'General Civil', d:'Standard civil lawsuits.'},
+    {v:'Civil Infraction', l:'Civil Infraction', d:'Non-criminal violations.'},
+    {v:'Expungement', l:'Expungement', d:'Petition to set aside a criminal conviction.'},
+    {v:'Criminal', l:'Criminal', d:'Misdemeanor or felony charges.', staffOnly:true},
+    {v:'Administrative', l:'Administrative', d:'Appeals from government agency decisions.'},
+    {v:'Special Proceeding', l:'Special Proceeding', d:'Garnishment, habeas corpus, contempt, etc.'},
   ],
   'Michigan Supreme Court': [
-    {v:'Appellate', l:'Appellate', d:'Appeals from lower court decisions, by right (notice of appeal) or by leave (application for leave to appeal).'},
-    {v:'Administrative Appeal', l:'Administrative Appeal', d:'Direct appeals of final administrative agency orders to the Supreme Court.'},
-    {v:'Original Action', l:'Original Action', d:'Cases originating directly in the Supreme Court, not arising from a lower court.'},
-    {v:'Extraordinary Writ', l:'Extraordinary Writ', d:'Petitions for mandamus, prohibition, superintending control, quo warranto, and other extraordinary relief. Does not include certiorari — use Appellate filing for that.'},
+    {v:'Appellate', l:'Appellate', d:'Appeals from lower court decisions.'},
+    {v:'Administrative Appeal', l:'Administrative Appeal', d:'Direct appeals of final administrative agency orders.'},
+    {v:'Original Action', l:'Original Action', d:'Cases originating directly in the Supreme Court.'},
+    {v:'Extraordinary Writ', l:'Extraordinary Writ', d:'Mandamus, prohibition, superintending control, quo warranto.'},
   ],
 };
 
 const DOC_TYPES = {
   'Small Claims':[
-    {g:'Initiating Documents',v:'Complaint',f:'DC 84',d:'The standard DC 84 form to initiate a small claims action.'},
-    {g:'Initiating Documents',v:'Summons',f:'MC 01',d:'Formal notice issued to the defendant requiring a court appearance or response.'},
-    {g:'Initiating Documents',v:'Fee Waiver Request',f:'MC 20',d:'Request to waive court filing fees and costs based on inability to pay.'},
-    {g:'Motions',v:'Motion to Set Aside Default',d:''},
-    {g:'Motions',v:'Motion to Transfer to Civil Division',d:''},
-    {g:'Motions',v:'Motion (General)',d:''},
-    {g:'Responses',v:'Response / Answer',d:''},
-    {g:'Other',v:'Notice of Appeal',d:''},{g:'Other',v:'Proof of Service',d:''},{g:'Other',v:'Other',d:''},
+    {g:'Initiating Documents',v:'Complaint',f:'DC 84',d:'Standard DC 84 form to initiate a small claims action.'},
+    {g:'Initiating Documents',v:'Summons',f:'MC 01',d:'Formal notice issued to the defendant.'},
+    {g:'Initiating Documents',v:'Fee Waiver Request',f:'MC 20',d:'Request to waive court filing fees.'},
+    {g:'Motions',v:'Motion to Set Aside Default',d:''},{g:'Motions',v:'Motion to Transfer to Civil Division',d:''},{g:'Motions',v:'Motion (General)',d:''},
+    {g:'Responses',v:'Response / Answer',d:''},{g:'Other',v:'Notice of Appeal',d:''},{g:'Other',v:'Proof of Service',d:''},{g:'Other',v:'Other',d:''},
   ],
   'General Civil':[
     {g:'Initiating Documents',v:'Complaint',d:'Initiating document for a general civil lawsuit.'},
-    {g:'Initiating Documents',v:'Summons',f:'MC 01',d:'Formal notice issued to the defendant requiring a court appearance or response.'},
-    {g:'Initiating Documents',v:'Fee Waiver Request',f:'MC 20',d:'Request to waive court filing fees and costs based on inability to pay.'},
-    {g:'Motions',v:'Motion to Dismiss',d:''},{g:'Motions',v:'Motion for Summary Judgment',d:''},
-    {g:'Motions',v:'Motion in Limine',d:''},{g:'Motions',v:'Motion to Adjourn',d:''},
-    {g:'Motions',v:'Emergency Motion',d:''},{g:'Motions',v:'Motion (General)',d:''},
-    {g:'Responses & Briefs',v:'Answer to Complaint',d:''},{g:'Responses & Briefs',v:'Brief',d:''},
-    {g:'Responses & Briefs',v:'Response / Answer Brief',d:''},{g:'Responses & Briefs',v:'Reply Brief',d:''},
-    {g:'Supporting Documents',v:'Affidavit / Declaration',d:''},{g:'Supporting Documents',v:'Proposed Order',d:''},
-    {g:'Supporting Documents',v:'Consent Judgment',d:''},{g:'Supporting Documents',v:'Stipulation',d:''},
-    {g:'Other',v:'Notice of Appeal',d:''},{g:'Other',v:'Subpoena',d:''},{g:'Other',v:'Proof of Service',d:''},
-    {g:'Other',v:'Notice',d:''},{g:'Other',v:'Other',d:''},
+    {g:'Initiating Documents',v:'Summons',f:'MC 01',d:'Formal notice issued to the defendant.'},
+    {g:'Initiating Documents',v:'Fee Waiver Request',f:'MC 20',d:'Request to waive court filing fees.'},
+    {g:'Motions',v:'Motion to Dismiss',d:''},{g:'Motions',v:'Motion for Summary Judgment',d:''},{g:'Motions',v:'Motion in Limine',d:''},
+    {g:'Motions',v:'Motion to Adjourn',d:''},{g:'Motions',v:'Emergency Motion',d:''},{g:'Motions',v:'Motion (General)',d:''},
+    {g:'Responses & Briefs',v:'Answer to Complaint',d:''},{g:'Responses & Briefs',v:'Brief',d:''},{g:'Responses & Briefs',v:'Response / Answer Brief',d:''},{g:'Responses & Briefs',v:'Reply Brief',d:''},
+    {g:'Supporting Documents',v:'Affidavit / Declaration',d:''},{g:'Supporting Documents',v:'Proposed Order',d:''},{g:'Supporting Documents',v:'Consent Judgment',d:''},{g:'Supporting Documents',v:'Stipulation',d:''},
+    {g:'Other',v:'Notice of Appeal',d:''},{g:'Other',v:'Subpoena',d:''},{g:'Other',v:'Proof of Service',d:''},{g:'Other',v:'Notice',d:''},{g:'Other',v:'Other',d:''},
   ],
   'Civil Infraction':[
-    {g:'Initiating Documents',v:'Appeal of Civil Infraction',f:'DC 102',d:'Appeals a civil infraction determination to circuit court.'},
-    {g:'Initiating Documents',v:'Fee Waiver Request',f:'MC 20',d:'Request to waive court filing fees and costs based on inability to pay.'},
-    {g:'Initiating Documents',v:'Demand for Formal Hearing',d:'Request a formal court hearing to contest a civil infraction citation.'},
+    {g:'Initiating Documents',v:'Appeal of Civil Infraction',f:'DC 102',d:'Appeals a civil infraction determination.'},
+    {g:'Initiating Documents',v:'Fee Waiver Request',f:'MC 20',d:'Request to waive court filing fees.'},
+    {g:'Initiating Documents',v:'Demand for Formal Hearing',d:'Request a formal court hearing.'},
     {g:'Motions',v:'Motion to Dismiss',d:''},{g:'Motions',v:'Motion (General)',d:''},
     {g:'Responses & Briefs',v:'Brief',d:''},{g:'Responses & Briefs',v:'Response',d:''},
     {g:'Other',v:'Notice',d:''},{g:'Other',v:'Proof of Service',d:''},{g:'Other',v:'Other',d:''},
   ],
   'Expungement':[
-    {g:'Initiating Documents',v:'Application to Set Aside a Conviction or Arrest',f:'MC 227',d:'The standard MC 227 form to apply for expungement of a criminal conviction or arrest.'},
-    {g:'Initiating Documents',v:'Fee Waiver Request',f:'MC 20',d:'Request to waive court filing fees and costs based on inability to pay.'},
+    {g:'Initiating Documents',v:'Application to Set Aside a Conviction or Arrest',f:'MC 227',d:'Standard MC 227 form for expungement.'},
+    {g:'Initiating Documents',v:'Fee Waiver Request',f:'MC 20',d:'Request to waive court filing fees.'},
     {g:'Motions',v:'Motion (General)',d:''},
     {g:'Responses & Briefs',v:'Brief',d:''},{g:'Responses & Briefs',v:'Response',d:''},
     {g:'Other',v:'Proof of Service',d:''},{g:'Other',v:'Other',d:''},
   ],
   'Criminal':[
-    {g:'Initiating Documents',v:'Criminal Complaint / Information',d:'Formal charging document initiating criminal proceedings.'},
-    {g:'Motions',v:'Motion to Dismiss',d:''},{g:'Motions',v:'Motion to Suppress',d:'Motion to suppress unlawfully obtained evidence.'},
-    {g:'Motions',v:'Motion in Limine',d:''},{g:'Motions',v:'Motion to Adjourn',d:''},
-    {g:'Motions',v:'Emergency Motion',d:''},{g:'Motions',v:'Motion (General)',d:''},
-    {g:'Responses & Briefs',v:'Brief',d:''},{g:'Responses & Briefs',v:'Response Brief',d:''},
-    {g:'Responses & Briefs',v:'Reply Brief',d:''},
-    {g:'Supporting Documents',v:'Affidavit / Declaration',d:''},{g:'Supporting Documents',v:'Proposed Order',d:''},
-    {g:'Supporting Documents',v:'Plea Agreement',d:''},
+    {g:'Initiating Documents',v:'Criminal Complaint / Information',d:'Formal charging document.'},
+    {g:'Motions',v:'Motion to Dismiss',d:''},{g:'Motions',v:'Motion to Suppress',d:''},{g:'Motions',v:'Motion in Limine',d:''},
+    {g:'Motions',v:'Motion to Adjourn',d:''},{g:'Motions',v:'Emergency Motion',d:''},{g:'Motions',v:'Motion (General)',d:''},
+    {g:'Responses & Briefs',v:'Brief',d:''},{g:'Responses & Briefs',v:'Response Brief',d:''},{g:'Responses & Briefs',v:'Reply Brief',d:''},
+    {g:'Supporting Documents',v:'Affidavit / Declaration',d:''},{g:'Supporting Documents',v:'Proposed Order',d:''},{g:'Supporting Documents',v:'Plea Agreement',d:''},
     {g:'Other',v:'Subpoena',d:''},{g:'Other',v:'Proof of Service',d:''},{g:'Other',v:'Notice',d:''},{g:'Other',v:'Other',d:''},
   ],
   'Administrative':[
@@ -650,24 +598,23 @@ const DOC_TYPES = {
   ],
   'Special Proceeding':[
     {g:'Initiating Documents',v:'Petition',d:'General petition for a special proceeding.'},
-    {g:'Initiating Documents',v:'Application for Writ of Garnishment',d:'Application to garnish wages or assets to satisfy a judgment.'},
-    {g:'Initiating Documents',v:'Application for Writ of Habeas Corpus',d:'Petition challenging unlawful detention.'},
-    {g:'Initiating Documents',v:'Petition for Order of Contempt',d:'Petition to hold a party in contempt of court.'},
+    {g:'Initiating Documents',v:'Application for Writ of Garnishment',d:''},
+    {g:'Initiating Documents',v:'Application for Writ of Habeas Corpus',d:''},
+    {g:'Initiating Documents',v:'Petition for Order of Contempt',d:''},
     {g:'Motions',v:'Motion (General)',d:''},
     {g:'Responses & Briefs',v:'Brief',d:''},{g:'Responses & Briefs',v:'Response',d:''},
     {g:'Supporting Documents',v:'Affidavit / Declaration',d:''},{g:'Supporting Documents',v:'Proposed Order',d:''},
     {g:'Other',v:'Proof of Service',d:''},{g:'Other',v:'Notice',d:''},{g:'Other',v:'Other',d:''},
   ],
   'Appellate':[
-    {g:'Initiating Documents',v:'Application for Leave to Appeal',d:'Request for the Supreme Court to exercise discretionary jurisdiction.'},
-    {g:'Initiating Documents',v:'Notice of Appeal (as of right)',d:'Notice for appeals where right of appeal is guaranteed by court rule.'},
-    {g:'Briefs',v:'Brief (Appellant/Applicant)',d:''},{g:'Briefs',v:'Brief (Appellee/Respondent)',d:''},
-    {g:'Briefs',v:'Reply Brief',d:''},{g:'Briefs',v:'Amicus Curiae Brief',d:'Brief filed by a non-party with a strong interest in the case.'},
+    {g:'Initiating Documents',v:'Application for Leave to Appeal',d:''},
+    {g:'Initiating Documents',v:'Notice of Appeal (as of right)',d:''},
+    {g:'Briefs',v:'Brief (Appellant/Applicant)',d:''},{g:'Briefs',v:'Brief (Appellee/Respondent)',d:''},{g:'Briefs',v:'Reply Brief',d:''},{g:'Briefs',v:'Amicus Curiae Brief',d:''},
     {g:'Motions',v:'Motion for Oral Argument',d:''},{g:'Motions',v:'Motion (General)',d:''},
     {g:'Other',v:'Response',d:''},{g:'Other',v:'Proposed Order',d:''},{g:'Other',v:'Proof of Service',d:''},{g:'Other',v:'Other',d:''},
   ],
   'Administrative Appeal':[
-    {g:'Initiating Documents',v:'Petition for Review',d:'Petition to review a final administrative agency order.'},
+    {g:'Initiating Documents',v:'Petition for Review',d:''},
     {g:'Briefs',v:'Brief',d:''},{g:'Briefs',v:'Response',d:''},{g:'Briefs',v:'Reply Brief',d:''},
     {g:'Motions',v:'Motion (General)',d:''},
     {g:'Other',v:'Proof of Service',d:''},{g:'Other',v:'Other',d:''},
@@ -680,10 +627,10 @@ const DOC_TYPES = {
     {g:'Other',v:'Other',d:''},
   ],
   'Extraordinary Writ':[
-    {g:'Initiating Documents',v:'Petition for Writ of Mandamus',d:'Petition compelling a government official or lower court to perform a required duty.'},
-    {g:'Initiating Documents',v:'Petition for Writ of Prohibition',d:'Petition prohibiting a lower court from exceeding its jurisdiction.'},
-    {g:'Initiating Documents',v:'Petition for Superintending Control',d:'Petition for the Supreme Court to supervise a lower court or tribunal.'},
-    {g:'Initiating Documents',v:'Petition for Quo Warranto',d:"Petition challenging a person's authority to hold public office."},
+    {g:'Initiating Documents',v:'Petition for Writ of Mandamus',d:''},
+    {g:'Initiating Documents',v:'Petition for Writ of Prohibition',d:''},
+    {g:'Initiating Documents',v:'Petition for Superintending Control',d:''},
+    {g:'Initiating Documents',v:'Petition for Quo Warranto',d:''},
     {g:'Briefs & Responses',v:'Brief',d:''},{g:'Briefs & Responses',v:'Response',d:''},
     {g:'Motions',v:'Motion (General)',d:''},
     {g:'Supporting Documents',v:'Affidavit / Declaration',d:''},
@@ -691,8 +638,6 @@ const DOC_TYPES = {
   ],
 };
 
-// Document types that may be filed when INITIATING a new case of the given type.
-// If a case type has no entry here, there is no restriction (all doc types apply).
 const RESTRICTED_DOC_TYPES = {
   'Small Claims': ['Complaint','Summons','Fee Waiver Request'],
   'General Civil': ['Complaint','Summons','Fee Waiver Request'],
@@ -700,7 +645,6 @@ const RESTRICTED_DOC_TYPES = {
   'Expungement': ['Application to Set Aside a Conviction or Arrest','Fee Waiver Request'],
 };
 
-// Role names by case type
 function getRoles(ct){
   const m={
     'Small Claims':['Plaintiff','Defendant'],
@@ -722,6 +666,15 @@ function canFileCriminal(role){
   return ['State Attorney','Clerk','Magistrate Judge','Judge','Chief Judge'].includes(role);
 }
 
+function isStateAttorney(){
+  return userData.role === 'State Attorney';
+}
+
+// Is this party index the "plaintiff side" (first party, filing party)?
+function isPlaintiffSideIndex(i){
+  return i === 0;
+}
+
 function isFilerRole(role){
   return ['Plaintiff','Petitioner','Appellant'].includes(role);
 }
@@ -732,39 +685,26 @@ function splitName(full){
   return {first:parts[0], last:parts.slice(1).join(' ')};
 }
 
-// ══════════════════════════════════════════════════
-// SEARCHABLE SELECT
-// ══════════════════════════════════════════════════
+// ── Searchable Select ──
 const SS={};
-
-function ssInit(id, opts){
-  SS[id]={opts:opts||[], value:null, label:null};
-}
-
+function ssInit(id,opts){ SS[id]={opts:opts||[],value:null,label:null}; }
 function ssOpen(id){
-  Object.keys(SS).forEach(k=>{ if(k!==id && document.getElementById('ss-'+k)?.querySelector('.ss-panel')?.style.display!=='none') ssClose(k); });
+  Object.keys(SS).forEach(k=>{ if(k!==id) ssClose(k); });
   const wrap=document.getElementById('ss-'+id);
   if(!wrap) return;
   wrap.querySelector('.ss-trigger').classList.add('open');
   const panel=wrap.querySelector('.ss-panel');
   panel.style.display='flex';
   const inp=panel.querySelector('.ss-search-input');
-  inp.value='';
-  ssRenderOpts(id,'');
-  inp.focus();
+  inp.value=''; ssRenderOpts(id,''); inp.focus();
 }
-
 function ssClose(id){
   const wrap=document.getElementById('ss-'+id);
   if(!wrap) return;
   wrap.querySelector('.ss-trigger').classList.remove('open');
   wrap.querySelector('.ss-panel').style.display='none';
 }
-
-function ssFilter(id,q){
-  ssRenderOpts(id,q);
-}
-
+function ssFilter(id,q){ ssRenderOpts(id,q); }
 function ssRenderOpts(id,q){
   if(!SS[id]) return;
   const list=document.getElementById('ss-'+id)?.querySelector('.ss-list');
@@ -772,60 +712,37 @@ function ssRenderOpts(id,q){
   const lq=(q||'').toLowerCase().trim();
   const opts=SS[id].opts.filter(o=>!lq||o.l.toLowerCase().includes(lq)||(o.d||'').toLowerCase().includes(lq)||(o.v||'').toLowerCase().includes(lq)||(o.f||'').toLowerCase().includes(lq));
   if(!opts.length){list.innerHTML='<div class="ss-none">No options found</div>';return;}
-  
-  // Group rendering
-  const groups=[];
-  const seen={};
-  opts.forEach(o=>{
-    const g=o.g||'';
-    if(!seen[g]){seen[g]=true;groups.push(g);}
-  });
-  
+  const groups=[];const seen={};
+  opts.forEach(o=>{const g=o.g||'';if(!seen[g]){seen[g]=true;groups.push(g);}});
   let html='';
-  if(groups.length===1&&groups[0]===''){
-    opts.forEach(o=>{html+=ssOptHtml(id,o);});
-  } else {
-    groups.forEach(g=>{
-      if(g) html+=`<div class="ss-group">${g}</div>`;
-      opts.filter(o=>(o.g||'')===(g)).forEach(o=>{html+=ssOptHtml(id,o);});
-    });
-  }
+  if(groups.length===1&&groups[0]===''){opts.forEach(o=>{html+=ssOptHtml(id,o);});}
+  else{groups.forEach(g=>{if(g)html+=`<div class="ss-group">${g}</div>`;opts.filter(o=>(o.g||'')===g).forEach(o=>{html+=ssOptHtml(id,o);});});}
   list.innerHTML=html;
 }
-
 function ssOptHtml(id,o){
   const sel=SS[id]?.value===o.v?' ss-sel':'';
-  return `<div class="ss-opt${sel}" onclick="ssPick('${id}','${esc(o.v)}','${esc(o.l)}')">
-    <div class="ss-opt-lbl">${o.l}</div>
-    ${o.d?`<div class="ss-opt-desc">${o.d}</div>`:''}
-  </div>`;
+  return `<div class="ss-opt${sel}" onclick="ssPick('${id}','${esc(o.v)}','${esc(o.l)}')"><div class="ss-opt-lbl">${o.l}</div>${o.d?`<div class="ss-opt-desc">${o.d}</div>`:''}</div>`;
 }
-
 function ssPick(id,value,label){
   if(!SS[id]) return;
   SS[id].value=value; SS[id].label=label;
   const vEl=document.getElementById('ss-'+id+'-val');
   if(vEl){vEl.textContent=label;vEl.classList.remove('ph');}
   ssClose(id);
-  // Trigger change handlers
   if(id==='court') onCourtChange(value);
   else if(id==='case-type') onCaseTypeChange(value);
   else if(id==='doctype-gdrive') onGdriveDocTypeChange(value,label);
   else if(id.startsWith('doctype-file-')) onFileDocTypeChange(id,value,label);
   document.getElementById('ss-'+id)?.querySelector('.ss-trigger')?.classList.remove('ss-err');
 }
-
 function ssGet(id){ return SS[id]?.value||null; }
 function ssGetLabel(id){ return SS[id]?.label||null; }
-
 function ssSetOpts(id,opts){
   if(!SS[id]) SS[id]={};
-  SS[id].opts=opts;
-  SS[id].value=null; SS[id].label=null;
+  SS[id].opts=opts; SS[id].value=null; SS[id].label=null;
   const vEl=document.getElementById('ss-'+id+'-val');
-  if(vEl){vEl.textContent=id==='court'?'Select a court…':id==='case-type'?'Select a case type…':'Select document type…'; vEl.classList.add('ph');}
+  if(vEl){vEl.textContent=id==='court'?'Select a court…':id==='case-type'?'Select a case type…':'Select document type…';vEl.classList.add('ph');}
 }
-
 function ssReset(id){
   if(!SS[id]) return;
   SS[id].value=null; SS[id].label=null;
@@ -833,261 +750,167 @@ function ssReset(id){
   if(vEl){vEl.textContent=id==='case-type'?'Select a case type…':'Select a court…';vEl.classList.add('ph');}
   document.getElementById('ss-'+id)?.querySelector('.ss-trigger')?.classList.remove('ss-err');
 }
-
 function ssErr(id){ document.getElementById('ss-'+id)?.querySelector('.ss-trigger')?.classList.add('ss-err'); }
-
 function esc(s){ return (s||'').replace(/'/g,"\\'").replace(/"/g,'&quot;'); }
-
-// Close on outside click
 document.addEventListener('click',e=>{
   Object.keys(SS).forEach(id=>{
     const wrap=document.getElementById('ss-'+id);
-    if(wrap && !wrap.contains(e.target)) ssClose(id);
+    if(wrap&&!wrap.contains(e.target)) ssClose(id);
   });
 });
 
-// ══════════════════════════════════════════════════
-// CHANGE HANDLERS
-// ══════════════════════════════════════════════════
+// ── Change handlers ──
 function onCourtChange(court){
   selectedCourt=court;
-  const ctGrp=document.getElementById('case-type-grp');
-  ctGrp.style.display='block';
-  // Build case type options
+  document.getElementById('case-type-grp').style.display='block';
   let rawTypes=(CASE_TYPES[court]||[]);
-  if(!canFileCriminal(userData.role)){
-    rawTypes=rawTypes.filter(t=>!t.staffOnly);
-  }
-  ssSetOpts('case-type', rawTypes.map(t=>({v:t.v,l:t.l,d:t.d,g:''})));
+  if(!canFileCriminal(userData.role)) rawTypes=rawTypes.filter(t=>!t.staffOnly);
+  ssSetOpts('case-type',rawTypes.map(t=>({v:t.v,l:t.l,d:t.d,g:''})));
   ssReset('case-type');
-  selectedCaseType=null;
-  // Reset parties
-  parties=[];nextPartyId=1;
+  selectedCaseType=null; parties=[]; nextPartyId=1;
 }
-
 function onCaseTypeChange(ct){
   selectedCaseType=ct;
-  // Update party card subtitle
-  const roles=getRoles(ct);
   const sub=document.getElementById('party-card-sub');
+  const roles=getRoles(ct);
   if(sub) sub.textContent=`Add all parties — primary parties are ${roles[0]} and ${roles[1]}.`;
-  // Re-init parties with correct roles
   initParties(ct);
 }
 
-// ══════════════════════════════════════════════════
-// DOCUMENT TYPE HELPERS
-// ══════════════════════════════════════════════════
-
-// Returns the list of document type options { v, l, d, g, f } available
-// for the current case context, with restrictions applied for new filings.
+// ── Doc type helpers ──
 function getDocTypeOptions(){
-  let ct = selectedCaseType;
-  if(filingType==='existing' && selectedCase){
-    ct = selectedCase.caseType || selectedCase.type || 'General Civil';
+  let ct=selectedCaseType;
+  if(filingType==='existing'&&selectedCase) ct=selectedCase.caseType||selectedCase.type||'General Civil';
+  let docs=DOC_TYPES[ct]||[];
+  if(filingType==='new'&&RESTRICTED_DOC_TYPES[ct]){
+    const allowed=RESTRICTED_DOC_TYPES[ct];
+    docs=docs.filter(d=>allowed.includes(d.v));
   }
-  let docs = DOC_TYPES[ct] || [];
-  if(filingType==='new' && RESTRICTED_DOC_TYPES[ct]){
-    const allowed = RESTRICTED_DOC_TYPES[ct];
-    docs = docs.filter(d=>allowed.includes(d.v));
-  }
-  if(!docs.length){
-    const all=[];
-    Object.values(DOC_TYPES).forEach(arr=>arr.forEach(d=>{if(!all.find(x=>x.v===d.v))all.push(d);}));
-    docs=all;
-  }
-  return docs.map(d=>({v:d.v, l:d.f?`${d.v} (${d.f})`:d.v, d:d.d, g:d.g, f:d.f||null}));
+  if(!docs.length){const all=[];Object.values(DOC_TYPES).forEach(arr=>arr.forEach(d=>{if(!all.find(x=>x.v===d.v))all.push(d);}));docs=all;}
+  return docs.map(d=>({v:d.v,l:d.f?`${d.v} (${d.f})`:d.v,d:d.d,g:d.g,f:d.f||null}));
 }
-
-// Try to auto-detect a document type from a filename by matching court form numbers
-// (e.g. a file named "MC_01_Summons.pdf" matches the "Summons (MC 01)" doc type).
-function detectDocTypeFromFilename(filename, options){
-  const norm = s => (s||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
-  const fn = norm(filename);
+function detectDocTypeFromFilename(filename,options){
+  const norm=s=>(s||'').toUpperCase().replace(/[^A-Z0-9]/g,'');
+  const fn=norm(filename);
   if(!fn) return null;
-  for(const o of options){
-    if(o.f){
-      const fnorm = norm(o.f);
-      if(fnorm && fn.includes(fnorm)) return o;
-    }
-  }
+  for(const o of options){if(o.f){const fnorm=norm(o.f);if(fnorm&&fn.includes(fnorm))return o;}}
   return null;
 }
-
-// Returns the document type that summarizes this filing for clerk/sorting purposes:
-// the first uploaded file with a selected type, falling back to the Google Drive doc type.
 function getPrimaryDocType(){
-  const f = uploadedFiles.find(x=>x.docType);
+  const f=uploadedFiles.find(x=>x.docType);
   if(f) return f.docType.value;
-  if(hasExhibits && gdriveDocType) return gdriveDocType.value;
+  if(hasExhibits&&gdriveDocType) return gdriveDocType.value;
   return '';
 }
-
 function renderDocRestrictionNote(){
   const el=document.getElementById('doc-restriction-note');
   if(!el) return;
   const ct=selectedCaseType;
-  if(filingType==='new' && RESTRICTED_DOC_TYPES[ct]){
+  if(filingType==='new'&&RESTRICTED_DOC_TYPES[ct]){
     const list=DOC_TYPES[ct]||[];
-    const allowedLabels=RESTRICTED_DOC_TYPES[ct].map(v=>{
-      const d=list.find(x=>x.v===v);
-      return d&&d.f?`${v} (${d.f})`:v;
-    });
+    const allowedLabels=RESTRICTED_DOC_TYPES[ct].map(v=>{const d=list.find(x=>x.v===v);return d&&d.f?`${v} (${d.f})`:v;});
     el.style.display='flex';
-    el.innerHTML=`<span class="callout-icon">ℹ️</span><div class="callout-text">Because this filing <strong>opens a new ${ct} case</strong>, only the following document types may be submitted at this stage: <strong>${allowedLabels.join(', ')}</strong>. Once the clerk's office opens the case, you'll be able to file motions, briefs, and other documents under "File in an Existing Case."</div>`;
-  } else {
-    el.style.display='none';
-  }
+    el.innerHTML=`<span class="callout-icon">ℹ️</span><div class="callout-text">Because this filing <strong>opens a new ${ct} case</strong>, only the following document types may be submitted at this stage: <strong>${allowedLabels.join(', ')}</strong>.</div>`;
+  } else {el.style.display='none';}
 }
-
 function onFileDocTypeChange(id,value,label){
   const fid=parseInt(id.replace('doctype-file-',''),10);
   const f=uploadedFiles.find(x=>x.id===fid);
-  if(f){ f.docType={value,label}; f._typeErr=false; }
+  if(f){f.docType={value,label};f._typeErr=false;}
   renderFileList();
 }
-
 function onGdriveDocTypeChange(value,label){
   gdriveDocType={value,label};
   document.getElementById('gdrive-doctype-err')?.classList.remove('show');
 }
 
-// ══════════════════════════════════════════════════
-// FEE SCHEDULE (MCR fee schedule)
-// ══════════════════════════════════════════════════
-// Returns the filing fee in dollars for a given document type entry,
-// based on the court and case type context.
-function getDocumentFee(docTypeValue, formNo){
-  const isSupreme = selectedCourt==='Michigan Supreme Court' || (filingType==='existing' && selectedCase?.court==='Michigan Supreme Court');
-  const ct = filingType==='new' ? selectedCaseType : (selectedCase?.caseType||'');
-  const v = docTypeValue;
-
-  if(v==='Fee Waiver Request') return 0; // no fee to request a fee waiver
-  if(v==='Complaint'){
-    if(formNo==='DC 84') return 30; // small claims complaint
-    if(ct==='Original Action') return 150; // original jurisdiction complaint
-    return 75; // general civil complaint
-  }
+function getDocumentFee(docTypeValue,formNo){
+  const isSupreme=selectedCourt==='Michigan Supreme Court'||(filingType==='existing'&&selectedCase?.court==='Michigan Supreme Court');
+  const ct=filingType==='new'?selectedCaseType:(selectedCase?.caseType||'');
+  const v=docTypeValue;
+  if(v==='Fee Waiver Request') return 0;
+  if(v==='Complaint'){if(formNo==='DC 84')return 30;if(ct==='Original Action')return 150;return 75;}
   if(v==='Application to Set Aside a Conviction or Arrest') return 40;
-  if(v==='Appeal of Civil Infraction') return 20; // petition for appeal of booking conviction
-  if(v==='Criminal Complaint / Information') return 0; // no fee for prosecuting attorney / AG
-  if(v==='Notice of Appeal (as of right)') return 100; // claim of appeal
+  if(v==='Appeal of Civil Infraction') return 20;
+  if(v==='Criminal Complaint / Information') return 0;
+  if(v==='Notice of Appeal (as of right)') return 100;
   if(v==='Application for Leave to Appeal') return 100;
   if(v.startsWith('Petition for Writ')||v==='Petition for Superintending Control'||v==='Petition for Quo Warranto') return 100;
-  if(v==='Petition for Review') return 50; // notice of appeal from administrative agency decision
+  if(v==='Petition for Review') return 50;
   if(v==='Motion for Summary Judgment') return 35;
   if(v==='Motion to Suppress') return 35;
   if(v==='Emergency Motion') return isSupreme?75:25;
   if(v.startsWith('Motion')) return isSupreme?50:25;
-  return isSupreme?50:25; // all other filings not otherwise specified
+  return isSupreme?50:25;
 }
 
-// ══════════════════════════════════════════════════
-// FILER ROLE
-// ══════════════════════════════════════════════════
-// The filer's role is no longer a free-form selection. For new cases it's
-// the filer's own party role (Plaintiff/Petitioner/Appellant, etc.) unless
-// they're filing as counsel, in which case it's derived from who they represent.
 function getFilerRoleDisplay(){
   if(filingType==='new'){
-    if(isFilingAsCounsel){
-      const rep=parties.find(p=>p.isRepresented);
-      if(rep) return `Attorney for ${getPartyName(rep)||rep.role}`;
-      return 'Attorney of Record';
-    }
-    return parties[0]?.role || 'Plaintiff';
+    if(isFilingAsCounsel){const rep=parties.find(p=>p.isRepresented);if(rep)return`Attorney for ${getPartyName(rep)||rep.role}`;return'Attorney of Record';}
+    return parties[0]?.role||'Plaintiff';
   } else {
-    if(isFilingAsCounsel){
-      const rep=document.getElementById('counsel-represents')?.value?.trim();
-      return rep?`Attorney for ${rep}`:'Attorney of Record';
-    }
+    if(isFilingAsCounsel){const rep=document.getElementById('counsel-represents')?.value?.trim();return rep?`Attorney for ${rep}`:'Attorney of Record';}
     return 'Party of Record';
   }
 }
 
-// ══════════════════════════════════════════════════
-// PARTY MANAGEMENT
-// ══════════════════════════════════════════════════
+// ── Party management ──
 function initParties(ct){
   const roles=getRoles(ct||selectedCaseType||'');
-  parties=[];
-  nextPartyId=1;
-  // Special cases
+  parties=[]; nextPartyId=1;
   if(ct==='Criminal'&&canFileCriminal(userData.role)){
-    // Party 1 = State of Michigan (prosecution), pre-filled
-    parties.push({
-      id:nextPartyId++, role:roles[0], actorType:'Governmental Entity',
-      govType:'Jurisdiction', jurisdiction:'State of Michigan', jurisdictionManual:'', publicBodyName:'',
-      firstName:'', lastName:'', pin:'', orgName:'', repName:'', repPin:'',
-      isRepresented:false, locked:true
-    });
-    parties.push({id:nextPartyId++, role:roles[1], actorType:'Natural Person', firstName:'', lastName:'', pin:'', orgName:'', repName:'', repPin:'', govType:'', jurisdiction:'', jurisdictionManual:'', publicBodyName:'', isRepresented:false});
+    parties.push({id:nextPartyId++,role:roles[0],actorType:'Governmental Entity',govType:'Jurisdiction',jurisdiction:'State of Michigan',jurisdictionManual:'',publicBodyName:'',firstName:'',lastName:'',pin:'',orgName:'',repName:'',repPin:'',isRepresented:false,locked:true});
+    parties.push({id:nextPartyId++,role:roles[1],actorType:'Natural Person',firstName:'',lastName:'',pin:'',orgName:'',repName:'',repPin:'',govType:'',jurisdiction:'',jurisdictionManual:'',publicBodyName:'',isRepresented:false});
   } else if(ct==='Expungement'){
-    parties.push({id:nextPartyId++, role:roles[0], actorType:'Natural Person', firstName:'', lastName:'', pin:'', orgName:'', repName:'', repPin:'', govType:'', jurisdiction:'', jurisdictionManual:'', publicBodyName:'', isRepresented:false});
-    // Auto-add State of Michigan as respondent
-    parties.push({
-      id:nextPartyId++, role:roles[1], actorType:'Governmental Entity',
-      govType:'Jurisdiction', jurisdiction:'State of Michigan', jurisdictionManual:'', publicBodyName:'',
-      firstName:'', lastName:'', pin:'', orgName:'', repName:'', repPin:'',
-      isRepresented:false, locked:true
-    });
+    parties.push({id:nextPartyId++,role:roles[0],actorType:'Natural Person',firstName:'',lastName:'',pin:'',orgName:'',repName:'',repPin:'',govType:'',jurisdiction:'',jurisdictionManual:'',publicBodyName:'',isRepresented:false});
+    parties.push({id:nextPartyId++,role:roles[1],actorType:'Governmental Entity',govType:'Jurisdiction',jurisdiction:'State of Michigan',jurisdictionManual:'',publicBodyName:'',firstName:'',lastName:'',pin:'',orgName:'',repName:'',repPin:'',isRepresented:false,locked:true});
   } else {
-    parties.push({id:nextPartyId++, role:roles[0], actorType:'Natural Person', firstName:'', lastName:'', pin:'', orgName:'', repName:'', repPin:'', govType:'', jurisdiction:'', jurisdictionManual:'', publicBodyName:'', isRepresented:false});
-    parties.push({id:nextPartyId++, role:roles[1], actorType:'Natural Person', firstName:'', lastName:'', pin:'', orgName:'', repName:'', repPin:'', govType:'', jurisdiction:'', jurisdictionManual:'', publicBodyName:'', isRepresented:false});
+    parties.push({id:nextPartyId++,role:roles[0],actorType:'Natural Person',firstName:'',lastName:'',pin:'',orgName:'',repName:'',repPin:'',govType:'',jurisdiction:'',jurisdictionManual:'',publicBodyName:'',isRepresented:false});
+    parties.push({id:nextPartyId++,role:roles[1],actorType:'Natural Person',firstName:'',lastName:'',pin:'',orgName:'',repName:'',repPin:'',govType:'',jurisdiction:'',jurisdictionManual:'',publicBodyName:'',isRepresented:false});
   }
   autofillFilerParty();
   renderParties();
 }
 
-// Pre-fill the filer's own party (Plaintiff/Petitioner/Appellant) with their
-// account name (split into first/last) and Michigan PIN (mipassPin).
 function autofillFilerParty(){
   if(!parties.length) return;
   const p=parties[0];
-  if(p.locked) return;
-  if(p.actorType!=='Natural Person') return;
-  if(!isFilerRole(p.role)) return;
+  if(p.locked||p.actorType!=='Natural Person'||!isFilerRole(p.role)) return;
   if(p.firstName||p.lastName) return;
   const {first,last}=splitName(userData.name);
-  p.firstName=first;
-  p.lastName=last;
+  p.firstName=first; p.lastName=last;
   if(userData.mipassPin) p.pin=userData.mipassPin;
 }
 
 function addParty(){
   const roles=getRoles(selectedCaseType||'');
-  parties.push({id:nextPartyId++, role:roles[1], actorType:'Natural Person', firstName:'', lastName:'', pin:'', orgName:'', repName:'', repPin:'', govType:'', jurisdiction:'', jurisdictionManual:'', publicBodyName:'', isRepresented:false});
+  parties.push({id:nextPartyId++,role:roles[1],actorType:'Natural Person',firstName:'',lastName:'',pin:'',orgName:'',repName:'',repPin:'',govType:'',jurisdiction:'',jurisdictionManual:'',publicBodyName:'',isRepresented:false});
   renderParties();
 }
 window.addParty=addParty;
 
-function removeParty(id){
-  parties=parties.filter(p=>p.id!==id);
-  renderParties();
-}
+function removeParty(id){ parties=parties.filter(p=>p.id!==id); renderParties(); }
 window.removeParty=removeParty;
 
 function getParty(id){ return parties.find(p=>p.id===id); }
 
-function setPartyField(id, field, value){
-  const p=getParty(id);
-  if(p){ p[field]=value; }
-}
+function setPartyField(id,field,value){ const p=getParty(id);if(p)p[field]=value; }
 window.setPartyField=setPartyField;
 
-function setPartyActorType(id, type){
+function setPartyActorType(id,type){
   const p=getParty(id);
-  if(p){ p.actorType=type; renderParties(); }
+  if(!p) return;
+  // Safety: if locked, ignore completely
+  if(p.locked) return;
+  p.actorType=type;
+  renderParties();
 }
 window.setPartyActorType=setPartyActorType;
 
-function setPartyRole(id, role){
-  const p=getParty(id);
-  if(p){ p.role=role; renderParties(); }
-}
+function setPartyRole(id,role){ const p=getParty(id);if(p){p.role=role;renderParties();} }
 window.setPartyRole=setPartyRole;
 
-function setPartyGovType(id, type){
+function setPartyGovType(id,type){
   const p=getParty(id);
   if(p){
     p.govType=type;
@@ -1099,7 +922,7 @@ function setPartyGovType(id, type){
 }
 window.setPartyGovType=setPartyGovType;
 
-function setPartyJurisdiction(id, val){
+function setPartyJurisdiction(id,val){
   const p=getParty(id);
   if(p){
     p.jurisdiction=val;
@@ -1109,10 +932,7 @@ function setPartyJurisdiction(id, val){
 }
 window.setPartyJurisdiction=setPartyJurisdiction;
 
-function toggleCounselParty(id, checked){
-  const p=getParty(id);
-  if(p) p.isRepresented=checked;
-}
+function toggleCounselParty(id,checked){ const p=getParty(id);if(p)p.isRepresented=checked; }
 window.toggleCounselParty=toggleCounselParty;
 
 function getPartyName(p){
@@ -1134,21 +954,47 @@ function renderParties(){
 }
 
 function renderPartyCard(p,i,roles){
-  const isFirst=i===0;
   const locked=p.locked;
-  const roleOpts=roles.map(r=>`<option${p.role===r?' selected':''}>${r}</option>`).join('');
-  const addRoles=['Third Party','Intervenor','Cross-Claimant','Cross-Defendant','Counter-Claimant','Counter-Defendant'];
-  const extraOpts=i>=2?addRoles.map(r=>`<option${p.role===r?' selected':''}>${r}</option>`).join(''):'';
 
-  let actorTypes=['Natural Person','Business or Organization','Governmental Entity'];
-  if(userData.role!=='State Attorney' && p.actorType!=='Governmental Entity'){
-    actorTypes=actorTypes.filter(t=>t!=='Governmental Entity');
+  // ── Actor type options logic ──
+  // For a LOCKED party: show a static display only, no radio buttons.
+  // For the plaintiff-side party (i===0): Governmental Entity only if State Attorney.
+  // For the defendant-side party (i>=1): Governmental Entity always allowed.
+  let actorTypeSection='';
+  if(locked){
+    // Completely frozen — show a read-only badge, no radios
+    const labelMap={'Governmental Entity':'🏛 Governmental Entity','Natural Person':'👤 Natural Person','Business or Organization':'🏢 Business or Organization'};
+    actorTypeSection=`
+      <div class="form-group">
+        <label class="form-label">Actor Type</label>
+        <div class="actor-type-locked"><span class="lock-icon">🔒</span>${labelMap[p.actorType]||p.actorType}</div>
+        <div class="form-hint">This party's type is set by the court and cannot be changed.</div>
+      </div>`;
+  } else {
+    // Build the list of available actor types for this party slot
+    let actorTypes=['Natural Person','Business or Organization'];
+    const isPlaintiffSide=isPlaintiffSideIndex(i);
+    if(!isPlaintiffSide){
+      // Defendant side: always allow Governmental Entity
+      actorTypes.push('Governmental Entity');
+    } else {
+      // Plaintiff side: only allow Governmental Entity for State Attorneys
+      if(isStateAttorney()) actorTypes.push('Governmental Entity');
+    }
+
+    const actorRadios=actorTypes.map(t=>`
+      <label class="inline-radio${p.actorType===t?' sel':''}" onclick="this.closest('.inline-radio-group').querySelectorAll('.inline-radio').forEach(x=>x.classList.remove('sel'));this.classList.add('sel');setPartyActorType(${p.id},'${t}')">
+        <input type="radio" name="at-${p.id}" value="${t}"${p.actorType===t?' checked':''}> ${t}
+      </label>`).join('');
+
+    actorTypeSection=`
+      <div class="form-group">
+        <label class="form-label">Actor Type <span class="req">*</span></label>
+        <div class="inline-radio-group" id="at-grp-${p.id}">${actorRadios}</div>
+      </div>`;
   }
-  const actorRadios=actorTypes.map(t=>`
-    <label class="inline-radio${p.actorType===t?' sel':''}" onclick="this.classList.toggle('sel',true);document.querySelectorAll('#at-grp-${p.id} .inline-radio').forEach(x=>x!=this&&x.classList.remove('sel'));setPartyActorType(${p.id},'${t}')">
-      <input type="radio" name="at-${p.id}" value="${t}"${p.actorType===t?' checked':''}> ${t}
-    </label>`).join('');
 
+  // ── Fields based on actor type ──
   let fields='';
   if(p.actorType==='Natural Person'){
     fields=`
@@ -1165,7 +1011,7 @@ function renderPartyCard(p,i,roles){
       <div class="form-group">
         <label class="form-label">Personal Identification Number (PIN) <span class="req">*</span> <a class="pin-help" href="https://example.com" target="_blank" title="What is a PIN?">?</a></label>
         <input class="form-input" value="${esc(p.pin)}" placeholder="Michigan PIN" oninput="setPartyField(${p.id},'pin',this.value)"${locked?' readonly':''}>
-        <div class="form-hint">The Michigan state-issued personal identification number. <a href="https://example.com" target="_blank" style="color:var(--blue)">Learn what a PIN is →</a></div>
+        <div class="form-hint">The Michigan state-issued personal identification number.</div>
       </div>`;
   } else if(p.actorType==='Business or Organization'){
     fields=`
@@ -1224,6 +1070,10 @@ function renderPartyCard(p,i,roles){
       <input type="checkbox"${p.isRepresented?' checked':''}> <span>I represent this party (as counsel of record)</span>
     </label>`:'';
 
+  const roleOpts=roles.map(r=>`<option${p.role===r?' selected':''}>${r}</option>`).join('');
+  const addRoles=['Third Party','Intervenor','Cross-Claimant','Cross-Defendant','Counter-Claimant','Counter-Defendant'];
+  const extraOpts=i>=2?addRoles.map(r=>`<option${p.role===r?' selected':''}>${r}</option>`).join(''):'';
+
   return `
     <div class="party-card" id="pc-${p.id}">
       <div class="party-card-hdr">
@@ -1231,36 +1081,28 @@ function renderPartyCard(p,i,roles){
           <span class="pch-num">Party ${i+1}</span>
           <span class="pch-role">${p.role}</span>
         </div>
-        ${!locked&&i>0?`<button class="party-remove-btn" onclick="removeParty(${p.id})">× Remove</button>`:'<span style="font-size:11px;color:var(--muted)">'+(locked?'Auto-added':'Required')+'</span>'}
+        ${!locked&&i>0?`<button class="party-remove-btn" onclick="removeParty(${p.id})">× Remove</button>`:`<span style="font-size:11px;color:var(--muted)">${locked?'Auto-added':'Required'}</span>`}
       </div>
       <div class="party-card-body">
         ${i>=2?`<div class="form-group"><label class="form-label">Role <span class="req">*</span></label><select class="form-input" style="appearance:auto" onchange="setPartyRole(${p.id},this.value)"><optgroup label="Standard">${roleOpts}</optgroup><optgroup label="Additional">${extraOpts}</optgroup></select></div>`:''}
-        <div class="form-group">
-          <label class="form-label">Actor Type <span class="req">*</span></label>
-          <div class="inline-radio-group" id="at-grp-${p.id}">${actorRadios}</div>
-        </div>
+        ${actorTypeSection}
         ${fields}
         ${counselRow}
       </div>
     </div>`;
 }
 
-// ══════════════════════════════════════════════════
-// STEP 1 HANDLERS
-// ══════════════════════════════════════════════════
-function selectFT(type, el){
+// ── Step 1 ──
+function selectFT(type,el){
   filingType=type;
   document.querySelectorAll('.radio-opt').forEach(o=>o.classList.remove('sel'));
   if(el) el.classList.add('sel');
-  else {
-    document.getElementById('opt-'+type)?.classList.add('sel');
-    document.getElementById('ft-'+type).checked=true;
-  }
+  else{document.getElementById('opt-'+type)?.classList.add('sel');document.getElementById('ft-'+type).checked=true;}
   document.getElementById('new-opts').style.display=type==='new'?'block':'none';
 }
 window.selectFT=selectFT;
 
-function toggleEl(opt, cbId, onChange){
+function toggleEl(opt,cbId,onChange){
   const cb=document.getElementById(cbId);
   cb.checked=!cb.checked;
   opt.classList.toggle('sel',cb.checked);
@@ -1268,30 +1110,16 @@ function toggleEl(opt, cbId, onChange){
 }
 window.toggleEl=toggleEl;
 
-function toggleCounselCheck(el){
-  const cb=document.getElementById('cb-counsel');
-  cb.checked=!cb.checked;
-  el.classList.toggle('sel',cb.checked);
-  isFilingAsCounsel=cb.checked;
-  if(parties.length) renderParties();
-}
-window.toggleCounselCheck=toggleCounselCheck;
-
-// ══════════════════════════════════════════════════
-// STEP NAVIGATION
-// ══════════════════════════════════════════════════
+// ── Step nav ──
 function updateStepUI(){
   for(let i=1;i<=5;i++){
     const ind=document.getElementById('si-'+i);
     const circ=document.getElementById('sc-'+i);
     ind.classList.remove('active','done');
     circ.textContent=i<currentStep?'✓':String(i);
-    if(i<currentStep){ind.classList.add('done');}
-    else if(i===currentStep){ind.classList.add('active');}
-    if(i<5){
-      const ln=document.getElementById('ln-'+i+(i+1));
-      if(ln) i<currentStep?ln.classList.add('done'):ln.classList.remove('done');
-    }
+    if(i<currentStep) ind.classList.add('done');
+    else if(i===currentStep) ind.classList.add('active');
+    if(i<5){const ln=document.getElementById('ln-'+i+(i+1));if(ln)i<currentStep?ln.classList.add('done'):ln.classList.remove('done');}
     document.getElementById('step-'+i).style.display=i===currentStep?'block':'none';
   }
 }
@@ -1320,22 +1148,16 @@ function validateStep(s){
   if(s===2){
     if(filingType==='existing'){
       if(!selectedCase){alert('Please select a case.');return false;}
-      if(isFilingAsCounsel&&!document.getElementById('counsel-represents')?.value?.trim()){
-        alert('Please indicate which party you represent in this case.');return false;
-      }
+      if(isFilingAsCounsel&&!document.getElementById('counsel-represents')?.value?.trim()){alert('Please indicate which party you represent in this case.');return false;}
     }
     if(filingType==='new'){
       for(let i=0;i<parties.length;i++){
         const p=parties[i];
         if(p.locked) continue;
         if(p.actorType==='Natural Person'){
-          if(!p.firstName.trim()||!p.lastName.trim()||!p.pin.trim()){
-            alert(`Please complete all required fields for Party ${i+1} (${p.role}).`);return false;
-          }
+          if(!p.firstName.trim()||!p.lastName.trim()||!p.pin.trim()){alert(`Please complete all required fields for Party ${i+1} (${p.role}).`);return false;}
         } else if(p.actorType==='Business or Organization'){
-          if(!p.orgName.trim()||!p.repName.trim()||!p.repPin.trim()){
-            alert(`Please complete all required fields for Party ${i+1} (${p.role}).`);return false;
-          }
+          if(!p.orgName.trim()||!p.repName.trim()||!p.repPin.trim()){alert(`Please complete all required fields for Party ${i+1} (${p.role}).`);return false;}
         } else if(p.actorType==='Governmental Entity'){
           if(!p.govType){alert(`Please select government type for Party ${i+1}.`);return false;}
           if(p.govType==='Jurisdiction'&&!p.jurisdiction){alert(`Please select jurisdiction for Party ${i+1}.`);return false;}
@@ -1348,30 +1170,18 @@ function validateStep(s){
   }
   if(s===3){
     let ok=true;
-    const gdriveHasLink=hasExhibits && document.getElementById('gdrive-link')?.value?.trim();
-    if(!uploadedFiles.length && !gdriveHasLink){
-      document.getElementById('upload-err').classList.add('show');
-      ok=false;
-    } else {
-      document.getElementById('upload-err').classList.remove('show');
-    }
+    const gdriveHasLink=hasExhibits&&document.getElementById('gdrive-link')?.value?.trim();
+    if(!uploadedFiles.length&&!gdriveHasLink){document.getElementById('upload-err').classList.add('show');ok=false;}
+    else document.getElementById('upload-err').classList.remove('show');
     let anyFileTypeErr=false;
-    uploadedFiles.forEach(f=>{
-      if(!f.docType){ f._typeErr=true; anyFileTypeErr=true; ok=false; }
-      else f._typeErr=false;
-    });
+    uploadedFiles.forEach(f=>{if(!f.docType){f._typeErr=true;anyFileTypeErr=true;ok=false;}else f._typeErr=false;});
     if(anyFileTypeErr) renderFileList();
     if(hasExhibits){
       const lnk=document.getElementById('gdrive-link')?.value?.trim();
       if(!lnk){document.getElementById('gdrive-err').classList.add('show');ok=false;}
       else document.getElementById('gdrive-err').classList.remove('show');
-      if(!gdriveDocType){
-        document.getElementById('gdrive-doctype-err').classList.add('show');
-        document.getElementById('ss-doctype-gdrive')?.querySelector('.ss-trigger')?.classList.add('ss-err');
-        ok=false;
-      } else {
-        document.getElementById('gdrive-doctype-err').classList.remove('show');
-      }
+      if(!gdriveDocType){document.getElementById('gdrive-doctype-err').classList.add('show');document.getElementById('ss-doctype-gdrive')?.querySelector('.ss-trigger')?.classList.add('ss-err');ok=false;}
+      else document.getElementById('gdrive-doctype-err').classList.remove('show');
     }
     return ok;
   }
@@ -1391,32 +1201,25 @@ function setupStep2(){
   const existDiv=document.getElementById('s2-existing');
   const newDiv=document.getElementById('s2-new');
   if(filingType==='existing'){
-    existDiv.style.display='block'; newDiv.style.display='none';
+    existDiv.style.display='block';newDiv.style.display='none';
     renderCaseList('');
     const repCard=document.getElementById('atty-rep-card');
     if(repCard) repCard.style.display=isFilingAsCounsel?'block':'none';
   } else {
-    existDiv.style.display='none'; newDiv.style.display='block';
+    existDiv.style.display='none';newDiv.style.display='block';
     if(!parties.length) initParties(selectedCaseType);
     else renderParties();
   }
 }
 
 function setupStep3(){
-  currentDocTypeOptions = getDocTypeOptions();
+  currentDocTypeOptions=getDocTypeOptions();
   renderDocRestrictionNote();
-  // Re-evaluate any existing selections / auto-detections against the (possibly new) option set
   uploadedFiles.forEach(f=>{
-    if(!f.docType){
-      const detected=detectDocTypeFromFilename(f.file.name, currentDocTypeOptions);
-      if(detected) f.docType={value:detected.v,label:detected.l};
-    } else if(!currentDocTypeOptions.find(o=>o.v===f.docType.value)){
-      f.docType=null;
-    }
+    if(!f.docType){const detected=detectDocTypeFromFilename(f.file.name,currentDocTypeOptions);if(detected)f.docType={value:detected.v,label:detected.l};}
+    else if(!currentDocTypeOptions.find(o=>o.v===f.docType.value)) f.docType=null;
   });
-  if(gdriveDocType && !currentDocTypeOptions.find(o=>o.v===gdriveDocType.value)){
-    gdriveDocType=null;
-  }
+  if(gdriveDocType&&!currentDocTypeOptions.find(o=>o.v===gdriveDocType.value)) gdriveDocType=null;
   renderFileList();
   if(hasExhibits) renderGdriveDocType();
 }
@@ -1428,17 +1231,11 @@ function setupStep4(){
   const roleHint=document.getElementById('filer-role-hint');
   if(roleInp){
     roleInp.value=getFilerRoleDisplay();
-    if(roleHint){
-      roleHint.textContent = isFilingAsCounsel
-        ? 'Determined by the party you indicated you represent.'
-        : 'Determined by your role in this case.';
-    }
+    if(roleHint) roleHint.textContent=isFilingAsCounsel?'Determined by the party you indicated you represent.':'Determined by your role in this case.';
   }
 }
 
-// ══════════════════════════════════════════════════
-// CASE LIST (existing case selection)
-// ══════════════════════════════════════════════════
+// ── Case list ──
 function renderCaseList(q){
   const ct=document.getElementById('case-list');
   if(!casesLoaded){ct.innerHTML='<div style="color:var(--muted);font-size:13px;padding:18px;text-align:center">Loading…</div>';return;}
@@ -1450,39 +1247,25 @@ function renderCaseList(q){
   });
   const lq=(q||'').toLowerCase().trim();
   if(lq) cases=cases.filter(c=>getCaseTitle(c).toLowerCase().includes(lq)||(c.caseId||'').toLowerCase().includes(lq));
-  if(!cases.length){
-    ct.innerHTML=`<div style="color:var(--muted);font-size:13px;padding:18px;text-align:center">No cases linked to your account${lq?' matching "'+lq+'"':''}.</div>`;
-    return;
-  }
+  if(!cases.length){ct.innerHTML=`<div style="color:var(--muted);font-size:13px;padding:18px;text-align:center">No cases linked to your account${lq?' matching "'+lq+'"':''}.</div>`;return;}
   ct.innerHTML=cases.map(c=>{
     const title=getCaseTitle(c);
     const tc=ttCls(c.caseType);
     const sel=selectedCase&&selectedCase._id===c._id?' sel':'';
     return `<label class="case-opt${sel}" id="co-${c._id}" onclick="pickCase(event,${JSON.stringify(c).replace(/"/g,'&quot;')})">
-      <input type="radio" name="sel_case" value="${c._id}"${sel?' checked':''}>
-      <div>
-        <div class="co-num">${c.caseId}</div>
-        <div class="co-title">${title}</div>
+      <input type="radio" name="sel_case" value="${c._id}"${sel?' checked':''}><div>
+        <div class="co-num">${c.caseId}</div><div class="co-title">${title}</div>
         <div class="co-meta"><span class="type-tag ${tc}">${c.caseType}</span><span>${c.court}</span><span>Filed ${fmtDate(c.dates?.filed)}</span><span style="color:var(--amber);font-weight:600">${c.status}</span></div>
-      </div>
-    </label>`;
+      </div></label>`;
   }).join('');
 }
 
-function pickCase(e,c){
-  e.preventDefault();
-  selectedCase=c;
-  document.querySelectorAll('.case-opt').forEach(o=>o.classList.remove('sel'));
-  document.getElementById('co-'+c._id)?.classList.add('sel');
-}
+function pickCase(e,c){e.preventDefault();selectedCase=c;document.querySelectorAll('.case-opt').forEach(o=>o.classList.remove('sel'));document.getElementById('co-'+c._id)?.classList.add('sel');}
 window.pickCase=pickCase;
-
-function filterCases(q){ renderCaseList(q); }
+function filterCases(q){renderCaseList(q);}
 window.filterCases=filterCases;
 
-// ══════════════════════════════════════════════════
-// FILE UPLOAD
-// ══════════════════════════════════════════════════
+// ── File upload ──
 function onFileSelect(inp){Array.from(inp.files).forEach(addFile);inp.value='';}
 window.onFileSelect=onFileSelect;
 function onDragOver(e){e.preventDefault();document.getElementById('upload-zone').classList.add('drag-over');}
@@ -1493,20 +1276,17 @@ function onDrop(e){e.preventDefault();document.getElementById('upload-zone').cla
 window.onDrop=onDrop;
 
 function addFile(file){
-  if(file.type!=='application/pdf'&&!file.name.toLowerCase().endsWith('.pdf')){alert(`${file.name} is not a PDF file. Only PDFs are accepted.`);return;}
-  if(file.size>5*1024*1024){alert(`${file.name} exceeds the 5 MB limit per MCR 2.119. Please reduce the file size before uploading.`);return;}
+  if(file.type!=='application/pdf'&&!file.name.toLowerCase().endsWith('.pdf')){alert(`${file.name} is not a PDF file.`);return;}
+  if(file.size>5*1024*1024){alert(`${file.name} exceeds the 5 MB limit per MCR 2.119.`);return;}
   if(uploadedFiles.find(x=>x.file.name===file.name)) return;
-  const opts = currentDocTypeOptions.length?currentDocTypeOptions:getDocTypeOptions();
-  const detected=detectDocTypeFromFilename(file.name, opts);
-  uploadedFiles.push({id:nextFileId++, file, docType: detected?{value:detected.v,label:detected.l}:null, _typeErr:false});
+  const opts=currentDocTypeOptions.length?currentDocTypeOptions:getDocTypeOptions();
+  const detected=detectDocTypeFromFilename(file.name,opts);
+  uploadedFiles.push({id:nextFileId++,file,docType:detected?{value:detected.v,label:detected.l}:null,_typeErr:false});
   document.getElementById('upload-err').classList.remove('show');
   renderFileList();
 }
 
-function removeFile(id){
-  uploadedFiles=uploadedFiles.filter(f=>f.id!==id);
-  renderFileList();
-}
+function removeFile(id){uploadedFiles=uploadedFiles.filter(f=>f.id!==id);renderFileList();}
 window.removeFile=removeFile;
 
 function renderFileList(){
@@ -1515,17 +1295,12 @@ function renderFileList(){
   const opts=currentDocTypeOptions.length?currentDocTypeOptions:getDocTypeOptions();
   ct.innerHTML=uploadedFiles.map(f=>{
     const ssId='doctype-file-'+f.id;
-    SS[ssId]={opts:opts, value:f.docType?.value||null, label:f.docType?.label||null};
+    SS[ssId]={opts:opts,value:f.docType?.value||null,label:f.docType?.label||null};
     const valTxt=f.docType?.label||'Select document type…';
     const phCls=f.docType?'':' ph';
     const errCls=f._typeErr?' ss-err':'';
     return `<div class="file-row-card${f._typeErr?' err':''}" id="frc-${f.id}">
-      <div class="file-row">
-        <span class="fr-icon">📄</span>
-        <span class="fr-name">${esc(f.file.name)}</span>
-        <span class="fr-size">${fmtSize(f.file.size)}</span>
-        <button class="fr-rm" onclick="removeFile(${f.id})">×</button>
-      </div>
+      <div class="file-row"><span class="fr-icon">📄</span><span class="fr-name">${esc(f.file.name)}</span><span class="fr-size">${fmtSize(f.file.size)}</span><button class="fr-rm" onclick="removeFile(${f.id})">×</button></div>
       ${f.docType&&detectDocTypeFromFilename(f.file.name,opts)?.v===f.docType.value?`<div class="fr-detected">✓ Document type auto-detected from filename</div>`:''}
       <div class="form-group" style="margin:10px 0 0">
         <label class="form-label">Document Type <span class="req">*</span></label>
@@ -1534,8 +1309,7 @@ function renderFileList(){
           <div class="ss-panel" style="display:none"><div class="ss-search-wrap"><input class="ss-search-input" placeholder="Search document types or form numbers…" oninput="ssFilter('${ssId}',this.value)"></div><div class="ss-list"></div></div>
         </div>
         <div class="form-err${f._typeErr?' show':''}">Please select a document type for this file.</div>
-      </div>
-    </div>`;
+      </div></div>`;
   }).join('');
 }
 
@@ -1543,7 +1317,7 @@ function renderGdriveDocType(){
   const wrap=document.getElementById('gdrive-doctype-wrap');
   if(!wrap) return;
   const opts=currentDocTypeOptions.length?currentDocTypeOptions:getDocTypeOptions();
-  SS['doctype-gdrive']={opts:opts, value:gdriveDocType?.value||null, label:gdriveDocType?.label||null};
+  SS['doctype-gdrive']={opts:opts,value:gdriveDocType?.value||null,label:gdriveDocType?.label||null};
   const valTxt=gdriveDocType?.label||'Select document type…';
   const phCls=gdriveDocType?'':' ph';
   wrap.innerHTML=`<div class="ss-wrap" id="ss-doctype-gdrive">
@@ -1552,29 +1326,23 @@ function renderGdriveDocType(){
   </div>`;
 }
 
-// ══════════════════════════════════════════════════
-// REVIEW
-// ══════════════════════════════════════════════════
+// ── Review ──
 function buildReview(){
   const el=document.getElementById('review-content');
   const notes=document.getElementById('filing-notes')?.value?.trim()||'';
   const email=document.getElementById('contact-email')?.value?.trim()||'';
   const gdl=document.getElementById('gdrive-link')?.value?.trim()||'';
   const filerRole=getFilerRoleDisplay();
-
   let caseBlock='';
   if(filingType==='new'){
-    const roles=getRoles(selectedCaseType||'');
-    caseBlock=`<div class="rv-sec">
-      <div class="rv-sec-lbl">New Case</div>
+    caseBlock=`<div class="rv-sec"><div class="rv-sec-lbl">New Case</div>
       <div class="rv-row"><span class="rv-k">Court</span><span class="rv-v">${selectedCourt}</span></div>
       <div class="rv-row"><span class="rv-k">Case Type</span><span class="rv-v">${selectedCaseType}</span></div>
       ${parties.map((p,i)=>`<div class="rv-row"><span class="rv-k">Party ${i+1} (${p.role})</span><span class="rv-v">${getPartyName(p)||'—'}${p.isRepresented?' <span style="color:var(--gold);font-size:11px;font-weight:700">(Your Client)</span>':''}</span></div>`).join('')}
     </div>`;
   } else if(selectedCase){
     const tc=ttCls(selectedCase.caseType);
-    caseBlock=`<div class="rv-sec">
-      <div class="rv-sec-lbl">Case</div>
+    caseBlock=`<div class="rv-sec"><div class="rv-sec-lbl">Case</div>
       <div class="rv-row"><span class="rv-k">Case Number</span><span class="rv-v" style="font-family:monospace">${selectedCase.caseId}</span></div>
       <div class="rv-row"><span class="rv-k">Caption</span><span class="rv-v">${getCaseTitle(selectedCase)}</span></div>
       <div class="rv-row"><span class="rv-k">Court</span><span class="rv-v">${selectedCase.court}</span></div>
@@ -1582,61 +1350,43 @@ function buildReview(){
       ${isFilingAsCounsel&&document.getElementById('counsel-represents')?.value?`<div class="rv-row"><span class="rv-k">You Represent</span><span class="rv-v">${document.getElementById('counsel-represents').value}</span></div>`:''}
     </div>`;
   }
-
-  // Each document's title is simply its document type (e.g. "Complaint", "Summons").
   const fileDocs=uploadedFiles.map(f=>{
     const opt=currentDocTypeOptions.find(o=>o.v===f.docType?.value);
-    return {
-      name:f.file.name, size:f.file.size,
-      title:f.docType?.value||'—',
-      fee:f.docType?getDocumentFee(f.docType.value,opt?.f):0,
-      hasType:!!f.docType,
-    };
+    return{name:f.file.name,size:f.file.size,title:f.docType?.value||'—',fee:f.docType?getDocumentFee(f.docType.value,opt?.f):0};
   });
   let gdriveDoc=null;
   if(hasExhibits&&gdl&&gdriveDocType){
     const opt=currentDocTypeOptions.find(o=>o.v===gdriveDocType.value);
-    gdriveDoc={title:gdriveDocType.value, fee:getDocumentFee(gdriveDocType.value,opt?.f)};
+    gdriveDoc={title:gdriveDocType.value,fee:getDocumentFee(gdriveDocType.value,opt?.f)};
   }
-
-  const docBlock=`<div class="rv-sec">
-    <div class="rv-sec-lbl">Documents</div>
+  const docBlock=`<div class="rv-sec"><div class="rv-sec-lbl">Documents</div>
     ${fileDocs.map(d=>`<div class="rv-file"><span style="font-size:13px">📄</span><span class="rf-n">${esc(d.name)}<br><span style="color:var(--muted);font-weight:400">Title: ${d.title}</span></span><span class="rf-s">${fmtSize(d.size)}</span></div>`).join('')}
     ${gdriveDoc?`<div class="rv-file"><span style="font-size:13px">🔗</span><span class="rf-n">Documents in Google Drive<br><span style="color:var(--muted);font-weight:400">Title: ${gdriveDoc.title}</span></span></div><div class="rv-row"><span class="rv-k">Drive Link</span><span class="rv-v" style="word-break:break-all;font-size:11.5px">${gdl}</span></div>`:''}
   </div>`;
-
   const allFees=fileDocs.map(d=>({label:d.title,fee:d.fee}));
   if(gdriveDoc) allFees.push({label:gdriveDoc.title,fee:gdriveDoc.fee});
   const totalFee=allFees.reduce((s,d)=>s+(d.fee||0),0);
-
-  const feesBlock=`<div class="rv-sec">
-    <div class="rv-sec-lbl">Filing Fees</div>
+  const feesBlock=`<div class="rv-sec"><div class="rv-sec-lbl">Filing Fees</div>
     ${allFees.map(d=>`<div class="rv-row"><span class="rv-k">${d.label}</span><span class="rv-v">${d.fee?('$'+d.fee.toFixed(2)):'No fee'}</span></div>`).join('')}
     <div class="rv-row"><span class="rv-k" style="font-weight:700;color:var(--text)">Total Estimated Fees</span><span class="rv-v" style="font-weight:700">$${totalFee.toFixed(2)}</span></div>
-    <div class="rv-row"><span class="rv-k">Payment</span><span class="rv-v">Not required to file — you'll have 14 days to pay in person at the courthouse</span></div>
+    <div class="rv-row"><span class="rv-k">Payment</span><span class="rv-v">Not required to file — due within 14 days at the courthouse</span></div>
   </div>`;
-
-  const detailsBlock=`<div class="rv-sec">
-    <div class="rv-sec-lbl">Filing Details</div>
+  const detailsBlock=`<div class="rv-sec"><div class="rv-sec-lbl">Filing Details</div>
     <div class="rv-row"><span class="rv-k">Filing As</span><span class="rv-v">${filerRole}</span></div>
     ${isFilingAsCounsel?`<div class="rv-row"><span class="rv-k">Bar Number</span><span class="rv-v">${userData.barNumber||'—'}</span></div>`:''}
     ${notes?`<div class="rv-row"><span class="rv-k">Notes to Clerk</span><span class="rv-v">${notes}</span></div>`:''}
     <div class="rv-row"><span class="rv-k">Confirmation Email</span><span class="rv-v">${email}</span></div>
     <div class="rv-row"><span class="rv-k">Filed By</span><span class="rv-v">${userData.name}</span></div>
   </div>`;
-
   el.innerHTML=caseBlock+docBlock+feesBlock+detailsBlock;
 }
 
-// ══════════════════════════════════════════════════
-// SUBMIT
-// ══════════════════════════════════════════════════
+// ── Submit ──
 async function submitFiling(){
   const btn=document.getElementById('submit-btn');
   const lbl=document.getElementById('submit-lbl');
-  btn.disabled=true;
-  lbl.innerHTML='<span class="spin"></span> Submitting…';
-  try {
+  btn.disabled=true; lbl.innerHTML='<span class="spin"></span> Submitting…';
+  try{
     const conf=confNum();
     const now=new Date().toISOString();
     const role=getFilerRoleDisplay();
@@ -1644,181 +1394,76 @@ async function submitFiling(){
     const email=document.getElementById('contact-email')?.value?.trim()||'';
     const gdl=document.getElementById('gdrive-link')?.value?.trim()||null;
     const counselRep=isFilingAsCounsel?(document.getElementById('counsel-represents')?.value?.trim()||null):null;
-
     const partyData=parties.map(p=>{
-      const base={role:p.role, actorType:p.actorType};
-      if(p.actorType==='Natural Person'){Object.assign(base,{firstName:p.firstName,lastName:p.lastName,pin:p.pin});}
-      else if(p.actorType==='Business or Organization'){Object.assign(base,{orgName:p.orgName,repName:p.repName,repPin:p.repPin});}
-      else {Object.assign(base,{govType:p.govType, jurisdiction:p.jurisdiction==='Other'?p.jurisdictionManual:p.jurisdiction, publicBodyName:p.publicBodyName});}
-      if(p.isRepresented&&isFilingAsCounsel){
-        base.attorney={name:userData.name,uid:userData.uid,barNumber:userData.barNumber||null};
-      }
+      const base={role:p.role,actorType:p.actorType};
+      if(p.actorType==='Natural Person') Object.assign(base,{firstName:p.firstName,lastName:p.lastName,pin:p.pin});
+      else if(p.actorType==='Business or Organization') Object.assign(base,{orgName:p.orgName,repName:p.repName,repPin:p.repPin});
+      else Object.assign(base,{govType:p.govType,jurisdiction:p.jurisdiction==='Other'?p.jurisdictionManual:p.jurisdiction,publicBodyName:p.publicBodyName});
+      if(p.isRepresented&&isFilingAsCounsel) base.attorney={name:userData.name,uid:userData.uid,barNumber:userData.barNumber||null};
       return base;
     });
-
-    // Each document (file or Google Drive submission) carries its own title/type and fee.
     const documents=uploadedFiles.map(f=>{
       const opt=currentDocTypeOptions.find(o=>o.v===f.docType?.value);
-      return {
-        name:f.file.name, size:f.file.size,
-        documentType:f.docType?.value||null,
-        title:f.docType?.value||null,
-        fee:f.docType?getDocumentFee(f.docType.value,opt?.f):0,
-      };
+      return{name:f.file.name,size:f.file.size,documentType:f.docType?.value||null,title:f.docType?.value||null,fee:f.docType?getDocumentFee(f.docType.value,opt?.f):0};
     });
     if(hasExhibits&&gdl&&gdriveDocType){
       const opt=currentDocTypeOptions.find(o=>o.v===gdriveDocType.value);
-      documents.push({
-        name:'Documents (Google Drive)', size:null, link:gdl,
-        documentType:gdriveDocType.value, title:gdriveDocType.value,
-        fee:getDocumentFee(gdriveDocType.value,opt?.f),
-      });
+      documents.push({name:'Documents (Google Drive)',size:null,link:gdl,documentType:gdriveDocType.value,title:gdriveDocType.value,fee:getDocumentFee(gdriveDocType.value,opt?.f)});
     }
     const totalFee=documents.reduce((s,d)=>s+(d.fee||0),0);
-
-    const filingObj={
-      confirmationNumber:conf,
-      filingType,
-      court:selectedCourt||(selectedCase?.court)||'',
-      caseType:selectedCaseType||(selectedCase?.caseType)||'',
-      documentType:getPrimaryDocType(),
-      parties:filingType==='new'?partyData:[],
-      documents,
-      totalFee,
-      paymentDue:'Not required at filing — due in person at the courthouse within 14 days.',
-      notesToClerk:notes,
-      confirmationEmail:email,
-      filerRole:role,
-      filedBy:userData.name,
-      filedByUid:userData.uid,
-      isFilingAsCounsel,
-      counselRepresents:counselRep,
-      barNumber:isFilingAsCounsel?(userData.barNumber||null):null,
-      dateFiled:now,
-      status:'Pending',
-      accepted:false,
-    };
-
-    if(filingType==='existing'&&selectedCase){
-      filingObj.caseId=selectedCase.caseId;
-      filingObj.caseFirestoreId=selectedCase._id;
-    }
-
+    const filingObj={confirmationNumber:conf,filingType,court:selectedCourt||(selectedCase?.court)||'',caseType:selectedCaseType||(selectedCase?.caseType)||'',documentType:getPrimaryDocType(),parties:filingType==='new'?partyData:[],documents,totalFee,paymentDue:'Not required at filing — due in person at the courthouse within 14 days.',notesToClerk:notes,confirmationEmail:email,filerRole:role,filedBy:userData.name,filedByUid:userData.uid,isFilingAsCounsel,counselRepresents:counselRep,barNumber:isFilingAsCounsel?(userData.barNumber||null):null,dateFiled:now,status:'Pending',accepted:false};
+    if(filingType==='existing'&&selectedCase){filingObj.caseId=selectedCase.caseId;filingObj.caseFirestoreId=selectedCase._id;}
     if(window._db){
-      const {collection,addDoc,doc,updateDoc,arrayUnion}=await import('https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js');
+      const{collection,addDoc,doc,updateDoc,arrayUnion}=await import('https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js');
       await addDoc(collection(window._db,'pendingFilings'),filingObj);
       if(filingType==='existing'&&selectedCase?._id){
-        // Push one docket entry per document, each with its own title/type and fee.
-        const filingEntries=documents.map(d=>({
-          title:d.title, documentType:d.documentType, fee:d.fee,
-          filedBy:userData.name, filedByUid:userData.uid,
-          role:role||null, dateFiled:now, status:'Pending', accepted:false, notes:notes||null,
-          documentLink:d.link||null,
-          ...(isFilingAsCounsel?{attorney:{name:userData.name,uid:userData.uid,barNumber:userData.barNumber||null},counselRepresents:counselRep}:{})
-        }));
+        const filingEntries=documents.map(d=>({title:d.title,documentType:d.documentType,fee:d.fee,filedBy:userData.name,filedByUid:userData.uid,role:role||null,dateFiled:now,status:'Pending',accepted:false,notes:notes||null,documentLink:d.link||null,...(isFilingAsCounsel?{attorney:{name:userData.name,uid:userData.uid,barNumber:userData.barNumber||null},counselRepresents:counselRep}:{})}));
         await updateDoc(doc(window._db,'cases',selectedCase._id),{filings:arrayUnion(...filingEntries)});
-        // If attorney, also update party record
-        if(isFilingAsCounsel&&counselRep){
-          try{
-            await updateDoc(doc(window._db,'cases',selectedCase._id),{
-              [`parties.counselOfRecord.${userData.uid}`]:{name:userData.name,barNumber:userData.barNumber||null,represents:counselRep,addedOn:now}
-            });
-          }catch(e){}
-        }
+        if(isFilingAsCounsel&&counselRep){try{await updateDoc(doc(window._db,'cases',selectedCase._id),{[`parties.counselOfRecord.${userData.uid}`]:{name:userData.name,barNumber:userData.barNumber||null,represents:counselRep,addedOn:now}});}catch(e){}}
       }
     }
-
-    // Show success
     document.getElementById('conf-num').textContent=conf;
     let caseInfo='';
-    if(filingType==='existing'&&selectedCase){
-      caseInfo=`<strong>${getCaseTitle(selectedCase)}</strong><br>${selectedCase.caseId} · ${selectedCase.court}`;
-    } else {
-      const n1=getPartyName(parties[0])||'—';
-      const n2=getPartyName(parties[1])||'—';
-      caseInfo=`New ${selectedCaseType} case · ${selectedCourt}<br>${n1} v. ${n2}`;
-    }
+    if(filingType==='existing'&&selectedCase){caseInfo=`<strong>${getCaseTitle(selectedCase)}</strong><br>${selectedCase.caseId} · ${selectedCase.court}`;}
+    else{const n1=getPartyName(parties[0])||'—';const n2=getPartyName(parties[1])||'—';caseInfo=`New ${selectedCaseType} case · ${selectedCourt}<br>${n1} v. ${n2}`;}
     document.getElementById('success-case-info').innerHTML=caseInfo;
     document.getElementById('filing-wizard').classList.add('hidden');
     document.getElementById('success-screen').classList.add('active');
-  } catch(err){
-    console.error(err);
-    btn.disabled=false;
-    lbl.textContent='Submit Filing';
+  }catch(err){
+    console.error(err);btn.disabled=false;lbl.textContent='Submit Filing';
     alert('There was an error submitting your filing. Please try again or contact the court directly.');
   }
 }
 window.submitFiling=submitFiling;
 
 function resetWizard(){
-  currentStep=1; filingType=null; isFilingAsCounsel=false;
-  selectedCourt=null; selectedCaseType=null;
-  selectedCase=null; parties=[]; nextPartyId=1;
-  uploadedFiles=[]; nextFileId=1; hasExhibits=false; gdriveLink=''; gdriveDocType=null; certifiedAccurate=false;
-  currentDocTypeOptions=[];
+  currentStep=1;filingType=null;isFilingAsCounsel=false;selectedCourt=null;selectedCaseType=null;selectedCase=null;parties=[];nextPartyId=1;uploadedFiles=[];nextFileId=1;hasExhibits=false;gdriveLink='';gdriveDocType=null;certifiedAccurate=false;currentDocTypeOptions=[];
   document.querySelectorAll('.radio-opt').forEach(o=>o.classList.remove('sel'));
   document.querySelectorAll('input[type=radio]').forEach(r=>r.checked=false);
-  document.getElementById('cb-counsel').checked=false;
-  document.getElementById('chk-counsel-opt').classList.remove('sel');
-  document.getElementById('new-opts').style.display='none';
-  document.getElementById('case-type-grp').style.display='none';
-  ssReset('court'); ssReset('case-type');
-  document.getElementById('cb-exhibits').checked=false;
-  document.getElementById('chk-exhibits-opt').classList.remove('sel');
-  document.getElementById('gdrive-section').style.display='none';
-  document.getElementById('gdrive-link').value='';
-  document.getElementById('gdrive-doctype-wrap').innerHTML='';
-  document.getElementById('file-list').innerHTML='';
-  document.getElementById('upload-err').classList.remove('show');
-  document.getElementById('doc-restriction-note').style.display='none';
+  document.getElementById('cb-counsel').checked=false;document.getElementById('chk-counsel-opt').classList.remove('sel');
+  document.getElementById('new-opts').style.display='none';document.getElementById('case-type-grp').style.display='none';
+  ssReset('court');ssReset('case-type');
+  document.getElementById('cb-exhibits').checked=false;document.getElementById('chk-exhibits-opt').classList.remove('sel');
+  document.getElementById('gdrive-section').style.display='none';document.getElementById('gdrive-link').value='';
+  document.getElementById('gdrive-doctype-wrap').innerHTML='';document.getElementById('file-list').innerHTML='';
+  document.getElementById('upload-err').classList.remove('show');document.getElementById('doc-restriction-note').style.display='none';
   ['email-err','cert-err','gdrive-err','gdrive-doctype-err'].forEach(id=>document.getElementById(id)?.classList.remove('show'));
-  document.getElementById('filing-notes').value='';
-  document.getElementById('contact-email').value=userData.email||'';
-  document.getElementById('cb-accurate').checked=false;
-  document.getElementById('chk-accurate-opt').classList.remove('sel');
-  document.getElementById('success-screen').classList.remove('active');
-  document.getElementById('filing-wizard').classList.remove('hidden');
-  updateStepUI();
-  window.scrollTo({top:0,behavior:'smooth'});
+  document.getElementById('filing-notes').value='';document.getElementById('contact-email').value=userData.email||'';
+  document.getElementById('cb-accurate').checked=false;document.getElementById('chk-accurate-opt').classList.remove('sel');
+  document.getElementById('success-screen').classList.remove('active');document.getElementById('filing-wizard').classList.remove('hidden');
+  updateStepUI();window.scrollTo({top:0,behavior:'smooth'});
 }
 window.resetWizard=resetWizard;
 
-// ══════════════════════════════════════════════════
-// UTILS
-// ══════════════════════════════════════════════════
-function fmtDate(s){
-  if(!s) return '—';
-  const d=new Date(s);
-  return isNaN(d)?s:d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
-}
-function fmtSize(b){
-  if(b<1024) return b+' B';
-  if(b<1024*1024) return (b/1024).toFixed(1)+' KB';
-  return (b/(1024*1024)).toFixed(1)+' MB';
-}
-function confNum(){return `MCR-${new Date().getFullYear()}-${Math.floor(100000+Math.random()*900000)}`;}
-function ttCls(t){
-  const l=(t||'').toLowerCase();
-  if(l==='criminal') return 'tt-cr';
-  if(l==='civil'||l.includes('civil')||l.includes('small claims')) return 'tt-ci';
-  if(l==='appellate'||l==='appeal') return 'tt-ap';
-  if(l==='traffic') return 'tt-tr';
-  if(l==='administrative'||l.includes('admin')) return 'tt-ad';
-  return 'tt-df';
-}
-function getCaseTitle(c){
-  const t=(c.caseType||'').toLowerCase();
-  const p=c.parties||{};
-  if(t==='criminal'||t==='traffic'){const def=p.primaryDefendant?.name;return def?`State of Michigan v. ${def}`:'State of Michigan v. Unknown';}
-  if(t==='civil'||t.includes('civil')||t.includes('small claims')){const pl=p.primaryPlaintiff?.name,df=p.primaryDefendant?.name;if(pl&&df)return`${pl} v. ${df}`;if(pl)return`Ex parte ${pl}`;}
-  if(t==='appellate'||t==='appeal'){const ap=p.appellant?.name,apl=p.appellee?.name;if(ap&&apl)return`${ap} v. ${apl}`;const s=c.docketSummary?.split('.')[0]?.trim();return(s&&s.length<80)?s:(c.caseId||'Appellate Matter');}
-  if(t.includes('admin')){const pet=p.primaryPetitioner?.name||p.petitioner?.name,res=p.respondent?.name;if(pet&&res)return`${pet} v. ${res}`;}
-  return c.caseId||'Case Record';
-}
+// ── Utils ──
+function fmtDate(s){if(!s)return'—';const d=new Date(s);return isNaN(d)?s:d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});}
+function fmtSize(b){if(b<1024)return b+' B';if(b<1024*1024)return(b/1024).toFixed(1)+' KB';return(b/(1024*1024)).toFixed(1)+' MB';}
+function confNum(){return`MCR-${new Date().getFullYear()}-${Math.floor(100000+Math.random()*900000)}`;}
+function ttCls(t){const l=(t||'').toLowerCase();if(l==='criminal')return'tt-cr';if(l==='civil'||l.includes('civil')||l.includes('small claims'))return'tt-ci';if(l==='appellate'||l==='appeal')return'tt-ap';if(l==='traffic')return'tt-tr';if(l==='administrative'||l.includes('admin'))return'tt-ad';return'tt-df';}
+function getCaseTitle(c){const t=(c.caseType||'').toLowerCase();const p=c.parties||{};if(t==='criminal'||t==='traffic'){const def=p.primaryDefendant?.name;return def?`State of Michigan v. ${def}`:'State of Michigan v. Unknown';}if(t==='civil'||t.includes('civil')||t.includes('small claims')){const pl=p.primaryPlaintiff?.name,df=p.primaryDefendant?.name;if(pl&&df)return`${pl} v. ${df}`;if(pl)return`Ex parte ${pl}`;}if(t==='appellate'||t==='appeal'){const ap=p.appellant?.name,apl=p.appellee?.name;if(ap&&apl)return`${ap} v. ${apl}`;const s=c.docketSummary?.split('.')[0]?.trim();return(s&&s.length<80)?s:(c.caseId||'Appellate Matter');}if(t.includes('admin')){const pet=p.primaryPetitioner?.name||p.petitioner?.name,res=p.respondent?.name;if(pet&&res)return`${pet} v. ${res}`;}return c.caseId||'Case Record';}
 
-// Init SS
-ssInit('court', COURTS.map(c=>({v:c.v,l:c.l,d:c.d,g:''})));
-ssInit('case-type', []);
+ssInit('court',COURTS.map(c=>({v:c.v,l:c.l,d:c.d,g:''})));
+ssInit('case-type',[]);
 </script>
 
 <!-- Firebase -->
@@ -1849,15 +1494,12 @@ const unsub=onAuthStateChanged(auth,async(user)=>{
     userData.mipassPin=data.mipassPin||null;
     userData.robloxUser=data.robloxUser||null;
     document.getElementById('topbar-user').textContent=userData.name;
-    // Show attorney card if applicable
     const isAtty=['Licensed Attorney','State Attorney'].includes(userData.role);
     const attyCard=document.getElementById('atty-card');
     if(attyCard) attyCard.style.display=isAtty?'block':'none';
     const attyBarSub=document.getElementById('atty-bar-sub');
     if(attyBarSub&&userData.barNumber) attyBarSub.textContent=`Check this if you are an attorney filing on behalf of a client. Your bar number (${userData.barNumber}) will be associated with this filing.`;
-    // Pre-fill email
     document.getElementById('contact-email').value=userData.email||'';
-    // Load cases
     setMsg('Loading case records…');
     try{
       const cs=await getDocs(collection(db,'cases'));
