@@ -820,11 +820,11 @@ function renderPartyCard(p,i,roles){
   let actorTypeSection='';
   if(locked){
     // Locked party: show static badge only — NO gov type radios, NO ability to change anything
-    const labelMap={'Governmental Entity':'🏛 Governmental Entity','Natural Person':'👤 Natural Person','Business or Organization':'🏢 Business or Organization'};
+    const labelMap={'Governmental Entity':'Governmental Entity','Natural Person':'Natural Person','Business or Organization':'Business or Organization'};
     actorTypeSection=`
       <div class="form-group">
         <label class="form-label">Actor Type</label>
-        <div class="actor-type-locked">🔒 ${labelMap[p.actorType]||p.actorType}</div>
+        <div class="actor-type-locked">${labelMap[p.actorType]||p.actorType}</div>
         <div class="form-hint">This party's type is set by the court and cannot be changed.</div>
       </div>`;
   }else{
