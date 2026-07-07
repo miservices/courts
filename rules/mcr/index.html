@@ -43,10 +43,6 @@ button{font:inherit}
 .crumb-bar .sep{color:#b8ac99}
 .crumb-bar .current{color:#4a4035;font-weight:600}
 
-/* ── Views ── */
-.view{display:none}
-.view.active{display:block}
-
 /* ── Section intro ── */
 .level-intro{margin-bottom:20px}
 .level-eyebrow{font-size:10.5px;color:#c8a84b;text-transform:uppercase;letter-spacing:0.12em;font-weight:700;margin-bottom:6px}
@@ -66,7 +62,7 @@ button{font:inherit}
 .rule-index-row{display:flex;align-items:baseline;gap:14px;padding:14px 20px;text-decoration:none;border-bottom:1px solid #f0ebe3;cursor:pointer;background:none;border-left:none;border-right:none;border-top:none;width:100%;text-align:left}
 .rule-index-row:last-child{border-bottom:none}
 .rule-index-row:hover{background:#faf8f4}
-.rule-index-row .num{font-family:'JetBrains Mono',monospace;color:#1a4a7a;font-size:12.5px;flex-shrink:0;width:58px}
+.rule-index-row .num{font-family:'JetBrains Mono',monospace;color:#1a4a7a;font-size:12.5px;flex-shrink:0;width:64px}
 .rule-index-row .lbl{color:#2a2620;font-size:13px}
 
 /* ── Rule card ── */
@@ -85,6 +81,7 @@ button{font:inherit}
 .subsec{margin:0 0 8px 0}
 .subsec.indent1{margin-left:22px}
 .subsec.indent2{margin-left:44px}
+.subsec.indent3{margin-left:66px}
 .subsec-label{font-weight:600;color:#0a1628;margin-right:4px}
 
 .rule-footer{border-top:1px solid #f0ebe3;padding:0}
@@ -95,7 +92,7 @@ button{font:inherit}
 .history-chevron{width:11px;height:11px;color:#9a8f7d;transition:transform 0.15s}
 .history-toggle[aria-expanded="true"] .history-chevron{transform:rotate(180deg)}
 .history-panel{max-height:0;overflow:hidden;transition:max-height 0.2s ease}
-.history-panel.open{max-height:400px}
+.history-panel.open{max-height:600px}
 .history-inner{padding:2px 26px 18px}
 .history-entry{display:flex;gap:14px;padding:9px 0;border-bottom:1px solid #f4f1ec;font-size:12px}
 .history-entry:last-child{border-bottom:none}
@@ -110,6 +107,7 @@ button{font:inherit}
 .search-result-title{font-family:'Merriweather',serif;font-size:14.5px;color:#1a1a1a}
 
 .empty-state{background:#fff;border:1px dashed #d6cfc4;border-radius:4px;padding:40px;text-align:center;color:#9a8f7d;font-size:13px}
+.loading-state{padding:60px;text-align:center;color:#9a8f7d;font-size:13px}
 
 @media(max-width:860px){
   .rules-body{padding-left:20px;padding-right:20px}
@@ -133,9 +131,9 @@ button{font:inherit}
   <h2>Michigan Court Rules</h2>
   <p>Governs practice and procedure in all Michigan courts, including pleading, motion practice, discovery, trials, judgments, and appeals. Browse by chapter and subchapter, or search across the full text. Every rule carries a stable, linkable address.</p>
   <div class="header-meta">
-    <div>Rules in force<strong>412</strong></div>
-    <div>Chapters<strong>7</strong></div>
-    <div>Last amendment<strong>Jul 1, 2026</strong></div>
+    <div>Rules in force<strong id="statRules">—</strong></div>
+    <div>Chapters<strong id="statChapters">7</strong></div>
+    <div>Last amendment<strong id="statAmended">—</strong></div>
     <div>Format<strong>HTML</strong></div>
   </div>
 </div>
@@ -150,557 +148,428 @@ button{font:inherit}
   <div class="crumb-bar" id="crumbBar"></div>
 
   <main id="main">
-
-    <!-- ══════════ VIEW: CHAPTER INDEX ══════════ -->
-    <section class="view active" id="view-chapters">
-      <div class="level-intro">
-        <div class="level-eyebrow">Browse</div>
-        <div class="level-title">Select a chapter</div>
-        <div class="level-sub">This pilot currently covers three of the code's seven chapters.</div>
-      </div>
-      <div class="index-grid">
-        <button class="index-card" onclick="showChapter('3')">
-          <span class="num-badge">CH. 3</span>
-          <span class="card-title">Special Proceedings and Actions</span>
-          <span class="card-meta">2 subchapters shown</span>
-        </button>
-        <button class="index-card" onclick="showChapter('5')">
-          <span class="num-badge">CH. 5</span>
-          <span class="card-title">District Court</span>
-          <span class="card-meta">1 subchapter shown</span>
-        </button>
-        <button class="index-card" onclick="showChapter('7')">
-          <span class="num-badge">CH. 7</span>
-          <span class="card-title">Appeals</span>
-          <span class="card-meta">1 subchapter shown</span>
-        </button>
-      </div>
-    </section>
-
-    <!-- ══════════ VIEW: SUBCHAPTERS — CH. 3 ══════════ -->
-    <section class="view" id="view-sub-3">
-      <div class="level-intro">
-        <div class="level-eyebrow">Chapter 3</div>
-        <div class="level-title">Special Proceedings and Actions</div>
-        <div class="level-sub">Select a subchapter.</div>
-      </div>
-      <div class="index-grid">
-        <button class="index-card" onclick="showSub('3-200')">
-          <span class="num-badge">3.200</span>
-          <span class="card-title">Prerogative and Special Writs</span>
-          <span class="card-meta">1 rule shown</span>
-        </button>
-        <button class="index-card" onclick="showSub('3-900')">
-          <span class="num-badge">3.900</span>
-          <span class="card-title">Post-Conviction Proceedings</span>
-          <span class="card-meta">1 rule shown</span>
-        </button>
-      </div>
-    </section>
-
-    <!-- ══════════ VIEW: SUBCHAPTERS — CH. 5 ══════════ -->
-    <section class="view" id="view-sub-5">
-      <div class="level-intro">
-        <div class="level-eyebrow">Chapter 5</div>
-        <div class="level-title">District Court</div>
-        <div class="level-sub">Select a subchapter.</div>
-      </div>
-      <div class="index-grid">
-        <button class="index-card" onclick="showSub('5-100')">
-          <span class="num-badge">5.100</span>
-          <span class="card-title">General Provisions</span>
-          <span class="card-meta">1 rule shown</span>
-        </button>
-      </div>
-    </section>
-
-    <!-- ══════════ VIEW: SUBCHAPTERS — CH. 7 ══════════ -->
-    <section class="view" id="view-sub-7">
-      <div class="level-intro">
-        <div class="level-eyebrow">Chapter 7</div>
-        <div class="level-title">Appeals</div>
-        <div class="level-sub">Select a subchapter.</div>
-      </div>
-      <div class="index-grid">
-        <button class="index-card" onclick="showSub('7-900')">
-          <span class="num-badge">7.900</span>
-          <span class="card-title">Assignment and Transfer of Judges</span>
-          <span class="card-meta">2 rules shown</span>
-        </button>
-      </div>
-    </section>
-
-    <!-- ══════════ VIEW: RULE INDEX (simple list) — 3.200 ══════════ -->
-    <section class="view" id="view-idx-3-200">
-      <div class="level-intro">
-        <div class="level-eyebrow">Chapter 3 · Subchapter 3.200</div>
-        <div class="level-title">Prerogative and Special Writs</div>
-      </div>
-      <div class="rule-index-list">
-        <button class="rule-index-row" onclick="jumpTo('3-208')"><span class="num">3.208</span><span class="lbl">Writ of Quo Warranto — Special Provisions</span></button>
-      </div>
-    </section>
-
-    <!-- ══════════ VIEW: RULE INDEX (simple list) — 3.900 ══════════ -->
-    <section class="view" id="view-idx-3-900">
-      <div class="level-intro">
-        <div class="level-eyebrow">Chapter 3 · Subchapter 3.900</div>
-        <div class="level-title">Post-Conviction Proceedings</div>
-      </div>
-      <div class="rule-index-list">
-        <button class="rule-index-row" onclick="jumpTo('3-908')"><span class="num">3.908</span><span class="lbl">Appeal</span></button>
-      </div>
-    </section>
-
-    <!-- ══════════ VIEW: RULE INDEX (simple list) — 5.100 ══════════ -->
-    <section class="view" id="view-idx-5-100">
-      <div class="level-intro">
-        <div class="level-eyebrow">Chapter 5 · Subchapter 5.100</div>
-        <div class="level-title">General Provisions</div>
-      </div>
-      <div class="rule-index-list">
-        <button class="rule-index-row" onclick="jumpTo('5-101')"><span class="num">5.101</span><span class="lbl">Scope and Applicability</span></button>
-      </div>
-    </section>
-
-    <!-- ══════════ VIEW: RULE INDEX (simple list) — 7.900 ══════════ -->
-    <section class="view" id="view-idx-7-900">
-      <div class="level-intro">
-        <div class="level-eyebrow">Chapter 7 · Subchapter 7.900</div>
-        <div class="level-title">Assignment and Transfer of Judges</div>
-      </div>
-      <div class="rule-index-list">
-        <button class="rule-index-row" onclick="jumpTo('7-901')"><span class="num">7.901</span><span class="lbl">Transfer of Cases Between Judges</span></button>
-        <button class="rule-index-row" onclick="jumpTo('7-902')"><span class="num">7.902</span><span class="lbl">Designation of a Justice Upon Unavailability of All Judges of a District Court</span></button>
-      </div>
-    </section>
-
-    <!-- ══════════ VIEW: RULE DETAIL — 3.208 ══════════ -->
-    <section class="view" id="view-rule-3-208">
-      <article class="rule" id="3-208" data-search="3.208 writ quo warranto special provisions private individual leave special interest attorney general">
-        <div class="rule-top">
-          <div class="rule-id-row">
-            <div>
-              <div class="rule-id">MCR 3.208</div>
-              <div class="rule-title">Writ of Quo Warranto — Special Provisions</div>
-            </div>
-            <div class="rule-actions">
-              <button class="rule-action-btn copy-link" data-target="3-208" type="button">
-                <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 12a3 3 0 0 0 4 0l3-3a3 3 0 0 0-4-4l-1.5 1.5"/><path d="M12 8a3 3 0 0 0-4 0l-3 3a3 3 0 0 0 4 4l1.5-1.5"/></svg>
-                Copy link
-              </button>
-            </div>
-          </div>
-        </div>
-        <div class="rule-text">
-          <p class="subsec"><span class="subsec-label">(A)</span>A petition for a writ of quo warranto shall be filed in the supreme court and may be initiated by the attorney general or, upon leave of the court, by a private individual upon a showing of special interest as provided in subsection (B).</p>
-
-          <p class="subsec"><span class="subsec-label">(B)</span>Private Individual — Leave to File.</p>
-          <p class="subsec indent1"><span class="subsec-label">(1)</span>Special Interest Defined. For purposes of this rule, a private individual has a "special interest" in the office or franchise at issue if the individual demonstrates an interest in the subject matter distinct from that of the public generally, including but not limited to:</p>
-          <p class="subsec indent2"><span class="subsec-label">(a)</span>the individual is an elector eligible to vote for the office at issue;</p>
-          <p class="subsec indent2"><span class="subsec-label">(b)</span>the individual is a rival claimant to the office or franchise at issue; or</p>
-          <p class="subsec indent2"><span class="subsec-label">(c)</span>the individual demonstrates a direct pecuniary or legal interest that would be affected by the respondent's continued exercise of the office or franchise.</p>
-
-          <p class="subsec indent1"><span class="subsec-label">(2)</span>Application for Leave. A private individual seeking leave to file a petition under this rule shall file a written application for leave, supported by affidavit, that:</p>
-          <p class="subsec indent2"><span class="subsec-label">(a)</span>identifies the office or franchise at issue and the basis on which the respondent is alleged to unlawfully hold or exercise it;</p>
-          <p class="subsec indent2"><span class="subsec-label">(b)</span>states the facts establishing the applicant's special interest under subsection (B)(1); and</p>
-          <p class="subsec indent2"><span class="subsec-label">(c)</span>attaches the proposed petition for the writ of quo warranto.</p>
-
-          <p class="subsec indent1"><span class="subsec-label">(3)</span>Standard for Leave. The supreme court shall grant leave to file where the applicant demonstrates a special interest under subsection (B)(1) and the proposed petition, on its face, states a basis on which relief could be granted.</p>
-          <p class="subsec indent1"><span class="subsec-label">(4)</span>Denial. An order denying leave to file shall briefly state the reason for denial and is not subject to further review.</p>
-
-          <p class="subsec"><span class="subsec-label">(C)</span>The petition shall identify the public office or franchise at issue and the basis upon which the petitioner contends the respondent unlawfully holds or exercises that office or franchise.</p>
-          <p class="subsec"><span class="subsec-label">(D)</span>The respondent shall have the right to answer the petition, present evidence, and be represented by counsel.</p>
-        </div>
-        <div class="rule-footer">
-          <button class="history-toggle" aria-expanded="false" data-panel="hist-3-208" type="button">
-            <span class="history-toggle-label">
-              <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 10a6 6 0 1 1 2 4.5"/><path d="M4 14v-4h4"/><path d="M10 7v3.5l2.5 1.5"/></svg>
-              Amendment history
-            </span>
-            <svg class="history-chevron" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2.5 4.5 6 8l3.5-3.5"/></svg>
-          </button>
-          <div class="history-panel" id="hist-3-208">
-            <div class="history-inner">
-              <div class="history-entry"><div class="history-date">Jul 1, 2026</div><div class="history-desc">Added subsection (B), defining "special interest" and establishing the application and standard for leave to file by a private individual. Prior text lacked any definition or procedure for this term.</div></div>
-              <div class="history-entry"><div class="history-date">Jan 1, 2019</div><div class="history-desc">Original adoption.</div></div>
-            </div>
-          </div>
-        </div>
-      </article>
-    </section>
-
-    <!-- ══════════ VIEW: RULE DETAIL — 3.908 ══════════ -->
-    <section class="view" id="view-rule-3-908">
-      <article class="rule" id="3-908" data-search="3.908 appeal set aside conviction arrest claim palpable error magistrate scao">
-        <div class="rule-top">
-          <div class="rule-id-row">
-            <div>
-              <div class="rule-id">MCR 3.908</div>
-              <div class="rule-title">Appeal</div>
-            </div>
-            <div class="rule-actions">
-              <button class="rule-action-btn copy-link" data-target="3-908" type="button">
-                <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 12a3 3 0 0 0 4 0l3-3a3 3 0 0 0-4-4l-1.5 1.5"/><path d="M12 8a3 3 0 0 0-4 0l-3 3a3 3 0 0 0 4 4l1.5-1.5"/></svg>
-                Copy link
-              </button>
-            </div>
-          </div>
-        </div>
-        <div class="rule-text">
-          <p class="subsec"><span class="subsec-label">(A)</span>Claim of Appeal. A petitioner aggrieved by a denial of an application to set aside a conviction or arrest may file a claim of appeal as of right within 14 days after entry of the order of denial, provided one or more of the following applies:</p>
-          <p class="subsec indent1"><span class="subsec-label">(1)</span>the petitioner identifies a palpable error by which the court and the parties were misled, and shows that correcting the error would require a different disposition of the application;</p>
-          <p class="subsec indent1"><span class="subsec-label">(2)</span>the petitioner's application was reviewed on the papers, provided the petitioner did not waive the hearing on the application; or</p>
-          <p class="subsec indent1"><span class="subsec-label">(3)</span>the petitioner's application was reviewed by a magistrate.</p>
-
-          <p class="subsec"><span class="subsec-label">(B)</span>Reviewing Officer. A claim of appeal filed under this rule shall be reviewed as follows:</p>
-          <p class="subsec indent1"><span class="subsec-label">(1)</span>if the application was reviewed by a magistrate, a judge shall review the claim of appeal;</p>
-          <p class="subsec indent1"><span class="subsec-label">(2)</span>if the application was reviewed by a judge, the chief judge shall review the claim of appeal.</p>
-
-          <p class="subsec"><span class="subsec-label">(C)</span>Form. The State Court Administrative Office shall maintain a form for a claim of appeal filed under this rule.</p>
-
-          <p class="subsec"><span class="subsec-label">(D)</span>Hearing.</p>
-          <p class="subsec indent1"><span class="subsec-label">(1)</span>A claim of appeal filed under this rule shall by default entitle the petitioner to a hearing, subject to payment of the applicable hearing fee.</p>
-          <p class="subsec indent1"><span class="subsec-label">(2)</span>The petitioner may waive the hearing using the form described in subsection (C).</p>
-          <p class="subsec indent1"><span class="subsec-label">(3)</span>In lieu of payment, the petitioner may file a fee waiver request under MCR 7.403.</p>
-          <p class="subsec indent1"><span class="subsec-label">(4)</span>Absent a waiver under subsection (D)(2), a hearing shall be scheduled by default.</p>
-
-          <p class="subsec"><span class="subsec-label">(E)</span>Brief. A claim of appeal filed under this rule shall not require an accompanying brief, except that a petitioner proceeding under subsection (A)(1) shall submit a brief in support of the claimed palpable error. A petitioner not otherwise required to submit a brief may nonetheless do so.</p>
-
-          <p class="subsec"><span class="subsec-label">(F)</span>Application for Leave to Appeal. A petitioner who does not qualify to file a claim of appeal under subsection (A), or who fails to file a claim of appeal within the time provided in subsection (A), may file an Application for Leave to Appeal Order Denying Application to Set Aside Conviction or Arrest within 60 days after entry of the order of denial.</p>
-          <p class="subsec indent1"><span class="subsec-label">(1)</span>This application is not a form maintained by the State Court Administrative Office and shall consist of a brief prepared by the petitioner.</p>
-          <p class="subsec indent1"><span class="subsec-label">(2)</span>The petitioner may raise any basis for the application, provided the basis has merit and is not frivolous.</p>
-          <p class="subsec indent1"><span class="subsec-label">(3)</span>The court to which the application is directed shall grant leave to appeal upon a determination that the appeal presents a substantial question warranting review.</p>
-
-          <p class="subsec"><span class="subsec-label">(G)</span>Finality. A decision denying a claim of appeal under subsection (A) or an application for leave to appeal under subsection (F) is final and is not subject to further review, except that the petitioner may seek review of that denial by filing an application for leave to appeal with the supreme court within 21 days after entry of the order denying the claim of appeal or application for leave.</p>
-        </div>
-        <div class="rule-footer">
-          <button class="history-toggle" aria-expanded="false" data-panel="hist-3-908" type="button">
-            <span class="history-toggle-label">
-              <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 10a6 6 0 1 1 2 4.5"/><path d="M4 14v-4h4"/><path d="M10 7v3.5l2.5 1.5"/></svg>
-              Amendment history
-            </span>
-            <svg class="history-chevron" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2.5 4.5 6 8l3.5-3.5"/></svg>
-          </button>
-          <div class="history-panel" id="hist-3-908">
-            <div class="history-inner">
-              <div class="history-entry"><div class="history-date">Jul 1, 2026</div><div class="history-desc">Added subsection (G), establishing that a denial under (A) or (F) is final subject to a 21-day window to seek supreme court review.</div></div>
-              <div class="history-entry"><div class="history-date">Mar 15, 2026</div><div class="history-desc">Replaced the prior single application-for-leave track (21-day deadline, abuse-of-discretion review) with the two-track structure in subsections (A)–(F): a 14-day claim of appeal as of right on enumerated grounds, and a 60-day discretionary application for leave for all other cases.</div></div>
-              <div class="history-entry"><div class="history-date">Jan 1, 2019</div><div class="history-desc">Original adoption.</div></div>
-            </div>
-          </div>
-        </div>
-      </article>
-    </section>
-
-    <!-- ══════════ VIEW: RULE DETAIL — 5.101 ══════════ -->
-    <section class="view" id="view-rule-5-101">
-      <article class="rule" id="5-101" data-search="5.101 scope applicability general provisions district court subject matter jurisdiction">
-        <div class="rule-top">
-          <div class="rule-id-row">
-            <div>
-              <div class="rule-id">MCR 5.101</div>
-              <div class="rule-title">Scope and Applicability</div>
-            </div>
-            <div class="rule-actions">
-              <button class="rule-action-btn copy-link" data-target="5-101" type="button">
-                <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 12a3 3 0 0 0 4 0l3-3a3 3 0 0 0-4-4l-1.5 1.5"/><path d="M12 8a3 3 0 0 0-4 0l-3 3a3 3 0 0 0 4 4l1.5-1.5"/></svg>
-                Copy link
-              </button>
-            </div>
-          </div>
-        </div>
-        <div class="rule-text">
-          <p class="subsec"><span class="subsec-label">(A)</span>This chapter governs procedure and administration in the district courts of this state, including case assignment, scheduling, docket management, the authority of magistrate judges, court records, court decorum, and the rights of pro se litigants.</p>
-
-          <p class="subsec"><span class="subsec-label">(B)</span>Subject-Matter Jurisdiction. The district courts of this state are courts of general trial jurisdiction and have subject-matter jurisdiction over all civil and criminal matters not committed exclusively to the supreme court, including:</p>
-          <p class="subsec indent1"><span class="subsec-label">(1)</span>all civil actions at law and in equity, regardless of the amount in controversy;</p>
-          <p class="subsec indent1"><span class="subsec-label">(2)</span>small claims actions, landlord-tenant actions, and summary proceedings to recover possession of premises;</p>
-          <p class="subsec indent1"><span class="subsec-label">(3)</span>all criminal matters, including felonies, misdemeanors, ordinance violations, and civil infractions, together with related pretrial proceedings such as arraignment, bail, and preliminary examination;</p>
-          <p class="subsec indent1"><span class="subsec-label">(4)</span>probate, family, and juvenile matters as provided by statute; and</p>
-          <p class="subsec indent1"><span class="subsec-label">(5)</span>any other matter over which subject-matter jurisdiction is conferred on the district courts by statute.</p>
-
-          <p class="subsec"><span class="subsec-label">(C)</span>Where this chapter does not address a procedural matter arising in a district court proceeding, the applicable rules of Chapters 2, 3, or 6 shall govern depending on the nature of the proceeding.</p>
-          <p class="subsec"><span class="subsec-label">(D)</span>These rules shall be construed to promote the efficient, fair, and accessible administration of justice in the district courts of this state.</p>
-        </div>
-        <div class="rule-footer">
-          <button class="history-toggle" aria-expanded="false" data-panel="hist-5-101" type="button">
-            <span class="history-toggle-label">
-              <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 10a6 6 0 1 1 2 4.5"/><path d="M4 14v-4h4"/><path d="M10 7v3.5l2.5 1.5"/></svg>
-              Amendment history
-            </span>
-            <svg class="history-chevron" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2.5 4.5 6 8l3.5-3.5"/></svg>
-          </button>
-          <div class="history-panel" id="hist-5-101">
-            <div class="history-inner">
-              <div class="history-entry"><div class="history-date">Jul 1, 2026</div><div class="history-desc">Added subsection (B), stating the district court's subject-matter jurisdiction as a court of general trial jurisdiction; renumbered former (B) and (C) as (C) and (D).</div></div>
-              <div class="history-entry"><div class="history-date">Jan 1, 2019</div><div class="history-desc">Original adoption.</div></div>
-            </div>
-          </div>
-        </div>
-      </article>
-    </section>
-
-    <!-- ══════════ VIEW: RULE DETAIL — 7.901 ══════════ -->
-    <section class="view" id="view-rule-7-901">
-      <article class="rule" id="7-901" data-search="7.901 transfer of cases between judges chief judge recusal">
-        <div class="rule-top">
-          <div class="rule-id-row">
-            <div>
-              <div class="rule-id">MCR 7.901</div>
-              <div class="rule-title">Transfer of Cases Between Judges</div>
-            </div>
-            <div class="rule-actions">
-              <button class="rule-action-btn copy-link" data-target="7-901" type="button">
-                <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 12a3 3 0 0 0 4 0l3-3a3 3 0 0 0-4-4l-1.5 1.5"/><path d="M12 8a3 3 0 0 0-4 0l-3 3a3 3 0 0 0 4 4l1.5-1.5"/></svg>
-                Copy link
-              </button>
-            </div>
-          </div>
-        </div>
-        <div class="rule-text">
-          <p class="subsec"><span class="subsec-label">(A)</span>The chief judge may transfer a case from one judge or magistrate judge to another within the same district court upon any of the following grounds:</p>
-          <p class="subsec indent1"><span class="subsec-label">(1)</span>Recusal or disqualification of the assigned judge;</p>
-          <p class="subsec indent1"><span class="subsec-label">(2)</span>Extended absence or incapacity of the assigned judge;</p>
-          <p class="subsec indent1"><span class="subsec-label">(3)</span>Undue concentration of caseload on a particular judge; or</p>
-          <p class="subsec indent1"><span class="subsec-label">(4)</span>Any other administrative reason that serves the interests of justice and the efficient operation of the court.</p>
-          <p class="subsec"><span class="subsec-label">(B)</span>A transfer under this rule shall be made by written order of the chief judge entered into the record and served on all parties through the Notice of Electronic Filing system.</p>
-          <p class="subsec"><span class="subsec-label">(C)</span>Upon transfer, the receiving judge shall have full authority over the matter and shall not be required to repeat any proceedings already completed unless the receiving judge determines repetition is necessary for a fair adjudication.</p>
-          <p class="subsec"><span class="subsec-label">(D)</span>A party who believes a transfer has been made improperly may file a motion objecting to the transfer within 7 days of receiving notice of the transfer. The chief judge shall rule on the motion within 10 days of filing.</p>
-        </div>
-        <div class="rule-footer">
-          <button class="history-toggle" aria-expanded="false" data-panel="hist-7-901" type="button">
-            <span class="history-toggle-label">
-              <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 10a6 6 0 1 1 2 4.5"/><path d="M4 14v-4h4"/><path d="M10 7v3.5l2.5 1.5"/></svg>
-              Amendment history
-            </span>
-            <svg class="history-chevron" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2.5 4.5 6 8l3.5-3.5"/></svg>
-          </button>
-          <div class="history-panel" id="hist-7-901">
-            <div class="history-inner">
-              <div class="history-entry"><div class="history-date">Jan 1, 2019</div><div class="history-desc">Original adoption.</div></div>
-            </div>
-          </div>
-        </div>
-      </article>
-    </section>
-
-    <!-- ══════════ VIEW: RULE DETAIL — 7.902 ══════════ -->
-    <section class="view" id="view-rule-7-902">
-      <article class="rule" id="7-902" data-search="7.902 designation of a justice unavailability all judges district court supreme court">
-        <div class="rule-top">
-          <div class="rule-id-row">
-            <div>
-              <div class="rule-id">MCR 7.902</div>
-              <div class="rule-title">Designation of a Justice Upon Unavailability of All Judges of a District Court</div>
-            </div>
-            <div class="rule-actions">
-              <button class="rule-action-btn copy-link" data-target="7-902" type="button">
-                <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 12a3 3 0 0 0 4 0l3-3a3 3 0 0 0-4-4l-1.5 1.5"/><path d="M12 8a3 3 0 0 0-4 0l-3 3a3 3 0 0 0 4 4l1.5-1.5"/></svg>
-                Copy link
-              </button>
-            </div>
-          </div>
-        </div>
-        <div class="rule-text">
-          <p class="subsec"><span class="subsec-label">(A)</span>Grounds. Where all judges and magistrate judges of a district court are simultaneously unavailable to hear a matter — whether by recusal, disqualification, absence, incapacity, or vacancy — the chief judge, or any party if there is no chief judge able to act, shall notify the Supreme Court of the unavailability.</p>
-          <p class="subsec"><span class="subsec-label">(B)</span>Designation. Upon receiving notice under subsection (A), the Chief Justice shall designate an associate justice of the Supreme Court to sit temporarily as a judge of the district court for purposes of hearing and deciding the matter, or such matters, as necessitated by the unavailability.</p>
-          <p class="subsec"><span class="subsec-label">(C)</span>Scope of Designation. A designation under this rule:</p>
-          <p class="subsec indent1"><span class="subsec-label">(1)</span>shall specify whether it extends to a single case, a class of matters, or all matters before the district court until further order;</p>
-          <p class="subsec indent1"><span class="subsec-label">(2)</span>may be limited in duration or terminated by subsequent order of the Chief Justice; and</p>
-          <p class="subsec indent1"><span class="subsec-label">(3)</span>confers on the designated justice all the authority of a judge of the district court with respect to the matter or matters designated, including the authority to conduct trials, enter judgments, and rule on post-judgment motions.</p>
-          <p class="subsec"><span class="subsec-label">(D)</span>Notice to Parties. An order of designation shall be entered into the record of the affected case or cases and served on all parties through the Notice of Electronic Filing system.</p>
-          <p class="subsec"><span class="subsec-label">(E)</span>Return of Matter. Upon the resolution of the unavailability described in subsection (A) — including the appointment or return of a district court judge, or the resolution of a recusal — the designated justice shall, unless the interests of justice require otherwise, return any pending matters to the district court for further proceedings, and the designation shall terminate as to those matters.</p>
-          <p class="subsec"><span class="subsec-label">(F)</span>No Repetition Required. A designated justice is not required to repeat any proceedings already completed before the district court became unavailable, unless the designated justice determines repetition is necessary for a fair adjudication.</p>
-        </div>
-        <div class="rule-footer">
-          <button class="history-toggle" aria-expanded="false" data-panel="hist-7-902" type="button">
-            <span class="history-toggle-label">
-              <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 10a6 6 0 1 1 2 4.5"/><path d="M4 14v-4h4"/><path d="M10 7v3.5l2.5 1.5"/></svg>
-              Amendment history
-            </span>
-            <svg class="history-chevron" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2.5 4.5 6 8l3.5-3.5"/></svg>
-          </button>
-          <div class="history-panel" id="hist-7-902">
-            <div class="history-inner">
-              <div class="history-entry"><div class="history-date">Jul 1, 2026</div><div class="history-desc">New rule adopted, addressing the gap in MCR 7.901 for cases where every judge of a district court is simultaneously unavailable, by providing for temporary designation of a supreme court justice.</div></div>
-            </div>
-          </div>
-        </div>
-      </article>
-    </section>
-
-    <!-- ══════════ VIEW: SEARCH RESULTS ══════════ -->
-    <section class="view" id="view-search">
-      <div class="level-intro">
-        <div class="level-eyebrow">Search</div>
-        <div class="level-title">Results</div>
-      </div>
-      <div id="searchResultsList"></div>
-      <div class="empty-state" id="noResults" style="display:none">No rules match your search.</div>
-    </section>
-
+    <div class="loading-state">Loading rules…</div>
   </main>
+
 </div>
 
 <script>
 (function(){
 
-  /* Route map: rule anchor id -> chapter / subchapter context + labels */
-  var ROUTES = {
-    '3-208': {chapter:'3', indexView:'view-idx-3-200', chapLabel:'Ch. 3 — Special Proceedings and Actions', subLabel:'3.200 — Prerogative and Special Writs', ruleLabel:'MCR 3.208 — Writ of Quo Warranto'},
-    '3-908': {chapter:'3', indexView:'view-idx-3-900', chapLabel:'Ch. 3 — Special Proceedings and Actions', subLabel:'3.900 — Post-Conviction Proceedings', ruleLabel:'MCR 3.908 — Appeal'},
-    '5-101': {chapter:'5', indexView:'view-idx-5-100', chapLabel:'Ch. 5 — District Court', subLabel:'5.100 — General Provisions', ruleLabel:'MCR 5.101 — Scope and Applicability'},
-    '7-901': {chapter:'7', indexView:'view-idx-7-900', chapLabel:'Ch. 7 — Appeals', subLabel:'7.900 — Assignment and Transfer of Judges', ruleLabel:'MCR 7.901 — Transfer of Cases Between Judges'},
-    '7-902': {chapter:'7', indexView:'view-idx-7-900', chapLabel:'Ch. 7 — Appeals', subLabel:'7.900 — Assignment and Transfer of Judges', ruleLabel:'MCR 7.902 — Designation of a Justice'}
-  };
-  var CHAPTER_LABEL = {'3':'Ch. 3 — Special Proceedings and Actions','5':'Ch. 5 — District Court','7':'Ch. 7 — Appeals'};
-  var SUBCHAPTER_OF_INDEX_VIEW = {
-    'view-idx-3-200':{chapter:'3', label:'3.200 — Prerogative and Special Writs'},
-    'view-idx-3-900':{chapter:'3', label:'3.900 — Post-Conviction Proceedings'},
-    'view-idx-5-100':{chapter:'5', label:'5.100 — General Provisions'},
-    'view-idx-7-900':{chapter:'7', label:'7.900 — Assignment and Transfer of Judges'}
-  };
+  /* ══════════════════════ HARDCODED STRUCTURE ══════════════════════ */
+  var CHAPTERS = [
+    {num:'1', label:'General Provisions', subs:[
+      {num:'100', label:'General Rules'}
+    ]},
+    {num:'2', label:'Civil Procedure', subs:[
+      {num:'100', label:'General Provisions'},
+      {num:'200', label:'Pleadings'},
+      {num:'300', label:'Service of Process'},
+      {num:'400', label:'Motions'},
+      {num:'500', label:'Discovery'},
+      {num:'600', label:'Dispositive Motions and Default'},
+      {num:'700', label:'Class Actions'},
+      {num:'800', label:'Injunctive Relief'},
+      {num:'900', label:'Judgments and Enforcement'},
+      {num:'1000', label:'Consolidation, Severance, and Intervention'},
+      {num:'1100', label:'Small Claims Procedure'},
+      {num:'1200', label:'Standard of Review on Appeal'}
+    ]},
+    {num:'3', label:'Special Proceedings and Actions', subs:[
+      {num:'100', label:'General Provisions'},
+      {num:'200', label:'Extraordinary Writs'},
+      {num:'300', label:'Forfeiture Proceedings'},
+      {num:'400', label:'Contempt Proceedings'},
+      {num:'500', label:'Injunctions'},
+      {num:'600', label:'Appeals from Administrative Agencies'},
+      {num:'700', label:'Declaratory Judgments'},
+      {num:'800', label:'Enforcement of Foreign Judgments'},
+      {num:'900', label:'Proceedings to Set Aside Convictions and Arrests'}
+    ]},
+    {num:'4', label:'Supreme Court', subs:[
+      {num:'100', label:'General Provisions'},
+      {num:'200', label:'Original Jurisdiction'},
+      {num:'300', label:'Appellate Jurisdiction'},
+      {num:'400', label:'Opinions and Judgments'},
+      {num:'500', label:'Supreme Court Administration'}
+    ]},
+    {num:'5', label:'District Court', subs:[
+      {num:'100', label:'General Provisions'},
+      {num:'200', label:'Case Assignment and Scheduling'},
+      {num:'300', label:'Magistrate Judges'},
+      {num:'400', label:'Special Provisions for Specific Proceedings'},
+      {num:'500', label:'Court Records and Docket'},
+      {num:'600', label:'Court Decorum and Conduct'},
+      {num:'700', label:'Pro Se Litigants'}
+    ]},
+    {num:'6', label:'Criminal Procedure', subs:[
+      {num:'100', label:'General Provisions'},
+      {num:'200', label:'Booking and Transmittal to Court'},
+      {num:'300', label:'Warrants'},
+      {num:'400', label:'The Complaint and Information'},
+      {num:'500', label:'Arraignment'},
+      {num:'600', label:'Preliminary Examination'},
+      {num:'700', label:'Pretrial Proceedings'},
+      {num:'800', label:'Pleas'},
+      {num:'900', label:'Trial'},
+      {num:'1000', label:'Sentencing'},
+      {num:'1100', label:'Post-Conviction Proceedings'},
+      {num:'1200', label:'Contempt in Criminal Proceedings'},
+      {num:'1300', label:'Civil Infraction Proceedings'}
+    ]},
+    {num:'7', label:'Administrative Rules of the Court', subs:[
+      {num:'100', label:'General Provisions'},
+      {num:'200', label:'Case Captioning and Numbering'},
+      {num:'300', label:'Filing of Documents'},
+      {num:'400', label:'Court Fees'},
+      {num:'500', label:'MiCOURT System'},
+      {num:'600', label:'Court Calendar and Scheduling'},
+      {num:'700', label:'Court Personnel'},
+      {num:'800', label:'Court Records'},
+      {num:'900', label:'Transfer of Cases and Recusal'},
+      {num:'1000', label:'Computation of Time and Extensions'},
+      {num:'1100', label:'Media Coverage'},
+      {num:'1200', label:'Court Security'},
+      {num:'1300', label:'Sanctions for Abuse of Process'}
+    ]}
+  ];
 
-  var allViews = Array.prototype.slice.call(document.querySelectorAll('.view'));
+  var CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRCnybegVDu9qgaDa4af11YwGRxA5ANmsRZCe4NavKMZFt-HFN8ct8onmx3rxl6IYRlUusCTE07-1Cj/pub?gid=0&single=true&output=csv';
+
+  var RULES = [];          // flat array of {citation, chapter, subNum, ruleNumInt, title, text, amendments, id, search}
+  var RULES_BY_ID = {};    // id -> rule
+  var RULES_BY_SUB = {};   // "chapter-subNum" -> [rules] sorted
+
+  function getChapter(num){ return CHAPTERS.filter(function(c){ return c.num===num; })[0]; }
+  function getSub(chNum, subNum){
+    var ch = getChapter(chNum);
+    if(!ch) return null;
+    return ch.subs.filter(function(s){ return s.num===subNum; })[0];
+  }
+
+  /* ══════════════════════ CSV PARSING ══════════════════════ */
+  function parseCSV(str){
+    var rows=[], row=[], field='', inQuotes=false;
+    for(var i=0;i<str.length;i++){
+      var c=str[i];
+      if(inQuotes){
+        if(c==='"'){
+          if(str[i+1]==='"'){ field+='"'; i++; } else { inQuotes=false; }
+        } else { field+=c; }
+      } else {
+        if(c==='"'){ inQuotes=true; }
+        else if(c===','){ row.push(field); field=''; }
+        else if(c==='\r'){ /* skip */ }
+        else if(c==='\n'){ row.push(field); rows.push(row); row=[]; field=''; }
+        else { field+=c; }
+      }
+    }
+    if(field.length>0 || row.length>0){ row.push(field); rows.push(row); }
+    return rows.filter(function(r){ return !(r.length===1 && r[0]==='') });
+  }
+
+  function escapeHtml(s){
+    return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  function buildRules(csvText){
+    var rows = parseCSV(csvText);
+    if(!rows.length) return;
+    var header = rows[0].map(function(h){ return h.trim().toLowerCase(); });
+    var iCit = header.indexOf('citation');
+    var iTitle = header.indexOf('title');
+    var iText = header.indexOf('text');
+    var iAmend = header.indexOf('ammendments');
+    if(iAmend===-1) iAmend = header.indexOf('amendments');
+
+    for(var r=1;r<rows.length;r++){
+      var row = rows[r];
+      if(!row || !row[iCit] || !row[iCit].trim()) continue;
+      var citation = row[iCit].trim();
+      var m = citation.match(/^(\d+)\.(\d+)$/);
+      if(!m) continue;
+      var chapter = m[1];
+      var ruleNumStr = m[2];
+      var ruleNumInt = parseInt(ruleNumStr,10);
+      var subNum = String(Math.floor(ruleNumInt/100)*100);
+      var title = (iTitle>-1 ? row[iTitle] : '') || '';
+      var text = (iText>-1 ? row[iText] : '') || '';
+      var amendments = (iAmend>-1 ? row[iAmend] : '') || '';
+      var id = citation.replace('.','-');
+      var rule = {
+        citation: citation, chapter: chapter, subNum: subNum, ruleNumInt: ruleNumInt,
+        title: title.trim(), text: text, amendments: amendments,
+        id: id, search: (citation+' '+title+' '+text).toLowerCase()
+      };
+      RULES.push(rule);
+      RULES_BY_ID[id] = rule;
+      var key = chapter+'-'+subNum;
+      if(!RULES_BY_SUB[key]) RULES_BY_SUB[key] = [];
+      RULES_BY_SUB[key].push(rule);
+    }
+    Object.keys(RULES_BY_SUB).forEach(function(key){
+      RULES_BY_SUB[key].sort(function(a,b){ return a.ruleNumInt - b.ruleNumInt; });
+    });
+  }
+
+  function computeStats(){
+    document.getElementById('statRules').textContent = RULES.length;
+    var maxDate=null, maxStr='';
+    RULES.forEach(function(rule){
+      (rule.amendments||'').split('|').forEach(function(e){
+        var idx = e.indexOf(';');
+        var dateStr = idx>-1 ? e.slice(0,idx).trim() : '';
+        if(!dateStr) return;
+        var d = new Date(dateStr);
+        if(!isNaN(d.getTime()) && (!maxDate || d>maxDate)){ maxDate=d; maxStr=dateStr; }
+      });
+    });
+    document.getElementById('statAmended').textContent = maxStr || '—';
+  }
+
+  /* ══════════════════════ RENDER HELPERS ══════════════════════ */
+  function renderRuleText(text){
+    var lines = String(text||'').split(/\r?\n/);
+    var html = '';
+    lines.forEach(function(line){
+      line = line.trim();
+      if(!line) return;
+      var mCap = line.match(/^\(([A-Z]+)\)\s*(.*)$/);
+      var mNum = line.match(/^\((\d+)\)\s*(.*)$/);
+      var mLow = line.match(/^\(([a-z]+)\)\s*(.*)$/);
+      var label='', rest=line, cls='';
+      if(mCap){ label='('+mCap[1]+')'; rest=mCap[2]; cls=''; }
+      else if(mNum){ label='('+mNum[1]+')'; rest=mNum[2]; cls='indent1'; }
+      else if(mLow){ label='('+mLow[1]+')'; rest=mLow[2]; cls='indent2'; }
+      html += '<p class="subsec '+cls+'">'+(label?'<span class="subsec-label">'+escapeHtml(label)+'</span>':'')+escapeHtml(rest)+'</p>';
+    });
+    return html || '<p class="subsec">No text on file for this rule.</p>';
+  }
+
+  function renderAmendments(amendStr){
+    var entries = String(amendStr||'').split('|').map(function(s){ return s.trim(); }).filter(Boolean);
+    if(!entries.length) return '<div class="history-entry"><div class="history-desc">No amendment history recorded.</div></div>';
+    return entries.map(function(e){
+      var idx = e.indexOf(';');
+      var date = idx>-1 ? e.slice(0,idx).trim() : '';
+      var desc = idx>-1 ? e.slice(idx+1).trim() : e;
+      return '<div class="history-entry"><div class="history-date">'+escapeHtml(date)+'</div><div class="history-desc">'+escapeHtml(desc)+'</div></div>';
+    }).join('');
+  }
+
+  function ruleCard(rule){
+    return ''+
+    '<article class="rule" id="'+rule.id+'">'+
+      '<div class="rule-top">'+
+        '<div class="rule-id-row">'+
+          '<div>'+
+            '<div class="rule-id">MCR '+escapeHtml(rule.citation)+'</div>'+
+            '<div class="rule-title">'+escapeHtml(rule.title)+'</div>'+
+          '</div>'+
+          '<div class="rule-actions">'+
+            '<button class="rule-action-btn copy-link" onclick="RulesApp.copyLink(\''+rule.id+'\', this)" type="button">'+
+              '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 12a3 3 0 0 0 4 0l3-3a3 3 0 0 0-4-4l-1.5 1.5"/><path d="M12 8a3 3 0 0 0-4 0l-3 3a3 3 0 0 0 4 4l1.5-1.5"/></svg>'+
+              'Copy link'+
+            '</button>'+
+          '</div>'+
+        '</div>'+
+      '</div>'+
+      '<div class="rule-text">'+renderRuleText(rule.text)+'</div>'+
+      '<div class="rule-footer">'+
+        '<button class="history-toggle" aria-expanded="false" onclick="RulesApp.toggleHistory(\''+rule.id+'\', this)" type="button">'+
+          '<span class="history-toggle-label">'+
+            '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 10a6 6 0 1 1 2 4.5"/><path d="M4 14v-4h4"/><path d="M10 7v3.5l2.5 1.5"/></svg>'+
+            'Amendment history'+
+          '</span>'+
+          '<svg class="history-chevron" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2.5 4.5 6 8l3.5-3.5"/></svg>'+
+        '</button>'+
+        '<div class="history-panel" id="hist-'+rule.id+'">'+
+          '<div class="history-inner">'+renderAmendments(rule.amendments)+'</div>'+
+        '</div>'+
+      '</div>'+
+    '</article>';
+  }
+
+  /* ══════════════════════ ROUTER / VIEWS ══════════════════════ */
+  var main = document.getElementById('main');
   var crumbBar = document.getElementById('crumbBar');
-  var lastNonSearchView = 'view-chapters';
+  var lastNonSearchHash = '#/';
 
-  function activate(viewId){
-    allViews.forEach(function(v){ v.classList.remove('active'); });
-    var target = document.getElementById(viewId);
-    if(target) target.classList.add('active');
-    if(viewId !== 'view-search') lastNonSearchView = viewId;
-    renderCrumbs(viewId);
-    window.scrollTo({top:0, behavior:'instant'});
+  function go(hash){ window.location.hash = hash; }
+
+  function renderChapters(){
+    var cards = CHAPTERS.map(function(ch){
+      return '<button class="index-card" onclick="RulesApp.go(\'#/ch/'+ch.num+'\')">'+
+        '<span class="num-badge">CH. '+ch.num+'</span>'+
+        '<span class="card-title">'+escapeHtml(ch.label)+'</span>'+
+        '<span class="card-meta">'+ch.subs.length+' subchapter'+(ch.subs.length===1?'':'s')+'</span>'+
+      '</button>';
+    }).join('');
+    main.innerHTML = ''+
+      '<div class="level-intro">'+
+        '<div class="level-eyebrow">Browse</div>'+
+        '<div class="level-title">Select a chapter</div>'+
+        '<div class="level-sub">All seven chapters of the Michigan Court Rules.</div>'+
+      '</div>'+
+      '<div class="index-grid">'+cards+'</div>';
+    crumbBar.innerHTML = '<span class="current">Michigan Court Rules</span>';
   }
 
-  function renderCrumbs(viewId){
-    var home = '<button onclick="showChapters()">Michigan Court Rules</button>';
-
-    if(viewId === 'view-chapters'){
-      crumbBar.innerHTML = '<span class="current">Michigan Court Rules</span>';
-      return;
-    }
-    if(viewId === 'view-search'){
-      crumbBar.innerHTML = home + '<span class="sep">›</span><span class="current">Search results</span>';
-      return;
-    }
-    if(viewId.indexOf('view-sub-') === 0){
-      var ch = viewId.replace('view-sub-','');
-      crumbBar.innerHTML = home + '<span class="sep">›</span><span class="current">'+CHAPTER_LABEL[ch]+'</span>';
-      return;
-    }
-    if(viewId.indexOf('view-idx-') === 0){
-      var info = SUBCHAPTER_OF_INDEX_VIEW[viewId];
-      crumbBar.innerHTML = home +
-        '<span class="sep">›</span><button onclick="showChapter(\''+info.chapter+'\')">'+CHAPTER_LABEL[info.chapter]+'</button>' +
-        '<span class="sep">›</span><span class="current">'+info.label+'</span>';
-      return;
-    }
-    if(viewId.indexOf('view-rule-') === 0){
-      var ruleId = viewId.replace('view-rule-','');
-      var r = ROUTES[ruleId];
-      crumbBar.innerHTML = home +
-        '<span class="sep">›</span><button onclick="showChapter(\''+r.chapter+'\')">'+r.chapLabel+'</button>' +
-        '<span class="sep">›</span><button onclick="showSub(\''+viewIdToSubId(r.indexView)+'\')">'+r.subLabel+'</button>' +
-        '<span class="sep">›</span><span class="current">'+r.ruleLabel+'</span>';
-      return;
-    }
+  function renderChapter(chNum){
+    var ch = getChapter(chNum);
+    if(!ch){ renderChapters(); return; }
+    var cards = ch.subs.map(function(sub){
+      var key = ch.num+'-'+sub.num;
+      var count = (RULES_BY_SUB[key]||[]).length;
+      var subLabel = ch.num+'.'+sub.num;
+      return '<button class="index-card" onclick="RulesApp.go(\'#/ch/'+ch.num+'/sub/'+sub.num+'\')">'+
+        '<span class="num-badge">'+subLabel+'</span>'+
+        '<span class="card-title">'+escapeHtml(sub.label)+'</span>'+
+        '<span class="card-meta">'+count+' rule'+(count===1?'':'s')+' shown</span>'+
+      '</button>';
+    }).join('');
+    main.innerHTML = ''+
+      '<div class="level-intro">'+
+        '<div class="level-eyebrow">Chapter '+ch.num+'</div>'+
+        '<div class="level-title">'+escapeHtml(ch.label)+'</div>'+
+        '<div class="level-sub">Select a subchapter.</div>'+
+      '</div>'+
+      '<div class="index-grid">'+cards+'</div>';
+    crumbBar.innerHTML = ''+
+      '<button onclick="RulesApp.go(\'#/\')">Michigan Court Rules</button>'+
+      '<span class="sep">›</span><span class="current">Ch. '+ch.num+' — '+escapeHtml(ch.label)+'</span>';
   }
 
-  function viewIdToSubId(indexViewId){
-    return indexViewId.replace('view-idx-','');
+  function renderSubchapter(chNum, subNum){
+    var ch = getChapter(chNum);
+    var sub = ch && getSub(chNum, subNum);
+    if(!ch || !sub){ renderChapters(); return; }
+    var key = ch.num+'-'+sub.num;
+    var rules = RULES_BY_SUB[key] || [];
+    var listHtml = rules.length ?
+      '<div class="rule-index-list">'+rules.map(function(r){
+        return '<button class="rule-index-row" onclick="RulesApp.go(\'#/rule/'+r.id+'\')"><span class="num">'+escapeHtml(r.citation)+'</span><span class="lbl">'+escapeHtml(r.title)+'</span></button>';
+      }).join('')+'</div>' :
+      '<div class="empty-state">No rules published in this subchapter yet.</div>';
+    main.innerHTML = ''+
+      '<div class="level-intro">'+
+        '<div class="level-eyebrow">Chapter '+ch.num+' · Subchapter '+ch.num+'.'+sub.num+'</div>'+
+        '<div class="level-title">'+escapeHtml(sub.label)+'</div>'+
+      '</div>'+
+      listHtml;
+    crumbBar.innerHTML = ''+
+      '<button onclick="RulesApp.go(\'#/\')">Michigan Court Rules</button>'+
+      '<span class="sep">›</span><button onclick="RulesApp.go(\'#/ch/'+ch.num+'\')">Ch. '+ch.num+' — '+escapeHtml(ch.label)+'</button>'+
+      '<span class="sep">›</span><span class="current">'+ch.num+'.'+sub.num+' — '+escapeHtml(sub.label)+'</span>';
   }
 
-  window.showChapters = function(){ activate('view-chapters'); };
-  window.showChapter = function(ch){ activate('view-sub-'+ch); };
-  window.showSub = function(subId){ activate('view-idx-'+subId); };
+  function renderRule(id){
+    var rule = RULES_BY_ID[id];
+    if(!rule){ renderChapters(); return; }
+    var ch = getChapter(rule.chapter);
+    var sub = getSub(rule.chapter, rule.subNum);
+    main.innerHTML = ruleCard(rule);
+    crumbBar.innerHTML = ''+
+      '<button onclick="RulesApp.go(\'#/\')">Michigan Court Rules</button>'+
+      '<span class="sep">›</span><button onclick="RulesApp.go(\'#/ch/'+rule.chapter+'\')">Ch. '+rule.chapter+' — '+escapeHtml(ch?ch.label:'')+'</button>'+
+      '<span class="sep">›</span><button onclick="RulesApp.go(\'#/ch/'+rule.chapter+'/sub/'+rule.subNum+'\')">'+rule.chapter+'.'+rule.subNum+' — '+escapeHtml(sub?sub.label:'')+'</button>'+
+      '<span class="sep">›</span><span class="current">MCR '+escapeHtml(rule.citation)+'</span>';
+  }
 
-  window.jumpTo = function(ruleId){
-    if(!ROUTES[ruleId]) return;
-    activate('view-rule-'+ruleId);
-    history.replaceState(null,'','#'+ruleId);
-  };
+  function renderSearch(query){
+    var q = query.toLowerCase();
+    var matches = RULES.filter(function(r){ return r.search.indexOf(q) !== -1; });
+    var listHtml = matches.length ?
+      matches.map(function(r){
+        var ch = getChapter(r.chapter);
+        var sub = getSub(r.chapter, r.subNum);
+        return '<div class="search-result-item" onclick="RulesApp.go(\'#/rule/'+r.id+'\')">'+
+          '<div class="search-result-path">Ch. '+r.chapter+' — '+escapeHtml(ch?ch.label:'')+' › '+r.chapter+'.'+r.subNum+' — '+escapeHtml(sub?sub.label:'')+'</div>'+
+          '<div><span class="search-result-id">MCR '+escapeHtml(r.citation)+'</span><span class="search-result-title">'+escapeHtml(r.title)+'</span></div>'+
+        '</div>';
+      }).join('') :
+      '<div class="empty-state">No rules match your search.</div>';
+    main.innerHTML = ''+
+      '<div class="level-intro">'+
+        '<div class="level-eyebrow">Search</div>'+
+        '<div class="level-title">Results</div>'+
+      '</div>'+listHtml;
+    document.getElementById('searchCount').textContent = matches.length + (matches.length===1?' rule found':' rules found');
+    crumbBar.innerHTML = ''+
+      '<button onclick="RulesApp.go(\'#/\')">Michigan Court Rules</button>'+
+      '<span class="sep">›</span><span class="current">Search results</span>';
+  }
 
-  function routeFromHash(){
-    var id = window.location.hash.replace('#','');
-    if(id && ROUTES[id]){
-      activate('view-rule-'+id);
-      return true;
+  function route(){
+    var hash = window.location.hash || '#/';
+    var parts = hash.replace(/^#\/?/,'').split('/').filter(Boolean);
+    // parts examples: [] , ['ch','3'] , ['ch','3','sub','900'] , ['rule','3-908']
+    if(parts.length===0){ renderChapters(); lastNonSearchHash = '#/'; return; }
+    if(parts[0]==='ch' && parts[1] && parts[2]==='sub' && parts[3]){
+      renderSubchapter(parts[1], parts[3]); lastNonSearchHash = hash; return;
     }
-    return false;
+    if(parts[0]==='ch' && parts[1]){
+      renderChapter(parts[1]); lastNonSearchHash = hash; return;
+    }
+    if(parts[0]==='rule' && parts[1]){
+      renderRule(parts[1]); lastNonSearchHash = hash; return;
+    }
+    renderChapters(); lastNonSearchHash = '#/';
   }
 
-  /* ── Copy link ── */
-  document.querySelectorAll('.copy-link').forEach(function(btn){
-    btn.addEventListener('click', function(){
-      var id = btn.getAttribute('data-target');
-      var url = window.location.origin + window.location.pathname + '#' + id;
-      var restoreLabel = btn.innerHTML;
+  /* ══════════════════════ INTERACTIONS ══════════════════════ */
+  var searchInput = document.getElementById('ruleSearch');
+  searchInput.addEventListener('input', function(){
+    var q = searchInput.value.trim();
+    if(!q){
+      document.getElementById('searchCount').textContent = '';
+      window.location.hash = lastNonSearchHash;
+      return;
+    }
+    renderSearch(q);
+  });
+
+  window.RulesApp = {
+    go: function(hash){ window.location.hash = hash; },
+    copyLink: function(id, btn){
+      var url = window.location.origin + window.location.pathname + '#/rule/' + id;
+      var restore = btn.innerHTML;
       function done(){
         btn.classList.add('copied');
         btn.innerHTML = '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 10.5l3 3 7-7"/></svg> Copied';
-        setTimeout(function(){ btn.classList.remove('copied'); btn.innerHTML = restoreLabel; }, 1600);
+        setTimeout(function(){ btn.classList.remove('copied'); btn.innerHTML = restore; }, 1600);
       }
       if(navigator.clipboard && navigator.clipboard.writeText){
         navigator.clipboard.writeText(url).then(done).catch(done);
       } else { done(); }
-    });
-  });
-
-  /* ── History toggles ── */
-  document.querySelectorAll('.history-toggle').forEach(function(btn){
-    btn.addEventListener('click', function(){
-      var panel = document.getElementById(btn.getAttribute('data-panel'));
+    },
+    toggleHistory: function(id, btn){
+      var panel = document.getElementById('hist-'+id);
       var open = btn.getAttribute('aria-expanded') === 'true';
       btn.setAttribute('aria-expanded', String(!open));
       panel.classList.toggle('open', !open);
-    });
-  });
-
-  /* ── Search ── */
-  var searchInput = document.getElementById('ruleSearch');
-  var searchCount = document.getElementById('searchCount');
-  var noResults = document.getElementById('noResults');
-  var resultsList = document.getElementById('searchResultsList');
-  var allRuleEls = Array.prototype.slice.call(document.querySelectorAll('.rule[data-search]'));
-
-  function runSearch(){
-    var q = searchInput.value.trim().toLowerCase();
-    if(!q){
-      activate(lastNonSearchView);
-      searchCount.textContent = '';
-      return;
     }
-    var matches = allRuleEls.filter(function(el){
-      return (el.getAttribute('data-search')||'').indexOf(q) !== -1;
-    });
-    resultsList.innerHTML = '';
-    matches.forEach(function(el){
-      var id = el.id;
-      var route = ROUTES[id];
-      var title = el.querySelector('.rule-title').textContent;
-      var ruleNum = el.querySelector('.rule-id').textContent;
-      var item = document.createElement('div');
-      item.className = 'search-result-item';
-      item.innerHTML = '<div class="search-result-path">'+route.chapLabel+' › '+route.subLabel+'</div>'+
-        '<div><span class="search-result-id">'+ruleNum+'</span><span class="search-result-title">'+title+'</span></div>';
-      item.addEventListener('click', function(){ searchInput.value=''; jumpTo(id); });
-      resultsList.appendChild(item);
-    });
-    activate('view-search');
-    noResults.style.display = matches.length === 0 ? 'block' : 'none';
-    searchCount.textContent = matches.length + (matches.length===1 ? ' rule found' : ' rules found');
-  }
+  };
 
-  searchInput.addEventListener('input', runSearch);
+  window.addEventListener('hashchange', route);
 
-  /* ── Init ── */
-  window.addEventListener('hashchange', routeFromHash);
-  if(!routeFromHash()){
-    activate('view-chapters');
-  }
+  /* ══════════════════════ INIT ══════════════════════ */
+  fetch(CSV_URL)
+    .then(function(res){
+      if(!res.ok) throw new Error('CSV fetch failed: ' + res.status);
+      return res.text();
+    })
+    .then(function(text){
+      buildRules(text);
+      computeStats();
+      route();
+    })
+    .catch(function(err){
+      console.error(err);
+      main.innerHTML = '<div class="empty-state">Could not load rule data right now. Please try again shortly.</div>';
+      document.getElementById('statRules').textContent = '—';
+    });
+
 })();
 </script>
 
