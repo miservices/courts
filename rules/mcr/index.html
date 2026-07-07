@@ -13,6 +13,7 @@
 html{scroll-behavior:smooth}
 body{font-family:'DM Sans',sans-serif;background:#f4f1ec;color:#1a1a1a;min-height:100vh}
 :focus-visible{outline:2px solid #1a4a7a;outline-offset:2px}
+button{font:inherit}
 
 /* ── Page Header ── */
 .page-header{background:#0a1628;padding:36px 40px 32px;border-bottom:3px solid #c8a84b}
@@ -32,38 +33,49 @@ body{font-family:'DM Sans',sans-serif;background:#f4f1ec;color:#1a1a1a;min-heigh
 .format-notice b{color:#3d3110}
 
 /* ── Search ── */
-.search-bar{display:flex;gap:10px;margin-bottom:26px}
+.search-bar{display:flex;gap:10px;margin-bottom:28px}
 .search-bar input{flex:1;background:#fff;border:1px solid #d6cfc4;border-radius:3px;padding:11px 16px;font-family:'DM Sans',sans-serif;font-size:13.5px;color:#1a1a1a}
 .search-bar input::placeholder{color:#a49a8c}
 .search-bar input:focus{border-color:#1a4a7a}
 .search-count{font-size:11.5px;color:#8a7d6a;align-self:center;white-space:nowrap;letter-spacing:0.02em}
 
-/* ── Layout: sidebar + content ── */
-.rules-body{padding:32px 40px 60px;display:grid;grid-template-columns:260px 1fr;gap:36px;align-items:start}
+.rules-body{padding:32px 40px 60px;max-width:960px;margin:0 auto}
 
-/* ── Sidebar TOC ── */
-.toc{position:sticky;top:20px;background:#fff;border:1px solid #e0d9cf;border-radius:4px;padding:6px 0;max-height:calc(100vh - 40px);overflow-y:auto}
-.toc-chapter{border-bottom:1px solid #f0ebe3}
-.toc-chapter:last-child{border-bottom:none}
-.toc-chapter-title{display:block;padding:13px 18px 9px;font-family:'Merriweather',serif;font-size:11.5px;color:#6b5f4e;text-transform:uppercase;letter-spacing:0.09em;font-weight:400}
-.toc-rule{display:flex;align-items:baseline;gap:8px;padding:7px 18px 7px 22px;text-decoration:none;font-size:12.5px}
-.toc-rule .num{font-family:'JetBrains Mono',monospace;color:#1a4a7a;font-size:11.5px;flex-shrink:0}
-.toc-rule .lbl{color:#4a4035;line-height:1.4}
-.toc-rule:hover{background:#f4f1ec}
-.toc-rule:hover .lbl{color:#1a1a1a}
-.toc-rule.hidden{display:none}
-.toc-chapter.hidden{display:none}
+/* ── Crumb / wayfinding bar ── */
+.crumb-bar{display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin-bottom:22px;font-size:12.5px}
+.crumb-bar button{background:none;border:none;color:#1a4a7a;font-weight:600;cursor:pointer;padding:4px 2px;letter-spacing:0.01em}
+.crumb-bar button:hover{text-decoration:underline}
+.crumb-bar .sep{color:#b8ac99}
+.crumb-bar .current{color:#4a4035;font-weight:600}
 
-/* ── Main content ── */
-.chapter-block{margin-bottom:6px}
-.chapter-heading{display:flex;align-items:baseline;gap:14px;padding:22px 0 10px;border-bottom:2px solid #0a1628;margin-bottom:6px}
-.chapter-heading .chap-num{font-family:'JetBrains Mono',monospace;font-size:13px;color:#c8a84b;background:#0a1628;padding:4px 10px;border-radius:2px;letter-spacing:0.03em}
-.chapter-heading h3{font-family:'Merriweather',serif;font-weight:400;font-size:20px;color:#1a1a1a}
-.chapter-block.hidden{display:none}
+/* ── Views ── */
+.view{display:none}
+.view.active{display:block}
+
+/* ── Section intro ── */
+.level-intro{margin-bottom:20px}
+.level-eyebrow{font-size:10.5px;color:#c8a84b;text-transform:uppercase;letter-spacing:0.12em;font-weight:700;margin-bottom:6px}
+.level-title{font-family:'Merriweather',serif;font-size:22px;font-weight:400;color:#1a1a1a;line-height:1.3}
+.level-sub{font-size:13px;color:#6b5f4e;margin-top:6px;line-height:1.6}
+
+/* ── Index grid (chapters / subchapters) ── */
+.index-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;margin-top:18px}
+.index-card{background:#fff;border:1px solid #e0d9cf;border-radius:4px;text-align:left;cursor:pointer;padding:20px 22px;display:flex;flex-direction:column;gap:8px;transition:box-shadow 0.15s,border-color 0.15s}
+.index-card:hover{box-shadow:0 4px 16px rgba(10,22,40,0.09);border-color:#c8a84b}
+.index-card .num-badge{align-self:flex-start;font-family:'JetBrains Mono',monospace;font-size:12px;color:#c8a84b;background:#0a1628;padding:3px 9px;border-radius:2px;letter-spacing:0.03em}
+.index-card .card-title{font-family:'Merriweather',serif;font-size:15.5px;color:#1a1a1a;line-height:1.4}
+.index-card .card-meta{font-size:11.5px;color:#9a8f7d;letter-spacing:0.02em;margin-top:auto}
+
+/* ── Rule index list (within a subchapter view) ── */
+.rule-index-list{background:#fff;border:1px solid #e0d9cf;border-radius:4px;overflow:hidden;margin-bottom:28px}
+.rule-index-row{display:flex;align-items:baseline;gap:14px;padding:13px 20px;text-decoration:none;border-bottom:1px solid #f0ebe3;cursor:pointer;background:none;border-left:none;border-right:none;border-top:none;width:100%;text-align:left}
+.rule-index-row:last-child{border-bottom:none}
+.rule-index-row:hover{background:#faf8f4}
+.rule-index-row .num{font-family:'JetBrains Mono',monospace;color:#1a4a7a;font-size:12.5px;flex-shrink:0;width:58px}
+.rule-index-row .lbl{color:#2a2620;font-size:13px}
 
 /* ── Rule card ── */
-.rule{background:#fff;border:1px solid #e0d9cf;border-radius:4px;margin:16px 0;scroll-margin-top:20px;overflow:hidden}
-.rule.hidden{display:none}
+.rule{background:#fff;border:1px solid #e0d9cf;border-radius:4px;margin:0 0 20px;scroll-margin-top:20px;overflow:hidden;transition:border-color 0.4s}
 .rule-top{padding:22px 26px 16px;border-bottom:1px solid #f0ebe3}
 .rule-id-row{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:6px}
 .rule-id{font-family:'JetBrains Mono',monospace;font-size:13.5px;color:#1a4a7a;font-weight:500}
@@ -73,10 +85,8 @@ body{font-family:'DM Sans',sans-serif;background:#f4f1ec;color:#1a1a1a;min-heigh
 .rule-action-btn svg{width:12px;height:12px}
 .rule-action-btn.copied{background:#0a1628;color:#c8a84b;border-color:#0a1628}
 .rule-title{font-family:'Merriweather',serif;font-size:17px;font-weight:400;color:#1a1a1a}
-.permalink-line{font-size:11px;color:#9a8f7d;font-family:'JetBrains Mono',monospace;margin-top:6px;word-break:break-all}
 
 .rule-text{padding:20px 26px 22px;font-size:13.5px;line-height:1.85;color:#2a2620}
-.rule-text p{margin-bottom:10px}
 .subsec{margin:0 0 8px 0}
 .subsec.indent1{margin-left:22px}
 .subsec.indent2{margin-left:44px}
@@ -96,16 +106,21 @@ body{font-family:'DM Sans',sans-serif;background:#f4f1ec;color:#1a1a1a;min-heigh
 .history-entry:last-child{border-bottom:none}
 .history-date{font-family:'JetBrains Mono',monospace;color:#1a4a7a;flex-shrink:0;width:88px}
 .history-desc{color:#4a4035;line-height:1.6}
-.history-desc a{color:#1a4a7a}
 
-/* ── Empty state ── */
+/* ── Search results view ── */
+.search-result-item{background:#fff;border:1px solid #e0d9cf;border-radius:4px;padding:16px 20px;margin-bottom:10px;cursor:pointer;transition:border-color 0.15s}
+.search-result-item:hover{border-color:#c8a84b}
+.search-result-path{font-size:10.5px;color:#9a8f7d;letter-spacing:0.04em;text-transform:uppercase;margin-bottom:5px}
+.search-result-id{font-family:'JetBrains Mono',monospace;color:#1a4a7a;font-size:12.5px;margin-right:8px}
+.search-result-title{font-family:'Merriweather',serif;font-size:14.5px;color:#1a1a1a}
+
 .empty-state{background:#fff;border:1px dashed #d6cfc4;border-radius:4px;padding:40px;text-align:center;color:#9a8f7d;font-size:13px}
 
 @media(max-width:860px){
-  .rules-body{grid-template-columns:1fr;padding-left:20px;padding-right:20px}
-  .toc{position:static;max-height:none;margin-bottom:4px}
+  .rules-body{padding-left:20px;padding-right:20px}
   .page-header{padding-left:20px;padding-right:20px}
   .rule-id-row{flex-direction:column;align-items:flex-start}
+  .index-grid{grid-template-columns:1fr}
 }
 </style>
 </head>
@@ -121,56 +136,121 @@ body{font-family:'DM Sans',sans-serif;background:#f4f1ec;color:#1a1a1a;min-heigh
     <span style="color:#a0b8d0">Michigan Court Rules</span>
   </div>
   <h2>Michigan Court Rules</h2>
-  <p>Governs practice and procedure in all Michigan courts, including pleading, motion practice, discovery, trials, judgments, and appeals. Each rule below is individually linkable — copy the permalink to cite a specific provision directly, rather than to a page number in a PDF that changes with every amendment.</p>
+  <p>Governs practice and procedure in all Michigan courts, including pleading, motion practice, discovery, trials, judgments, and appeals. Browse by chapter and subchapter, or search across the full text. Every rule carries a stable, linkable address.</p>
   <div class="header-meta">
     <div>Rules in force<strong>412</strong></div>
     <div>Chapters<strong>7</strong></div>
     <div>Last amendment<strong>Jul 1, 2026</strong></div>
-    <div>Format<strong>HTML (beta)</strong></div>
+    <div>Format<strong>HTML</strong></div>
   </div>
 </div>
 
 <div class="rules-body">
 
-  <!-- Sidebar TOC -->
-  <nav class="toc" id="toc" aria-label="Table of contents">
-    <div class="toc-chapter" data-chapter="3">
-      <span class="toc-chapter-title">Ch. 3 — Special Proceedings</span>
-      <a class="toc-rule" href="#mcr-3-208" data-search="3.208 writ quo warranto special provisions"><span class="num">3.208</span><span class="lbl">Writ of Quo Warranto</span></a>
-      <a class="toc-rule" href="#mcr-3-908" data-search="3.908 appeal set aside conviction arrest"><span class="num">3.908</span><span class="lbl">Appeal</span></a>
-    </div>
-    <div class="toc-chapter" data-chapter="5">
-      <span class="toc-chapter-title">Ch. 5 — District Court</span>
-      <a class="toc-rule" href="#mcr-5-101" data-search="5.101 scope applicability general provisions district court"><span class="num">5.101</span><span class="lbl">Scope and Applicability</span></a>
-    </div>
-    <div class="toc-chapter" data-chapter="7">
-      <span class="toc-chapter-title">Ch. 7 — Appeals</span>
-      <a class="toc-rule" href="#mcr-7-901" data-search="7.901 transfer of cases between judges"><span class="num">7.901</span><span class="lbl">Transfer of Cases Between Judges</span></a>
-      <a class="toc-rule" href="#mcr-7-902" data-search="7.902 designation of a justice unavailability all judges"><span class="num">7.902</span><span class="lbl">Designation of a Justice</span></a>
-    </div>
-  </nav>
+  <div class="format-notice">
+    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10" cy="10" r="8"/><path d="M10 6v5M10 14h.01"/></svg>
+    <div><b>Pilot format.</b> This HTML edition is being piloted for a limited set of chapters as a replacement for the static PDF publication. Each rule carries a stable address and an amendment history. Report a discrepancy between this page and the PDF to the State Court Administrative Office.</div>
+  </div>
 
-  <!-- Main content -->
+  <div class="search-bar">
+    <input type="text" id="ruleSearch" placeholder="Search by rule number or keyword — e.g. &#8220;quo warranto&#8221; or 7.901" aria-label="Search rules">
+    <span class="search-count" id="searchCount"></span>
+  </div>
+
+  <div class="crumb-bar" id="crumbBar"></div>
+
   <main id="main">
 
-    <div class="format-notice">
-      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10" cy="10" r="8"/><path d="M10 6v5M10 14h.01"/></svg>
-      <div><b>Pilot format.</b> This HTML edition is being piloted for a limited set of chapters as a replacement for the static PDF publication. Each rule carries a stable permalink and an amendment history. Report a discrepancy between this page and the PDF to the State Court Administrative Office.</div>
-    </div>
+    <!-- ══════════ VIEW: CHAPTER INDEX ══════════ -->
+    <section class="view active" id="view-chapters">
+      <div class="level-intro">
+        <div class="level-eyebrow">Browse</div>
+        <div class="level-title">Select a chapter</div>
+        <div class="level-sub">This pilot currently covers three of the code's seven chapters.</div>
+      </div>
+      <div class="index-grid">
+        <button class="index-card" onclick="showChapter('3')">
+          <span class="num-badge">CH. 3</span>
+          <span class="card-title">Special Proceedings and Actions</span>
+          <span class="card-meta">2 subchapters shown</span>
+        </button>
+        <button class="index-card" onclick="showChapter('5')">
+          <span class="num-badge">CH. 5</span>
+          <span class="card-title">District Court</span>
+          <span class="card-meta">1 subchapter shown</span>
+        </button>
+        <button class="index-card" onclick="showChapter('7')">
+          <span class="num-badge">CH. 7</span>
+          <span class="card-title">Appeals</span>
+          <span class="card-meta">1 subchapter shown</span>
+        </button>
+      </div>
+    </section>
 
-    <div class="search-bar">
-      <input type="text" id="ruleSearch" placeholder="Search by rule number or keyword — e.g. &#8220;quo warranto&#8221; or 7.901" aria-label="Search rules">
-      <span class="search-count" id="searchCount"></span>
-    </div>
+    <!-- ══════════ VIEW: SUBCHAPTERS — CH. 3 ══════════ -->
+    <section class="view" id="view-sub-3">
+      <div class="level-intro">
+        <div class="level-eyebrow">Chapter 3</div>
+        <div class="level-title">Special Proceedings and Actions</div>
+        <div class="level-sub">Select a subchapter.</div>
+      </div>
+      <div class="index-grid">
+        <button class="index-card" onclick="showSub('3-200')">
+          <span class="num-badge">3.200</span>
+          <span class="card-title">Prerogative and Special Writs</span>
+          <span class="card-meta">1 rule shown</span>
+        </button>
+        <button class="index-card" onclick="showSub('3-900')">
+          <span class="num-badge">3.900</span>
+          <span class="card-title">Post-Conviction Proceedings</span>
+          <span class="card-meta">1 rule shown</span>
+        </button>
+      </div>
+    </section>
 
-    <!-- CHAPTER 3 -->
-    <section class="chapter-block" data-chapter="3">
-      <div class="chapter-heading">
-        <span class="chap-num">CH. 3</span>
-        <h3>Special Proceedings and Actions</h3>
+    <!-- ══════════ VIEW: SUBCHAPTERS — CH. 5 ══════════ -->
+    <section class="view" id="view-sub-5">
+      <div class="level-intro">
+        <div class="level-eyebrow">Chapter 5</div>
+        <div class="level-title">District Court</div>
+        <div class="level-sub">Select a subchapter.</div>
+      </div>
+      <div class="index-grid">
+        <button class="index-card" onclick="showSub('5-100')">
+          <span class="num-badge">5.100</span>
+          <span class="card-title">General Provisions</span>
+          <span class="card-meta">1 rule shown</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- ══════════ VIEW: SUBCHAPTERS — CH. 7 ══════════ -->
+    <section class="view" id="view-sub-7">
+      <div class="level-intro">
+        <div class="level-eyebrow">Chapter 7</div>
+        <div class="level-title">Appeals</div>
+        <div class="level-sub">Select a subchapter.</div>
+      </div>
+      <div class="index-grid">
+        <button class="index-card" onclick="showSub('7-900')">
+          <span class="num-badge">7.900</span>
+          <span class="card-title">Assignment and Transfer of Judges</span>
+          <span class="card-meta">2 rules shown</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- ══════════ VIEW: RULES — 3.200 ══════════ -->
+    <section class="view" id="view-rules-3-200">
+      <div class="level-intro">
+        <div class="level-eyebrow">Chapter 3 · Subchapter 3.200</div>
+        <div class="level-title">Prerogative and Special Writs</div>
+      </div>
+      <div class="rule-index-list">
+        <button class="rule-index-row" onclick="jumpTo('3-208')"><span class="num">3.208</span><span class="lbl">Writ of Quo Warranto — Special Provisions</span></button>
       </div>
 
-      <article class="rule" id="mcr-3-208" data-search="3.208 writ quo warranto special provisions private individual leave special interest attorney general">
+      <article class="rule" id="3-208" data-search="3.208 writ quo warranto special provisions private individual leave special interest attorney general">
         <div class="rule-top">
           <div class="rule-id-row">
             <div>
@@ -178,13 +258,12 @@ body{font-family:'DM Sans',sans-serif;background:#f4f1ec;color:#1a1a1a;min-heigh
               <div class="rule-title">Writ of Quo Warranto — Special Provisions</div>
             </div>
             <div class="rule-actions">
-              <button class="rule-action-btn copy-link" data-target="mcr-3-208" type="button">
+              <button class="rule-action-btn copy-link" data-target="3-208" type="button">
                 <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 12a3 3 0 0 0 4 0l3-3a3 3 0 0 0-4-4l-1.5 1.5"/><path d="M12 8a3 3 0 0 0-4 0l-3 3a3 3 0 0 0 4 4l1.5-1.5"/></svg>
                 Copy link
               </button>
             </div>
           </div>
-          <div class="permalink-line">/rules/mcr/#mcr-3-208</div>
         </div>
         <div class="rule-text">
           <p class="subsec"><span class="subsec-label">(A)</span>A petition for a writ of quo warranto shall be filed in the supreme court and may be initiated by the attorney general or, upon leave of the court, by a private individual upon a showing of special interest as provided in subsection (B).</p>
@@ -222,8 +301,19 @@ body{font-family:'DM Sans',sans-serif;background:#f4f1ec;color:#1a1a1a;min-heigh
           </div>
         </div>
       </article>
+    </section>
 
-      <article class="rule" id="mcr-3-908" data-search="3.908 appeal set aside conviction arrest claim palpable error magistrate scao">
+    <!-- ══════════ VIEW: RULES — 3.900 ══════════ -->
+    <section class="view" id="view-rules-3-900">
+      <div class="level-intro">
+        <div class="level-eyebrow">Chapter 3 · Subchapter 3.900</div>
+        <div class="level-title">Post-Conviction Proceedings</div>
+      </div>
+      <div class="rule-index-list">
+        <button class="rule-index-row" onclick="jumpTo('3-908')"><span class="num">3.908</span><span class="lbl">Appeal</span></button>
+      </div>
+
+      <article class="rule" id="3-908" data-search="3.908 appeal set aside conviction arrest claim palpable error magistrate scao">
         <div class="rule-top">
           <div class="rule-id-row">
             <div>
@@ -231,13 +321,12 @@ body{font-family:'DM Sans',sans-serif;background:#f4f1ec;color:#1a1a1a;min-heigh
               <div class="rule-title">Appeal</div>
             </div>
             <div class="rule-actions">
-              <button class="rule-action-btn copy-link" data-target="mcr-3-908" type="button">
+              <button class="rule-action-btn copy-link" data-target="3-908" type="button">
                 <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 12a3 3 0 0 0 4 0l3-3a3 3 0 0 0-4-4l-1.5 1.5"/><path d="M12 8a3 3 0 0 0-4 0l-3 3a3 3 0 0 0 4 4l1.5-1.5"/></svg>
                 Copy link
               </button>
             </div>
           </div>
-          <div class="permalink-line">/rules/mcr/#mcr-3-908</div>
         </div>
         <div class="rule-text">
           <p class="subsec"><span class="subsec-label">(A)</span>Claim of Appeal. A petitioner aggrieved by a denial of an application to set aside a conviction or arrest may file a claim of appeal as of right within 14 days after entry of the order of denial, provided one or more of the following applies:</p>
@@ -285,14 +374,17 @@ body{font-family:'DM Sans',sans-serif;background:#f4f1ec;color:#1a1a1a;min-heigh
       </article>
     </section>
 
-    <!-- CHAPTER 5 -->
-    <section class="chapter-block" data-chapter="5">
-      <div class="chapter-heading">
-        <span class="chap-num">CH. 5</span>
-        <h3>District Court</h3>
+    <!-- ══════════ VIEW: RULES — 5.100 ══════════ -->
+    <section class="view" id="view-rules-5-100">
+      <div class="level-intro">
+        <div class="level-eyebrow">Chapter 5 · Subchapter 5.100</div>
+        <div class="level-title">General Provisions</div>
+      </div>
+      <div class="rule-index-list">
+        <button class="rule-index-row" onclick="jumpTo('5-101')"><span class="num">5.101</span><span class="lbl">Scope and Applicability</span></button>
       </div>
 
-      <article class="rule" id="mcr-5-101" data-search="5.101 scope applicability general provisions district court subject matter jurisdiction">
+      <article class="rule" id="5-101" data-search="5.101 scope applicability general provisions district court subject matter jurisdiction">
         <div class="rule-top">
           <div class="rule-id-row">
             <div>
@@ -300,13 +392,12 @@ body{font-family:'DM Sans',sans-serif;background:#f4f1ec;color:#1a1a1a;min-heigh
               <div class="rule-title">Scope and Applicability</div>
             </div>
             <div class="rule-actions">
-              <button class="rule-action-btn copy-link" data-target="mcr-5-101" type="button">
+              <button class="rule-action-btn copy-link" data-target="5-101" type="button">
                 <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 12a3 3 0 0 0 4 0l3-3a3 3 0 0 0-4-4l-1.5 1.5"/><path d="M12 8a3 3 0 0 0-4 0l-3 3a3 3 0 0 0 4 4l1.5-1.5"/></svg>
                 Copy link
               </button>
             </div>
           </div>
-          <div class="permalink-line">/rules/mcr/#mcr-5-101</div>
         </div>
         <div class="rule-text">
           <p class="subsec"><span class="subsec-label">(A)</span>This chapter governs procedure and administration in the district courts of this state, including case assignment, scheduling, docket management, the authority of magistrate judges, court records, court decorum, and the rights of pro se litigants.</p>
@@ -339,14 +430,18 @@ body{font-family:'DM Sans',sans-serif;background:#f4f1ec;color:#1a1a1a;min-heigh
       </article>
     </section>
 
-    <!-- CHAPTER 7 -->
-    <section class="chapter-block" data-chapter="7">
-      <div class="chapter-heading">
-        <span class="chap-num">CH. 7</span>
-        <h3>Appeals</h3>
+    <!-- ══════════ VIEW: RULES — 7.900 ══════════ -->
+    <section class="view" id="view-rules-7-900">
+      <div class="level-intro">
+        <div class="level-eyebrow">Chapter 7 · Subchapter 7.900</div>
+        <div class="level-title">Assignment and Transfer of Judges</div>
+      </div>
+      <div class="rule-index-list">
+        <button class="rule-index-row" onclick="jumpTo('7-901')"><span class="num">7.901</span><span class="lbl">Transfer of Cases Between Judges</span></button>
+        <button class="rule-index-row" onclick="jumpTo('7-902')"><span class="num">7.902</span><span class="lbl">Designation of a Justice Upon Unavailability of All Judges of a District Court</span></button>
       </div>
 
-      <article class="rule" id="mcr-7-901" data-search="7.901 transfer of cases between judges chief judge recusal">
+      <article class="rule" id="7-901" data-search="7.901 transfer of cases between judges chief judge recusal">
         <div class="rule-top">
           <div class="rule-id-row">
             <div>
@@ -354,13 +449,12 @@ body{font-family:'DM Sans',sans-serif;background:#f4f1ec;color:#1a1a1a;min-heigh
               <div class="rule-title">Transfer of Cases Between Judges</div>
             </div>
             <div class="rule-actions">
-              <button class="rule-action-btn copy-link" data-target="mcr-7-901" type="button">
+              <button class="rule-action-btn copy-link" data-target="7-901" type="button">
                 <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 12a3 3 0 0 0 4 0l3-3a3 3 0 0 0-4-4l-1.5 1.5"/><path d="M12 8a3 3 0 0 0-4 0l-3 3a3 3 0 0 0 4 4l1.5-1.5"/></svg>
                 Copy link
               </button>
             </div>
           </div>
-          <div class="permalink-line">/rules/mcr/#mcr-7-901</div>
         </div>
         <div class="rule-text">
           <p class="subsec"><span class="subsec-label">(A)</span>The chief judge may transfer a case from one judge or magistrate judge to another within the same district court upon any of the following grounds:</p>
@@ -388,7 +482,7 @@ body{font-family:'DM Sans',sans-serif;background:#f4f1ec;color:#1a1a1a;min-heigh
         </div>
       </article>
 
-      <article class="rule" id="mcr-7-902" data-search="7.902 designation of a justice unavailability all judges district court supreme court">
+      <article class="rule" id="7-902" data-search="7.902 designation of a justice unavailability all judges district court supreme court">
         <div class="rule-top">
           <div class="rule-id-row">
             <div>
@@ -396,13 +490,12 @@ body{font-family:'DM Sans',sans-serif;background:#f4f1ec;color:#1a1a1a;min-heigh
               <div class="rule-title">Designation of a Justice Upon Unavailability of All Judges of a District Court</div>
             </div>
             <div class="rule-actions">
-              <button class="rule-action-btn copy-link" data-target="mcr-7-902" type="button">
+              <button class="rule-action-btn copy-link" data-target="7-902" type="button">
                 <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 12a3 3 0 0 0 4 0l3-3a3 3 0 0 0-4-4l-1.5 1.5"/><path d="M12 8a3 3 0 0 0-4 0l-3 3a3 3 0 0 0 4 4l1.5-1.5"/></svg>
                 Copy link
               </button>
             </div>
           </div>
-          <div class="permalink-line">/rules/mcr/#mcr-7-902</div>
         </div>
         <div class="rule-text">
           <p class="subsec"><span class="subsec-label">(A)</span>Grounds. Where all judges and magistrate judges of a district court are simultaneously unavailable to hear a matter — whether by recusal, disqualification, absence, incapacity, or vacancy — the chief judge, or any party if there is no chief judge able to act, shall notify the Supreme Court of the unavailability.</p>
@@ -432,50 +525,110 @@ body{font-family:'DM Sans',sans-serif;background:#f4f1ec;color:#1a1a1a;min-heigh
       </article>
     </section>
 
-    <div class="empty-state" id="noResults" style="display:none">No rules match your search.</div>
+    <!-- ══════════ VIEW: SEARCH RESULTS ══════════ -->
+    <section class="view" id="view-search">
+      <div class="level-intro">
+        <div class="level-eyebrow">Search</div>
+        <div class="level-title">Results</div>
+      </div>
+      <div id="searchResultsList"></div>
+      <div class="empty-state" id="noResults" style="display:none">No rules match your search.</div>
+    </section>
 
   </main>
 </div>
 
 <script>
 (function(){
-  var searchInput = document.getElementById('ruleSearch');
-  var searchCount = document.getElementById('searchCount');
-  var noResults = document.getElementById('noResults');
-  var rules = Array.prototype.slice.call(document.querySelectorAll('.rule'));
-  var tocRules = Array.prototype.slice.call(document.querySelectorAll('.toc-rule'));
-  var chapters = Array.prototype.slice.call(document.querySelectorAll('.chapter-block'));
-  var tocChapters = Array.prototype.slice.call(document.querySelectorAll('.toc-chapter'));
 
-  function applyFilter(){
-    var q = searchInput.value.trim().toLowerCase();
-    var visibleCount = 0;
+  /* Route map: rule anchor id -> { chapter, subViewId, subLabel, chapterLabel } */
+  var ROUTES = {
+    '3-208': {chapter:'3', subView:'view-rules-3-200', chapLabel:'Ch. 3 — Special Proceedings and Actions', subLabel:'3.200 — Prerogative and Special Writs', ruleLabel:'MCR 3.208 — Writ of Quo Warranto'},
+    '3-908': {chapter:'3', subView:'view-rules-3-900', chapLabel:'Ch. 3 — Special Proceedings and Actions', subLabel:'3.900 — Post-Conviction Proceedings', ruleLabel:'MCR 3.908 — Appeal'},
+    '5-101': {chapter:'5', subView:'view-rules-5-100', chapLabel:'Ch. 5 — District Court', subLabel:'5.100 — General Provisions', ruleLabel:'MCR 5.101 — Scope and Applicability'},
+    '7-901': {chapter:'7', subView:'view-rules-7-900', chapLabel:'Ch. 7 — Appeals', subLabel:'7.900 — Assignment and Transfer of Judges', ruleLabel:'MCR 7.901 — Transfer of Cases Between Judges'},
+    '7-902': {chapter:'7', subView:'view-rules-7-900', chapLabel:'Ch. 7 — Appeals', subLabel:'7.900 — Assignment and Transfer of Judges', ruleLabel:'MCR 7.902 — Designation of a Justice'}
+  };
+  var CHAPTER_LABEL = {'3':'Ch. 3 — Special Proceedings and Actions','5':'Ch. 5 — District Court','7':'Ch. 7 — Appeals'};
+  var SUBCHAPTER_OF_VIEW = {
+    'view-rules-3-200':{chapter:'3', subView:'view-sub-3', label:'3.200 — Prerogative and Special Writs'},
+    'view-rules-3-900':{chapter:'3', subView:'view-sub-3', label:'3.900 — Post-Conviction Proceedings'},
+    'view-rules-5-100':{chapter:'5', subView:'view-sub-5', label:'5.100 — General Provisions'},
+    'view-rules-7-900':{chapter:'7', subView:'view-sub-7', label:'7.900 — Assignment and Transfer of Judges'}
+  };
 
-    rules.forEach(function(r){
-      var match = !q || (r.getAttribute('data-search') || '').indexOf(q) !== -1;
-      r.classList.toggle('hidden', !match);
-      if(match) visibleCount++;
-    });
-    tocRules.forEach(function(r){
-      var match = !q || (r.getAttribute('data-search') || '').indexOf(q) !== -1;
-      r.classList.toggle('hidden', !match);
-    });
-    chapters.forEach(function(c){
-      var anyVisible = c.querySelectorAll('.rule:not(.hidden)').length > 0;
-      c.classList.toggle('hidden', !anyVisible);
-    });
-    tocChapters.forEach(function(c){
-      var anyVisible = c.querySelectorAll('.toc-rule:not(.hidden)').length > 0;
-      c.classList.toggle('hidden', !anyVisible);
-    });
+  var allViews = Array.prototype.slice.call(document.querySelectorAll('.view'));
+  var crumbBar = document.getElementById('crumbBar');
+  var lastNonSearchView = 'view-chapters';
 
-    searchCount.textContent = q ? (visibleCount + (visibleCount === 1 ? ' rule found' : ' rules found')) : '';
-    noResults.style.display = (q && visibleCount === 0) ? 'block' : 'none';
+  function activate(viewId){
+    allViews.forEach(function(v){ v.classList.remove('active'); });
+    var target = document.getElementById(viewId);
+    if(target) target.classList.add('active');
+    if(viewId !== 'view-search') lastNonSearchView = viewId;
+    renderCrumbs(viewId);
+    window.scrollTo({top:0, behavior:'instant'});
   }
 
-  searchInput.addEventListener('input', applyFilter);
+  function renderCrumbs(viewId){
+    var parts = [];
+    parts.push('<button onclick="showChapters()">MCR</button>');
+    if(viewId === 'view-chapters'){
+      crumbBar.innerHTML = '<span class="current">MCR</span>';
+      return;
+    }
+    if(viewId === 'view-search'){
+      crumbBar.innerHTML = parts.join('<span class="sep">›</span>') + '<span class="sep">›</span><span class="current">Search results</span>';
+      return;
+    }
+    if(viewId.indexOf('view-sub-') === 0){
+      var ch = viewId.replace('view-sub-','');
+      parts.push('<span class="sep">›</span><span class="current">'+CHAPTER_LABEL[ch]+'</span>');
+      crumbBar.innerHTML = parts.join('');
+      return;
+    }
+    if(viewId.indexOf('view-rules-') === 0){
+      var info = SUBCHAPTER_OF_VIEW[viewId];
+      parts.push('<span class="sep">›</span><button onclick="showChapter(\''+info.chapter+'\')">'+CHAPTER_LABEL[info.chapter]+'</button>');
+      parts.push('<span class="sep">›</span><span class="current">'+info.label+'</span>');
+      crumbBar.innerHTML = parts.join('');
+      return;
+    }
+  }
 
-  // Copy permalink
+  window.showChapters = function(){ activate('view-chapters'); };
+  window.showChapter = function(ch){ activate('view-sub-'+ch); };
+  window.showSub = function(subId){ activate('view-rules-'+subId); };
+
+  window.jumpTo = function(ruleId){
+    var r = ROUTES[ruleId];
+    if(!r) return;
+    activate(r.subView);
+    history.replaceState(null,'','#'+ruleId);
+    highlightAndScroll(ruleId);
+  };
+
+  function highlightAndScroll(ruleId){
+    var el = document.getElementById(ruleId);
+    if(!el) return;
+    setTimeout(function(){
+      el.scrollIntoView({behavior:'smooth', block:'start'});
+      el.style.borderColor = '#c8a84b';
+      setTimeout(function(){ el.style.borderColor = ''; }, 2200);
+    }, 30);
+  }
+
+  function routeFromHash(){
+    var id = window.location.hash.replace('#','');
+    if(id && ROUTES[id]){
+      activate(ROUTES[id].subView);
+      highlightAndScroll(id);
+      return true;
+    }
+    return false;
+  }
+
+  /* ── Copy link ── */
   document.querySelectorAll('.copy-link').forEach(function(btn){
     btn.addEventListener('click', function(){
       var id = btn.getAttribute('data-target');
@@ -488,13 +641,11 @@ body{font-family:'DM Sans',sans-serif;background:#f4f1ec;color:#1a1a1a;min-heigh
       }
       if(navigator.clipboard && navigator.clipboard.writeText){
         navigator.clipboard.writeText(url).then(done).catch(done);
-      } else {
-        done();
-      }
+      } else { done(); }
     });
   });
 
-  // History toggles
+  /* ── History toggles ── */
   document.querySelectorAll('.history-toggle').forEach(function(btn){
     btn.addEventListener('click', function(){
       var panel = document.getElementById(btn.getAttribute('data-panel'));
@@ -504,13 +655,47 @@ body{font-family:'DM Sans',sans-serif;background:#f4f1ec;color:#1a1a1a;min-heigh
     });
   });
 
-  // Auto-expand + scroll to a rule if arriving via a #hash permalink
-  if(window.location.hash){
-    var target = document.querySelector(window.location.hash);
-    if(target && target.classList.contains('rule')){
-      target.style.borderColor = '#c8a84b';
-      setTimeout(function(){ target.style.borderColor = ''; }, 2200);
+  /* ── Search ── */
+  var searchInput = document.getElementById('ruleSearch');
+  var searchCount = document.getElementById('searchCount');
+  var noResults = document.getElementById('noResults');
+  var resultsList = document.getElementById('searchResultsList');
+  var allRuleEls = Array.prototype.slice.call(document.querySelectorAll('.rule[data-search]'));
+
+  function runSearch(){
+    var q = searchInput.value.trim().toLowerCase();
+    if(!q){
+      activate(lastNonSearchView);
+      searchCount.textContent = '';
+      return;
     }
+    var matches = allRuleEls.filter(function(el){
+      return (el.getAttribute('data-search')||'').indexOf(q) !== -1;
+    });
+    resultsList.innerHTML = '';
+    matches.forEach(function(el){
+      var id = el.id;
+      var route = ROUTES[id];
+      var title = el.querySelector('.rule-title').textContent;
+      var ruleNum = el.querySelector('.rule-id').textContent;
+      var item = document.createElement('div');
+      item.className = 'search-result-item';
+      item.innerHTML = '<div class="search-result-path">'+route.chapLabel+' › '+route.subLabel+'</div>'+
+        '<div><span class="search-result-id">'+ruleNum+'</span><span class="search-result-title">'+title+'</span></div>';
+      item.addEventListener('click', function(){ searchInput.value=''; jumpTo(id); });
+      resultsList.appendChild(item);
+    });
+    activate('view-search');
+    noResults.style.display = matches.length === 0 ? 'block' : 'none';
+    searchCount.textContent = matches.length + (matches.length===1 ? ' rule found' : ' rules found');
+  }
+
+  searchInput.addEventListener('input', runSearch);
+
+  /* ── Init ── */
+  window.addEventListener('hashchange', routeFromHash);
+  if(!routeFromHash()){
+    activate('view-chapters');
   }
 })();
 </script>
