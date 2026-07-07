@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Michigan Court Rules — Michigan Courts</title>
+
+<script src="/courts/shell.js" data-active="rules"></script>
+
+<link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;1,300&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'DM Sans',sans-serif;background:#f4f1ec;color:#1a1a1a;min-height:100vh}
+:focus-visible{outline:2px solid #1a4a7a;outline-offset:2px}
+
+/* ── Page Header ── */
+.page-header{background:#0a1628;padding:36px 40px 32px;border-bottom:3px solid #c8a84b}
+.breadcrumb{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.breadcrumb a{color:#7a9bbf;font-size:11.5px;text-decoration:none;letter-spacing:0.04em}
+.breadcrumb a:hover{color:#c8a84b}
+.breadcrumb span{color:#3a5878;font-size:11.5px}
+.page-header h2{font-family:'Merriweather',serif;color:#fff;font-size:25px;font-weight:300;line-height:1.3}
+.page-header p{color:#7a9bbf;font-size:13px;line-height:1.7;margin-top:9px;max-width:720px}
+.header-meta{display:flex;gap:22px;margin-top:18px;flex-wrap:wrap}
+.header-meta div{font-size:11px;color:#5a7fa0;letter-spacing:0.03em}
+.header-meta strong{display:block;color:#dce7f2;font-size:13px;font-weight:500;margin-top:2px;font-family:'JetBrains Mono',monospace}
+
+/* ── Format notice ── */
+.format-notice{background:#fbf5e6;border:1px solid #e6d4a3;border-left:3px solid #c8a84b;padding:14px 22px;margin:0 0 28px;font-size:12.5px;color:#5c4a1f;line-height:1.7;display:flex;gap:12px;align-items:flex-start}
+.format-notice svg{width:16px;height:16px;flex-shrink:0;margin-top:2px;color:#a3831f}
+.format-notice b{color:#3d3110}
+
+/* ── Search ── */
+.search-bar{display:flex;gap:10px;margin-bottom:26px}
+.search-bar input{flex:1;background:#fff;border:1px solid #d6cfc4;border-radius:3px;padding:11px 16px;font-family:'DM Sans',sans-serif;font-size:13.5px;color:#1a1a1a}
+.search-bar input::placeholder{color:#a49a8c}
+.search-bar input:focus{border-color:#1a4a7a}
+.search-count{font-size:11.5px;color:#8a7d6a;align-self:center;white-space:nowrap;letter-spacing:0.02em}
+
+/* ── Layout: sidebar + content ── */
+.rules-body{padding:32px 40px 60px;display:grid;grid-template-columns:260px 1fr;gap:36px;align-items:start}
+
+/* ── Sidebar TOC ── */
+.toc{position:sticky;top:20px;background:#fff;border:1px solid #e0d9cf;border-radius:4px;padding:6px 0;max-height:calc(100vh - 40px);overflow-y:auto}
+.toc-chapter{border-bottom:1px solid #f0ebe3}
+.toc-chapter:last-child{border-bottom:none}
+.toc-chapter-title{display:block;padding:13px 18px 9px;font-family:'Merriweather',serif;font-size:11.5px;color:#6b5f4e;text-transform:uppercase;letter-spacing:0.09em;font-weight:400}
+.toc-rule{display:flex;align-items:baseline;gap:8px;padding:7px 18px 7px 22px;text-decoration:none;font-size:12.5px}
+.toc-rule .num{font-family:'JetBrains Mono',monospace;color:#1a4a7a;font-size:11.5px;flex-shrink:0}
+.toc-rule .lbl{color:#4a4035;line-height:1.4}
+.toc-rule:hover{background:#f4f1ec}
+.toc-rule:hover .lbl{color:#1a1a1a}
+.toc-rule.hidden{display:none}
+.toc-chapter.hidden{display:none}
+
+/* ── Main content ── */
+.chapter-block{margin-bottom:6px}
+.chapter-heading{display:flex;align-items:baseline;gap:14px;padding:22px 0 10px;border-bottom:2px solid #0a1628;margin-bottom:6px}
+.chapter-heading .chap-num{font-family:'JetBrains Mono',monospace;font-size:13px;color:#c8a84b;background:#0a1628;padding:4px 10px;border-radius:2px;letter-spacing:0.03em}
+.chapter-heading h3{font-family:'Merriweather',serif;font-weight:400;font-size:20px;color:#1a1a1a}
+.chapter-block.hidden{display:none}
+
+/* ── Rule card ── */
+.rule{background:#fff;border:1px solid #e0d9cf;border-radius:4px;margin:16px 0;scroll-margin-top:20px;overflow:hidden}
+.rule.hidden{display:none}
+.rule-top{padding:22px 26px 16px;border-bottom:1px solid #f0ebe3}
+.rule-id-row{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:6px}
+.rule-id{font-family:'JetBrains Mono',monospace;font-size:13.5px;color:#1a4a7a;font-weight:500}
+.rule-actions{display:flex;gap:8px;flex-shrink:0}
+.rule-action-btn{display:inline-flex;align-items:center;gap:5px;background:#f4f1ec;border:1px solid #e0d9cf;color:#4a4035;font-size:11px;font-weight:600;padding:6px 11px;border-radius:3px;cursor:pointer;letter-spacing:0.02em;font-family:'DM Sans',sans-serif;transition:background 0.12s}
+.rule-action-btn:hover{background:#e8e2d6}
+.rule-action-btn svg{width:12px;height:12px}
+.rule-action-btn.copied{background:#0a1628;color:#c8a84b;border-color:#0a1628}
+.rule-title{font-family:'Merriweather',serif;font-size:17px;font-weight:400;color:#1a1a1a}
+.permalink-line{font-size:11px;color:#9a8f7d;font-family:'JetBrains Mono',monospace;margin-top:6px;word-break:break-all}
+
+.rule-text{padding:20px 26px 22px;font-size:13.5px;line-height:1.85;color:#2a2620}
+.rule-text p{margin-bottom:10px}
+.subsec{margin:0 0 8px 0}
+.subsec.indent1{margin-left:22px}
+.subsec.indent2{margin-left:44px}
+.subsec-label{font-weight:600;color:#0a1628;margin-right:4px}
+
+.rule-footer{border-top:1px solid #f0ebe3;padding:0}
+.history-toggle{width:100%;display:flex;align-items:center;justify-content:space-between;padding:12px 26px;background:none;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;text-align:left}
+.history-toggle:hover{background:#faf8f4}
+.history-toggle-label{display:flex;align-items:center;gap:8px;font-size:11.5px;color:#6b5f4e;letter-spacing:0.03em;text-transform:uppercase;font-weight:600}
+.history-toggle-label svg{width:13px;height:13px;color:#c8a84b}
+.history-chevron{width:11px;height:11px;color:#9a8f7d;transition:transform 0.15s}
+.history-toggle[aria-expanded="true"] .history-chevron{transform:rotate(180deg)}
+.history-panel{max-height:0;overflow:hidden;transition:max-height 0.2s ease}
+.history-panel.open{max-height:400px}
+.history-inner{padding:2px 26px 18px}
+.history-entry{display:flex;gap:14px;padding:9px 0;border-bottom:1px solid #f4f1ec;font-size:12px}
+.history-entry:last-child{border-bottom:none}
+.history-date{font-family:'JetBrains Mono',monospace;color:#1a4a7a;flex-shrink:0;width:88px}
+.history-desc{color:#4a4035;line-height:1.6}
+.history-desc a{color:#1a4a7a}
+
+/* ── Empty state ── */
+.empty-state{background:#fff;border:1px dashed #d6cfc4;border-radius:4px;padding:40px;text-align:center;color:#9a8f7d;font-size:13px}
+
+@media(max-width:860px){
+  .rules-body{grid-template-columns:1fr;padding-left:20px;padding-right:20px}
+  .toc{position:static;max-height:none;margin-bottom:4px}
+  .page-header{padding-left:20px;padding-right:20px}
+  .rule-id-row{flex-direction:column;align-items:flex-start}
+}
+</style>
+</head>
+<body>
+
+<!-- Page Header -->
+<div class="page-header">
+  <div class="breadcrumb">
+    <a href="/courts/">Home</a>
+    <span>/</span>
+    <a href="/rules/">Court Rules</a>
+    <span>/</span>
+    <span style="color:#a0b8d0">Michigan Court Rules</span>
+  </div>
+  <h2>Michigan Court Rules</h2>
+  <p>Governs practice and procedure in all Michigan courts, including pleading, motion practice, discovery, trials, judgments, and appeals. Each rule below is individually linkable — copy the permalink to cite a specific provision directly, rather than to a page number in a PDF that changes with every amendment.</p>
+  <div class="header-meta">
+    <div>Rules in force<strong>412</strong></div>
+    <div>Chapters<strong>7</strong></div>
+    <div>Last amendment<strong>Jul 1, 2026</strong></div>
+    <div>Format<strong>HTML (beta)</strong></div>
+  </div>
+</div>
+
+<div class="rules-body">
+
+  <!-- Sidebar TOC -->
+  <nav class="toc" id="toc" aria-label="Table of contents">
+    <div class="toc-chapter" data-chapter="3">
+      <span class="toc-chapter-title">Ch. 3 — Special Proceedings</span>
+      <a class="toc-rule" href="#mcr-3-208" data-search="3.208 writ quo warranto special provisions"><span class="num">3.208</span><span class="lbl">Writ of Quo Warranto</span></a>
+      <a class="toc-rule" href="#mcr-3-908" data-search="3.908 appeal set aside conviction arrest"><span class="num">3.908</span><span class="lbl">Appeal</span></a>
+    </div>
+    <div class="toc-chapter" data-chapter="5">
+      <span class="toc-chapter-title">Ch. 5 — District Court</span>
+      <a class="toc-rule" href="#mcr-5-101" data-search="5.101 scope applicability general provisions district court"><span class="num">5.101</span><span class="lbl">Scope and Applicability</span></a>
+    </div>
+    <div class="toc-chapter" data-chapter="7">
+      <span class="toc-chapter-title">Ch. 7 — Appeals</span>
+      <a class="toc-rule" href="#mcr-7-901" data-search="7.901 transfer of cases between judges"><span class="num">7.901</span><span class="lbl">Transfer of Cases Between Judges</span></a>
+      <a class="toc-rule" href="#mcr-7-902" data-search="7.902 designation of a justice unavailability all judges"><span class="num">7.902</span><span class="lbl">Designation of a Justice</span></a>
+    </div>
+  </nav>
+
+  <!-- Main content -->
+  <main id="main">
+
+    <div class="format-notice">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10" cy="10" r="8"/><path d="M10 6v5M10 14h.01"/></svg>
+      <div><b>Pilot format.</b> This HTML edition is being piloted for a limited set of chapters as a replacement for the static PDF publication. Each rule carries a stable permalink and an amendment history. Report a discrepancy between this page and the PDF to the State Court Administrative Office.</div>
+    </div>
+
+    <div class="search-bar">
+      <input type="text" id="ruleSearch" placeholder="Search by rule number or keyword — e.g. &#8220;quo warranto&#8221; or 7.901" aria-label="Search rules">
+      <span class="search-count" id="searchCount"></span>
+    </div>
+
+    <!-- CHAPTER 3 -->
+    <section class="chapter-block" data-chapter="3">
+      <div class="chapter-heading">
+        <span class="chap-num">CH. 3</span>
+        <h3>Special Proceedings and Actions</h3>
+      </div>
+
+      <article class="rule" id="mcr-3-208" data-search="3.208 writ quo warranto special provisions private individual leave special interest attorney general">
+        <div class="rule-top">
+          <div class="rule-id-row">
+            <div>
+              <div class="rule-id">MCR 3.208</div>
+              <div class="rule-title">Writ of Quo Warranto — Special Provisions</div>
+            </div>
+            <div class="rule-actions">
+              <button class="rule-action-btn copy-link" data-target="mcr-3-208" type="button">
+                <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 12a3 3 0 0 0 4 0l3-3a3 3 0 0 0-4-4l-1.5 1.5"/><path d="M12 8a3 3 0 0 0-4 0l-3 3a3 3 0 0 0 4 4l1.5-1.5"/></svg>
+                Copy link
+              </button>
+            </div>
+          </div>
+          <div class="permalink-line">/rules/mcr/#mcr-3-208</div>
+        </div>
+        <div class="rule-text">
+          <p class="subsec"><span class="subsec-label">(A)</span>A petition for a writ of quo warranto shall be filed in the supreme court and may be initiated by the attorney general or, upon leave of the court, by a private individual upon a showing of special interest as provided in subsection (B).</p>
+
+          <p class="subsec"><span class="subsec-label">(B)</span>Private Individual — Leave to File.</p>
+          <p class="subsec indent1"><span class="subsec-label">(1)</span>Special Interest Defined. For purposes of this rule, a private individual has a "special interest" in the office or franchise at issue if the individual demonstrates an interest in the subject matter distinct from that of the public generally, including but not limited to:</p>
+          <p class="subsec indent2"><span class="subsec-label">(a)</span>the individual is an elector eligible to vote for the office at issue;</p>
+          <p class="subsec indent2"><span class="subsec-label">(b)</span>the individual is a rival claimant to the office or franchise at issue; or</p>
+          <p class="subsec indent2"><span class="subsec-label">(c)</span>the individual demonstrates a direct pecuniary or legal interest that would be affected by the respondent's continued exercise of the office or franchise.</p>
+
+          <p class="subsec indent1"><span class="subsec-label">(2)</span>Application for Leave. A private individual seeking leave to file a petition under this rule shall file a written application for leave, supported by affidavit, that:</p>
+          <p class="subsec indent2"><span class="subsec-label">(a)</span>identifies the office or franchise at issue and the basis on which the respondent is alleged to unlawfully hold or exercise it;</p>
+          <p class="subsec indent2"><span class="subsec-label">(b)</span>states the facts establishing the applicant's special interest under subsection (B)(1); and</p>
+          <p class="subsec indent2"><span class="subsec-label">(c)</span>attaches the proposed petition for the writ of quo warranto.</p>
+
+          <p class="subsec indent1"><span class="subsec-label">(3)</span>Standard for Leave. The supreme court shall grant leave to file where the applicant demonstrates a special interest under subsection (B)(1) and the proposed petition, on its face, states a basis on which relief could be granted.</p>
+          <p class="subsec indent1"><span class="subsec-label">(4)</span>Denial. An order denying leave to file shall briefly state the reason for denial and is not subject to further review.</p>
+
+          <p class="subsec"><span class="subsec-label">(C)</span>The petition shall identify the public office or franchise at issue and the basis upon which the petitioner contends the respondent unlawfully holds or exercises that office or franchise.</p>
+          <p class="subsec"><span class="subsec-label">(D)</span>The respondent shall have the right to answer the petition, present evidence, and be represented by counsel.</p>
+        </div>
+        <div class="rule-footer">
+          <button class="history-toggle" aria-expanded="false" data-panel="hist-3-208" type="button">
+            <span class="history-toggle-label">
+              <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 10a6 6 0 1 1 2 4.5"/><path d="M4 14v-4h4"/><path d="M10 7v3.5l2.5 1.5"/></svg>
+              Amendment history
+            </span>
+            <svg class="history-chevron" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2.5 4.5 6 8l3.5-3.5"/></svg>
+          </button>
+          <div class="history-panel" id="hist-3-208">
+            <div class="history-inner">
+              <div class="history-entry"><div class="history-date">Jul 1, 2026</div><div class="history-desc">Added subsection (B), defining "special interest" and establishing the application and standard for leave to file by a private individual. Prior text lacked any definition or procedure for this term.</div></div>
+              <div class="history-entry"><div class="history-date">Jan 1, 2019</div><div class="history-desc">Original adoption.</div></div>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <article class="rule" id="mcr-3-908" data-search="3.908 appeal set aside conviction arrest claim palpable error magistrate scao">
+        <div class="rule-top">
+          <div class="rule-id-row">
+            <div>
+              <div class="rule-id">MCR 3.908</div>
+              <div class="rule-title">Appeal</div>
+            </div>
+            <div class="rule-actions">
+              <button class="rule-action-btn copy-link" data-target="mcr-3-908" type="button">
+                <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 12a3 3 0 0 0 4 0l3-3a3 3 0 0 0-4-4l-1.5 1.5"/><path d="M12 8a3 3 0 0 0-4 0l-3 3a3 3 0 0 0 4 4l1.5-1.5"/></svg>
+                Copy link
+              </button>
+            </div>
+          </div>
+          <div class="permalink-line">/rules/mcr/#mcr-3-908</div>
+        </div>
+        <div class="rule-text">
+          <p class="subsec"><span class="subsec-label">(A)</span>Claim of Appeal. A petitioner aggrieved by a denial of an application to set aside a conviction or arrest may file a claim of appeal as of right within 14 days after entry of the order of denial, provided one or more of the following applies:</p>
+          <p class="subsec indent1"><span class="subsec-label">(1)</span>the petitioner identifies a palpable error by which the court and the parties were misled, and shows that correcting the error would require a different disposition of the application;</p>
+          <p class="subsec indent1"><span class="subsec-label">(2)</span>the petitioner's application was reviewed on the papers, provided the petitioner did not waive the hearing on the application; or</p>
+          <p class="subsec indent1"><span class="subsec-label">(3)</span>the petitioner's application was reviewed by a magistrate.</p>
+
+          <p class="subsec"><span class="subsec-label">(B)</span>Reviewing Officer. A claim of appeal filed under this rule shall be reviewed as follows:</p>
+          <p class="subsec indent1"><span class="subsec-label">(1)</span>if the application was reviewed by a magistrate, a judge shall review the claim of appeal;</p>
+          <p class="subsec indent1"><span class="subsec-label">(2)</span>if the application was reviewed by a judge, the chief judge shall review the claim of appeal.</p>
+
+          <p class="subsec"><span class="subsec-label">(C)</span>Form. The State Court Administrative Office shall maintain a form for a claim of appeal filed under this rule.</p>
+
+          <p class="subsec"><span class="subsec-label">(D)</span>Hearing.</p>
+          <p class="subsec indent1"><span class="subsec-label">(1)</span>A claim of appeal filed under this rule shall by default entitle the petitioner to a hearing, subject to payment of the applicable hearing fee.</p>
+          <p class="subsec indent1"><span class="subsec-label">(2)</span>The petitioner may waive the hearing using the form described in subsection (C).</p>
+          <p class="subsec indent1"><span class="subsec-label">(3)</span>In lieu of payment, the petitioner may file a fee waiver request under MCR 7.403.</p>
+          <p class="subsec indent1"><span class="subsec-label">(4)</span>Absent a waiver under subsection (D)(2), a hearing shall be scheduled by default.</p>
+
+          <p class="subsec"><span class="subsec-label">(E)</span>Brief. A claim of appeal filed under this rule shall not require an accompanying brief, except that a petitioner proceeding under subsection (A)(1) shall submit a brief in support of the claimed palpable error. A petitioner not otherwise required to submit a brief may nonetheless do so.</p>
+
+          <p class="subsec"><span class="subsec-label">(F)</span>Application for Leave to Appeal. A petitioner who does not qualify to file a claim of appeal under subsection (A), or who fails to file a claim of appeal within the time provided in subsection (A), may file an Application for Leave to Appeal Order Denying Application to Set Aside Conviction or Arrest within 60 days after entry of the order of denial.</p>
+          <p class="subsec indent1"><span class="subsec-label">(1)</span>This application is not a form maintained by the State Court Administrative Office and shall consist of a brief prepared by the petitioner.</p>
+          <p class="subsec indent1"><span class="subsec-label">(2)</span>The petitioner may raise any basis for the application, provided the basis has merit and is not frivolous.</p>
+          <p class="subsec indent1"><span class="subsec-label">(3)</span>The court to which the application is directed shall grant leave to appeal upon a determination that the appeal presents a substantial question warranting review.</p>
+
+          <p class="subsec"><span class="subsec-label">(G)</span>Finality. A decision denying a claim of appeal under subsection (A) or an application for leave to appeal under subsection (F) is final and is not subject to further review, except that the petitioner may seek review of that denial by filing an application for leave to appeal with the supreme court within 21 days after entry of the order denying the claim of appeal or application for leave.</p>
+        </div>
+        <div class="rule-footer">
+          <button class="history-toggle" aria-expanded="false" data-panel="hist-3-908" type="button">
+            <span class="history-toggle-label">
+              <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 10a6 6 0 1 1 2 4.5"/><path d="M4 14v-4h4"/><path d="M10 7v3.5l2.5 1.5"/></svg>
+              Amendment history
+            </span>
+            <svg class="history-chevron" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2.5 4.5 6 8l3.5-3.5"/></svg>
+          </button>
+          <div class="history-panel" id="hist-3-908">
+            <div class="history-inner">
+              <div class="history-entry"><div class="history-date">Jul 1, 2026</div><div class="history-desc">Added subsection (G), establishing that a denial under (A) or (F) is final subject to a 21-day window to seek supreme court review.</div></div>
+              <div class="history-entry"><div class="history-date">Mar 15, 2026</div><div class="history-desc">Replaced the prior single application-for-leave track (21-day deadline, abuse-of-discretion review) with the two-track structure in subsections (A)–(F): a 14-day claim of appeal as of right on enumerated grounds, and a 60-day discretionary application for leave for all other cases.</div></div>
+              <div class="history-entry"><div class="history-date">Jan 1, 2019</div><div class="history-desc">Original adoption.</div></div>
+            </div>
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <!-- CHAPTER 5 -->
+    <section class="chapter-block" data-chapter="5">
+      <div class="chapter-heading">
+        <span class="chap-num">CH. 5</span>
+        <h3>District Court</h3>
+      </div>
+
+      <article class="rule" id="mcr-5-101" data-search="5.101 scope applicability general provisions district court subject matter jurisdiction">
+        <div class="rule-top">
+          <div class="rule-id-row">
+            <div>
+              <div class="rule-id">MCR 5.101</div>
+              <div class="rule-title">Scope and Applicability</div>
+            </div>
+            <div class="rule-actions">
+              <button class="rule-action-btn copy-link" data-target="mcr-5-101" type="button">
+                <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 12a3 3 0 0 0 4 0l3-3a3 3 0 0 0-4-4l-1.5 1.5"/><path d="M12 8a3 3 0 0 0-4 0l-3 3a3 3 0 0 0 4 4l1.5-1.5"/></svg>
+                Copy link
+              </button>
+            </div>
+          </div>
+          <div class="permalink-line">/rules/mcr/#mcr-5-101</div>
+        </div>
+        <div class="rule-text">
+          <p class="subsec"><span class="subsec-label">(A)</span>This chapter governs procedure and administration in the district courts of this state, including case assignment, scheduling, docket management, the authority of magistrate judges, court records, court decorum, and the rights of pro se litigants.</p>
+
+          <p class="subsec"><span class="subsec-label">(B)</span>Subject-Matter Jurisdiction. The district courts of this state are courts of general trial jurisdiction and have subject-matter jurisdiction over all civil and criminal matters not committed exclusively to the supreme court, including:</p>
+          <p class="subsec indent1"><span class="subsec-label">(1)</span>all civil actions at law and in equity, regardless of the amount in controversy;</p>
+          <p class="subsec indent1"><span class="subsec-label">(2)</span>small claims actions, landlord-tenant actions, and summary proceedings to recover possession of premises;</p>
+          <p class="subsec indent1"><span class="subsec-label">(3)</span>all criminal matters, including felonies, misdemeanors, ordinance violations, and civil infractions, together with related pretrial proceedings such as arraignment, bail, and preliminary examination;</p>
+          <p class="subsec indent1"><span class="subsec-label">(4)</span>probate, family, and juvenile matters as provided by statute; and</p>
+          <p class="subsec indent1"><span class="subsec-label">(5)</span>any other matter over which subject-matter jurisdiction is conferred on the district courts by statute.</p>
+
+          <p class="subsec"><span class="subsec-label">(C)</span>Where this chapter does not address a procedural matter arising in a district court proceeding, the applicable rules of Chapters 2, 3, or 6 shall govern depending on the nature of the proceeding.</p>
+          <p class="subsec"><span class="subsec-label">(D)</span>These rules shall be construed to promote the efficient, fair, and accessible administration of justice in the district courts of this state.</p>
+        </div>
+        <div class="rule-footer">
+          <button class="history-toggle" aria-expanded="false" data-panel="hist-5-101" type="button">
+            <span class="history-toggle-label">
+              <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 10a6 6 0 1 1 2 4.5"/><path d="M4 14v-4h4"/><path d="M10 7v3.5l2.5 1.5"/></svg>
+              Amendment history
+            </span>
+            <svg class="history-chevron" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2.5 4.5 6 8l3.5-3.5"/></svg>
+          </button>
+          <div class="history-panel" id="hist-5-101">
+            <div class="history-inner">
+              <div class="history-entry"><div class="history-date">Jul 1, 2026</div><div class="history-desc">Added subsection (B), stating the district court's subject-matter jurisdiction as a court of general trial jurisdiction; renumbered former (B) and (C) as (C) and (D).</div></div>
+              <div class="history-entry"><div class="history-date">Jan 1, 2019</div><div class="history-desc">Original adoption.</div></div>
+            </div>
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <!-- CHAPTER 7 -->
+    <section class="chapter-block" data-chapter="7">
+      <div class="chapter-heading">
+        <span class="chap-num">CH. 7</span>
+        <h3>Appeals</h3>
+      </div>
+
+      <article class="rule" id="mcr-7-901" data-search="7.901 transfer of cases between judges chief judge recusal">
+        <div class="rule-top">
+          <div class="rule-id-row">
+            <div>
+              <div class="rule-id">MCR 7.901</div>
+              <div class="rule-title">Transfer of Cases Between Judges</div>
+            </div>
+            <div class="rule-actions">
+              <button class="rule-action-btn copy-link" data-target="mcr-7-901" type="button">
+                <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 12a3 3 0 0 0 4 0l3-3a3 3 0 0 0-4-4l-1.5 1.5"/><path d="M12 8a3 3 0 0 0-4 0l-3 3a3 3 0 0 0 4 4l1.5-1.5"/></svg>
+                Copy link
+              </button>
+            </div>
+          </div>
+          <div class="permalink-line">/rules/mcr/#mcr-7-901</div>
+        </div>
+        <div class="rule-text">
+          <p class="subsec"><span class="subsec-label">(A)</span>The chief judge may transfer a case from one judge or magistrate judge to another within the same district court upon any of the following grounds:</p>
+          <p class="subsec indent1"><span class="subsec-label">(1)</span>Recusal or disqualification of the assigned judge;</p>
+          <p class="subsec indent1"><span class="subsec-label">(2)</span>Extended absence or incapacity of the assigned judge;</p>
+          <p class="subsec indent1"><span class="subsec-label">(3)</span>Undue concentration of caseload on a particular judge; or</p>
+          <p class="subsec indent1"><span class="subsec-label">(4)</span>Any other administrative reason that serves the interests of justice and the efficient operation of the court.</p>
+          <p class="subsec"><span class="subsec-label">(B)</span>A transfer under this rule shall be made by written order of the chief judge entered into the record and served on all parties through the Notice of Electronic Filing system.</p>
+          <p class="subsec"><span class="subsec-label">(C)</span>Upon transfer, the receiving judge shall have full authority over the matter and shall not be required to repeat any proceedings already completed unless the receiving judge determines repetition is necessary for a fair adjudication.</p>
+          <p class="subsec"><span class="subsec-label">(D)</span>A party who believes a transfer has been made improperly may file a motion objecting to the transfer within 7 days of receiving notice of the transfer. The chief judge shall rule on the motion within 10 days of filing.</p>
+        </div>
+        <div class="rule-footer">
+          <button class="history-toggle" aria-expanded="false" data-panel="hist-7-901" type="button">
+            <span class="history-toggle-label">
+              <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 10a6 6 0 1 1 2 4.5"/><path d="M4 14v-4h4"/><path d="M10 7v3.5l2.5 1.5"/></svg>
+              Amendment history
+            </span>
+            <svg class="history-chevron" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2.5 4.5 6 8l3.5-3.5"/></svg>
+          </button>
+          <div class="history-panel" id="hist-7-901">
+            <div class="history-inner">
+              <div class="history-entry"><div class="history-date">Jan 1, 2019</div><div class="history-desc">Original adoption.</div></div>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <article class="rule" id="mcr-7-902" data-search="7.902 designation of a justice unavailability all judges district court supreme court">
+        <div class="rule-top">
+          <div class="rule-id-row">
+            <div>
+              <div class="rule-id">MCR 7.902</div>
+              <div class="rule-title">Designation of a Justice Upon Unavailability of All Judges of a District Court</div>
+            </div>
+            <div class="rule-actions">
+              <button class="rule-action-btn copy-link" data-target="mcr-7-902" type="button">
+                <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 12a3 3 0 0 0 4 0l3-3a3 3 0 0 0-4-4l-1.5 1.5"/><path d="M12 8a3 3 0 0 0-4 0l-3 3a3 3 0 0 0 4 4l1.5-1.5"/></svg>
+                Copy link
+              </button>
+            </div>
+          </div>
+          <div class="permalink-line">/rules/mcr/#mcr-7-902</div>
+        </div>
+        <div class="rule-text">
+          <p class="subsec"><span class="subsec-label">(A)</span>Grounds. Where all judges and magistrate judges of a district court are simultaneously unavailable to hear a matter — whether by recusal, disqualification, absence, incapacity, or vacancy — the chief judge, or any party if there is no chief judge able to act, shall notify the Supreme Court of the unavailability.</p>
+          <p class="subsec"><span class="subsec-label">(B)</span>Designation. Upon receiving notice under subsection (A), the Chief Justice shall designate an associate justice of the Supreme Court to sit temporarily as a judge of the district court for purposes of hearing and deciding the matter, or such matters, as necessitated by the unavailability.</p>
+          <p class="subsec"><span class="subsec-label">(C)</span>Scope of Designation. A designation under this rule:</p>
+          <p class="subsec indent1"><span class="subsec-label">(1)</span>shall specify whether it extends to a single case, a class of matters, or all matters before the district court until further order;</p>
+          <p class="subsec indent1"><span class="subsec-label">(2)</span>may be limited in duration or terminated by subsequent order of the Chief Justice; and</p>
+          <p class="subsec indent1"><span class="subsec-label">(3)</span>confers on the designated justice all the authority of a judge of the district court with respect to the matter or matters designated, including the authority to conduct trials, enter judgments, and rule on post-judgment motions.</p>
+          <p class="subsec"><span class="subsec-label">(D)</span>Notice to Parties. An order of designation shall be entered into the record of the affected case or cases and served on all parties through the Notice of Electronic Filing system.</p>
+          <p class="subsec"><span class="subsec-label">(E)</span>Return of Matter. Upon the resolution of the unavailability described in subsection (A) — including the appointment or return of a district court judge, or the resolution of a recusal — the designated justice shall, unless the interests of justice require otherwise, return any pending matters to the district court for further proceedings, and the designation shall terminate as to those matters.</p>
+          <p class="subsec"><span class="subsec-label">(F)</span>No Repetition Required. A designated justice is not required to repeat any proceedings already completed before the district court became unavailable, unless the designated justice determines repetition is necessary for a fair adjudication.</p>
+        </div>
+        <div class="rule-footer">
+          <button class="history-toggle" aria-expanded="false" data-panel="hist-7-902" type="button">
+            <span class="history-toggle-label">
+              <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 10a6 6 0 1 1 2 4.5"/><path d="M4 14v-4h4"/><path d="M10 7v3.5l2.5 1.5"/></svg>
+              Amendment history
+            </span>
+            <svg class="history-chevron" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2.5 4.5 6 8l3.5-3.5"/></svg>
+          </button>
+          <div class="history-panel" id="hist-7-902">
+            <div class="history-inner">
+              <div class="history-entry"><div class="history-date">Jul 1, 2026</div><div class="history-desc">New rule adopted, addressing the gap in MCR 7.901 for cases where every judge of a district court is simultaneously unavailable, by providing for temporary designation of a supreme court justice.</div></div>
+            </div>
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <div class="empty-state" id="noResults" style="display:none">No rules match your search.</div>
+
+  </main>
+</div>
+
+<script>
+(function(){
+  var searchInput = document.getElementById('ruleSearch');
+  var searchCount = document.getElementById('searchCount');
+  var noResults = document.getElementById('noResults');
+  var rules = Array.prototype.slice.call(document.querySelectorAll('.rule'));
+  var tocRules = Array.prototype.slice.call(document.querySelectorAll('.toc-rule'));
+  var chapters = Array.prototype.slice.call(document.querySelectorAll('.chapter-block'));
+  var tocChapters = Array.prototype.slice.call(document.querySelectorAll('.toc-chapter'));
+
+  function applyFilter(){
+    var q = searchInput.value.trim().toLowerCase();
+    var visibleCount = 0;
+
+    rules.forEach(function(r){
+      var match = !q || (r.getAttribute('data-search') || '').indexOf(q) !== -1;
+      r.classList.toggle('hidden', !match);
+      if(match) visibleCount++;
+    });
+    tocRules.forEach(function(r){
+      var match = !q || (r.getAttribute('data-search') || '').indexOf(q) !== -1;
+      r.classList.toggle('hidden', !match);
+    });
+    chapters.forEach(function(c){
+      var anyVisible = c.querySelectorAll('.rule:not(.hidden)').length > 0;
+      c.classList.toggle('hidden', !anyVisible);
+    });
+    tocChapters.forEach(function(c){
+      var anyVisible = c.querySelectorAll('.toc-rule:not(.hidden)').length > 0;
+      c.classList.toggle('hidden', !anyVisible);
+    });
+
+    searchCount.textContent = q ? (visibleCount + (visibleCount === 1 ? ' rule found' : ' rules found')) : '';
+    noResults.style.display = (q && visibleCount === 0) ? 'block' : 'none';
+  }
+
+  searchInput.addEventListener('input', applyFilter);
+
+  // Copy permalink
+  document.querySelectorAll('.copy-link').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var id = btn.getAttribute('data-target');
+      var url = window.location.origin + window.location.pathname + '#' + id;
+      var restoreLabel = btn.innerHTML;
+      function done(){
+        btn.classList.add('copied');
+        btn.innerHTML = '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 10.5l3 3 7-7"/></svg> Copied';
+        setTimeout(function(){ btn.classList.remove('copied'); btn.innerHTML = restoreLabel; }, 1600);
+      }
+      if(navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(url).then(done).catch(done);
+      } else {
+        done();
+      }
+    });
+  });
+
+  // History toggles
+  document.querySelectorAll('.history-toggle').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var panel = document.getElementById(btn.getAttribute('data-panel'));
+      var open = btn.getAttribute('aria-expanded') === 'true';
+      btn.setAttribute('aria-expanded', String(!open));
+      panel.classList.toggle('open', !open);
+    });
+  });
+
+  // Auto-expand + scroll to a rule if arriving via a #hash permalink
+  if(window.location.hash){
+    var target = document.querySelector(window.location.hash);
+    if(target && target.classList.contains('rule')){
+      target.style.borderColor = '#c8a84b';
+      setTimeout(function(){ target.style.borderColor = ''; }, 2200);
+    }
+  }
+})();
+</script>
+
+</body>
+</html>
