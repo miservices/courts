@@ -206,16 +206,30 @@ const TYPE_CODES = {
   'Administrative':'AA','Special Proceeding':'SP','Appellate':'AP','Administrative Appeal':'AA',
   'Original Action':'OA','Extraordinary Writ':'MW'
 };
-const ROLE_MAP = {
-  'Criminal':{first:'primaryDefendant',second:null},
-  'Appellate':{first:'appellant',second:'appellee'},
-  'Administrative':{first:'primaryPetitioner',second:'respondent'},
-  'Administrative Appeal':{first:'primaryPetitioner',second:'respondent'},
-  'Expungement':{first:'primaryPetitioner',second:'respondent'},
-  'Special Proceeding':{first:'primaryPetitioner',second:'respondent'},
-  'Original Action':{first:'primaryPlaintiff',second:'primaryDefendant'},
-  'Extraordinary Writ':{first:'primaryPetitioner',second:'respondent'},
+// The filing wizard uses granular case types (Small Claims, Civil Infraction, Original Action, …) so it can
+// pick the right forms and fees. But every *display* surface — the public case-search site, the dashboard's
+// case cards and docket table, and this page's own getCaseTitle() below — only knows the coarse taxonomy the
+// court record actually uses: Criminal / Civil / Appellate / Administrative / Traffic. Storing the granular
+// value directly as `caseType` on a new case is what broke rendering: badges fell back to a generic default
+// and titles fell through to the raw case number because none of the coarse checks matched. This map converts
+// down to the coarse type for display, while keeping the granular label as a subtype field the Overview tab
+// already knows how to show (civilSubtype / administrativeSubtype / appellateSubtype).
+const CASE_TYPE_DISPLAY = {
+  'Small Claims':          { display:'Civil',          subtypeField:'civilSubtype' },
+  'General Civil':         { display:'Civil',          subtypeField:'civilSubtype' },
+  'Expungement':           { display:'Civil',          subtypeField:'civilSubtype' },
+  'Special Proceeding':    { display:'Civil',          subtypeField:'civilSubtype' },
+  'Original Action':       { display:'Civil',          subtypeField:'civilSubtype' },
+  'Civil Infraction':      { display:'Traffic',        subtypeField:null },
+  'Criminal':              { display:'Criminal',       subtypeField:null },
+  'Administrative':        { display:'Administrative', subtypeField:'administrativeSubtype' },
+  'Administrative Appeal': { display:'Administrative', subtypeField:'administrativeSubtype' },
+  'Appellate':             { display:'Appellate',      subtypeField:'appellateSubtype' },
+  'Extraordinary Writ':    { display:'Appellate',      subtypeField:'appellateSubtype' },
 };
+function classifyForDisplay(caseType){
+  return CASE_TYPE_DISPLAY[caseType] || { display:'Civil', subtypeField:'civilSubtype' };
+}
 
 function esc(s){ return (s||'').toString().replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function fmtDate(s){ if(!s) return '—'; const d=new Date(s); return isNaN(d)?s:d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'}); }
@@ -228,6 +242,11 @@ function getPartyName(p){
   if(p.actorType==='Business or Organization') return p.orgName||'';
   if(p.actorType==='Governmental Entity') return p.govType==='Jurisdiction' ? (p.jurisdiction||'') : (p.publicBodyName||'');
   return '';
+}
+function getPartyAttorney(p){
+  if(!p || !p.attorney) return null;
+  const a = p.attorney;
+  return a.barNumber ? `${a.name} (Bar No. ${a.barNumber})` : a.name;
 }
 
 function getCaseTitle(c){
@@ -258,14 +277,38 @@ function genCaseId(court, caseType){
   return `${prefix}-${yy}-${seq}-${code}`;
 }
 
-function mapPartiesToSchema(caseType, parties){
+// Maps parties by their *actual role string* (Plaintiff, Defendant, Petitioner, Respondent, Appellant,
+// Appellee, Prosecution, …) rather than by position, since which role comes first varies by case type
+// (e.g. Civil Infraction lists Defendant first). Petitioner/Respondent roles fall back into the
+// primaryPlaintiff/primaryDefendant keys for Civil-display cases so getCaseTitle() (which only checks
+// those two keys for civil matters) still produces a real caption instead of falling back to the case number.
+function mapPartiesToSchema(displayType, parties){
   const p = {};
-  const map = ROLE_MAP[caseType] || {first:'primaryPlaintiff', second:'primaryDefendant'};
-  const p0 = parties[0], p1 = parties[1];
-  if(map.first && p0){ const name=getPartyName(p0); if(name) p[map.first]={name}; }
-  if(map.second && p1){ const name=getPartyName(p1); if(name) p[map.second]={name}; }
-  if(parties.length>2) p.additionalParties = parties.slice(2).map(x=>({role:x.role,name:getPartyName(x)}));
-  p.rawParties = parties;
+  const byRole = {};
+  parties.forEach(party => { byRole[(party.role||'').toLowerCase()] = party; });
+  const build = (party) => party ? { role: party.role, name: getPartyName(party), ...(getPartyAttorney(party) ? { attorney: getPartyAttorney(party) } : {}) } : null;
+
+  const used = new Set();
+  if (displayType === 'Criminal' || displayType === 'Traffic') {
+    const def = byRole['defendant'];
+    if (def) { p.primaryDefendant = build(def); used.add(def); }
+  } else if (displayType === 'Appellate') {
+    const ap = byRole['appellant'], apl = byRole['appellee'];
+    if (ap)  { p.appellant = build(ap);  used.add(ap); }
+    if (apl) { p.appellee  = build(apl); used.add(apl); }
+  } else if (displayType === 'Administrative') {
+    const pet = byRole['petitioner'], res = byRole['respondent'];
+    if (pet) { p.primaryPetitioner = build(pet); used.add(pet); }
+    if (res) { p.respondent        = build(res); used.add(res); }
+  } else {
+    const pl = byRole['plaintiff'] || byRole['petitioner'];
+    const df = byRole['defendant'] || byRole['respondent'];
+    if (pl) { p.primaryPlaintiff = build(pl); used.add(pl); }
+    if (df) { p.primaryDefendant = build(df); used.add(df); }
+  }
+
+  const extras = parties.filter(party => !used.has(party)).map(party => build(party));
+  if (extras.length) p.additionalParties = extras;
   return p;
 }
 
@@ -433,19 +476,22 @@ async function acceptFiling(id){
     let linkedCaseId=null, linkedCaseFirestoreId=null;
 
     if(f.filingType==='new'){
+      const cls = classifyForDisplay(f.caseType);
       const caseObj = {
         caseId: genCaseId(f.court, f.caseType),
         court: f.court,
-        caseType: f.caseType,
-        status: 'Active',
-        dates: { filed: f.dateFiled || nowIso },
-        parties: mapPartiesToSchema(f.caseType, f.parties||[]),
+        caseType: cls.display,
+        ...(cls.subtypeField ? { [cls.subtypeField]: f.caseType } : {}),
+        status: (cls.display==='Appellate' || cls.display==='Administrative') ? 'Pending' : 'Active',
+        dates: { filed: f.dateFiled || nowIso, lastUpdated: nowIso },
+        parties: mapPartiesToSchema(cls.display, f.parties||[]),
         judge: null, judges: [],
         hearings: [],
         financialOrders: [],
         filings: buildFilingsEntries(f),
         relatedUserIds: f.filedByUid ? [f.filedByUid] : [],
         docketSummary: null,
+        intakeConfirmationNumber: f.confirmationNumber,
       };
       const ref = await addDoc(collection(db,'cases'), caseObj);
       linkedCaseFirestoreId = ref.id;
