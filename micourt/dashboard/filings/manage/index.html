@@ -15,6 +15,7 @@
   --red:#dc2626; --red-bg:#fef2f2; --red-bdr:#fee2e2;
   --amber:#a16207; --amber-bg:#fef9e7; --amber-bdr:#fde68a;
   --blue:#1d4ed8; --blue-bg:#eff6ff; --blue-bdr:#dbeafe;
+  --purple:#6d28d9; --purple-bg:#f5f3ff; --purple-bdr:#ede9fe;
 }
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);min-height:100vh}
@@ -35,26 +36,53 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);
 .ao-spin{width:26px;height:26px;border:3px solid #1e3a5f;border-top-color:var(--gold);border-radius:50%;animation:spin .8s linear infinite}
 .ao-msg{color:var(--blue-muted);font-size:12px}
 @keyframes spin{to{transform:rotate(360deg)}}
-.page-wrap{max-width:980px;margin:0 auto;padding:32px 24px 80px}
-.page-header{margin-bottom:22px;display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.page-wrap{max-width:1180px;margin:0 auto;padding:28px 24px 80px}
+.page-header{margin-bottom:20px;display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap}
 .page-header h1{font-family:'Merriweather',serif;font-size:24px;font-weight:300;color:var(--text);margin-bottom:5px}
 .page-header p{font-size:13px;color:var(--muted);line-height:1.6}
 .breadcrumb{display:flex;align-items:center;gap:6px;margin-bottom:10px}
 .breadcrumb a{color:var(--muted);font-size:11px;text-decoration:none}
 .breadcrumb span{color:#b0a898;font-size:10px}
 .breadcrumb .bc-cur{color:var(--text);font-size:11px;font-weight:600}
-.court-toggle{display:flex;border:1.5px solid var(--line);border-radius:4px;overflow:hidden;flex-shrink:0}
+.header-actions{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.court-toggle{display:flex;border:1.5px solid var(--line);border-radius:4px;overflow:hidden}
 .court-toggle button{background:var(--white);border:none;padding:8px 14px;font-size:12px;font-weight:700;color:var(--muted);cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .12s}
 .court-toggle button.active{background:var(--navy);color:var(--gold)}
 .court-toggle button+button{border-left:1px solid var(--line)}
+.icon-btn{width:34px;height:34px;border-radius:4px;background:var(--white);border:1.5px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:14px;cursor:pointer;transition:all .12s}
+.icon-btn:hover{border-color:#b0a898}
+
+/* Stat row */
+.stat-row{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:20px}
+.stat-card{background:var(--white);border:1px solid var(--line);border-radius:5px;padding:15px 16px;position:relative;overflow:hidden}
+.stat-card::after{content:'';position:absolute;top:0;left:0;width:100%;height:3px;background:var(--line)}
+.stat-card.gold::after{background:var(--gold)}
+.stat-card.red::after{background:var(--red)}
+.stat-card.blue::after{background:var(--blue)}
+.stat-card.green::after{background:var(--green)}
+.stat-card.purple::after{background:var(--purple)}
+.stat-label{font-size:9.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;display:block}
+.stat-value{font-family:'Merriweather',serif;font-size:24px;color:var(--text);font-weight:700;line-height:1}
+.stat-sub{font-size:10.5px;color:var(--muted);margin-top:4px;display:block}
+
+/* Search + tabs */
+.toolbar{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;align-items:center}
+.search-wrap{flex:1;min-width:220px;position:relative}
+.search-wrap input{width:100%;padding:9px 13px 9px 32px;border:1.5px solid var(--line);border-radius:4px;font-family:'DM Sans',sans-serif;font-size:13px;outline:none;background:var(--white)}
+.search-wrap input:focus{border-color:var(--navy)}
+.search-wrap .si{position:absolute;left:11px;top:50%;transform:translateY(-50%);font-size:12px;color:var(--muted)}
+.sort-select{padding:9px 12px;border:1.5px solid var(--line);border-radius:4px;font-size:12.5px;font-family:'DM Sans',sans-serif;background:var(--white);color:var(--text);outline:none}
+
 .tabs{display:flex;gap:6px;margin-bottom:16px;border-bottom:1.5px solid var(--line)}
 .tab{background:none;border:none;padding:10px 16px;font-size:12.5px;font-weight:700;color:var(--muted);cursor:pointer;font-family:'DM Sans',sans-serif;border-bottom:2px solid transparent;margin-bottom:-1.5px;transition:all .12s;display:flex;align-items:center;gap:6px}
 .tab:hover{color:var(--text)}
 .tab.active{color:var(--navy);border-bottom-color:var(--gold)}
 .tab-count{background:var(--cream);border:1px solid var(--line);border-radius:10px;padding:1px 7px;font-size:10.5px;color:var(--muted)}
 .tab.active .tab-count{background:var(--gold-dim);color:var(--gold);border-color:rgba(200,168,75,.3)}
+
 .card{background:var(--white);border:1px solid var(--line);border-radius:5px;margin-bottom:14px;overflow:hidden}
-.q-row{padding:15px 18px;border-bottom:1px solid #f8f5f0;cursor:pointer;transition:background .1s}
+.q-row{padding:15px 18px;border-bottom:1px solid #f8f5f0;cursor:pointer;transition:background .1s;position:relative}
+.q-row.urgent{border-left:4px solid var(--red)}
 .q-row:last-child{border-bottom:none}
 .q-row:hover{background:#faf9f7}
 .q-row-top{display:flex;align-items:center;justify-content:space-between;gap:14px}
@@ -67,42 +95,89 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);
 .sb-pending{background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-bdr)}
 .sb-accepted{background:var(--green-bg);color:var(--green);border:1px solid var(--green-bdr)}
 .sb-rejected{background:var(--red-bg);color:var(--red);border:1px solid var(--red-bdr)}
+.sb-returned{background:var(--purple-bg);color:var(--purple);border:1px solid var(--purple-bdr)}
+.urgent-badge{font-size:9.5px;font-weight:800;letter-spacing:.08em;padding:2px 7px;border-radius:2px;text-transform:uppercase;background:var(--red);color:#fff;display:inline-flex;align-items:center;gap:3px}
+.judge-badge{font-size:10px;font-weight:600;padding:2px 8px;border-radius:2px;background:var(--blue-bg);color:var(--blue);border:1px solid var(--blue-bdr)}
 .type-tag{font-size:10px;font-weight:700;letter-spacing:.05em;padding:2px 7px;border-radius:2px;text-transform:uppercase}
 .tt-new{background:var(--blue-bg);color:var(--blue);border:1px solid var(--blue-bdr)}
-.tt-existing{background:#f5f3ff;color:#6d28d9;border:1px solid #ede9fe}
+.tt-existing{background:var(--purple-bg);color:var(--purple);border:1px solid var(--purple-bdr)}
 .expand-caret{font-size:10px;color:var(--muted);transition:transform .15s}
 .q-row.open .expand-caret{transform:rotate(180deg)}
 .q-detail{display:none;padding:0 18px 18px;border-top:1px dashed var(--line);margin-top:14px;padding-top:16px}
 .q-row.open .q-detail{display:block}
+
 .rv-sec{margin-bottom:14px}
-.rv-sec-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;font-weight:700;margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid var(--line)}
+.rv-sec-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;font-weight:700;margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between}
 .rv-row{display:flex;justify-content:space-between;align-items:flex-start;padding:6px 0;gap:12px;border-bottom:1px solid #f8f5f0}
 .rv-row:last-child{border-bottom:none}
 .rv-k{font-size:12px;color:var(--muted);flex-shrink:0;width:150px}
 .rv-v{font-size:13px;color:var(--text);font-weight:500;text-align:right;flex:1;line-height:1.4}
-.rv-file{display:flex;align-items:center;gap:8px;background:var(--cream);border:1px solid var(--line);border-radius:3px;padding:6px 10px;margin-bottom:5px}
-.rf-n{font-size:12.5px;font-weight:600;color:var(--text);flex:1}
-.rf-s{font-size:11px;color:var(--muted)}
+
+/* Document card w/ actions */
+.doc-card{background:var(--cream);border:1px solid var(--line);border-radius:4px;padding:12px 14px;margin-bottom:8px}
+.doc-top{display:flex;align-items:center;gap:10px}
+.doc-icon{font-size:16px;flex-shrink:0}
+.doc-name{font-size:12.5px;font-weight:600;color:var(--text);flex:1}
+.doc-type{font-size:11px;color:var(--muted);margin-top:2px}
+.doc-size{font-size:11px;color:var(--muted);flex-shrink:0}
+.doc-actions{display:flex;gap:6px;margin-top:9px;flex-wrap:wrap}
+.doc-btn{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;letter-spacing:.02em;padding:5px 11px;border-radius:2px;text-decoration:none;border:1px solid;transition:all .12s;cursor:pointer;font-family:'DM Sans',sans-serif;background:var(--white)}
+.doc-btn-preview{color:var(--navy);border-color:var(--line)}
+.doc-btn-preview:hover{border-color:var(--navy)}
+.doc-btn-open{color:var(--blue);border-color:var(--blue-bdr);background:var(--blue-bg)}
+.doc-btn-open:hover{background:var(--blue-bdr)}
+.doc-btn-dl{color:var(--green);border-color:var(--green-bdr);background:var(--green-bg)}
+.doc-btn-dl:hover{background:var(--green-bdr)}
+.doc-no-file{font-size:10.5px;color:#b0a898;font-style:italic;margin-top:6px}
+
 .callout{display:flex;gap:10px;padding:12px 14px;border-radius:4px;margin-bottom:14px}
 .c-info{background:var(--blue-bg);border:1px solid var(--blue-bdr)}
-.c-warn{background:var(--amber-bg);border:1px solid var(--amber-bdr)}
 .callout-icon{font-size:14px;flex-shrink:0;margin-top:1px}
 .callout-text{font-size:12.5px;line-height:1.6}
 .c-info .callout-text{color:#1e40af}
-.c-warn .callout-text{color:var(--amber)}
-.btn-primary{display:inline-flex;align-items:center;gap:7px;background:var(--navy);color:#fff;border:none;padding:10px 20px;border-radius:4px;font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background .12s;text-decoration:none}
+
+.btn-primary{display:inline-flex;align-items:center;gap:7px;background:var(--navy);color:#fff;border:none;padding:9px 16px;border-radius:4px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background .12s;text-decoration:none}
 .btn-primary:hover{background:var(--navy-mid)}
 .btn-primary:disabled{opacity:.5;cursor:not-allowed}
 .btn-accept{background:var(--green)}
 .btn-accept:hover{background:#116530}
+.btn-return{background:var(--purple)}
+.btn-return:hover{background:#5b21b6}
 .btn-reject{background:none;color:var(--red);border:1.5px solid var(--red-bdr)}
 .btn-reject:hover{background:var(--red-bg)}
-.btn-ghost{display:inline-flex;align-items:center;gap:7px;background:none;color:var(--muted);border:1.5px solid var(--line);padding:9px 16px;border-radius:4px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .12s}
+.btn-forward{background:none;color:var(--blue);border:1.5px solid var(--blue-bdr)}
+.btn-forward:hover{background:var(--blue-bg)}
+.btn-urgent{background:none;color:var(--muted);border:1.5px solid var(--line)}
+.btn-urgent:hover{border-color:var(--red);color:var(--red)}
+.btn-urgent.is-urgent{background:var(--red-bg);color:var(--red);border-color:var(--red-bdr)}
+.btn-ghost{display:inline-flex;align-items:center;gap:7px;background:none;color:var(--muted);border:1.5px solid var(--line);padding:8px 14px;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .12s}
 .btn-ghost:hover{border-color:#b0a898;color:var(--text)}
-.action-row{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
-.reject-box{background:var(--red-bg);border:1px solid var(--red-bdr);border-radius:4px;padding:14px;margin-top:12px;display:none}
-.reject-box.show{display:block}
-.reject-box textarea{width:100%;padding:9px 12px;border:1.5px solid var(--red-bdr);border-radius:4px;font-family:'DM Sans',sans-serif;font-size:13px;resize:vertical;min-height:60px;outline:none;margin-bottom:10px}
+.action-row{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap}
+
+.inline-box{background:var(--cream);border:1px solid var(--line);border-radius:4px;padding:14px;margin-top:12px;display:none}
+.inline-box.show{display:block}
+.inline-box.red{background:var(--red-bg);border-color:var(--red-bdr)}
+.inline-box.purple{background:var(--purple-bg);border-color:var(--purple-bdr)}
+.inline-box.blue{background:var(--blue-bg);border-color:var(--blue-bdr)}
+.inline-box label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:8px}
+.inline-box textarea{width:100%;padding:9px 12px;border:1.5px solid var(--line);border-radius:4px;font-family:'DM Sans',sans-serif;font-size:13px;resize:vertical;min-height:60px;outline:none;margin-bottom:10px;background:#fff}
+.inline-box select{width:100%;padding:9px 12px;border:1.5px solid var(--line);border-radius:4px;font-family:'DM Sans',sans-serif;font-size:13px;outline:none;margin-bottom:10px;background:#fff;appearance:auto}
+.inline-box-actions{display:flex;gap:8px}
+
+.notes-list{display:flex;flex-direction:column;gap:8px;margin-bottom:10px}
+.note-item{background:var(--cream);border:1px solid var(--line);border-radius:4px;padding:9px 12px}
+.note-meta{font-size:10.5px;color:var(--muted);margin-bottom:3px;display:flex;justify-content:space-between}
+.note-text{font-size:12.5px;color:var(--text);line-height:1.5}
+.note-add{display:flex;gap:8px}
+.note-add textarea{flex:1;padding:8px 11px;border:1.5px solid var(--line);border-radius:4px;font-family:'DM Sans',sans-serif;font-size:12.5px;resize:vertical;min-height:38px;outline:none}
+
+.activity-list{display:flex;flex-direction:column;gap:0}
+.activity-item{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid #f8f5f0;font-size:12px}
+.activity-item:last-child{border-bottom:none}
+.activity-dot{width:6px;height:6px;border-radius:50%;background:var(--gold);flex-shrink:0;margin-top:5px}
+.activity-text{color:var(--text)}
+.activity-time{color:var(--muted);font-size:10.5px;margin-top:1px}
+
 .review-note{background:var(--cream);border:1px solid var(--line);border-radius:4px;padding:10px 12px;margin-top:10px;font-size:12px;color:var(--muted);line-height:1.6}
 .empty-state{padding:56px 22px;text-align:center}
 .empty-state .ei{font-size:36px;margin-bottom:12px}
@@ -115,9 +190,23 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);
 .loading-inline{padding:40px;text-align:center;color:var(--muted);font-size:13px}
 .spin-sm{display:inline-block;width:20px;height:20px;border:2px solid var(--line);border-top-color:var(--gold);border-radius:50%;animation:spin .8s linear infinite;vertical-align:middle;margin-right:8px}
 .spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite;vertical-align:middle}
+
+/* Preview modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(10,22,40,.75);z-index:2000;display:none;align-items:center;justify-content:center;padding:30px}
+.modal-overlay.show{display:flex}
+.modal-box{background:var(--white);border-radius:6px;width:100%;max-width:900px;height:100%;max-height:860px;display:flex;flex-direction:column;overflow:hidden}
+.modal-hdr{padding:14px 18px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.modal-hdr h4{font-family:'Merriweather',serif;font-size:14px;font-weight:400}
+.modal-close{background:none;border:none;font-size:18px;cursor:pointer;color:var(--muted);line-height:1}
+.modal-close:hover{color:var(--text)}
+.modal-body{flex:1;overflow:hidden;background:#525659}
+.modal-body iframe{width:100%;height:100%;border:none}
+
+@media(max-width:900px){ .stat-row{grid-template-columns:repeat(2,1fr)} }
 @media(max-width:640px){
   .back-bar,.topbar{padding:0 16px}
   .rv-k{width:110px}
+  .stat-row{grid-template-columns:repeat(2,1fr)}
 }
 </style>
 </head>
@@ -157,26 +246,48 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);
         <span class="bc-cur">Manage</span>
       </div>
       <h1>Manage Filings</h1>
-      <p>Review, accept, or reject documents submitted through electronic filing.</p>
+      <p>Review, accept, return, reject, or forward documents submitted through electronic filing.</p>
     </div>
-    <div class="court-toggle" id="court-toggle" style="display:none">
-      <button id="ct-district" onclick="setCourtFilter('Genesee Co. District Court',this)">District Court</button>
-      <button id="ct-sc" onclick="setCourtFilter('Michigan Supreme Court',this)">Supreme Court</button>
+    <div class="header-actions">
+      <div class="court-toggle" id="court-toggle" style="display:none">
+        <button id="ct-district" onclick="setCourtFilter('Genesee Co. District Court',this)">District Court</button>
+        <button id="ct-sc" onclick="setCourtFilter('Michigan Supreme Court',this)">Supreme Court</button>
+      </div>
+      <button class="icon-btn" id="refresh-btn" title="Refresh" onclick="loadAll()">↻</button>
     </div>
   </div>
 
   <div id="restricted-wrap" style="display:none"></div>
 
   <div id="manage-wrap" style="display:none">
+    <div class="stat-row" id="stat-row"></div>
+    <div class="toolbar">
+      <div class="search-wrap"><span class="si">🔎</span><input id="search-input" placeholder="Search by confirmation #, filer, case, or document type…" oninput="onSearch(this.value)"></div>
+      <select class="sort-select" id="sort-select" onchange="onSortChange(this.value)">
+        <option value="newest">Newest first</option>
+        <option value="oldest">Oldest first</option>
+        <option value="urgent">Emergency first</option>
+      </select>
+    </div>
     <div class="tabs" id="tabs"></div>
     <div class="card" id="queue-card"><div class="loading-inline"><span class="spin-sm"></span>Loading filings…</div></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="preview-modal" onclick="if(event.target===this)closePreview()">
+  <div class="modal-box">
+    <div class="modal-hdr">
+      <h4 id="preview-title">Document Preview</h4>
+      <button class="modal-close" onclick="closePreview()">✕</button>
+    </div>
+    <div class="modal-body" id="preview-body"></div>
   </div>
 </div>
 
 <script type="module">
 import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
-import { getFirestore, doc, getDoc, getDocs, collection, updateDoc, addDoc } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+import { getFirestore, doc, getDoc, getDocs, collection, updateDoc, setDoc, runTransaction } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 
 const cfg = {
   apiKey:"AIzaSyA8sUFIq81cs6uQvqduardpGJ4R2DxO8NQ",
@@ -193,27 +304,23 @@ const db = getFirestore(app);
 // Roles allowed to review filings — same set that gets "Admin Tools" on the dashboard.
 const STAFF_ROLES = ['Clerk','Magistrate Judge','Judge','Chief Judge','Clerk of the Supreme Court','Assistant Clerk of the Supreme Court','Justice','Chief Justice'];
 const SC_ROLES = ['Clerk of the Supreme Court','Assistant Clerk of the Supreme Court','Justice','Chief Justice'];
+const JUDGE_ROLES_DISTRICT = ['Magistrate Judge','Judge','Chief Judge'];
+const JUDGE_ROLES_SC = ['Justice','Chief Justice'];
 
 let userData = { name:'—', uid:null, role:'Portal User' };
 let pending = [];   // pendingFilings docs, each with _id
 let cases = [];     // cases docs, each with _id
+let judges = [];    // accounts filtered to judge-ish roles
 let courtFilter = 'Genesee Co. District Court';
 let statusTab = 'Pending';
 let openId = null;
+let searchQuery = '';
+let sortMode = 'newest';
 
-const TYPE_CODES = {
-  'Small Claims':'SC','General Civil':'CZ','Civil Infraction':'CI','Expungement':'EX','Criminal':'CR',
-  'Administrative':'AA','Special Proceeding':'SP','Appellate':'AP','Administrative Appeal':'AA',
-  'Original Action':'OA','Extraordinary Writ':'MW'
-};
-// The filing wizard uses granular case types (Small Claims, Civil Infraction, Original Action, …) so it can
-// pick the right forms and fees. But every *display* surface — the public case-search site, the dashboard's
-// case cards and docket table, and this page's own getCaseTitle() below — only knows the coarse taxonomy the
-// court record actually uses: Criminal / Civil / Appellate / Administrative / Traffic. Storing the granular
-// value directly as `caseType` on a new case is what broke rendering: badges fell back to a generic default
-// and titles fell through to the raw case number because none of the coarse checks matched. This map converts
-// down to the coarse type for display, while keeping the granular label as a subtype field the Overview tab
-// already knows how to show (civilSubtype / administrativeSubtype / appellateSubtype).
+// ── MCR 7.202 / 7.203 case-numbering ──
+// District Court: [TypeCode]-[Year]-[SequentialNumber], sequence resets to 1 each calendar year per type code.
+// Supreme Court:  MSC [SequentialNumber], sequence never resets.
+const DISTRICT_TYPE_CODE = { Criminal:'CR', Civil:'CV', Traffic:'CV', Administrative:'AZ', Appellate:'AZ' };
 const CASE_TYPE_DISPLAY = {
   'Small Claims':          { display:'Civil',          subtypeField:'civilSubtype' },
   'General Civil':         { display:'Civil',          subtypeField:'civilSubtype' },
@@ -231,10 +338,47 @@ function classifyForDisplay(caseType){
   return CASE_TYPE_DISPLAY[caseType] || { display:'Civil', subtypeField:'civilSubtype' };
 }
 
+// Reserves and returns the next case number for a court/type by atomically incrementing a counter
+// document, so the number assigned is guaranteed unique and sequential even under concurrent accepts.
+async function getNextCaseId(court, displayType){
+  if (court === 'Michigan Supreme Court') {
+    const counterRef = doc(db,'caseNumberCounters','supreme');
+    const seq = await runTransaction(db, async (tx) => {
+      const snap = await tx.get(counterRef);
+      const next = (snap.exists() ? (snap.data().value||0) : 0) + 1;
+      tx.set(counterRef, { value: next, updatedAt: new Date().toISOString() });
+      return next;
+    });
+    return `MSC ${seq}`;
+  }
+  const year = new Date().getFullYear();
+  const code = DISTRICT_TYPE_CODE[displayType] || 'AZ';
+  const counterRef = doc(db,'caseNumberCounters', `district-${code}-${year}`);
+  const seq = await runTransaction(db, async (tx) => {
+    const snap = await tx.get(counterRef);
+    const next = (snap.exists() ? (snap.data().value||0) : 0) + 1;
+    tx.set(counterRef, { value: next, code, year, updatedAt: new Date().toISOString() });
+    return next;
+  });
+  return `${code}-${year}-${seq}`;
+}
+
 function esc(s){ return (s||'').toString().replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function escAttr(s){ return (s||'').toString().replace(/'/g,"&#39;").replace(/"/g,'&quot;'); }
 function fmtDate(s){ if(!s) return '—'; const d=new Date(s); return isNaN(d)?s:d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'}); }
 function fmtMoney(n){ return '$'+Number(n||0).toFixed(2); }
 function fmtSize(b){ if(!b) return ''; if(b<1024) return b+' B'; if(b<1024*1024) return (b/1024).toFixed(1)+' KB'; return (b/(1024*1024)).toFixed(1)+' MB'; }
+function timeAgo(s){
+  if(!s) return '—';
+  const d=new Date(s), now=new Date(), diffMs=now-d;
+  const mins=Math.floor(diffMs/60000);
+  if(mins<1) return 'just now';
+  if(mins<60) return `${mins}m ago`;
+  const hrs=Math.floor(mins/60);
+  if(hrs<24) return `${hrs}h ago`;
+  const days=Math.floor(hrs/24);
+  return `${days}d ago`;
+}
 
 function getPartyName(p){
   if(!p) return '';
@@ -269,19 +413,10 @@ function filingTitle(f){
   return c ? `${getCaseTitle(c)} (${c.caseId})` : `${f.caseId||'Existing Case'}`;
 }
 
-function genCaseId(court, caseType){
-  const yy = new Date().getFullYear().toString().slice(-2);
-  const code = TYPE_CODES[caseType] || 'GN';
-  const seq = Math.floor(100000 + Math.random()*900000);
-  const prefix = court === 'Michigan Supreme Court' ? 'SC' : 'DC';
-  return `${prefix}-${yy}-${seq}-${code}`;
-}
-
 // Maps parties by their *actual role string* (Plaintiff, Defendant, Petitioner, Respondent, Appellant,
-// Appellee, Prosecution, …) rather than by position, since which role comes first varies by case type
-// (e.g. Civil Infraction lists Defendant first). Petitioner/Respondent roles fall back into the
-// primaryPlaintiff/primaryDefendant keys for Civil-display cases so getCaseTitle() (which only checks
-// those two keys for civil matters) still produces a real caption instead of falling back to the case number.
+// Appellee, …) rather than by position, since which role comes first varies by case type. Petitioner/
+// Respondent roles fall back into the primaryPlaintiff/primaryDefendant keys for Civil-display cases so
+// getCaseTitle() (which only checks those two keys for civil matters) still produces a real caption.
 function mapPartiesToSchema(displayType, parties){
   const p = {};
   const byRole = {};
@@ -318,13 +453,22 @@ function buildFilingsEntries(f){
     title: d.documentType, documentType: d.documentType, fee: d.fee||0,
     filedBy: f.filedBy, filedByUid: f.filedByUid, role: f.filerRole||null,
     dateFiled: f.dateFiled, status:'Accepted', accepted:true,
-    notes: f.notesToClerk||null, documentLink: d.link||null,
+    notes: f.notesToClerk||null, documentLink: d.link||null, fileUrl: d.fileUrl||null,
     ...(f.isFilingAsCounsel ? {attorney:{name:f.filedBy,uid:f.filedByUid,barNumber:f.barNumber||null}, counselRepresents:f.counselRepresents||null} : {})
   }));
 }
 
+function driveEmbedUrl(link){
+  if(!link) return null;
+  let m = link.match(/\/d\/([a-zA-Z0-9_-]{10,})/);
+  if(!m) m = link.match(/[?&]id=([a-zA-Z0-9_-]{10,})/);
+  return m ? `https://drive.google.com/file/d/${m[1]}/preview` : null;
+}
+
 // ── Load & render ──
 async function loadAll(){
+  const card = document.getElementById('queue-card');
+  if(card) card.innerHTML = `<div class="loading-inline"><span class="spin-sm"></span>Loading filings…</div>`;
   try{
     const ps = await getDocs(collection(db,'pendingFilings'));
     pending = []; ps.forEach(d=>pending.push({...d.data(), _id:d.id}));
@@ -333,8 +477,14 @@ async function loadAll(){
     const cs = await getDocs(collection(db,'cases'));
     cases = []; cs.forEach(d=>cases.push({...d.data(), _id:d.id}));
   }catch(e){ console.warn('cases load failed', e); cases=[]; }
+  try{
+    const accSnap = await getDocs(collection(db,'accounts'));
+    judges = [];
+    accSnap.forEach(d=>{ const a=d.data(); if([...JUDGE_ROLES_DISTRICT,...JUDGE_ROLES_SC].includes(a.role)) judges.push({uid:d.id, name:a.name||'Unnamed', role:a.role}); });
+  }catch(e){ console.warn('accounts load failed', e); judges=[]; }
   renderAll();
 }
+window.loadAll = loadAll;
 
 function setCourtFilter(court, btn){
   courtFilter = court;
@@ -348,28 +498,65 @@ window.setCourtFilter = setCourtFilter;
 function setTab(tab){ statusTab = tab; openId = null; renderAll(); }
 window.setTab = setTab;
 
+function onSearch(v){ searchQuery = (v||'').toLowerCase().trim(); renderAll(); }
+window.onSearch = onSearch;
+
+function onSortChange(v){ sortMode = v; renderAll(); }
+window.onSortChange = onSortChange;
+
+function matchesSearch(f){
+  if(!searchQuery) return true;
+  const hay = [f.confirmationNumber, f.filedBy, f.caseId, f.caseType, f.documentType, filingTitle(f)].filter(Boolean).join(' ').toLowerCase();
+  return hay.includes(searchQuery);
+}
+
 function currentList(){
-  return pending
+  let list = pending
     .filter(f => (f.court||'') === courtFilter)
     .filter(f => (f.status||'Pending') === statusTab)
-    .sort((a,b)=> new Date(b.dateFiled) - new Date(a.dateFiled));
+    .filter(matchesSearch);
+  if(sortMode==='oldest') list.sort((a,b)=> new Date(a.dateFiled) - new Date(b.dateFiled));
+  else if(sortMode==='urgent') list.sort((a,b)=> (b.urgent?1:0)-(a.urgent?1:0) || new Date(b.dateFiled)-new Date(a.dateFiled));
+  else list.sort((a,b)=> new Date(b.dateFiled) - new Date(a.dateFiled));
+  // Emergency filings always float to the top within Pending, regardless of chosen sort.
+  if(statusTab==='Pending') list.sort((a,b)=> (b.urgent?1:0)-(a.urgent?1:0));
+  return list;
+}
+
+function renderStats(){
+  const inCourt = pending.filter(f=>(f.court||'')===courtFilter);
+  const pendingCount = inCourt.filter(f=>(f.status||'Pending')==='Pending').length;
+  const urgentCount  = inCourt.filter(f=>(f.status||'Pending')==='Pending' && f.urgent).length;
+  const today = new Date().toDateString();
+  const acceptedToday = inCourt.filter(f=>f.status==='Accepted' && f.reviewedAt && new Date(f.reviewedAt).toDateString()===today).length;
+  const returnedCount = inCourt.filter(f=>f.status==='Returned').length;
+  const oldestPending = inCourt.filter(f=>(f.status||'Pending')==='Pending').sort((a,b)=>new Date(a.dateFiled)-new Date(b.dateFiled))[0];
+  document.getElementById('stat-row').innerHTML = `
+    <div class="stat-card gold"><span class="stat-label">Pending Review</span><span class="stat-value">${pendingCount}</span><span class="stat-sub">${oldestPending?'Oldest: '+timeAgo(oldestPending.dateFiled):'Queue clear'}</span></div>
+    <div class="stat-card red"><span class="stat-label">Marked Emergency</span><span class="stat-value">${urgentCount}</span><span class="stat-sub">Needs priority review</span></div>
+    <div class="stat-card purple"><span class="stat-label">Returned for Correction</span><span class="stat-value">${returnedCount}</span><span class="stat-sub">Awaiting refiling</span></div>
+    <div class="stat-card green"><span class="stat-label">Accepted Today</span><span class="stat-value">${acceptedToday}</span><span class="stat-sub">${new Date().toLocaleDateString('en-US',{month:'short',day:'numeric'})}</span></div>
+    <div class="stat-card blue"><span class="stat-label">Judges Available</span><span class="stat-value">${judges.filter(j=>courtFilter==='Michigan Supreme Court'?JUDGE_ROLES_SC.includes(j.role):JUDGE_ROLES_DISTRICT.includes(j.role)).length}</span><span class="stat-sub">For forwarding</span></div>
+  `;
 }
 
 function renderTabs(){
-  const counts = { Pending:0, Accepted:0, Rejected:0 };
+  const counts = { Pending:0, Returned:0, Accepted:0, Rejected:0 };
   pending.filter(f=>(f.court||'')===courtFilter).forEach(f=>{ const s=f.status||'Pending'; if(counts[s]!==undefined) counts[s]++; });
-  const tabs = [['Pending','⏳'],['Accepted','✓'],['Rejected','✕']];
+  const tabs = [['Pending','⏳'],['Returned','↩'],['Accepted','✓'],['Rejected','✕']];
   document.getElementById('tabs').innerHTML = tabs.map(([t,icon])=>
     `<button class="tab${statusTab===t?' active':''}" onclick="setTab('${t}')">${icon} ${t} <span class="tab-count">${counts[t]}</span></button>`
   ).join('');
 }
 
 function renderAll(){
+  renderStats();
   renderTabs();
   const list = currentList();
   const card = document.getElementById('queue-card');
   if(!list.length){
-    card.innerHTML = `<div class="empty-state"><div class="ei">📥</div><h4>Nothing here</h4><p>No ${statusTab.toLowerCase()} filings for ${courtFilter}.</p></div>`;
+    const msg = searchQuery ? `No ${statusTab.toLowerCase()} filings match "${esc(searchQuery)}".` : `No ${statusTab.toLowerCase()} filings for ${courtFilter}.`;
+    card.innerHTML = `<div class="empty-state"><div class="ei">📥</div><h4>Nothing here</h4><p>${msg}</p></div>`;
     return;
   }
   card.innerHTML = list.map(f => rowHtml(f)).join('');
@@ -377,18 +564,18 @@ function renderAll(){
 
 function rowHtml(f){
   const isNew = f.filingType==='new';
-  const badgeCls = f.status==='Accepted' ? 'sb-accepted' : f.status==='Rejected' ? 'sb-rejected' : 'sb-pending';
+  const badgeCls = f.status==='Accepted' ? 'sb-accepted' : f.status==='Rejected' ? 'sb-rejected' : f.status==='Returned' ? 'sb-returned' : 'sb-pending';
   const open = openId===f._id;
-  return `<div class="q-row${open?' open':''}" id="row-${f._id}">
+  return `<div class="q-row${open?' open':''}${f.urgent?' urgent':''}" id="row-${f._id}">
     <div class="q-row-top" onclick="toggleRow('${f._id}')">
       <div class="q-left">
-        <div class="q-conf">${f.confirmationNumber||'—'}</div>
+        <div class="q-conf">${f.confirmationNumber||'—'}${f.urgent?` <span class="urgent-badge">🚨 Emergency</span>`:''}${f.assignedJudge?` <span class="judge-badge">→ ${esc(f.assignedJudge)}</span>`:''}</div>
         <div class="q-title">${esc(filingTitle(f))}</div>
         <div class="q-meta">
           <span class="type-tag ${isNew?'tt-new':'tt-existing'}">${isNew?'New Case':'Existing Case'}</span>
           <span>${esc(f.documentType||'Document')}</span>
           <span>Filed by ${esc(f.filedBy||'—')}${f.isFilingAsCounsel?' (Attorney)':''}</span>
-          <span>${fmtDate(f.dateFiled)}</span>
+          <span>${timeAgo(f.dateFiled)}</span>
         </div>
       </div>
       <div class="q-right">
@@ -397,6 +584,29 @@ function rowHtml(f){
       </div>
     </div>
     <div class="q-detail">${open?detailHtml(f):''}</div>
+  </div>`;
+}
+
+function docCardHtml(d){
+  const isPdf = d.type==='pdf';
+  const embed = isPdf ? d.fileUrl : driveEmbedUrl(d.link);
+  const previewBtn = embed ? `<button class="doc-btn doc-btn-preview" onclick="event.stopPropagation();openPreview('${escAttr(embed)}','${esc(d.name)}')">👁 Preview</button>` : '';
+  const openBtn = isPdf
+    ? (d.fileUrl ? `<a class="doc-btn doc-btn-open" href="${escAttr(d.fileUrl)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">↗ Open</a>` : '')
+    : (d.link ? `<a class="doc-btn doc-btn-open" href="${escAttr(d.link)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">↗ Open in new tab</a>` : '');
+  const dlBtn = isPdf && d.fileUrl ? `<a class="doc-btn doc-btn-dl" href="${escAttr(d.fileUrl)}" download="${escAttr(d.name)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">⬇ Download Original</a>` : '';
+  const noFile = isPdf && !d.fileUrl;
+  return `<div class="doc-card">
+    <div class="doc-top">
+      <span class="doc-icon">${isPdf?'📄':'🔗'}</span>
+      <div style="flex:1">
+        <div class="doc-name">${esc(d.name)}</div>
+        <div class="doc-type">Type: ${esc(d.documentType||'—')}${d.fee?` · Fee: ${fmtMoney(d.fee)}`:' · No fee'}</div>
+      </div>
+      ${d.size?`<span class="doc-size">${fmtSize(d.size)}</span>`:''}
+    </div>
+    <div class="doc-actions">${previewBtn}${openBtn}${dlBtn}</div>
+    ${noFile?`<div class="doc-no-file">⚠ Upload never completed — no file on record for this document.</div>`:''}
   </div>`;
 }
 
@@ -419,7 +629,7 @@ function detailHtml(f){
       ${f.counselRepresents?`<div class="rv-row"><span class="rv-k">Represents</span><span class="rv-v">${esc(f.counselRepresents)}</span></div>`:''}
     </div>`;
   }
-  const docBlock = `<div class="rv-sec"><div class="rv-sec-lbl">Documents (${docs.length})</div>${docs.map(d=>`<div class="rv-file"><span>${d.type==='gdrive'?'🔗':'📄'}</span><span class="rf-n">${esc(d.name)}<br><span style="color:var(--muted);font-weight:400;font-size:11.5px">Type: ${esc(d.documentType||'—')}${d.link?` · <a href="${esc(d.link)}" target="_blank" style="color:var(--blue)">Open Drive link ↗</a>`:''}</span></span>${d.size?`<span class="rf-s">${fmtSize(d.size)}</span>`:''}</div>`).join('')}
+  const docBlock = `<div class="rv-sec"><div class="rv-sec-lbl">Documents (${docs.length})</div>${docs.map(d=>docCardHtml(d)).join('')}
     <div class="rv-row" style="margin-top:6px"><span class="rv-k" style="font-weight:700;color:var(--text)">Total Estimated Fees</span><span class="rv-v" style="font-weight:700">${fmtMoney(totalFee)}</span></div>
   </div>`;
   const detailsBlock = `<div class="rv-sec"><div class="rv-sec-lbl">Filing Details</div>
@@ -429,25 +639,59 @@ function detailHtml(f){
     <div class="rv-row"><span class="rv-k">Confirmation Email</span><span class="rv-v">${esc(f.confirmationEmail||'—')}</span></div>
   </div>`;
 
+  const notesBlock = `<div class="rv-sec"><div class="rv-sec-lbl">Internal Clerk Notes <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:10.5px">(staff only)</span></div>
+    <div class="notes-list">${(f.clerkNotes||[]).length ? f.clerkNotes.map(n=>`<div class="note-item"><div class="note-meta"><span>${esc(n.by)}</span><span>${timeAgo(n.at)}</span></div><div class="note-text">${esc(n.text)}</div></div>`).join('') : '<div style="font-size:12px;color:var(--muted)">No notes yet.</div>'}</div>
+    <div class="note-add"><textarea id="note-input-${f._id}" placeholder="Add an internal note about this filing…"></textarea><button class="btn-ghost" onclick="event.stopPropagation();addClerkNote('${f._id}')">Add</button></div>
+  </div>`;
+
+  const activityBlock = (f.activityLog||[]).length ? `<div class="rv-sec"><div class="rv-sec-lbl">Activity Log</div>
+    <div class="activity-list">${f.activityLog.slice().reverse().map(a=>`<div class="activity-item"><span class="activity-dot"></span><div><div class="activity-text">${esc(a.text)}</div><div class="activity-time">${esc(a.by)} · ${timeAgo(a.at)}</div></div></div>`).join('')}</div>
+  </div>` : '';
+
   let footer = '';
-  if((f.status||'Pending')==='Pending'){
+  const status = f.status||'Pending';
+  if(status==='Pending'){
+    const judgeOptions = judges.filter(j => courtFilter==='Michigan Supreme Court' ? JUDGE_ROLES_SC.includes(j.role) : JUDGE_ROLES_DISTRICT.includes(j.role));
     footer = `<div class="action-row">
       <button class="btn-primary btn-accept" id="accept-btn-${f._id}" onclick="event.stopPropagation();acceptFiling('${f._id}')">✓ Accept Filing</button>
-      <button class="btn-primary btn-reject" onclick="event.stopPropagation();showReject('${f._id}')">✕ Reject Filing</button>
+      <button class="btn-primary btn-return" onclick="event.stopPropagation();showBox('${f._id}','return')">↩ Return for Correction</button>
+      <button class="btn-primary btn-reject" onclick="event.stopPropagation();showBox('${f._id}','reject')">✕ Reject</button>
+      <button class="btn-primary btn-forward" onclick="event.stopPropagation();showBox('${f._id}','forward')">⚖ Forward to Judge</button>
+      <button class="btn-primary btn-urgent${f.urgent?' is-urgent':''}" onclick="event.stopPropagation();toggleEmergency('${f._id}')">🚨 ${f.urgent?'Unmark Emergency':'Mark as Emergency'}</button>
     </div>
-    <div class="reject-box" id="reject-box-${f._id}">
-      <label style="font-size:11px;color:var(--red);font-weight:700;text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:8px">Reason for rejection (sent to filer)</label>
-      <textarea id="reject-reason-${f._id}" placeholder="e.g. Missing signature page, incorrect fee, wrong court…"></textarea>
-      <div style="display:flex;gap:8px">
+    <div class="inline-box red" id="box-reject-${f._id}">
+      <label>Reason for rejection (sent to filer)</label>
+      <textarea id="reject-reason-${f._id}" placeholder="e.g. Wrong court, missing signature, duplicate filing…"></textarea>
+      <div class="inline-box-actions">
         <button class="btn-primary btn-reject" style="background:var(--red);color:#fff;border:none" onclick="event.stopPropagation();confirmReject('${f._id}')">Confirm Rejection</button>
-        <button class="btn-ghost" onclick="event.stopPropagation();hideReject('${f._id}')">Cancel</button>
+        <button class="btn-ghost" onclick="event.stopPropagation();hideBox('${f._id}','reject')">Cancel</button>
+      </div>
+    </div>
+    <div class="inline-box purple" id="box-return-${f._id}">
+      <label>What needs to be corrected? (sent to filer)</label>
+      <textarea id="return-reason-${f._id}" placeholder="e.g. Please upload a signed copy and resubmit…"></textarea>
+      <div class="inline-box-actions">
+        <button class="btn-primary btn-return" onclick="event.stopPropagation();confirmReturn('${f._id}')">Confirm Return</button>
+        <button class="btn-ghost" onclick="event.stopPropagation();hideBox('${f._id}','return')">Cancel</button>
+      </div>
+    </div>
+    <div class="inline-box blue" id="box-forward-${f._id}">
+      <label>Forward to</label>
+      <select id="forward-select-${f._id}">
+        <option value="">Select a judicial officer…</option>
+        ${judgeOptions.map(j=>`<option value="${escAttr(j.uid)}|${escAttr(j.name)}">${esc(j.name)} — ${esc(j.role)}</option>`).join('')}
+      </select>
+      ${!judgeOptions.length?`<div style="font-size:11.5px;color:var(--muted);margin-bottom:10px">No judicial officers found for this court in the accounts directory.</div>`:''}
+      <div class="inline-box-actions">
+        <button class="btn-primary btn-forward" style="background:var(--blue);color:#fff;border:none" onclick="event.stopPropagation();confirmForward('${f._id}')">Confirm Forward</button>
+        <button class="btn-ghost" onclick="event.stopPropagation();hideBox('${f._id}','forward')">Cancel</button>
       </div>
     </div>`;
   } else {
-    footer = `<div class="review-note">Reviewed by ${esc(f.reviewedBy||'—')} on ${fmtDate(f.reviewedAt)}${f.status==='Rejected'&&f.rejectionReason?`<br><strong>Reason:</strong> ${esc(f.rejectionReason)}`:''}${f.status==='Accepted'&&f.linkedCaseId?`<br><strong>Case Number:</strong> ${esc(f.linkedCaseId)}`:''}</div>`;
+    footer = `<div class="review-note">Reviewed by ${esc(f.reviewedBy||'—')} on ${fmtDate(f.reviewedAt)}${f.status==='Rejected'&&f.rejectionReason?`<br><strong>Reason:</strong> ${esc(f.rejectionReason)}`:''}${f.status==='Returned'&&f.returnReason?`<br><strong>Correction needed:</strong> ${esc(f.returnReason)}`:''}${f.status==='Accepted'&&f.linkedCaseId?`<br><strong>Case Number:</strong> ${esc(f.linkedCaseId)}`:''}</div>`;
   }
 
-  return `<div class="callout c-info"><span class="callout-icon">ℹ️</span><div class="callout-text">Submitted ${fmtDate(f.dateFiled)} · Confirmation <strong>${esc(f.confirmationNumber||'—')}</strong></div></div>${caseBlock}${docBlock}${detailsBlock}${footer}`;
+  return `<div class="callout c-info"><span class="callout-icon">ℹ️</span><div class="callout-text">Submitted ${fmtDate(f.dateFiled)} · Confirmation <strong>${esc(f.confirmationNumber||'—')}</strong></div></div>${caseBlock}${docBlock}${detailsBlock}${notesBlock}${activityBlock}${footer}`;
 }
 
 function toggleRow(id){
@@ -456,15 +700,80 @@ function toggleRow(id){
 }
 window.toggleRow = toggleRow;
 
-function showReject(id){
-  document.querySelectorAll('.reject-box.show').forEach(b=>b.classList.remove('show'));
-  document.getElementById('reject-box-'+id)?.classList.add('show');
+function showBox(id, kind){
+  ['reject','return','forward'].forEach(k=>{ if(k!==kind) document.getElementById(`box-${k}-${id}`)?.classList.remove('show'); });
+  document.getElementById(`box-${kind}-${id}`)?.classList.add('show');
 }
-window.showReject = showReject;
-function hideReject(id){
-  document.getElementById('reject-box-'+id)?.classList.remove('show');
+window.showBox = showBox;
+function hideBox(id, kind){
+  document.getElementById(`box-${kind}-${id}`)?.classList.remove('show');
 }
-window.hideReject = hideReject;
+window.hideBox = hideBox;
+
+function openPreview(url, name){
+  document.getElementById('preview-title').textContent = name || 'Document Preview';
+  document.getElementById('preview-body').innerHTML = `<iframe src="${url}" title="${escAttr(name||'')}"></iframe>`;
+  document.getElementById('preview-modal').classList.add('show');
+}
+window.openPreview = openPreview;
+function closePreview(){
+  document.getElementById('preview-modal').classList.remove('show');
+  document.getElementById('preview-body').innerHTML = '';
+}
+window.closePreview = closePreview;
+
+async function persistFiling(f, patch){
+  await updateDoc(doc(db,'pendingFilings', f._id), patch);
+  Object.assign(f, patch);
+}
+
+function pushActivity(f, text){
+  const entry = { text, by: userData.name, at: new Date().toISOString() };
+  return [...(f.activityLog||[]), entry];
+}
+
+async function toggleEmergency(id){
+  const f = pending.find(x=>x._id===id);
+  if(!f) return;
+  const urgent = !f.urgent;
+  try{
+    const activityLog = pushActivity(f, urgent ? 'Marked as emergency' : 'Removed emergency flag');
+    await persistFiling(f, { urgent, activityLog });
+    renderAll();
+  }catch(err){ console.error(err); alert('Could not update the emergency flag. Please try again.'); }
+}
+window.toggleEmergency = toggleEmergency;
+
+async function addClerkNote(id){
+  const f = pending.find(x=>x._id===id);
+  if(!f) return;
+  const input = document.getElementById('note-input-'+id);
+  const text = input?.value?.trim();
+  if(!text) return;
+  try{
+    const clerkNotes = [...(f.clerkNotes||[]), { text, by:userData.name, byUid:userData.uid, at:new Date().toISOString() }];
+    const activityLog = pushActivity(f, 'Added an internal note');
+    await persistFiling(f, { clerkNotes, activityLog });
+    renderAll();
+  }catch(err){ console.error(err); alert('Could not save the note. Please try again.'); }
+}
+window.addClerkNote = addClerkNote;
+
+async function confirmForward(id){
+  const f = pending.find(x=>x._id===id);
+  if(!f) return;
+  const sel = document.getElementById('forward-select-'+id);
+  const val = sel?.value;
+  if(!val){ alert('Please select a judicial officer to forward this filing to.'); return; }
+  const [uid, name] = val.split('|');
+  try{
+    const activityLog = pushActivity(f, `Forwarded to ${name} for review`);
+    await persistFiling(f, { assignedJudge:name, assignedJudgeUid:uid, activityLog });
+    hideBox(id,'forward');
+    renderAll();
+  }catch(err){ console.error(err); alert('Could not forward this filing. Please try again.'); }
+}
+window.confirmForward = confirmForward;
 
 async function acceptFiling(id){
   const btn = document.getElementById('accept-btn-'+id);
@@ -477,8 +786,9 @@ async function acceptFiling(id){
 
     if(f.filingType==='new'){
       const cls = classifyForDisplay(f.caseType);
+      const caseId = await getNextCaseId(f.court, cls.display);
       const caseObj = {
-        caseId: genCaseId(f.court, f.caseType),
+        caseId,
         court: f.court,
         caseType: cls.display,
         ...(cls.subtypeField ? { [cls.subtypeField]: f.caseType } : {}),
@@ -493,9 +803,10 @@ async function acceptFiling(id){
         docketSummary: null,
         intakeConfirmationNumber: f.confirmationNumber,
       };
-      const ref = await addDoc(collection(db,'cases'), caseObj);
-      linkedCaseFirestoreId = ref.id;
-      linkedCaseId = caseObj.caseId;
+      // Case documents are keyed by the case number itself (MCR 7.202/7.203), not an opaque ID.
+      await setDoc(doc(db,'cases', caseId), caseObj);
+      linkedCaseFirestoreId = caseId;
+      linkedCaseId = caseId;
     } else if(f.caseFirestoreId){
       const caseRef = doc(db,'cases', f.caseFirestoreId);
       const caseSnap = await getDoc(caseRef);
@@ -508,19 +819,18 @@ async function acceptFiling(id){
           return entry;
         });
         if(!found) filings = filings.concat(buildFilingsEntries(f));
-        await updateDoc(caseRef, { filings });
+        await updateDoc(caseRef, { filings, 'dates.lastUpdated': nowIso });
       }
       linkedCaseFirestoreId = f.caseFirestoreId;
       linkedCaseId = f.caseId;
     }
 
-    await updateDoc(doc(db,'pendingFilings', f._id), {
+    const activityLog = pushActivity(f, `Accepted${linkedCaseId ? ' — case ' + linkedCaseId : ''}`);
+    await persistFiling(f, {
       status:'Accepted', accepted:true,
       reviewedBy:userData.name, reviewedByUid:userData.uid, reviewedAt:nowIso,
-      linkedCaseId, linkedCaseFirestoreId,
+      linkedCaseId, linkedCaseFirestoreId, activityLog,
     });
-
-    Object.assign(f, { status:'Accepted', accepted:true, reviewedBy:userData.name, reviewedAt:nowIso, linkedCaseId, linkedCaseFirestoreId });
     await loadAll();
   }catch(err){
     console.error(err);
@@ -534,34 +844,46 @@ async function confirmReject(id){
   const f = pending.find(x=>x._id===id);
   if(!f) return;
   const reason = document.getElementById('reject-reason-'+id)?.value?.trim() || null;
+  if(!reason){ alert('Please provide a reason for rejection.'); return; }
   try{
     const nowIso = new Date().toISOString();
-    if(f.filingType==='existing' && f.caseFirestoreId){
-      const caseRef = doc(db,'cases', f.caseFirestoreId);
-      const caseSnap = await getDoc(caseRef);
-      if(caseSnap.exists()){
-        const caseData = caseSnap.data();
-        let filings = caseData.filings || [];
-        filings = filings.map(entry=>{
-          if(entry.confirmationNumber && entry.confirmationNumber===f.confirmationNumber) return {...entry, status:'Rejected', accepted:false};
-          return entry;
-        });
-        await updateDoc(caseRef, { filings });
-      }
-    }
-    await updateDoc(doc(db,'pendingFilings', f._id), {
-      status:'Rejected', accepted:false, rejectionReason:reason,
-      reviewedBy:userData.name, reviewedByUid:userData.uid, reviewedAt:nowIso,
-    });
-    Object.assign(f, { status:'Rejected', accepted:false, rejectionReason:reason, reviewedBy:userData.name, reviewedAt:nowIso });
+    if(f.filingType==='existing' && f.caseFirestoreId) await updateCaseFilingStatus(f, 'Rejected');
+    const activityLog = pushActivity(f, 'Rejected');
+    await persistFiling(f, { status:'Rejected', accepted:false, rejectionReason:reason, reviewedBy:userData.name, reviewedByUid:userData.uid, reviewedAt:nowIso, activityLog });
     openId = null;
     renderAll();
-  }catch(err){
-    console.error(err);
-    alert('There was an error rejecting this filing. Please try again.');
-  }
+  }catch(err){ console.error(err); alert('There was an error rejecting this filing. Please try again.'); }
 }
 window.confirmReject = confirmReject;
+
+async function confirmReturn(id){
+  const f = pending.find(x=>x._id===id);
+  if(!f) return;
+  const reason = document.getElementById('return-reason-'+id)?.value?.trim() || null;
+  if(!reason){ alert('Please describe what needs to be corrected.'); return; }
+  try{
+    const nowIso = new Date().toISOString();
+    if(f.filingType==='existing' && f.caseFirestoreId) await updateCaseFilingStatus(f, 'Returned for Correction');
+    const activityLog = pushActivity(f, 'Returned for correction');
+    await persistFiling(f, { status:'Returned', accepted:false, returnReason:reason, reviewedBy:userData.name, reviewedByUid:userData.uid, reviewedAt:nowIso, activityLog });
+    openId = null;
+    renderAll();
+  }catch(err){ console.error(err); alert('There was an error returning this filing. Please try again.'); }
+}
+window.confirmReturn = confirmReturn;
+
+async function updateCaseFilingStatus(f, newStatus){
+  const caseRef = doc(db,'cases', f.caseFirestoreId);
+  const caseSnap = await getDoc(caseRef);
+  if(!caseSnap.exists()) return;
+  const caseData = caseSnap.data();
+  let filings = caseData.filings || [];
+  filings = filings.map(entry=>{
+    if(entry.confirmationNumber && entry.confirmationNumber===f.confirmationNumber) return {...entry, status:newStatus, accepted:false};
+    return entry;
+  });
+  await updateDoc(caseRef, { filings });
+}
 
 function showRestricted(){
   document.getElementById('restricted-wrap').style.display='block';

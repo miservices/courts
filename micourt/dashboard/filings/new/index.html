@@ -1083,17 +1083,42 @@ async function submitFiling(){
     const email=document.getElementById('contact-email')?.value?.trim()||'';
     const counselRep=isFilingAsCounsel?(document.getElementById('counsel-represents')?.value?.trim()||null):null;
     const partyData=parties.map(p=>{const base={role:p.role,actorType:p.actorType};if(p.actorType==='Natural Person')Object.assign(base,{firstName:p.firstName,lastName:p.lastName,pin:p.pin});else if(p.actorType==='Business or Organization')Object.assign(base,{orgName:p.orgName,repName:p.repName,repPin:p.repPin});else Object.assign(base,{govType:p.govType,jurisdiction:p.jurisdiction==='Other'?p.jurisdictionManual:p.jurisdiction,publicBodyName:p.publicBodyName});if(p.isRepresented&&isFilingAsCounsel)base.attorney={name:userData.name,uid:userData.uid,barNumber:userData.barNumber||null};return base;});
+
+    let storageMod=null, storage=null;
+    if(uploadedFiles.length && window._storage){
+      lbl.innerHTML='<span class="spin"></span> Uploading documents…';
+      storageMod = await import('https://www.gstatic.com/firebasejs/11.0.0/firebase-storage.js');
+      storage = window._storage;
+    }
+
     const documents=[];
-    uploadedFiles.forEach(f=>{const opt=currentDocTypeOptions.find(o=>o.v===f.docType?.value);documents.push({type:'pdf',name:f.file.name,size:f.file.size,documentType:f.docType?.value||null,fee:f.docType?getDocumentFee(f.docType.value,opt?.f):0});});
+    for(const f of uploadedFiles){
+      const opt=currentDocTypeOptions.find(o=>o.v===f.docType?.value);
+      const docEntry={type:'pdf',name:f.file.name,size:f.file.size,documentType:f.docType?.value||null,fee:f.docType?getDocumentFee(f.docType.value,opt?.f):0,fileUrl:null};
+      if(storageMod && storage){
+        try{
+          const path=`filingUploads/${conf}/${Date.now()}-${f.file.name}`;
+          const sref=storageMod.ref(storage,path);
+          await storageMod.uploadBytes(sref,f.file,{contentType:'application/pdf'});
+          docEntry.fileUrl=await storageMod.getDownloadURL(sref);
+          docEntry.storagePath=path;
+        }catch(upErr){
+          console.error('Upload failed for',f.file.name,upErr);
+        }
+      }
+      documents.push(docEntry);
+    }
     gdriveEntries.filter(g=>g.link.trim()).forEach(g=>{const opt=currentDocTypeOptions.find(o=>o.v===g.docType?.value);documents.push({type:'gdrive',name:'Google Drive Document',link:g.link.trim(),documentType:g.docType?.value||null,fee:g.docType?getDocumentFee(g.docType.value,opt?.f):0});});
+
+    lbl.innerHTML='<span class="spin"></span> Submitting…';
     const totalFee=documents.reduce((s,d)=>s+(d.fee||0),0);
-    const filingObj={confirmationNumber:conf,filingType,court:selectedCourt||(selectedCase?.court)||'',caseType:selectedCaseType||(selectedCase?.caseType)||'',documentType:getPrimaryDocType(),parties:filingType==='new'?partyData:[],documents,totalFee,notesToClerk:notes,confirmationEmail:email,filerRole:role,filedBy:userData.name,filedByUid:userData.uid,isFilingAsCounsel,counselRepresents:counselRep,barNumber:isFilingAsCounsel?(userData.barNumber||null):null,dateFiled:now,status:'Pending',accepted:false};
+    const filingObj={confirmationNumber:conf,filingType,court:selectedCourt||(selectedCase?.court)||'',caseType:selectedCaseType||(selectedCase?.caseType)||'',documentType:getPrimaryDocType(),parties:filingType==='new'?partyData:[],documents,totalFee,notesToClerk:notes,confirmationEmail:email,filerRole:role,filedBy:userData.name,filedByUid:userData.uid,isFilingAsCounsel,counselRepresents:counselRep,barNumber:isFilingAsCounsel?(userData.barNumber||null):null,dateFiled:now,status:'Pending',accepted:false,urgent:false};
     if(filingType==='existing'&&selectedCase){filingObj.caseId=selectedCase.caseId;filingObj.caseFirestoreId=selectedCase._id;}
     if(window._db){
       const{collection,addDoc,doc,updateDoc,arrayUnion}=await import('https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js');
       await addDoc(collection(window._db,'pendingFilings'),filingObj);
       if(filingType==='existing'&&selectedCase?._id){
-        const filingEntries=documents.map(d=>({title:d.documentType,documentType:d.documentType,fee:d.fee,filedBy:userData.name,filedByUid:userData.uid,role:role||null,dateFiled:now,status:'Pending',accepted:false,notes:notes||null,documentLink:d.link||null,...(isFilingAsCounsel?{attorney:{name:userData.name,uid:userData.uid,barNumber:userData.barNumber||null},counselRepresents:counselRep}:{})}));
+        const filingEntries=documents.map(d=>({confirmationNumber:conf,title:d.documentType,documentType:d.documentType,fee:d.fee,filedBy:userData.name,filedByUid:userData.uid,role:role||null,dateFiled:now,status:'Pending',accepted:false,notes:notes||null,documentLink:d.link||null,fileUrl:d.fileUrl||null,...(isFilingAsCounsel?{attorney:{name:userData.name,uid:userData.uid,barNumber:userData.barNumber||null},counselRepresents:counselRep}:{})}));
         await updateDoc(doc(window._db,'cases',selectedCase._id),{filings:arrayUnion(...filingEntries)});
       }
     }
@@ -1146,9 +1171,11 @@ ssInit('case-type',[]);
 import{initializeApp,getApps,getApp}from"https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
 import{getAuth,onAuthStateChanged,setPersistence,browserLocalPersistence}from"https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
 import{getFirestore,doc,getDoc,getDocs,collection}from"https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+import{getStorage}from"https://www.gstatic.com/firebasejs/11.0.0/firebase-storage.js";
 const cfg={apiKey:"AIzaSyA8sUFIq81cs6uQvqduardpGJ4R2DxO8NQ",authDomain:"micourt-dada6.firebaseapp.com",projectId:"micourt-dada6",storageBucket:"micourt-dada6.firebasestorage.app",messagingSenderId:"1013564619997",appId:"1:1013564619997:web:8f259dab457915758f6f34"};
 const app=getApps().length?getApp():initializeApp(cfg);
 const auth=getAuth(app);const db=getFirestore(app);window._db=db;
+const storage=getStorage(app);window._storage=storage;
 await setPersistence(auth,browserLocalPersistence);
 const unsub=onAuthStateChanged(auth,async(user)=>{
   unsub();
