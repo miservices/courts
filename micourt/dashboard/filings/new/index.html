@@ -1082,7 +1082,22 @@ async function submitFiling(){
     const notes=document.getElementById('filing-notes')?.value?.trim()||null;
     const email=document.getElementById('contact-email')?.value?.trim()||'';
     const counselRep=isFilingAsCounsel?(document.getElementById('counsel-represents')?.value?.trim()||null):null;
-    const partyData=parties.map(p=>{const base={role:p.role,actorType:p.actorType};if(p.actorType==='Natural Person')Object.assign(base,{firstName:p.firstName,lastName:p.lastName,pin:p.pin});else if(p.actorType==='Business or Organization')Object.assign(base,{orgName:p.orgName,repName:p.repName,repPin:p.repPin});else Object.assign(base,{govType:p.govType,jurisdiction:p.jurisdiction==='Other'?p.jurisdictionManual:p.jurisdiction,publicBodyName:p.publicBodyName});if(p.isRepresented&&isFilingAsCounsel)base.attorney={name:userData.name,uid:userData.uid,barNumber:userData.barNumber||null};return base;});
+    // Full intake record (kept for clerk identity verification only — includes PINs, never written to the public case record).
+    const partyIntake=parties.map(p=>{const base={role:p.role,actorType:p.actorType};if(p.actorType==='Natural Person')Object.assign(base,{firstName:p.firstName,lastName:p.lastName,pin:p.pin});else if(p.actorType==='Business or Organization')Object.assign(base,{orgName:p.orgName,repName:p.repName,repPin:p.repPin});else Object.assign(base,{govType:p.govType,jurisdiction:p.jurisdiction==='Other'?p.jurisdictionManual:p.jurisdiction,publicBodyName:p.publicBodyName});if(p.isRepresented&&isFilingAsCounsel)base.attorney={name:userData.name,uid:userData.uid,barNumber:userData.barNumber||null};return base;});
+    // Public-record shape — role/name (+ attorney, if represented) — ready to drop straight into a case's `parties` array once the clerk accepts the filing. No PINs.
+    const partyData=parties.map((p,idx)=>{
+      const party={role:p.role,name:getPartyName(p)||null};
+      if(p.isRepresented&&isFilingAsCounsel){
+        party.attorney={name:userData.name,barNumber:userData.barNumber||null};
+      }else if(idx===0&&!isFilingAsCounsel){
+        party.selfRepresented=true;
+      }
+      const extra=[];
+      if(p.actorType==='Business or Organization'&&p.repName)extra.push({label:'Organizational Representative',value:p.repName});
+      if(p.actorType==='Governmental Entity'&&p.govType)extra.push({label:'Government Type',value:p.govType});
+      if(extra.length)party.additionalFields=extra;
+      return party;
+    });
 
     let storageMod=null, storage=null;
     if(uploadedFiles.length && window._storage){
@@ -1112,14 +1127,39 @@ async function submitFiling(){
 
     lbl.innerHTML='<span class="spin"></span> Submitting…';
     const totalFee=documents.reduce((s,d)=>s+(d.fee||0),0);
-    const filingObj={confirmationNumber:conf,filingType,court:selectedCourt||(selectedCase?.court)||'',caseType:selectedCaseType||(selectedCase?.caseType)||'',documentType:getPrimaryDocType(),parties:filingType==='new'?partyData:[],documents,totalFee,notesToClerk:notes,confirmationEmail:email,filerRole:role,filedBy:userData.name,filedByUid:userData.uid,isFilingAsCounsel,counselRepresents:counselRep,barNumber:isFilingAsCounsel?(userData.barNumber||null):null,dateFiled:now,status:'Pending',accepted:false,urgent:false};
+    const filingObj={confirmationNumber:conf,filingType,court:selectedCourt||(selectedCase?.court)||'',caseType:selectedCaseType||(selectedCase?.caseType)||'',documentType:getPrimaryDocType(),parties:filingType==='new'?partyData:[],partyIntake:filingType==='new'?partyIntake:[],documents,totalFee,notesToClerk:notes,confirmationEmail:email,filerRole:role,filedBy:userData.name,filedByUid:userData.uid,isFilingAsCounsel,counselRepresents:counselRep,barNumber:isFilingAsCounsel?(userData.barNumber||null):null,dateFiled:now,status:'Pending',accepted:false,urgent:false};
     if(filingType==='existing'&&selectedCase){filingObj.caseId=selectedCase.caseId;filingObj.caseFirestoreId=selectedCase._id;}
     if(window._db){
-      const{collection,addDoc,doc,updateDoc,arrayUnion}=await import('https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js');
+      const{collection,addDoc,doc,getDoc:getDocFn,updateDoc,arrayUnion}=await import('https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js');
       await addDoc(collection(window._db,'pendingFilings'),filingObj);
       if(filingType==='existing'&&selectedCase?._id){
-        const filingEntries=documents.map(d=>({confirmationNumber:conf,title:d.documentType,documentType:d.documentType,fee:d.fee,filedBy:userData.name,filedByUid:userData.uid,role:role||null,dateFiled:now,status:'Pending',accepted:false,notes:notes||null,documentLink:d.link||null,fileUrl:d.fileUrl||null,...(isFilingAsCounsel?{attorney:{name:userData.name,uid:userData.uid,barNumber:userData.barNumber||null},counselRepresents:counselRep}:{})}));
-        await updateDoc(doc(window._db,'cases',selectedCase._id),{filings:arrayUnion(...filingEntries)});
+        // Re-read the live case so the new events number sequentially after anything filed since this page loaded.
+        let existingEvents=selectedCase.events||[];
+        try{
+          const liveSnap=await getDocFn(doc(window._db,'cases',selectedCase._id));
+          if(liveSnap.exists())existingEvents=liveSnap.data().events||[];
+        }catch(e){/* fall back to the cached copy */}
+        let nextEventNum=existingEvents.reduce((max,ev)=>Math.max(max,ev.eventNumber||0),0)+1;
+        const eventEntries=documents.map(d=>{
+          const ev={
+            eventNumber:nextEventNum++,
+            date:now,
+            type:'filing',
+            description:`${d.documentType||'Document'} filed by ${role}.`,
+            filedBy:userData.name,
+            role:role||null,
+            documentLink:d.fileUrl||d.link||null,
+            // Clerk-facing tracking fields — not rendered on the public case page.
+            confirmationNumber:conf,
+            status:'Pending',
+            accepted:false,
+            fee:d.fee||0
+          };
+          if(notes)ev.comment=notes;
+          if(isFilingAsCounsel){ev.attorney={name:userData.name,uid:userData.uid,barNumber:userData.barNumber||null};if(counselRep)ev.counselRepresents=counselRep;}
+          return ev;
+        });
+        await updateDoc(doc(window._db,'cases',selectedCase._id),{events:arrayUnion(...eventEntries)});
       }
     }
     document.getElementById('conf-num').textContent=conf;
@@ -1160,7 +1200,39 @@ function fmtDate(s){if(!s)return'—';const d=new Date(s);return isNaN(d)?s:d.to
 function fmtSize(b){if(b<1024)return b+' B';if(b<1024*1024)return(b/1024).toFixed(1)+' KB';return(b/(1024*1024)).toFixed(1)+' MB';}
 function confNum(){return`MCR-${new Date().getFullYear()}-${Math.floor(100000+Math.random()*900000)}`;}
 function ttCls(t){const l=(t||'').toLowerCase();if(l==='criminal')return'tt-cr';if(l.includes('civil')||l.includes('small claims'))return'tt-ci';if(l==='appellate'||l==='appeal')return'tt-ap';if(l==='traffic')return'tt-tr';if(l.includes('admin'))return'tt-ad';return'tt-df';}
-function getCaseTitle(c){const t=(c.caseType||'').toLowerCase();const p=c.parties||{};if(t==='criminal'||t==='traffic'){const def=p.primaryDefendant?.name;return def?`State of Michigan v. ${def}`:'State of Michigan v. Unknown';}if(t.includes('civil')||t.includes('small claims')){const pl=p.primaryPlaintiff?.name,df=p.primaryDefendant?.name;if(pl&&df)return`${pl} v. ${df}`;if(pl)return`Ex parte ${pl}`;}if(t==='appellate'||t==='appeal'){const ap=p.appellant?.name,apl=p.appellee?.name;if(ap&&apl)return`${ap} v. ${apl}`;const s=c.docketSummary?.split('.')[0]?.trim();return(s&&s.length<80)?s:(c.caseId||'Appellate Matter');}if(t.includes('admin')){const pet=p.primaryPetitioner?.name||p.petitioner?.name,res=p.respondent?.name;if(pet&&res)return`${pet} v. ${res}`;}return c.caseId||'Case Record';}
+function getCaseTitle(c){
+  const t=(c.caseType||'').toLowerCase();
+  const list=Array.isArray(c.parties)?c.parties:[];
+  const findRole=roles=>list.find(x=>roles.includes((x.role||'').toLowerCase()))?.name;
+  if(t==='criminal'||t==='traffic'){
+    const def=findRole(['defendant']);
+    return def?`State of Michigan v. ${def}`:'State of Michigan v. Unknown';
+  }
+  if(t.includes('civil')||t.includes('small claims')){
+    const pl=findRole(['plaintiff']),df=findRole(['defendant']);
+    if(pl&&df)return`${pl} v. ${df}`;
+    if(pl)return`Ex parte ${pl}`;
+    if(df)return`In re ${df}`;
+    const s=c.docketSummary?.split('.')[0]?.trim();
+    return(s&&s.length<90)?s:(c.caseId||'Civil Matter');
+  }
+  if(t==='appellate'||t==='appeal'){
+    const ap=findRole(['appellant']),apl=findRole(['appellee']);
+    if(ap&&apl)return`${ap} v. ${apl}`;
+    if(ap)return`Ex parte ${ap}`;
+    if(apl)return`In re ${apl}`;
+    const s=c.docketSummary?.split('.')[0]?.trim();
+    return(s&&s.length>4&&s.length<90)?s:(c.caseId||'Appellate Matter');
+  }
+  if(t.includes('admin')){
+    const pet=findRole(['petitioner']),res=findRole(['respondent']);
+    if(pet&&res)return`${pet} v. ${res}`;
+    if(pet)return`Ex parte ${pet}`;
+    if(res)return`In re ${res}`;
+    return c.administrativeSubtype||c.docketSummary?.split('.')[0]?.trim()||'Administrative Matter';
+  }
+  return c.caseId||'Case Record';
+}
 
 ssInit('court',COURTS.map(c=>({v:c.v,l:c.l,d:c.d,g:''})));
 ssInit('case-type',[]);
