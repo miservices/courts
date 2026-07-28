@@ -158,11 +158,26 @@ nav .nav-btn:hover{background:#d4b85e}
 .info-item .v.small{font-size:13px}
 .info-item .v.muted{color:#b0a898;font-weight:400;font-style:italic}
 
+/* Content-sized grid: each field only takes the width it needs, so a row can
+   hold 2 wide fields or 5 short ones instead of a fixed column count. */
+.info-grid-auto{display:flex;flex-wrap:wrap;gap:14px 30px}
+.info-grid-auto .info-item{flex:0 1 auto;min-width:110px;max-width:100%}
+.info-grid-auto .info-item.grow{flex-grow:1}
+
+/* Compact data table — used for line-item data like payments where a
+   header row + aligned columns reads more clearly than stacked labels */
+.data-table{width:100%;border-collapse:collapse}
+.data-table th{font-size:10px;color:#9a8f82;text-transform:uppercase;letter-spacing:0.07em;text-align:left;font-weight:600;padding:0 10px 6px 0;border-bottom:1px solid #e0d9cf}
+.data-table td{font-size:12.5px;color:#4a4035;padding:7px 10px 7px 0;border-bottom:1px solid #f0ebe3;vertical-align:top}
+.data-table tr:last-child td{border-bottom:none}
+.data-table td.dt-amount,.data-table th.dt-amount{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+.data-table tfoot td{border-top:1px solid #e0d9cf;border-bottom:none;font-weight:700;color:#1a1a1a;padding-top:8px}
+
 .summary-box{background:#f4f1ec;border:1px solid #e0d9cf;border-left:3px solid #c8a84b;border-radius:3px;padding:14px 18px}
 .summary-box p{font-size:13.5px;color:#4a4035;line-height:1.7;font-style:italic}
 
 /* Parties */
-.party-card{border:1px solid #e0d9cf;border-radius:4px;margin-bottom:12px;overflow:hidden}
+.party-card{background:#fff;border:1px solid #e0d9cf;border-radius:4px;margin-bottom:12px;overflow:hidden}
 .party-card:last-child{margin-bottom:0}
 .party-card-head{background:#f4f1ec;padding:12px 20px;display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap;border-bottom:1px solid #e0d9cf}
 .party-role-pill{font-size:10px;color:#c8a84b;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;background:#0a1628;padding:4px 10px;border-radius:2px}
@@ -202,6 +217,7 @@ nav .nav-btn:hover{background:#d4b85e}
 .hearing-date-block .hd-day{font-family:'Merriweather',serif;font-size:22px;color:#1a1a1a;line-height:1}
 .hearing-date-block .hd-year{font-size:10px;color:#9a8f82}
 .hearing-date-block .hd-time{font-size:10px;color:#c8a84b;margin-top:3px;font-weight:600}
+.hearing-info{flex:1;min-width:0}
 .hearing-type{font-size:13.5px;font-weight:600;color:#1a1a1a;margin-bottom:3px}
 .hearing-officer{font-size:12px;color:#6b5f4e}
 .hearing-requested{font-size:11.5px;color:#9a8f82;margin-top:3px;font-style:italic}
@@ -233,26 +249,25 @@ nav .nav-btn:hover{background:#d4b85e}
 .fin-strip-item:last-child{border-right:none}
 .fin-strip-item .k{font-size:10.5px;color:#9a8f82;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:5px}
 .fin-strip-item .v{font-family:'Merriweather',serif;font-size:19px}
-.fin-row{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:14px 0;border-bottom:1px solid #f8f5f0}
-.fin-row:last-child{border-bottom:none}
-.fin-left{flex:1;min-width:0}
-.fin-type{font-size:13.5px;color:#1a1a1a;font-weight:500}
+.fin-order{padding:18px 0;border-bottom:1px solid #f8f5f0}
+.fin-order:last-child{border-bottom:none}
+.fin-order-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:14px}
+.fin-order-fields{margin-bottom:4px}
+.fin-type{font-size:13.5px;color:#1a1a1a;font-weight:600}
 .fin-desc{font-size:12px;color:#6b5f4e;margin-top:2px}
-.fin-owed{font-size:11px;color:#9a8f82;margin-top:4px}
-.fin-dates{font-size:11px;color:#9a8f82;margin-top:2px}
 .fin-right{text-align:right;flex-shrink:0}
 .fin-amount{font-family:'Merriweather',serif;font-size:18px;color:#1a1a1a;font-weight:400;white-space:nowrap}
 .fin-status{font-size:10px;font-weight:700;letter-spacing:0.06em;padding:2px 8px;border-radius:2px;text-transform:uppercase;margin-top:4px;display:inline-block}
 .fin-paid{background:#f0fdf4;color:#15803d;border:1px solid #dcfce7}
 .fin-unpaid{background:#fef2f2;color:#dc2626;border:1px solid #fee2e2}
 .fin-partial{background:#fff7ed;color:#c2410c;border:1px solid #fed7aa}
-.payment-sub{background:#f8f5f0;border-radius:3px;padding:10px 12px;margin-top:10px;font-size:12px;color:#6b5f4e}
-.ps-row{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:4px}
-.ps-row:last-child{margin-bottom:0;color:#1a1a1a;font-weight:600}
-.ps-row .ps-label{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.ps-row .ps-amount{flex-shrink:0;white-space:nowrap}
+.payment-sub{background:#f8f5f0;border-radius:3px;padding:10px 14px;margin-top:12px}
+.payment-sub .ps-title{font-size:10px;color:#9a8f82;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:6px}
 
-/* Events — unified log: event / filing / order */
+/* Events — unified log: event / filing / order, grouped by day */
+.event-day-group{border-top:1px solid #e6ded1;padding-top:6px;margin-top:6px}
+.event-day-group:first-child{border-top:none;padding-top:0;margin-top:0}
+.event-day-heading{font-size:11.5px;font-weight:700;color:#0a1628;text-transform:uppercase;letter-spacing:0.06em;padding:8px 0}
 .event-row{display:flex;gap:16px;padding:16px 0;border-bottom:1px solid #f8f5f0}
 .event-row:last-child{border-bottom:none}
 .event-num-block{flex-shrink:0;width:44px;text-align:center}
@@ -892,7 +907,7 @@ function buildPartiesSection(c) {
         <div class="party-card-body">
           <div class="party-name">${esc(p.name)}</div>
           ${Array.isArray(p.aliases) && p.aliases.length ? `<div class="party-aliases">a/k/a ${p.aliases.map(esc).join(', ')}</div>` : ''}
-          <div class="info-grid" style="margin-top:14px">
+          <div class="info-grid-auto" style="margin-top:14px">
             <div class="info-item"><div class="k">Date of Birth</div>${val(dob,'small')}</div>
             <div class="info-item"><div class="k">Representation</div>${val(selfRep ? 'Self-Represented' : (p.attorney?.name || null),'small')}</div>
             ${!selfRep ? `<div class="info-item"><div class="k">Bar Number</div>${val(p.attorney?.barNumber,'mono')}</div>` : ''}
@@ -1011,10 +1026,12 @@ function buildHearingsSection(c) {
               ${time ? `<div class="hd-time">${esc(time)}</div>` : ''}
             </div>
             <div class="hearing-info">
-              <div class="hearing-type">${esc(h.type)}</div>
-              <div class="hearing-officer">${esc(h.officer || h.court || '—')}${h.courtroom?' · '+esc(h.courtroom):''}</div>
-              ${hasVal(h.requestedBy) ? `<div class="hearing-requested">${esc(h.requestedBy)}</div>` : ''}
-              ${h.result ? `<span class="hearing-result ${rcls}">${esc(h.result)}</span>` : ''}
+              <div class="info-grid-auto">
+                <div class="info-item"><div class="k">Type</div><div class="v small">${esc(h.type)}</div></div>
+                <div class="info-item"><div class="k">Officer / Court</div>${val((h.officer || h.court) ? `${h.officer || h.court}${h.courtroom ? ' · '+h.courtroom : ''}` : null,'small')}</div>
+                ${hasVal(h.requestedBy) ? `<div class="info-item"><div class="k">Requested By</div>${val(h.requestedBy,'small')}</div>` : ''}
+                ${h.result ? `<div class="info-item"><div class="k">Result</div><div class="v small"><span class="hearing-result ${rcls}">${esc(h.result)}</span></div></div>` : ''}
+              </div>
               ${hasVal(h.notes) ? `<div class="hearing-notes">${esc(h.notes)}</div>` : ''}
             </div>
           </div>`;
@@ -1107,82 +1124,110 @@ function buildFinancialsSection(c) {
           const stCls   = paidAmt >= (o.amount||0) && o.amount ? 'fin-paid' : (paidAmt>0?'fin-partial':'fin-unpaid');
           const stLabel = paidAmt >= (o.amount||0) && o.amount ? 'Paid' : (paidAmt>0?'Partial':'Unpaid');
           const due = hasVal(o.dueDate) ? fmtDate(o.dueDate) : fmtDate(addDays(o.assessmentDate, 21));
-          return `<div class="fin-row">
-            <div class="fin-left">
-              <div class="fin-type">${esc(o.type)}</div>
-              ${hasVal(o.description) ? `<div class="fin-desc">${esc(o.description)}</div>` : ''}
-              <div class="fin-owed">Payor: ${esc(o.payor || o.owedBy || '—')}</div>
-              <div class="fin-dates">Assessed ${esc(fmtDate(o.assessmentDate) || 'N/A')} · Due ${esc(due || 'N/A')}</div>
-              ${(o.payments||[]).length ? `<div class="payment-sub">
-                ${o.payments.map(pm=>`<div class="ps-row">
-                  <span class="ps-label">${esc(fmtDate(pm.date))}${pm.method?' · '+esc(pm.method):''}</span>
-                  <span class="ps-amount">${fmtMoney(pm.amount)}</span>
-                </div>`).join('')}
-                <div class="ps-row" style="border-top:1px solid #e0d9cf;padding-top:4px;margin-top:4px">
-                  <span class="ps-label">Payments Total</span>
-                  <span class="ps-amount">${fmtMoney(paidAmt)}</span>
-                </div>
-              </div>` : ''}
+          return `<div class="fin-order">
+            <div class="fin-order-head">
+              <div>
+                <div class="fin-type">${esc(o.type)}</div>
+                ${hasVal(o.description) ? `<div class="fin-desc">${esc(o.description)}</div>` : ''}
+              </div>
+              <div class="fin-right">
+                <div class="fin-amount">${fmtMoney(o.amount) || 'N/A'}</div>
+                <span class="fin-status ${stCls}">${stLabel}</span>
+              </div>
             </div>
-            <div class="fin-right">
-              <div class="fin-amount">${fmtMoney(o.amount) || 'N/A'}</div>
-              <span class="fin-status ${stCls}">${stLabel}</span>
+            <div class="info-grid-auto fin-order-fields">
+              <div class="info-item"><div class="k">Payor</div>${val(o.payor || o.owedBy,'small')}</div>
+              <div class="info-item"><div class="k">Assessed</div>${val(fmtDate(o.assessmentDate),'small')}</div>
+              <div class="info-item"><div class="k">Due</div>${val(due,'small')}</div>
             </div>
+            ${(o.payments||[]).length ? `<div class="payment-sub">
+              <div class="ps-title">Payments</div>
+              <table class="data-table">
+                <thead><tr><th>Date</th><th>Method</th><th class="dt-amount">Amount</th></tr></thead>
+                <tbody>
+                  ${o.payments.map(pm=>`<tr>
+                    <td>${esc(fmtDate(pm.date) || 'N/A')}</td>
+                    <td>${esc(pm.method || '—')}</td>
+                    <td class="dt-amount">${esc(fmtMoney(pm.amount) || 'N/A')}</td>
+                  </tr>`).join('')}
+                </tbody>
+                <tfoot><tr><td colspan="2">Payments Total</td><td class="dt-amount">${esc(fmtMoney(paidAmt))}</td></tr></tfoot>
+              </table>
+            </div>` : ''}
           </div>`;
         }).join('')}
       </div>
     </div>`;
 }
 
-// ── 8. Events — unified log (event / filing / order) ──
+// ── 8. Events — unified log (event / filing / order), grouped by day ──
 function buildEventsSection(c) {
   const events = [...c.events].sort((a,b) => {
+    const ad = new Date(a.date||0), bd = new Date(b.date||0);
+    if (ad - bd !== 0) return ad - bd;
     const an = a.eventNumber ?? 0, bn = b.eventNumber ?? 0;
-    if (an !== bn) return an - bn;
-    return new Date(a.date||0) - new Date(b.date||0);
+    return an - bn;
+  });
+
+  // Bucket events into day groups, preserving chronological order
+  const groups = [];
+  let currentKey = null, currentGroup = null;
+  events.forEach(e => {
+    const d = e.date ? new Date(e.date) : null;
+    const key = d && !isNaN(d) ? d.toDateString() : 'undated';
+    if (key !== currentKey) {
+      currentGroup = { key, label: d && !isNaN(d) ? fmtDate(e.date) : 'Undated', items: [] };
+      groups.push(currentGroup);
+      currentKey = key;
+    }
+    currentGroup.items.push(e);
   });
 
   return `
     <div class="section-heading"><h2>Events</h2><span class="sh-count">${events.length} event(s)</span></div>
     <div class="d-card">
       <div class="d-card-body">
-        ${events.map(e => {
-          const type = (e.type||'event').toLowerCase();
-          const isFiling = type === 'filing';
-          const isOrder  = type === 'order';
-          const kindLabel = isFiling ? 'Filing' : (isOrder ? 'Order' : 'Event');
-          const kindCls   = isFiling ? 'ek-filing' : (isOrder ? 'ek-order' : 'ek-event');
-          const rowCls    = isFiling ? 'type-filing' : (isOrder ? 'type-order' : 'type-event');
+        ${groups.map(g => `<div class="event-day-group">
+          <div class="event-day-heading">${esc(g.label)}</div>
+          ${g.items.map(e => {
+            const type = (e.type||'event').toLowerCase();
+            const isFiling = type === 'filing';
+            const isOrder  = type === 'order';
+            const kindLabel = isFiling ? 'Filing' : (isOrder ? 'Order' : 'Event');
+            const kindCls   = isFiling ? 'ek-filing' : (isOrder ? 'ek-order' : 'ek-event');
+            const rowCls    = isFiling ? 'type-filing' : (isOrder ? 'type-order' : 'type-event');
+            const time = fmtTime(e.date);
 
-          let actions = '';
-          if (isFiling) {
-            actions = hasVal(e.documentLink)
-              ? `<div class="event-actions">
-                   <a class="filing-btn filing-btn-open" href="${esc(e.documentLink)}" target="_blank" rel="noopener"><span>↗</span> Open</a>
-                   <a class="filing-btn filing-btn-download" href="${esc(e.documentLink)}" download target="_blank" rel="noopener"><span>⬇</span> Download</a>
-                 </div>`
-              : `<div class="filing-no-doc">Document not available for public access</div>`;
-          }
+            let actions = '';
+            if (isFiling) {
+              actions = hasVal(e.documentLink)
+                ? `<div class="event-actions">
+                     <a class="filing-btn filing-btn-open" href="${esc(e.documentLink)}" target="_blank" rel="noopener"><span>↗</span> Open</a>
+                     <a class="filing-btn filing-btn-download" href="${esc(e.documentLink)}" download target="_blank" rel="noopener"><span>⬇</span> Download</a>
+                   </div>`
+                : `<div class="filing-no-doc">Document not available for public access</div>`;
+            }
 
-          const submeta = [];
-          if (isFiling && hasVal(e.filedBy)) submeta.push(`<div class="event-submeta-item"><strong>Filed by:</strong> ${esc(e.filedBy)}${e.role ? ' ('+esc(e.role)+')' : ''}</div>`);
-          if (isOrder && hasVal(e.judge)) submeta.push(`<div class="event-submeta-item"><strong>Judge:</strong> ${esc(e.judge)}</div>`);
+            const submeta = [];
+            if (isFiling && hasVal(e.filedBy)) submeta.push(`<div class="event-submeta-item"><strong>Filed by:</strong> ${esc(e.filedBy)}${e.role ? ' ('+esc(e.role)+')' : ''}</div>`);
+            if (isOrder && hasVal(e.judge)) submeta.push(`<div class="event-submeta-item"><strong>Judge:</strong> ${esc(e.judge)}</div>`);
 
-          return `<div class="event-row ${rowCls}">
-            <div class="event-num-block"><span class="event-num">${esc(e.eventNumber ?? '—')}</span></div>
-            <div class="event-main">
-              <div class="event-top">
-                <span class="event-date">${esc(fmtDateTime(e.date) || fmtDate(e.date) || 'N/A')}</span>
-                <span class="event-kind-badge ${kindCls}">${kindLabel}</span>
+            return `<div class="event-row ${rowCls}">
+              <div class="event-num-block"><span class="event-num">${esc(e.eventNumber ?? '—')}</span></div>
+              <div class="event-main">
+                <div class="event-top">
+                  <span class="event-date">${esc(time || '')}</span>
+                  <span class="event-kind-badge ${kindCls}">${kindLabel}</span>
+                </div>
+                <div class="event-desc">${esc(e.description)}</div>
+                ${hasVal(e.comment) ? `<div class="event-comment">${esc(e.comment)}</div>` : ''}
+                ${submeta.length ? `<div class="event-submeta">${submeta.join('')}</div>` : ''}
+                ${isOrder && hasVal(e.linkedTo) ? `<div class="event-link-ref">↳ Regarding: ${esc(e.linkedTo)}</div>` : ''}
+                ${actions}
               </div>
-              <div class="event-desc">${esc(e.description)}</div>
-              ${hasVal(e.comment) ? `<div class="event-comment">${esc(e.comment)}</div>` : ''}
-              ${submeta.length ? `<div class="event-submeta">${submeta.join('')}</div>` : ''}
-              ${isOrder && hasVal(e.linkedTo) ? `<div class="event-link-ref">↳ Regarding: ${esc(e.linkedTo)}</div>` : ''}
-              ${actions}
-            </div>
-          </div>`;
-        }).join('')}
+            </div>`;
+          }).join('')}
+        </div>`).join('')}
       </div>
     </div>`;
 }
