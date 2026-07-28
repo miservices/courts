@@ -134,9 +134,24 @@ body{font-family:'DM Sans',sans-serif;background:#f4f1ec;color:#1a1a1a;min-heigh
 
 /* Content-sized grid: each field starts at its natural content width, then grows
    to fill the rest of its row — so short rows fill out instead of leaving dead
-   space, while a row with long values still wraps to fewer columns. */
+   space, while a row with long values still wraps to fewer columns. Use this
+   ONLY where different rows genuinely have different field sets (e.g. Parties,
+   where a Defendant and a Plaintiff show different fields). */
 .info-grid-auto{display:flex;flex-wrap:wrap;gap:14px 30px}
 .info-grid-auto .info-item{flex:1 1 auto;min-width:110px;max-width:100%}
+
+/* Fixed-column grids: for repeating rows that share the EXACT SAME fields
+   (Hearings, Charges, Financial Order fields) — every row/card uses identical
+   column widths so labels and values line up vertically like a real table,
+   instead of each row sizing itself independently off its own content. */
+.hearing-fields{display:grid;grid-template-columns:130px minmax(170px,1fr) minmax(150px,1fr) minmax(160px,1fr);gap:10px 24px}
+.charge-fields{display:grid;grid-template-columns:150px 120px 130px 130px 110px minmax(180px,1.5fr);gap:12px 24px}
+.finorder-fields{display:grid;grid-template-columns:minmax(160px,1fr) 130px 130px;gap:12px 24px}
+@media(max-width:960px){
+  .hearing-fields{grid-template-columns:1fr 1fr}
+  .charge-fields{grid-template-columns:1fr 1fr}
+  .finorder-fields{grid-template-columns:1fr 1fr}
+}
 
 /* Compact data table — used for line-item data like payments where a
    header row + aligned columns reads more clearly than stacked labels */
