@@ -933,11 +933,6 @@ function buildHearingsSection(c) {
           const day   = d && !isNaN(d) ? d.getDate() : '—';
           const year  = d && !isNaN(d) ? d.getFullYear() : '';
           const time  = fmtTime(h.time || h.date);
-          const res   = (h.result||'').toLowerCase();
-          let rcls = 'hr-pending';
-          if (res.includes('adjourn')) rcls = 'hr-adjourned';
-          else if (res.includes('no agreement')||res.includes('not guilty')) rcls = 'hr-nogagree';
-          else if (h.result && !res.includes('pending')) rcls = 'hr-complete';
           return `<div class="hearing-row">
             <div class="hearing-date-block">
               <div class="hd-month">${esc(month)}</div>
@@ -946,11 +941,11 @@ function buildHearingsSection(c) {
               ${time ? `<div class="hd-time">${esc(time)}</div>` : ''}
             </div>
             <div class="hearing-info">
-              <div class="info-grid-auto">
+              <div class="hearing-fields">
                 <div class="info-item"><div class="k">Type</div><div class="v small">${esc(h.type)}</div></div>
                 <div class="info-item"><div class="k">Officer / Court</div>${val((h.officer || h.court) ? `${h.officer || h.court}${h.courtroom ? ' · '+h.courtroom : ''}` : null,'small')}</div>
-                ${hasVal(h.requestedBy) ? `<div class="info-item"><div class="k">Requested By</div>${val(h.requestedBy,'small')}</div>` : ''}
-                ${h.result ? `<div class="info-item"><div class="k">Result</div><div class="v small"><span class="hearing-result ${rcls}">${esc(h.result)}</span></div></div>` : ''}
+                <div class="info-item"><div class="k">Requested By</div>${val(h.requestedBy,'small')}</div>
+                <div class="info-item"><div class="k">Result</div>${val(h.result,'small')}</div>
               </div>
               ${hasVal(h.notes) ? `<div class="hearing-notes">${esc(h.notes)}</div>` : ''}
             </div>
