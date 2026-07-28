@@ -327,58 +327,7 @@ nav .nav-btn:hover{background:#d4b85e}
 </head>
 <body>
 
-<!-- RP Banner -->
-<div class="rp-banner">
-  This site is not a real court, does not have legal authority, and is not affiliated with or endorsed by any real court system or government agency.
-</div>
-
-<!-- Header -->
-<div class="header">
-  <div class="header-top">
-    <div class="logo-text">
-      <h1><a href="index.html" style="color:inherit;text-decoration:none">Michigan Courts</a></h1>
-      <p>One Court of Justice</p>
-    </div>
-    <div class="header-right">
-      <p>SCAO Maintained</p>
-      <div class="date" id="today"></div>
-    </div>
-  </div>
-</div>
-
-<nav>
-  <a href="index.html">Home</a>
-  <div class="nav-dropdown">
-    <a href="#">Directory</a>
-    <div class="dropdown-menu">
-      <a href="#">Supreme Court</a>
-      <a href="#">Genesee Co. District Court</a>
-    </div>
-  </div>
-  <div class="nav-dropdown">
-    <a href="#">Online Services</a>
-    <div class="dropdown-menu">
-      <a href="#">Online Portal (MiCOURT)</a>
-      <a href="cases.html" class="active">Search Cases</a>
-      <a href="#">Pay Fines &amp; Fees</a>
-      <a href="#">Docket Calendar</a>
-      <a href="#">Jury Duty Portal</a>
-      <a href="#">Request Court Records</a>
-    </div>
-  </div>
-  <div class="nav-dropdown">
-    <a href="#">Forms &amp; Filing</a>
-    <div class="dropdown-menu">
-      <a href="#">Filing Information</a>
-      <a href="#">Court Forms</a>
-    </div>
-  </div>
-  <a href="#">Self Help</a>
-  <a href="#">Careers</a>
-  <div class="nav-right">
-    <a href="#" class="nav-btn">Access MiCOURT ></a>
-  </div>
-</nav>
+<div id="shell-top"></div>
 
 <!-- ═══════════ SEARCH SCREEN ═══════════ -->
 <div id="search-screen">
@@ -459,13 +408,14 @@ nav .nav-btn:hover{background:#d4b85e}
   <div id="detail-content" style="display:none"></div>
 </div>
 
-<div class="footer">
-  <p>© 2026 Michigan Courts · State Court Administrative Office · P.O. Box 30048, Lansing, MI 48909</p>
-</div>
+<div id="shell-footer"></div>
 
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
-import { getFirestore, collection, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
+import { getFirestore, collection, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+import { renderShell } from "./shared/shell.js";
+
+renderShell({ activeNav: 'cases' });
 
 const firebaseConfig = {
   apiKey: "AIzaSyA8sUFIq81cs6uQvqduardpGJ4R2DxO8NQ",
@@ -477,8 +427,6 @@ const firebaseConfig = {
 };
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-
-document.getElementById('today').textContent = new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
 
 // ─── Helpers ───
 function esc(v){
