@@ -128,13 +128,18 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);
 .doc-btn-open:hover{background:var(--blue-bdr)}
 .doc-btn-dl{color:var(--green);border-color:var(--green-bdr);background:var(--green-bg)}
 .doc-btn-dl:hover{background:var(--green-bdr)}
+.doc-btn-seal{color:var(--muted);border-color:var(--line)}
+.doc-btn-seal:hover{border-color:var(--red);color:var(--red)}
+.doc-btn-seal.is-sealed{color:var(--red);border-color:var(--red-bdr);background:var(--red-bg)}
 .doc-no-file{font-size:10.5px;color:#b0a898;font-style:italic;margin-top:6px}
 
 .callout{display:flex;gap:10px;padding:12px 14px;border-radius:4px;margin-bottom:14px}
 .c-info{background:var(--blue-bg);border:1px solid var(--blue-bdr)}
+.c-warn{background:var(--amber-bg);border:1px solid var(--amber-bdr)}
 .callout-icon{font-size:14px;flex-shrink:0;margin-top:1px}
 .callout-text{font-size:12.5px;line-height:1.6}
 .c-info .callout-text{color:#1e40af}
+.c-warn .callout-text{color:#7a5b06}
 
 .btn-primary{display:inline-flex;align-items:center;gap:7px;background:var(--navy);color:#fff;border:none;padding:9px 16px;border-radius:4px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background .12s;text-decoration:none}
 .btn-primary:hover{background:var(--navy-mid)}
@@ -150,6 +155,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);
 .btn-urgent{background:none;color:var(--muted);border:1.5px solid var(--line)}
 .btn-urgent:hover{border-color:var(--red);color:var(--red)}
 .btn-urgent.is-urgent{background:var(--red-bg);color:var(--red);border-color:var(--red-bdr)}
+.btn-seal{background:none;color:var(--muted);border:1.5px solid var(--line)}
+.btn-seal:hover{border-color:var(--red);color:var(--red)}
+.btn-seal.is-sealed{background:var(--red-bg);color:var(--red);border-color:var(--red-bdr)}
 .btn-ghost{display:inline-flex;align-items:center;gap:7px;background:none;color:var(--muted);border:1.5px solid var(--line);padding:8px 14px;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .12s}
 .btn-ghost:hover{border-color:#b0a898;color:var(--text)}
 .action-row{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap}
@@ -163,6 +171,12 @@ body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);
 .inline-box textarea{width:100%;padding:9px 12px;border:1.5px solid var(--line);border-radius:4px;font-family:'DM Sans',sans-serif;font-size:13px;resize:vertical;min-height:60px;outline:none;margin-bottom:10px;background:#fff}
 .inline-box select{width:100%;padding:9px 12px;border:1.5px solid var(--line);border-radius:4px;font-family:'DM Sans',sans-serif;font-size:13px;outline:none;margin-bottom:10px;background:#fff;appearance:auto}
 .inline-box-actions{display:flex;gap:8px}
+
+.fw-box{background:#fffdf5;border:1px solid var(--amber-bdr);border-radius:4px;padding:14px 16px;margin-top:10px}
+.fw-box textarea{width:100%;padding:9px 12px;border:1.5px solid var(--line);border-radius:4px;font-family:'DM Sans',sans-serif;font-size:13px;resize:vertical;min-height:52px;outline:none;margin-bottom:10px;background:#fff}
+.fw-status-pill{font-size:10.5px;font-weight:700;letter-spacing:.05em;padding:3px 9px;border-radius:2px;text-transform:uppercase;background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-bdr)}
+.fw-status-pill.granted{background:var(--green-bg);color:var(--green);border-color:var(--green-bdr)}
+.fw-status-pill.denied{background:var(--red-bg);color:var(--red);border-color:var(--red-bdr)}
 
 .notes-list{display:flex;flex-direction:column;gap:8px;margin-bottom:10px}
 .note-item{background:var(--cream);border:1px solid var(--line);border-radius:4px;padding:9px 12px}
@@ -306,6 +320,7 @@ const STAFF_ROLES = ['Clerk','Magistrate Judge','Judge','Chief Judge','Clerk of 
 const SC_ROLES = ['Clerk of the Supreme Court','Assistant Clerk of the Supreme Court','Justice','Chief Justice'];
 const JUDGE_ROLES_DISTRICT = ['Magistrate Judge','Judge','Chief Judge'];
 const JUDGE_ROLES_SC = ['Justice','Chief Justice'];
+const ALL_JUDGE_ROLES = [...JUDGE_ROLES_DISTRICT, ...JUDGE_ROLES_SC];
 
 let userData = { name:'—', uid:null, role:'Portal User' };
 let pending = [];   // pendingFilings docs, each with _id
@@ -316,6 +331,7 @@ let statusTab = 'Pending';
 let openId = null;
 let searchQuery = '';
 let sortMode = 'newest';
+let caseCache = {}; // caseFirestoreId -> full case doc, lazily fetched for sealing controls
 
 // ── MCR 7.202 / 7.203 case-numbering ──
 // District Court: [TypeCode]-[Year]-[SequentialNumber], sequence resets to 1 each calendar year per type code.
@@ -389,8 +405,7 @@ function getPartyName(p){
 }
 function getPartyAttorney(p){
   if(!p || !p.attorney) return null;
-  const a = p.attorney;
-  return a.barNumber ? `${a.name} (Bar No. ${a.barNumber})` : a.name;
+  return p.attorney; // { name, barNumber }
 }
 
 function getCaseTitle(c){
@@ -413,49 +428,78 @@ function filingTitle(f){
   return c ? `${getCaseTitle(c)} (${c.caseId})` : `${f.caseId||'Existing Case'}`;
 }
 
-// Maps parties by their *actual role string* (Plaintiff, Defendant, Petitioner, Respondent, Appellant,
-// Appellee, …) rather than by position, since which role comes first varies by case type. Petitioner/
-// Respondent roles fall back into the primaryPlaintiff/primaryDefendant keys for Civil-display cases so
-// getCaseTitle() (which only checks those two keys for civil matters) still produces a real caption.
-function mapPartiesToSchema(displayType, parties){
-  const p = {};
-  const byRole = {};
-  parties.forEach(party => { byRole[(party.role||'').toLowerCase()] = party; });
-  const build = (party) => party ? { role: party.role, name: getPartyName(party), ...(getPartyAttorney(party) ? { attorney: getPartyAttorney(party) } : {}) } : null;
-
-  const used = new Set();
-  if (displayType === 'Criminal' || displayType === 'Traffic') {
-    const def = byRole['defendant'];
-    if (def) { p.primaryDefendant = build(def); used.add(def); }
-  } else if (displayType === 'Appellate') {
-    const ap = byRole['appellant'], apl = byRole['appellee'];
-    if (ap)  { p.appellant = build(ap);  used.add(ap); }
-    if (apl) { p.appellee  = build(apl); used.add(apl); }
-  } else if (displayType === 'Administrative') {
-    const pet = byRole['petitioner'], res = byRole['respondent'];
-    if (pet) { p.primaryPetitioner = build(pet); used.add(pet); }
-    if (res) { p.respondent        = build(res); used.add(res); }
-  } else {
-    const pl = byRole['plaintiff'] || byRole['petitioner'];
-    const df = byRole['defendant'] || byRole['respondent'];
-    if (pl) { p.primaryPlaintiff = build(pl); used.add(pl); }
-    if (df) { p.primaryDefendant = build(df); used.add(df); }
-  }
-
-  const extras = parties.filter(party => !used.has(party)).map(party => build(party));
-  if (extras.length) p.additionalParties = extras;
-  return p;
+// Maps intake parties into the flat array shape the public Case Search page expects
+// (parties: [{role, name, dob?, aliases?, selfRepresented, attorney:{name,barNumber}?}, ...]).
+// Order doesn't matter — Case Search finds parties by their role string, not position.
+function mapPartiesToSchema(parties){
+  return (parties||[]).map(party => {
+    const attorney = getPartyAttorney(party);
+    const out = {
+      role: party.role,
+      name: getPartyName(party),
+      selfRepresented: !attorney,
+    };
+    if (party.dob) out.dob = party.dob;
+    if (Array.isArray(party.aliases) && party.aliases.length) out.aliases = party.aliases;
+    if (attorney) out.attorney = { name: attorney.name, ...(attorney.barNumber ? {barNumber:attorney.barNumber} : {}) };
+    return out;
+  });
 }
 
-function buildFilingsEntries(f){
-  return (f.documents||[]).map(d=>({
-    confirmationNumber: f.confirmationNumber,
-    title: d.documentType, documentType: d.documentType, fee: d.fee||0,
-    filedBy: f.filedBy, filedByUid: f.filedByUid, role: f.filerRole||null,
-    dateFiled: f.dateFiled, status:'Accepted', accepted:true,
-    notes: f.notesToClerk||null, documentLink: d.link||null, fileUrl: d.fileUrl||null,
-    ...(f.isFilingAsCounsel ? {attorney:{name:f.filedBy,uid:f.filedByUid,barNumber:f.barNumber||null}, counselRepresents:f.counselRepresents||null} : {})
-  }));
+// ── Fee waivers (MCR 7.403) ──
+function isFeeWaiverDoc(d){
+  const s = `${d.documentType||''} ${d.name||''}`.toLowerCase();
+  return s.includes('fee waiver');
+}
+function filingHasFeeWaiver(f){
+  return (f.documents||[]).some(isFeeWaiverDoc);
+}
+
+// ── Unified case events (used by the public Case Search "Events" section) ──
+// Builds one 'filing' event per document (fee waiver docs get a distinguishing description),
+// followed by an event for each fee-waiver decision already recorded on this pendingFiling
+// (in case a clerk reviewed the fee waiver before the filing itself was accepted).
+function buildEventsForAcceptance(f, existingEvents){
+  const events = [...(existingEvents||[])];
+  let num = events.length ? Math.max(...events.map(e=>e.eventNumber||0))+1 : 1;
+
+  (f.documents||[]).forEach(d=>{
+    const isFW = isFeeWaiverDoc(d);
+    events.push({
+      eventNumber: num++,
+      type: 'filing',
+      date: f.dateFiled,
+      description: isFW ? `Fee waiver filed: ${d.documentType||d.name}` : (d.documentType || d.name || 'Document filed'),
+      comment: f.notesToClerk || null,
+      documentLink: d.fileUrl || d.link || null,
+      sealed: !!d.sealed,
+      filedBy: f.filedBy,
+      role: f.filerRole || null,
+      confirmationNumber: f.confirmationNumber,
+      docName: d.name,
+    });
+  });
+
+  (f.feeWaiver?.decisions||[]).forEach(dec=>{
+    events.push(feeWaiverDecisionEvent(num++, dec));
+  });
+
+  return events;
+}
+
+function feeWaiverDecisionEvent(num, dec){
+  const desc = dec.level==='clerk'
+    ? (dec.decision==='grant' ? 'Fee waiver granted by clerk. All fees waived.' : 'Fee waiver denied by clerk. Referred to judge for review.')
+    : (dec.decision==='grant' ? 'Fee waiver granted by judge on review. All fees waived.' : 'Fee waiver denied by judge on review.');
+  return {
+    eventNumber: num,
+    type: dec.level==='judge' ? 'order' : 'event',
+    date: dec.at,
+    description: desc,
+    comment: dec.reason || null,
+    judge: dec.level==='judge' ? dec.by : null,
+    sealed: false,
+  };
 }
 
 function driveEmbedUrl(link){
@@ -482,6 +526,7 @@ async function loadAll(){
     judges = [];
     accSnap.forEach(d=>{ const a=d.data(); if([...JUDGE_ROLES_DISTRICT,...JUDGE_ROLES_SC].includes(a.role)) judges.push({uid:d.id, name:a.name||'Unnamed', role:a.role}); });
   }catch(e){ console.warn('accounts load failed', e); judges=[]; }
+  caseCache = {};
   renderAll();
 }
 window.loadAll = loadAll;
@@ -566,10 +611,11 @@ function rowHtml(f){
   const isNew = f.filingType==='new';
   const badgeCls = f.status==='Accepted' ? 'sb-accepted' : f.status==='Rejected' ? 'sb-rejected' : f.status==='Returned' ? 'sb-returned' : 'sb-pending';
   const open = openId===f._id;
+  const fwBadge = filingHasFeeWaiver(f) ? ` <span class="fw-status-pill${f.feeWaiver?.status?.startsWith('Granted')?' granted':''}${f.feeWaiver?.status?.startsWith('Denied')?' denied':''}">💰 ${esc(f.feeWaiver?.status || 'Fee Waiver Pending')}</span>` : '';
   return `<div class="q-row${open?' open':''}${f.urgent?' urgent':''}" id="row-${f._id}">
     <div class="q-row-top" onclick="toggleRow('${f._id}')">
       <div class="q-left">
-        <div class="q-conf">${f.confirmationNumber||'—'}${f.urgent?` <span class="urgent-badge">🚨 Emergency</span>`:''}${f.assignedJudge?` <span class="judge-badge">→ ${esc(f.assignedJudge)}</span>`:''}</div>
+        <div class="q-conf">${f.confirmationNumber||'—'}${f.urgent?` <span class="urgent-badge">🚨 Emergency</span>`:''}${f.assignedJudge?` <span class="judge-badge">→ ${esc(f.assignedJudge)}</span>`:''}${fwBadge}</div>
         <div class="q-title">${esc(filingTitle(f))}</div>
         <div class="q-meta">
           <span class="type-tag ${isNew?'tt-new':'tt-existing'}">${isNew?'New Case':'Existing Case'}</span>
@@ -587,7 +633,7 @@ function rowHtml(f){
   </div>`;
 }
 
-function docCardHtml(d){
+function docCardHtml(d, filingId, idx){
   const isPdf = d.type==='pdf';
   const embed = isPdf ? d.fileUrl : driveEmbedUrl(d.link);
   const previewBtn = embed ? `<button class="doc-btn doc-btn-preview" onclick="event.stopPropagation();openPreview('${escAttr(embed)}','${esc(d.name)}')">👁 Preview</button>` : '';
@@ -595,18 +641,60 @@ function docCardHtml(d){
     ? (d.fileUrl ? `<a class="doc-btn doc-btn-open" href="${escAttr(d.fileUrl)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">↗ Open</a>` : '')
     : (d.link ? `<a class="doc-btn doc-btn-open" href="${escAttr(d.link)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">↗ Open in new tab</a>` : '');
   const dlBtn = isPdf && d.fileUrl ? `<a class="doc-btn doc-btn-dl" href="${escAttr(d.fileUrl)}" download="${escAttr(d.name)}" target="_blank" rel="noopener" onclick="event.stopPropagation()">⬇ Download Original</a>` : '';
+  const sealBtn = `<button class="doc-btn doc-btn-seal${d.sealed?' is-sealed':''}" onclick="event.stopPropagation();toggleDocSeal('${filingId}',${idx})">${d.sealed?'🔒 Sealed — Unseal':'🔓 Seal from Public'}</button>`;
   const noFile = isPdf && !d.fileUrl;
   return `<div class="doc-card">
     <div class="doc-top">
       <span class="doc-icon">${isPdf?'📄':'🔗'}</span>
       <div style="flex:1">
-        <div class="doc-name">${esc(d.name)}</div>
+        <div class="doc-name">${esc(d.name)}${d.sealed?' <span style="color:var(--red);font-size:10.5px;font-weight:700">🔒 SEALED</span>':''}</div>
         <div class="doc-type">Type: ${esc(d.documentType||'—')}${d.fee?` · Fee: ${fmtMoney(d.fee)}`:' · No fee'}</div>
       </div>
       ${d.size?`<span class="doc-size">${fmtSize(d.size)}</span>`:''}
     </div>
-    <div class="doc-actions">${previewBtn}${openBtn}${dlBtn}</div>
+    <div class="doc-actions">${previewBtn}${openBtn}${dlBtn}${sealBtn}</div>
     ${noFile?`<div class="doc-no-file">⚠ Upload never completed — no file on record for this document.</div>`:''}
+  </div>`;
+}
+
+function feeWaiverBlockHtml(f){
+  if(!filingHasFeeWaiver(f)) return '';
+  const fw = f.feeWaiver || { status:'Pending Clerk Review', decisions:[] };
+  const finalDecided = ['Granted by Clerk','Granted by Judge','Denied by Judge'].includes(fw.status);
+  const canJudgeDecide = (fw.status||'').startsWith('Denied by Clerk');
+  const isJudgeRole = ALL_JUDGE_ROLES.includes(userData.role) || userData.role==='Chief Judge' || userData.role==='Chief Justice';
+  const statusCls = (fw.status||'').startsWith('Granted') ? 'granted' : ((fw.status||'').startsWith('Denied') ? 'denied' : '');
+
+  const history = (fw.decisions||[]).length ? `<div class="notes-list" style="margin-bottom:10px">${fw.decisions.map(d=>`<div class="note-item"><div class="note-meta"><span>${esc(d.by)} (${esc(d.byRole||'')}) · ${d.level==='judge'?'Judge Review':'Clerk Decision'}: ${esc(d.decision==='grant'?'Granted':'Denied')}</span><span>${timeAgo(d.at)}</span></div><div class="note-text">${esc(d.reason)}</div></div>`).join('')}</div>` : '';
+
+  let actionArea = '';
+  if(!finalDecided){
+    if(!canJudgeDecide){
+      actionArea = `
+        <textarea id="fw-reason-${f._id}" placeholder="Basis for decision — grounds under MCR 7.403(B), documentation reviewed, etc."></textarea>
+        <div class="inline-box-actions">
+          <button class="btn-primary btn-accept" onclick="event.stopPropagation();decideFeeWaiver('${f._id}','clerk','grant')">✓ Grant Fee Waiver (Clerk)</button>
+          <button class="btn-primary btn-reject" style="background:var(--red);color:#fff;border:none" onclick="event.stopPropagation();decideFeeWaiver('${f._id}','clerk','deny')">✕ Deny Fee Waiver (Clerk)</button>
+        </div>`;
+    } else if(isJudgeRole){
+      actionArea = `
+        <div class="callout c-warn" style="margin-bottom:10px"><span class="callout-icon">⚖</span><div class="callout-text">Denied by the clerk and automatically referred for on-the-papers review under MCR 7.403(D).</div></div>
+        <textarea id="fw-reason-${f._id}" placeholder="Basis for the on-the-papers decision…"></textarea>
+        <div class="inline-box-actions">
+          <button class="btn-primary btn-accept" onclick="event.stopPropagation();decideFeeWaiver('${f._id}','judge','grant')">✓ Grant on Review (Judge)</button>
+          <button class="btn-primary btn-reject" style="background:var(--red);color:#fff;border:none" onclick="event.stopPropagation();decideFeeWaiver('${f._id}','judge','deny')">✕ Deny on Review (Judge)</button>
+        </div>`;
+    } else {
+      actionArea = `<div style="font-size:11.5px;color:var(--muted)">Denied by the clerk and referred to a judge for on-the-papers review under MCR 7.403(D). Sign in as a judicial officer to record that decision.</div>`;
+    }
+  }
+
+  return `<div class="rv-sec"><div class="rv-sec-lbl">Fee Waiver Review <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:10.5px">MCR 7.403</span></div>
+    <div class="fw-box">
+      <div style="margin-bottom:10px"><span class="fw-status-pill ${statusCls}">${esc(fw.status)}</span></div>
+      ${history}
+      ${actionArea}
+    </div>
   </div>`;
 }
 
@@ -629,9 +717,10 @@ function detailHtml(f){
       ${f.counselRepresents?`<div class="rv-row"><span class="rv-k">Represents</span><span class="rv-v">${esc(f.counselRepresents)}</span></div>`:''}
     </div>`;
   }
-  const docBlock = `<div class="rv-sec"><div class="rv-sec-lbl">Documents (${docs.length})</div>${docs.map(d=>docCardHtml(d)).join('')}
+  const docBlock = `<div class="rv-sec"><div class="rv-sec-lbl">Documents (${docs.length})</div>${docs.map((d,idx)=>docCardHtml(d,f._id,idx)).join('')}
     <div class="rv-row" style="margin-top:6px"><span class="rv-k" style="font-weight:700;color:var(--text)">Total Estimated Fees</span><span class="rv-v" style="font-weight:700">${fmtMoney(totalFee)}</span></div>
   </div>`;
+  const fwBlock = feeWaiverBlockHtml(f);
   const detailsBlock = `<div class="rv-sec"><div class="rv-sec-lbl">Filing Details</div>
     <div class="rv-row"><span class="rv-k">Filing As</span><span class="rv-v">${esc(f.filerRole||'—')}</span></div>
     ${f.isFilingAsCounsel?`<div class="rv-row"><span class="rv-k">Bar Number</span><span class="rv-v">${esc(f.barNumber||'—')}</span></div>`:''}
@@ -689,9 +778,20 @@ function detailHtml(f){
     </div>`;
   } else {
     footer = `<div class="review-note">Reviewed by ${esc(f.reviewedBy||'—')} on ${fmtDate(f.reviewedAt)}${f.status==='Rejected'&&f.rejectionReason?`<br><strong>Reason:</strong> ${esc(f.rejectionReason)}`:''}${f.status==='Returned'&&f.returnReason?`<br><strong>Correction needed:</strong> ${esc(f.returnReason)}`:''}${f.status==='Accepted'&&f.linkedCaseId?`<br><strong>Case Number:</strong> ${esc(f.linkedCaseId)}`:''}</div>`;
+    if(f.status==='Accepted' && f.linkedCaseFirestoreId){
+      ensureCaseCached(f.linkedCaseFirestoreId);
+      const c = caseCache[f.linkedCaseFirestoreId];
+      if(c){
+        footer += `<div class="action-row">
+          <button class="btn-primary btn-seal${c.sealed?' is-sealed':''}" onclick="event.stopPropagation();toggleCaseSeal('${f._id}')">${c.sealed?'🔓 Unseal Entire Case':'🔒 Seal Entire Case from Public Search'}</button>
+        </div>`;
+      } else {
+        footer += `<div class="action-row"><button class="btn-ghost" disabled><span class="spin" style="border-color:rgba(0,0,0,.15);border-top-color:var(--muted)"></span> Loading case record…</button></div>`;
+      }
+    }
   }
 
-  return `<div class="callout c-info"><span class="callout-icon">ℹ️</span><div class="callout-text">Submitted ${fmtDate(f.dateFiled)} · Confirmation <strong>${esc(f.confirmationNumber||'—')}</strong></div></div>${caseBlock}${docBlock}${detailsBlock}${notesBlock}${activityBlock}${footer}`;
+  return `<div class="callout c-info"><span class="callout-icon">ℹ️</span><div class="callout-text">Submitted ${fmtDate(f.dateFiled)} · Confirmation <strong>${esc(f.confirmationNumber||'—')}</strong></div></div>${caseBlock}${docBlock}${fwBlock}${detailsBlock}${notesBlock}${activityBlock}${footer}`;
 }
 
 function toggleRow(id){
@@ -732,6 +832,17 @@ function pushActivity(f, text){
   return [...(f.activityLog||[]), entry];
 }
 
+// Lazily fetches and caches a case document so we can show/toggle its `sealed` flag
+// without re-fetching on every render. Triggers a re-render once loaded.
+async function ensureCaseCached(caseFirestoreId){
+  if(!caseFirestoreId || caseCache[caseFirestoreId]) return caseCache[caseFirestoreId];
+  try{
+    const snap = await getDoc(doc(db,'cases', caseFirestoreId));
+    if(snap.exists()){ caseCache[caseFirestoreId] = {...snap.data(), _id:snap.id}; renderAll(); }
+  }catch(e){ console.warn('case fetch failed', e); }
+  return caseCache[caseFirestoreId];
+}
+
 async function toggleEmergency(id){
   const f = pending.find(x=>x._id===id);
   if(!f) return;
@@ -743,6 +854,89 @@ async function toggleEmergency(id){
   }catch(err){ console.error(err); alert('Could not update the emergency flag. Please try again.'); }
 }
 window.toggleEmergency = toggleEmergency;
+
+// Seals/unseals a single document. Updates the pendingFiling's document record, and — if the
+// filing has already been accepted into a case — also syncs the matching public-facing event
+// on the case so the document is (or isn't) withheld from Case Search.
+async function toggleDocSeal(filingId, idx){
+  const f = pending.find(x=>x._id===filingId);
+  if(!f) return;
+  const docs = (f.documents||[]).map(d=>({...d}));
+  if(!docs[idx]) return;
+  docs[idx].sealed = !docs[idx].sealed;
+  const sealedNow = docs[idx].sealed;
+  const docName = docs[idx].name;
+  try{
+    const activityLog = pushActivity(f, `${sealedNow?'Sealed':'Unsealed'} document "${docName}" ${sealedNow?'from':'for'} public access`);
+    await persistFiling(f, { documents: docs, activityLog });
+
+    if(f.status==='Accepted' && f.linkedCaseFirestoreId){
+      const c = await ensureCaseCached(f.linkedCaseFirestoreId) || caseCache[f.linkedCaseFirestoreId];
+      if(c && Array.isArray(c.events)){
+        const events = c.events.map(ev => (ev.confirmationNumber===f.confirmationNumber && ev.docName===docName) ? {...ev, sealed:sealedNow} : ev);
+        await updateDoc(doc(db,'cases', f.linkedCaseFirestoreId), { events });
+        c.events = events;
+      }
+    }
+    renderAll();
+  }catch(err){ console.error(err); alert('Could not update the seal status for this document. Please try again.'); }
+}
+window.toggleDocSeal = toggleDocSeal;
+
+// Seals/unseals the entire case record from public Case Search.
+async function toggleCaseSeal(filingId){
+  const f = pending.find(x=>x._id===filingId);
+  if(!f || !f.linkedCaseFirestoreId) return;
+  const c = caseCache[f.linkedCaseFirestoreId];
+  if(!c) return;
+  const sealed = !c.sealed;
+  try{
+    await updateDoc(doc(db,'cases', f.linkedCaseFirestoreId), { sealed });
+    c.sealed = sealed;
+    const activityLog = pushActivity(f, sealed ? 'Sealed the entire case from public search' : 'Unsealed the case for public search');
+    await persistFiling(f, { activityLog });
+    renderAll();
+  }catch(err){ console.error(err); alert('Could not update the case seal status. Please try again.'); }
+}
+window.toggleCaseSeal = toggleCaseSeal;
+
+// Records a clerk or judge fee-waiver decision under MCR 7.403. If the underlying filing has
+// already been accepted (so a case already exists), the decision is also appended live to the
+// case's public event log; otherwise it's carried along and added to the events built at accept time.
+async function decideFeeWaiver(id, level, decision){
+  const f = pending.find(x=>x._id===id);
+  if(!f) return;
+  const reasonInput = document.getElementById('fw-reason-'+id);
+  const reason = reasonInput?.value?.trim();
+  if(!reason){ alert('Please provide the basis for this decision.'); return; }
+
+  const nowIso = new Date().toISOString();
+  const entry = { level, decision, reason, by:userData.name, byUid:userData.uid, byRole:userData.role, at:nowIso };
+  const decisions = [...(f.feeWaiver?.decisions||[]), entry];
+  let status;
+  if(level==='clerk') status = decision==='grant' ? 'Granted by Clerk' : 'Denied by Clerk — Referred to Judge';
+  else status = decision==='grant' ? 'Granted by Judge' : 'Denied by Judge';
+  const feeWaiver = { isFeeWaiver:true, status, decisions };
+
+  try{
+    if(f.status==='Accepted' && f.linkedCaseFirestoreId){
+      const c = await ensureCaseCached(f.linkedCaseFirestoreId) || caseCache[f.linkedCaseFirestoreId];
+      if(c){
+        const events = [...(c.events||[])];
+        const num = events.length ? Math.max(...events.map(e=>e.eventNumber||0))+1 : 1;
+        events.push(feeWaiverDecisionEvent(num, entry));
+        await updateDoc(doc(db,'cases', f.linkedCaseFirestoreId), { events, 'dates.lastUpdated': nowIso });
+        c.events = events;
+      }
+    }
+    const activityLog = pushActivity(f, level==='clerk'
+      ? (decision==='grant' ? 'Fee waiver granted by clerk. All fees waived.' : 'Fee waiver denied by clerk. Referred to judge for review.')
+      : (decision==='grant' ? 'Fee waiver granted by judge on review. All fees waived.' : 'Fee waiver denied by judge on review.'));
+    await persistFiling(f, { feeWaiver, activityLog });
+    renderAll();
+  }catch(err){ console.error(err); alert('Could not save the fee waiver decision. Please try again.'); }
+}
+window.decideFeeWaiver = decideFeeWaiver;
 
 async function addClerkNote(id){
   const f = pending.find(x=>x._id===id);
@@ -794,11 +988,12 @@ async function acceptFiling(id){
         ...(cls.subtypeField ? { [cls.subtypeField]: f.caseType } : {}),
         status: (cls.display==='Appellate' || cls.display==='Administrative') ? 'Pending' : 'Active',
         dates: { filed: f.dateFiled || nowIso, lastUpdated: nowIso },
-        parties: mapPartiesToSchema(cls.display, f.parties||[]),
+        parties: mapPartiesToSchema(f.parties||[]),
         judge: null, judges: [],
         hearings: [],
         financialOrders: [],
-        filings: buildFilingsEntries(f),
+        events: buildEventsForAcceptance(f, []),
+        sealed: false,
         relatedUserIds: f.filedByUid ? [f.filedByUid] : [],
         docketSummary: null,
         intakeConfirmationNumber: f.confirmationNumber,
@@ -812,14 +1007,8 @@ async function acceptFiling(id){
       const caseSnap = await getDoc(caseRef);
       if(caseSnap.exists()){
         const caseData = caseSnap.data();
-        let filings = caseData.filings || [];
-        let found = false;
-        filings = filings.map(entry=>{
-          if(entry.confirmationNumber && entry.confirmationNumber===f.confirmationNumber){ found=true; return {...entry, status:'Accepted', accepted:true}; }
-          return entry;
-        });
-        if(!found) filings = filings.concat(buildFilingsEntries(f));
-        await updateDoc(caseRef, { filings, 'dates.lastUpdated': nowIso });
+        const events = buildEventsForAcceptance(f, caseData.events||[]);
+        await updateDoc(caseRef, { events, 'dates.lastUpdated': nowIso });
       }
       linkedCaseFirestoreId = f.caseFirestoreId;
       linkedCaseId = f.caseId;
@@ -847,7 +1036,6 @@ async function confirmReject(id){
   if(!reason){ alert('Please provide a reason for rejection.'); return; }
   try{
     const nowIso = new Date().toISOString();
-    if(f.filingType==='existing' && f.caseFirestoreId) await updateCaseFilingStatus(f, 'Rejected');
     const activityLog = pushActivity(f, 'Rejected');
     await persistFiling(f, { status:'Rejected', accepted:false, rejectionReason:reason, reviewedBy:userData.name, reviewedByUid:userData.uid, reviewedAt:nowIso, activityLog });
     openId = null;
@@ -863,7 +1051,6 @@ async function confirmReturn(id){
   if(!reason){ alert('Please describe what needs to be corrected.'); return; }
   try{
     const nowIso = new Date().toISOString();
-    if(f.filingType==='existing' && f.caseFirestoreId) await updateCaseFilingStatus(f, 'Returned for Correction');
     const activityLog = pushActivity(f, 'Returned for correction');
     await persistFiling(f, { status:'Returned', accepted:false, returnReason:reason, reviewedBy:userData.name, reviewedByUid:userData.uid, reviewedAt:nowIso, activityLog });
     openId = null;
@@ -871,19 +1058,6 @@ async function confirmReturn(id){
   }catch(err){ console.error(err); alert('There was an error returning this filing. Please try again.'); }
 }
 window.confirmReturn = confirmReturn;
-
-async function updateCaseFilingStatus(f, newStatus){
-  const caseRef = doc(db,'cases', f.caseFirestoreId);
-  const caseSnap = await getDoc(caseRef);
-  if(!caseSnap.exists()) return;
-  const caseData = caseSnap.data();
-  let filings = caseData.filings || [];
-  filings = filings.map(entry=>{
-    if(entry.confirmationNumber && entry.confirmationNumber===f.confirmationNumber) return {...entry, status:newStatus, accepted:false};
-    return entry;
-  });
-  await updateDoc(caseRef, { filings });
-}
 
 function showRestricted(){
   document.getElementById('restricted-wrap').style.display='block';
