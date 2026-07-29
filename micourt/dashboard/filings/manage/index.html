@@ -398,10 +398,27 @@ function timeAgo(s){
 
 function getPartyName(p){
   if(!p) return '';
-  if(p.actorType==='Natural Person') return [p.firstName,p.lastName].filter(Boolean).join(' ');
-  if(p.actorType==='Business or Organization') return p.orgName||'';
-  if(p.actorType==='Governmental Entity') return p.govType==='Jurisdiction' ? (p.jurisdiction||'') : (p.publicBodyName||'');
-  return '';
+  // Prefer an explicit name field if one was already provided.
+  if (typeof p.name === 'string' && p.name.trim()) return p.name.trim();
+  if (typeof p.fullName === 'string' && p.fullName.trim()) return p.fullName.trim();
+
+  const at = (p.actorType||'').toLowerCase();
+  const personLike = at.includes('natural') || at.includes('person') || p.firstName || p.lastName;
+  const orgLike = at.includes('business') || at.includes('organization') || at.includes('company') || p.orgName || p.businessName || p.organizationName || p.entityName;
+  const govLike = at.includes('government') || at.includes('governmental') || p.govType || p.jurisdiction || p.publicBodyName || p.agencyName;
+
+  if (personLike) {
+    const full = [p.firstName,p.middleName,p.lastName].filter(Boolean).join(' ');
+    if (full) return full;
+  }
+  if (orgLike) {
+    return p.orgName || p.businessName || p.organizationName || p.entityName || '';
+  }
+  if (govLike) {
+    return (p.govType==='Jurisdiction') ? (p.jurisdiction||'') : (p.publicBodyName || p.agencyName || p.jurisdiction || '');
+  }
+  // Last-ditch fallback so we never silently render a blank party name.
+  return [p.firstName,p.lastName].filter(Boolean).join(' ') || p.orgName || p.jurisdiction || p.publicBodyName || p.displayName || '';
 }
 function getPartyAttorney(p){
   if(!p || !p.attorney) return null;
