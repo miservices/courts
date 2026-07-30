@@ -315,12 +315,41 @@ const app = getApps().length ? getApp() : initializeApp(cfg);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// Roles allowed to review filings — same set that gets "Admin Tools" on the dashboard.
-const STAFF_ROLES = ['Clerk','Magistrate Judge','Judge','Chief Judge','Clerk of the Supreme Court','Assistant Clerk of the Supreme Court','Justice','Chief Justice'];
-const SC_ROLES = ['Clerk of the Supreme Court','Assistant Clerk of the Supreme Court','Justice','Chief Justice'];
+// Roles allowed to review filings / access case management — same set that gets "Admin Tools" on the dashboard.
+const STAFF_ROLES = [
+  'Clerk','Clerk of the District Court','Law Clerk (DC)','Judicial Assistant (DC)',
+  'Magistrate Judge','Judge','Chief Judge',
+  'Clerk of the Supreme Court','Assistant Clerk of the Supreme Court','Law Clerk (SC)','Judicial Assistant (SC)',
+  'Justice','Chief Justice'
+];
+const SC_ROLES = ['Clerk of the Supreme Court','Assistant Clerk of the Supreme Court','Law Clerk (SC)','Judicial Assistant (SC)','Justice','Chief Justice'];
 const JUDGE_ROLES_DISTRICT = ['Magistrate Judge','Judge','Chief Judge'];
 const JUDGE_ROLES_SC = ['Justice','Chief Justice'];
 const ALL_JUDGE_ROLES = [...JUDGE_ROLES_DISTRICT, ...JUDGE_ROLES_SC];
+// Judicial staff who work directly for a judge/justice and may act on their behalf (e.g. enter an
+// order into the record for them). They are not judicial officers themselves.
+const JUDGE_STAFF_DISTRICT = ['Law Clerk (DC)','Judicial Assistant (DC)'];
+const JUDGE_STAFF_SC = ['Law Clerk (SC)','Judicial Assistant (SC)'];
+const ACTS_FOR_JUDGE_ROLES = [...JUDGE_STAFF_DISTRICT, ...JUDGE_STAFF_SC, ...ALL_JUDGE_ROLES];
+
+// Filing-decision authority level within each court's own chain of review. A user may overturn
+// a decision made by anyone with a strictly lower level in the SAME court chain — e.g. a Magistrate
+// Judge can overturn a Clerk of the District Court's decision, who can in turn overturn a line Clerk's.
+// District Court and Supreme Court chains are fully separate; nothing crosses between them.
+const FILING_LEVELS = {
+  'Clerk': 1,
+  'Clerk of the District Court': 2,
+  'Law Clerk (DC)': 3, 'Judicial Assistant (DC)': 3,
+  'Magistrate Judge': 3, 'Judge': 3, 'Chief Judge': 3,
+  'Assistant Clerk of the Supreme Court': 1,
+  'Clerk of the Supreme Court': 2,
+  'Law Clerk (SC)': 3, 'Judicial Assistant (SC)': 3,
+  'Justice': 3, 'Chief Justice': 3,
+};
+function filingLevel(role){ return FILING_LEVELS[role] || 0; }
+// A role's home court chain — used so a District-chain level 3 can never be compared against an
+// SC-chain level 1, etc. (Even though the raw numbers overlap, chains are isolated.)
+function chainOf(role){ return SC_ROLES.includes(role) ? 'sc' : 'district'; }
 
 let userData = { name:'—', uid:null, role:'Portal User' };
 let pending = [];   // pendingFilings docs, each with _id
@@ -526,6 +555,113 @@ function driveEmbedUrl(link){
   return m ? `https://drive.google.com/file/d/${m[1]}/preview` : null;
 }
 
+// ── Random judge assignment on new-case acceptance ──
+// Criminal, Traffic, and Small Claims matters may go to a Magistrate; General Civil (and anything
+// else) is reserved for a Judge/Chief Judge. Supreme Court matters go to any Justice.
+function pickRandomJudge(court, displayType, subtype){
+  let pool;
+  if(court === 'Michigan Supreme Court'){
+    pool = judges.filter(j=>JUDGE_ROLES_SC.includes(j.role));
+  } else if(displayType==='Criminal' || displayType==='Traffic' || subtype==='Small Claims'){
+    pool = judges.filter(j=>['Magistrate Judge','Judge','Chief Judge'].includes(j.role));
+  } else {
+    pool = judges.filter(j=>['Judge','Chief Judge'].includes(j.role));
+  }
+  if(!pool.length) pool = judges.filter(j=> court==='Michigan Supreme Court' ? JUDGE_ROLES_SC.includes(j.role) : JUDGE_ROLES_DISTRICT.includes(j.role));
+  if(!pool.length) return null;
+  return pool[Math.floor(Math.random()*pool.length)];
+}
+
+// ── Case Management collection ──
+// A separate, staff-only collection (keyed by the case's Firestore/case-number id) that holds
+// internal management data — tasks, notices, notes, audit log — kept apart from the public
+// "cases" record so none of it is ever exposed through public Case Search.
+const MOTION_KEYWORDS = ['motion','petition','application','objection','stipulation for'];
+function isActionableDoc(d){
+  const s = `${d.documentType||''} ${d.name||''}`.toLowerCase();
+  return MOTION_KEYWORDS.some(k=>s.includes(k)) && !isFeeWaiverDoc(d);
+}
+
+async function createTasksAndNoticesForFiling(f, caseFirestoreId){
+  if(!caseFirestoreId) return;
+  try{
+    const cmRef = doc(db,'caseManagement', caseFirestoreId);
+    const snap = await getDoc(cmRef);
+    const data = snap.exists() ? snap.data() : { tasks:[], notifications:[], internalNotes:[], auditLog:[] };
+    const tasks = [...(data.tasks||[])];
+    const notifications = [...(data.notifications||[])];
+    let taskNum = tasks.length ? Math.max(...tasks.map(t=>t.num||0))+1 : 1;
+    let notifNum = notifications.length ? Math.max(...notifications.map(n=>n.num||0))+1 : 1;
+
+    (f.documents||[]).forEach(d=>{
+      // Every accepted filing in an ongoing case generates a Notice of Electronic Filing.
+      notifications.push({
+        num: notifNum++, type:'NEF', title:'Notice of Electronic Filing',
+        text: `${d.documentType||d.name||'Document'} filed by ${f.filedBy||'a party'} was accepted and entered on the docket.`,
+        at: new Date().toISOString(), confirmationNumber: f.confirmationNumber||null, read:false,
+      });
+      if(isActionableDoc(d)){
+        tasks.push({
+          num: taskNum, id: `${f._id}-${taskNum}`,
+          title: `${d.documentType||d.name||'Filing'} — needs review`,
+          docType: d.documentType||d.name||'Filing',
+          filedBy: f.filedBy||'—',
+          confirmationNumber: f.confirmationNumber||null,
+          status:'Open', createdAt: new Date().toISOString(),
+          suggestedActions: ['scheduleHearing','issueRuling'],
+        });
+        taskNum++;
+      }
+    });
+
+    await setDoc(cmRef, { ...data, tasks, notifications, caseFirestoreId, lastUpdated:new Date().toISOString() }, { merge:true });
+  }catch(err){ console.warn('Could not write case-management tasks/notices', err); }
+}
+
+async function addAuditEntry(caseFirestoreId, action){
+  if(!caseFirestoreId) return;
+  try{
+    const cmRef = doc(db,'caseManagement', caseFirestoreId);
+    const snap = await getDoc(cmRef);
+    const data = snap.exists() ? snap.data() : { tasks:[], notifications:[], internalNotes:[], auditLog:[] };
+    const auditLog = [...(data.auditLog||[]), { action, by:userData.name, byUid:userData.uid, byRole:userData.role, at:new Date().toISOString() }];
+    await setDoc(cmRef, { ...data, auditLog, caseFirestoreId }, { merge:true });
+  }catch(err){ console.warn('Could not write audit entry', err); }
+}
+
+// Filings that do not initiate a new case (motions, responses, appearances, etc. in an already-open
+// case) never need to sit in a clerk's review queue — they're entered on the docket automatically.
+async function autoProcessRoutineFilings(){
+  const toProcess = pending.filter(f => (f.status||'Pending')==='Pending' && f.filingType!=='new');
+  for(const f of toProcess){
+    try{
+      const nowIso = new Date().toISOString();
+      let linkedCaseId = f.caseId||null, linkedCaseFirestoreId = f.caseFirestoreId||null;
+      if(f.caseFirestoreId){
+        const caseRef = doc(db,'cases', f.caseFirestoreId);
+        const caseSnap = await getDoc(caseRef);
+        if(caseSnap.exists()){
+          const caseData = caseSnap.data();
+          const events = buildEventsForAcceptance(f, caseData.events||[]);
+          await updateDoc(caseRef, { events, 'dates.lastUpdated': nowIso });
+          const cObj = {...caseData, _id:f.caseFirestoreId, events};
+          const idx = cases.findIndex(x=>x._id===f.caseFirestoreId);
+          if(idx>=0) cases[idx]=cObj; else cases.push(cObj);
+        }
+      }
+      const activityLog = [...(f.activityLog||[]), { text:'Automatically filed — filings in an existing case do not require clerk review', by:'System', at: nowIso }];
+      const patch = {
+        status:'Accepted', accepted:true, autoFiled:true,
+        reviewedBy:'System (Auto-Filed)', reviewedByRole:null, reviewedAt: nowIso,
+        linkedCaseId, linkedCaseFirestoreId, activityLog,
+      };
+      await updateDoc(doc(db,'pendingFilings', f._id), patch);
+      Object.assign(f, patch);
+      await createTasksAndNoticesForFiling(f, linkedCaseFirestoreId);
+    }catch(err){ console.warn('Auto-file failed for', f._id, err); }
+  }
+}
+
 // ── Load & render ──
 async function loadAll(){
   const card = document.getElementById('queue-card');
@@ -544,10 +680,14 @@ async function loadAll(){
     accSnap.forEach(d=>{ const a=d.data(); if([...JUDGE_ROLES_DISTRICT,...JUDGE_ROLES_SC].includes(a.role)) judges.push({uid:d.id, name:a.name||'Unnamed', role:a.role}); });
   }catch(e){ console.warn('accounts load failed', e); judges=[]; }
   caseCache = {};
+  await autoProcessRoutineFilings();
   renderAll();
 }
 window.loadAll = loadAll;
 
+// Every staff role belongs to exactly one court chain and can never cross into the other —
+// Clerks and the Clerk of the District Court in particular must never be able to reach Supreme
+// Court filings, and the reverse holds for the Supreme Court's own clerical staff.
 function setCourtFilter(court, btn){
   courtFilter = court;
   document.querySelectorAll('#court-toggle button').forEach(b=>b.classList.remove('active'));
@@ -679,7 +819,7 @@ function feeWaiverBlockHtml(f){
   const fw = f.feeWaiver || { status:'Pending Clerk Review', decisions:[] };
   const finalDecided = ['Granted by Clerk','Granted by Judge','Denied by Judge'].includes(fw.status);
   const canJudgeDecide = (fw.status||'').startsWith('Denied by Clerk');
-  const isJudgeRole = ALL_JUDGE_ROLES.includes(userData.role) || userData.role==='Chief Judge' || userData.role==='Chief Justice';
+  const isJudgeRole = ACTS_FOR_JUDGE_ROLES.includes(userData.role);
   const statusCls = (fw.status||'').startsWith('Granted') ? 'granted' : ((fw.status||'').startsWith('Denied') ? 'denied' : '');
 
   const history = (fw.decisions||[]).length ? `<div class="notes-list" style="margin-bottom:10px">${fw.decisions.map(d=>`<div class="note-item"><div class="note-meta"><span>${esc(d.by)} (${esc(d.byRole||'')}) · ${d.level==='judge'?'Judge Review':'Clerk Decision'}: ${esc(d.decision==='grant'?'Granted':'Denied')}</span><span>${timeAgo(d.at)}</span></div><div class="note-text">${esc(d.reason)}</div></div>`).join('')}</div>` : '';
@@ -794,18 +934,23 @@ function detailHtml(f){
       </div>
     </div>`;
   } else {
-    footer = `<div class="review-note">Reviewed by ${esc(f.reviewedBy||'—')} on ${fmtDate(f.reviewedAt)}${f.status==='Rejected'&&f.rejectionReason?`<br><strong>Reason:</strong> ${esc(f.rejectionReason)}`:''}${f.status==='Returned'&&f.returnReason?`<br><strong>Correction needed:</strong> ${esc(f.returnReason)}`:''}${f.status==='Accepted'&&f.linkedCaseId?`<br><strong>Case Number:</strong> ${esc(f.linkedCaseId)}`:''}</div>`;
+    const auto = f.autoFiled === true;
+    footer = `<div class="review-note">${auto ? 'Automatically filed — no clerk review required for filings in an ongoing case.' : `Reviewed by ${esc(f.reviewedBy||'—')}${f.reviewedByRole?' ('+esc(f.reviewedByRole)+')':''} on ${fmtDate(f.reviewedAt)}`}${f.status==='Rejected'&&f.rejectionReason?`<br><strong>Reason:</strong> ${esc(f.rejectionReason)}`:''}${f.status==='Returned'&&f.returnReason?`<br><strong>Correction needed:</strong> ${esc(f.returnReason)}`:''}${f.status==='Accepted'&&f.linkedCaseId?`<br><strong>Case Number:</strong> ${esc(f.linkedCaseId)}`:''}${f.overturnedFrom?`<br><strong style="color:var(--purple)">Overturned:</strong> was "${esc(f.overturnedFrom.status)}" by ${esc(f.overturnedFrom.by)} (${esc(f.overturnedFrom.byRole||'')}) — overturned by ${esc(f.overturnedBy)} on ${fmtDate(f.overturnedAt)}. Reason: ${esc(f.overturnReason)}`:''}</div>`;
+    const actionButtons = [];
     if(f.status==='Accepted' && f.linkedCaseFirestoreId){
+      actionButtons.push(`<a class="btn-primary" style="background:var(--gold);color:var(--navy)" href="/courts/micourt/dashboard/case-management/?case=${encodeURIComponent(f.linkedCaseFirestoreId)}">📁 Manage Case</a>`);
       ensureCaseCached(f.linkedCaseFirestoreId);
       const c = caseCache[f.linkedCaseFirestoreId];
       if(c){
-        footer += `<div class="action-row">
-          <button class="btn-primary btn-seal${c.sealed?' is-sealed':''}" onclick="event.stopPropagation();toggleCaseSeal('${f._id}')">${c.sealed?'🔓 Unseal Entire Case':'🔒 Seal Entire Case from Public Search'}</button>
-        </div>`;
+        actionButtons.push(`<button class="btn-primary btn-seal${c.sealed?' is-sealed':''}" onclick="event.stopPropagation();toggleCaseSeal('${f._id}')">${c.sealed?'🔓 Unseal Entire Case':'🔒 Seal Entire Case from Public Search'}</button>`);
       } else {
-        footer += `<div class="action-row"><button class="btn-ghost" disabled><span class="spin" style="border-color:rgba(0,0,0,.15);border-top-color:var(--muted)"></span> Loading case record…</button></div>`;
+        actionButtons.push(`<button class="btn-ghost" disabled><span class="spin" style="border-color:rgba(0,0,0,.15);border-top-color:var(--muted)"></span> Loading case record…</button>`);
       }
     }
+    if(!auto && canOverturn(f)){
+      actionButtons.push(`<button class="btn-primary" style="background:var(--purple)" onclick="event.stopPropagation();overturnFiling('${f._id}')">↺ Overturn Decision</button>`);
+    }
+    if(actionButtons.length) footer += `<div class="action-row">${actionButtons.join('')}</div>`;
   }
 
   return `<div class="callout c-info"><span class="callout-icon">ℹ️</span><div class="callout-text">Submitted ${fmtDate(f.dateFiled)} · Confirmation <strong>${esc(f.confirmationNumber||'—')}</strong></div></div>${caseBlock}${docBlock}${fwBlock}${detailsBlock}${notesBlock}${activityBlock}${footer}`;
@@ -998,6 +1143,7 @@ async function acceptFiling(id){
     if(f.filingType==='new'){
       const cls = classifyForDisplay(f.caseType);
       const caseId = await getNextCaseId(f.court, cls.display);
+      const judgePick = pickRandomJudge(f.court, cls.display, f.caseType);
       const caseObj = {
         caseId,
         court: f.court,
@@ -1006,7 +1152,7 @@ async function acceptFiling(id){
         status: (cls.display==='Appellate' || cls.display==='Administrative') ? 'Pending' : 'Active',
         dates: { filed: f.dateFiled || nowIso, lastUpdated: nowIso },
         parties: mapPartiesToSchema(f.parties||[]),
-        judge: null, judges: [],
+        judge: judgePick ? judgePick.name : null, judges: judgePick ? [judgePick.name] : [], judgeUid: judgePick ? judgePick.uid : null,
         hearings: [],
         financialOrders: [],
         events: buildEventsForAcceptance(f, []),
@@ -1019,6 +1165,9 @@ async function acceptFiling(id){
       await setDoc(doc(db,'cases', caseId), caseObj);
       linkedCaseFirestoreId = caseId;
       linkedCaseId = caseId;
+      if(judgePick){
+        await addAuditEntry(caseId, `Case opened and randomly assigned to ${judgePick.name} (${judgePick.role})`);
+      }
     } else if(f.caseFirestoreId){
       const caseRef = doc(db,'cases', f.caseFirestoreId);
       const caseSnap = await getDoc(caseRef);
@@ -1034,9 +1183,12 @@ async function acceptFiling(id){
     const activityLog = pushActivity(f, `Accepted${linkedCaseId ? ' — case ' + linkedCaseId : ''}`);
     await persistFiling(f, {
       status:'Accepted', accepted:true,
-      reviewedBy:userData.name, reviewedByUid:userData.uid, reviewedAt:nowIso,
+      reviewedBy:userData.name, reviewedByUid:userData.uid, reviewedByRole:userData.role, reviewedAt:nowIso,
       linkedCaseId, linkedCaseFirestoreId, activityLog,
     });
+    if(f.filingType!=='new'){
+      await createTasksAndNoticesForFiling(f, linkedCaseFirestoreId);
+    }
     await loadAll();
   }catch(err){
     console.error(err);
@@ -1054,7 +1206,7 @@ async function confirmReject(id){
   try{
     const nowIso = new Date().toISOString();
     const activityLog = pushActivity(f, 'Rejected');
-    await persistFiling(f, { status:'Rejected', accepted:false, rejectionReason:reason, reviewedBy:userData.name, reviewedByUid:userData.uid, reviewedAt:nowIso, activityLog });
+    await persistFiling(f, { status:'Rejected', accepted:false, rejectionReason:reason, reviewedBy:userData.name, reviewedByUid:userData.uid, reviewedByRole:userData.role, reviewedAt:nowIso, activityLog });
     openId = null;
     renderAll();
   }catch(err){ console.error(err); alert('There was an error rejecting this filing. Please try again.'); }
@@ -1069,12 +1221,44 @@ async function confirmReturn(id){
   try{
     const nowIso = new Date().toISOString();
     const activityLog = pushActivity(f, 'Returned for correction');
-    await persistFiling(f, { status:'Returned', accepted:false, returnReason:reason, reviewedBy:userData.name, reviewedByUid:userData.uid, reviewedAt:nowIso, activityLog });
+    await persistFiling(f, { status:'Returned', accepted:false, returnReason:reason, reviewedBy:userData.name, reviewedByUid:userData.uid, reviewedByRole:userData.role, reviewedAt:nowIso, activityLog });
     openId = null;
     renderAll();
   }catch(err){ console.error(err); alert('There was an error returning this filing. Please try again.'); }
 }
 window.confirmReturn = confirmReturn;
+
+// Whether the signed-in user may overturn the decision recorded on this filing — they must
+// outrank the original decision-maker's role within the SAME court chain (auto-filed routine
+// filings were never a "decision" and are not eligible to be overturned this way).
+function canOverturn(f){
+  if(!f.reviewedByRole) return false;
+  if((f.status||'Pending')==='Pending') return false;
+  if(chainOf(f.reviewedByRole) !== chainOf(userData.role)) return false;
+  return filingLevel(userData.role) > filingLevel(f.reviewedByRole);
+}
+
+async function overturnFiling(id){
+  const f = pending.find(x=>x._id===id);
+  if(!f) return;
+  const reason = prompt(`Reason for overturning ${f.reviewedBy}'s "${f.status}" decision on this filing:`);
+  if(reason===null) return;
+  if(!reason.trim()){ alert('Please provide a reason.'); return; }
+  try{
+    const nowIso = new Date().toISOString();
+    const activityLog = pushActivity(f, `Overturned prior decision (${f.status} by ${f.reviewedBy}, ${f.reviewedByRole}) — reason: ${reason.trim()}`);
+    await persistFiling(f, {
+      status:'Pending', accepted:false,
+      overturnedFrom: { status:f.status, by:f.reviewedBy, byRole:f.reviewedByRole, at:f.reviewedAt, reason:f.rejectionReason||f.returnReason||null },
+      overturnedBy:userData.name, overturnedByRole:userData.role, overturnedAt:nowIso, overturnReason:reason.trim(),
+      rejectionReason:null, returnReason:null, reviewedBy:null, reviewedByUid:null, reviewedByRole:null, reviewedAt:null,
+      activityLog,
+    });
+    if(f.linkedCaseFirestoreId) await addAuditEntry(f.linkedCaseFirestoreId, `Filing decision overturned by ${userData.name} (${userData.role}) — reason: ${reason.trim()}`);
+    renderAll();
+  }catch(err){ console.error(err); alert('Could not overturn this decision. Please try again.'); }
+}
+window.overturnFiling = overturnFiling;
 
 function showRestricted(){
   document.getElementById('restricted-wrap').style.display='block';
@@ -1112,10 +1296,12 @@ const unsub = onAuthStateChanged(auth, async (user) => {
     }
 
     document.getElementById('manage-wrap').style.display='block';
+    // Court is locked to the account's own chain — no cross-court toggle. A District Court
+    // Clerk (or Clerk of the District Court) can never reach Supreme Court filings, and Supreme
+    // Court clerical staff can never reach District Court filings.
     const isSC = SC_ROLES.includes(userData.role);
     courtFilter = isSC ? 'Michigan Supreme Court' : 'Genesee Co. District Court';
-    document.getElementById('court-toggle').style.display='flex';
-    document.getElementById(isSC?'ct-sc':'ct-district').classList.add('active');
+    document.getElementById('court-toggle').style.display='none';
 
     await loadAll();
   }catch(err){
