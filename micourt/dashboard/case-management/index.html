@@ -228,26 +228,30 @@ a{color:inherit}
 .event-row:last-child{border-bottom:none}
 .event-num{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;font-size:10.5px;font-weight:700;background:var(--cream);color:var(--muted);border:1px solid var(--line);flex-shrink:0}
 .ek-filing .event-num{background:var(--blue-bg);color:var(--blue);border-color:var(--blue-bdr)}
-.ek-order .event-num{background:var(--purple-bg);color:var(--purple);border-color:var(--purple-bdr)}
+.ek-order .event-num{background:var(--amber-bg);color:#8a6d1f;border-color:var(--amber-bdr)}
 .event-main{flex:1;min-width:0}
 .event-top{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:3px}
 .event-date{font-size:11px;color:#9a8f82}
 .event-kind-badge{font-size:9px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;padding:2px 7px;border-radius:2px}
 .ek-event .event-kind-badge{background:var(--cream);color:var(--muted)}
 .ek-filing .event-kind-badge{background:var(--blue-bg);color:var(--blue)}
-.ek-order .event-kind-badge{background:var(--purple-bg);color:var(--purple)}
+.ek-order .event-kind-badge{background:var(--amber-bg);color:#8a6d1f}
 .event-desc{font-size:13.5px;font-weight:600;color:var(--text)}
 .event-comment{font-size:12px;color:var(--muted);margin-top:4px;line-height:1.5}
 .event-actions{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
 
 /* Tasks */
 .task-card{border:1px solid var(--amber-bdr);background:#fffdf5;border-radius:4px;padding:14px 16px;margin-bottom:10px}
-.task-card.done{border-color:var(--green-bdr);background:var(--green-bg)}
+.task-card.done{border-color:var(--green-bdr);background:var(--green-bg);padding:9px 16px;cursor:pointer}
 .task-card:last-child{margin-bottom:0}
 .task-top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
 .task-title{font-size:13.5px;font-weight:700;color:var(--text)}
 .task-meta{font-size:11.5px;color:var(--muted);margin-top:3px}
 .task-actions{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
+.task-card.done .task-meta{display:none}
+.task-card.done.expanded{padding:14px 16px}
+.task-card.done.expanded .task-meta{display:block}
+.task-collapse-hint{font-size:10.5px;color:#9a8f82}
 
 /* Notes */
 .notes-list{display:flex;flex-direction:column;gap:8px;margin-bottom:10px}
@@ -295,10 +299,12 @@ a{color:inherit}
 .mform-row label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);display:block;margin-bottom:6px}
 .mform-row input,.mform-row select,.mform-row textarea{width:100%;padding:9px 12px;border:1.5px solid var(--line);border-radius:4px;font-family:'DM Sans',sans-serif;font-size:13px;outline:none;background:#fff}
 .mform-row textarea{resize:vertical;min-height:70px}
+.mform-row .hint{font-size:11px;color:#9a8f82;margin-top:5px;font-weight:400;text-transform:none;letter-spacing:0}
 .mform-file{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1.5px dashed var(--line);border-radius:4px;background:var(--cream)}
 .mform-file input[type=file]{font-size:12px;flex:1}
 .mform-or{font-size:11px;color:#9a8f82;text-transform:uppercase;letter-spacing:.08em;text-align:center;margin:10px 0}
 .mform-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.mform-locked{width:100%;padding:9px 12px;border:1.5px solid var(--line);border-radius:4px;font-size:13px;background:#f4f1ec;color:#9a8f82}
 
 .btn-primary{display:inline-flex;align-items:center;gap:7px;background:var(--navy);color:#fff;border:none;padding:9px 16px;border-radius:4px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:background .12s;text-decoration:none}
 .btn-primary:hover{background:var(--navy-mid)}
@@ -308,7 +314,7 @@ a{color:inherit}
 .btn-green{background:var(--green)} .btn-green:hover{background:#116530}
 .btn-red{background:var(--red)} .btn-red:hover{background:#b91c1c}
 .btn-purple{background:var(--purple)} .btn-purple:hover{background:#5b21b6}
-.btn-gold{background:var(--gold);color:var(--navy)}
+.btn-gold{background:var(--gold);color:var(--navy)} .btn-gold:hover{background:#b8974a}
 .empty-note{color:#9a8f82;font-size:12.5px;padding:6px 0}
 
 @media(max-width:800px){
@@ -434,6 +440,7 @@ let filingsForCase = [];  // pendingFilings tied to the open case
 let judgesAll = [];       // accounts filtered to judge-ish roles
 let sectionState = {};    // per-section collapsed/expanded, in-memory only
 let docketFilter = 'all';
+let expandedTasks = {};   // completed/dismissed tasks the user has expanded to view
 
 const DEFAULT_COLLAPSED = new Set(['charges','bonds','sentencing','financials','filings','notes','audit','notifications','timeline']);
 function isCollapsed(id){ return sectionState[id] !== undefined ? sectionState[id] : DEFAULT_COLLAPSED.has(id); }
@@ -455,8 +462,20 @@ function timeAgo(s){
 }
 function toInputDate(str){ if(!hasVal(str)) return ''; const d=new Date(str); return isNaN(d)?'':d.toISOString().slice(0,10); }
 function toInputDateTime(str){ if(!hasVal(str)) return ''; const d=new Date(str); return isNaN(d)?'':d.toISOString().slice(0,16); }
+function stripTaskSuffix(t){ return (t||'').replace(/\s*[-–—]+\s*needs review\s*$/i,'').trim(); }
+
+// Role options change based on case type — used for party pre-fill dropdowns.
+function roleOptionsForCaseType(caseType){
+  const t=(caseType||'').toLowerCase();
+  if(t==='criminal'||t==='traffic') return ['Defendant','Victim','Witness','Interested Party'];
+  if(t==='civil') return ['Plaintiff','Defendant','Interested Party','Witness'];
+  if(t==='appellate'||t==='appeal') return ['Appellant','Appellee','Interested Party'];
+  if(t==='administrative') return ['Petitioner','Respondent','Interested Party'];
+  return ['Plaintiff','Defendant','Petitioner','Respondent','Appellant','Appellee','Interested Party'];
+}
 
 function getCaseTitle(c){
+  if(hasVal(c.caseTitleOverride)) return c.caseTitleOverride;
   const t=(c.caseType||'').toLowerCase(); const p=c.parties||{};
   const list = Array.isArray(p) ? p : null;
   function findRole(roles){ return list ? list.find(x=>roles.includes((x.role||'').toLowerCase())) : null; }
@@ -632,6 +651,7 @@ async function showDetailScreen(caseId){
     if(!judgesAll.length) await loadJudges();
 
     docketFilter = 'all';
+    expandedTasks = {};
     document.getElementById('detail-loading').style.display='none';
     document.getElementById('detail-content').style.display='block';
     renderDetailPage();
@@ -665,9 +685,13 @@ async function addAudit(action){
   const auditLog = [...(cm.auditLog||[]), { action, by:userData.name, byUid:userData.uid, byRole:userData.role, at:new Date().toISOString() }];
   await saveCM({ auditLog });
 }
+// Notices are always system-generated (never manually authored). Every notice that
+// goes out is automatically mirrored into the audit log so there is a durable record
+// of when and why it was issued.
 async function addNotification(notif){
   const notifications = [...(cm.notifications||[]), { num:(cm.notifications||[]).length+1, at:new Date().toISOString(), read:false, ...notif }];
   await saveCM({ notifications });
+  await addAudit(`Auto-issued notice: ${notif.title||notif.type} — ${notif.text||''}`);
 }
 async function completeTask(idx){
   const tasks = [...(cm.tasks||[])];
@@ -688,6 +712,11 @@ async function dismissTask(idx){
   renderDetailPage();
 }
 window.dismissTask = dismissTask;
+function toggleTaskExpanded(idx){
+  expandedTasks[idx] = !expandedTasks[idx];
+  renderDetailPage();
+}
+window.toggleTaskExpanded = toggleTaskExpanded;
 
 function toggleSection(id){
   sectionState[id] = !isCollapsed(id);
@@ -855,6 +884,7 @@ function buildCaseDetailsSection(){
   const judgeOptions = `<option value="">— Unassigned —</option>` + pool.map(j=>`<option value="${escAttr(j.name)}" ${c.judge===j.name?'selected':''}>${esc(j.name)} — ${esc(j.role)}</option>`).join('');
   const statusOptions = ['Open','Mediation','Deferred','Disposed','Closed']
     .map(s=>`<option value="${s}" ${c.status===s?'selected':''}>${s}</option>`).join('');
+  const subtype = c.appellateSubtype || c.civilSubtype || c.administrativeSubtype || c.offenseType || '';
   return { id:'case-details', label:'Case Details', icon:'🗂️', count:null, html:`
     ${c.docketSummary?`<div class="summary-box"><p>${esc(c.docketSummary)}</p></div>`:''}
     <div class="info-grid" style="margin-bottom:16px">
@@ -864,13 +894,16 @@ function buildCaseDetailsSection(){
       <div class="info-item"><div class="k">Date Filed</div>${val(fmtDateTime(c.dates?.filed))}</div>
       <div class="info-item"><div class="k">Last Updated</div>${val(fmtDateTime(c.dates?.lastUpdated))}</div>
       <div class="info-item"><div class="k">Intake Confirmation</div>${val(c.intakeConfirmationNumber,'mono')}</div>
+      <div class="info-item"><div class="k">Date Closed</div>${val(fmtDate(c.dates?.closed),'small')}<div style="font-size:10.5px;color:#b0a898;margin-top:2px">Set automatically via Close Case (Danger Zone)</div></div>
     </div>
     <div class="mform-grid" style="margin-bottom:14px">
       <div class="field-row"><span class="k">Status</span><select class="ef-select" id="ed-status">${statusOptions}</select></div>
       <div class="field-row"><span class="k">Judge of Record</span><select class="ef-select" id="ed-judge">${judgeOptions}</select></div>
       <div class="field-row"><span class="k">Courtroom</span><input class="ef-input" id="ed-courtroom" value="${escAttr(c.courtroomNumber||'')}" placeholder="e.g. Courtroom 3"></div>
-      <div class="field-row"><span class="k">Date Closed</span><input type="date" class="ef-input" id="ed-closed" value="${toInputDate(c.dates?.closed)}"></div>
+      <div class="field-row"><span class="k">Sub-Type</span><input class="ef-input" id="ed-subtype" value="${escAttr(subtype)}" placeholder="e.g. Offense type, appeal type…"></div>
+      <div class="field-row"><span class="k">Lower Court Decision Date</span><input type="date" class="ef-input" id="ed-lowerdate" value="${toInputDate(c.dates?.lowerCourtDecisionDate)}"></div>
     </div>
+    <div class="field-row" style="margin-bottom:14px"><span class="k">Case Caption / Entitlement (overrides auto-generated caption)</span><input class="ef-input" id="ed-title-override" value="${escAttr(c.caseTitleOverride||'')}" placeholder="Leave blank to auto-generate from parties…"></div>
     <div class="field-row" style="margin-bottom:14px"><span class="k">Docket Summary</span><textarea class="ef-textarea" id="ed-summary" placeholder="Short public-facing summary of the case…">${esc(c.docketSummary||'')}</textarea></div>
     <button class="btn-primary" onclick="saveCaseDetailsForm()">💾 Save Case Details</button>
   `};
@@ -879,13 +912,20 @@ async function saveCaseDetailsForm(){
   const status = document.getElementById('ed-status').value;
   const judge = document.getElementById('ed-judge').value || null;
   const courtroomNumber = document.getElementById('ed-courtroom').value.trim() || null;
-  const closedVal = document.getElementById('ed-closed').value;
   const docketSummary = document.getElementById('ed-summary').value.trim() || null;
+  const caseTitleOverride = document.getElementById('ed-title-override').value.trim() || null;
+  const subtype = document.getElementById('ed-subtype').value.trim() || null;
+  const lowerVal = document.getElementById('ed-lowerdate').value;
   const nowIso = new Date().toISOString();
+  const t=(currentCase.caseType||'').toLowerCase();
+  const subtypeField = t==='appellate'||t==='appeal' ? 'appellateSubtype' : (t==='civil' ? 'civilSubtype' : (t==='administrative' ? 'administrativeSubtype' : 'offenseType'));
   const patch = {
     status, judge, judges: judge ? [judge] : [], courtroomNumber,
-    dates: { ...currentCase.dates, closed: closedVal ? new Date(closedVal).toISOString() : null, lastUpdated: nowIso },
-    docketSummary,
+    // Date Closed is intentionally NOT editable here — it is only ever set via the
+    // Close Case / Reopen Case quick action, so we preserve whatever value already exists.
+    dates: { ...currentCase.dates, lastUpdated: nowIso, lowerCourtDecisionDate: lowerVal ? new Date(lowerVal).toISOString() : null },
+    docketSummary, caseTitleOverride,
+    [subtypeField]: subtype,
   };
   await saveCase(patch, 'Updated case details');
 }
@@ -900,19 +940,20 @@ function buildTasksSection(){
     [...open, ...other].map(t=>{
       const idx = tasks.indexOf(t);
       const done = t.status!=='Open';
-      return `<div class="task-card${done?' done':''}">
+      const expanded = !!expandedTasks[idx];
+      return `<div class="task-card${done?' done':''}${done&&expanded?' expanded':''}" ${done?`onclick="toggleTaskExpanded(${idx})"`:''}>
         <div class="task-top">
           <div>
             <div class="task-title">${esc(t.title)}</div>
             <div class="task-meta">Filed by ${esc(t.filedBy||'—')} · Confirmation ${esc(t.confirmationNumber||'—')} · ${timeAgo(t.createdAt)}${done?` · ${esc(t.status)} by ${esc(t.completedBy||'—')}`:''}</div>
           </div>
-          <span class="status-pill ${done?'sp-closed':'sp-open'}">${esc(t.status)}</span>
+          ${done?`<span class="task-collapse-hint">${expanded?'▲ collapse':'▼ expand'}</span>`:`<span class="status-pill sp-open">${esc(t.status)}</span>`}
         </div>
         ${!done ? `<div class="task-actions">
-          <button class="mini-btn gold" onclick="showScheduleHearingModal(null,'${escAttr(t.title)}')">📅 Schedule Hearing</button>
-          <button class="mini-btn blue" onclick="showIssueOrderModal(${idx})">⚖️ Issue Ruling</button>
-          <button class="mini-btn green" onclick="completeTask(${idx})">✓ Mark Complete</button>
-          <button class="mini-btn" onclick="dismissTask(${idx})">Dismiss</button>
+          <button class="mini-btn gold" onclick="event.stopPropagation();showScheduleHearingModal(null,'${escAttr(t.title)}','${escAttr(t.filedBy||'')}')">📅 Schedule Hearing</button>
+          <button class="mini-btn blue" onclick="event.stopPropagation();showIssueOrderModal(${idx})">⚖️ Issue Ruling</button>
+          <button class="mini-btn green" onclick="event.stopPropagation();completeTask(${idx})">✓ Mark Complete</button>
+          <button class="mini-btn" onclick="event.stopPropagation();dismissTask(${idx})">Dismiss</button>
         </div>` : ''}
       </div>`;
     }).join('');
@@ -933,10 +974,16 @@ function buildPartiesSection(){
       </div>
       <div class="party-card-body">
         <div style="font-family:'Merriweather',serif;font-size:16px">${esc(p.name)}</div>
+        ${Array.isArray(p.aliases)&&p.aliases.length?`<div style="font-size:11.5px;color:#9a8f82;margin-top:2px">a/k/a ${p.aliases.map(esc).join(', ')}</div>`:''}
         <div class="info-grid-auto" style="margin-top:12px">
           <div class="info-item"><div class="k">Date of Birth</div>${val(fmtDate(p.dob),'small')}</div>
           <div class="info-item"><div class="k">Representation</div>${val(p.selfRepresented?'Self-Represented':(p.attorney?.name||null),'small')}</div>
           ${p.attorney?.barNumber?`<div class="info-item"><div class="k">Bar Number</div>${val(p.attorney.barNumber,'mono')}</div>`:''}
+          <div class="info-item"><div class="k">Personal ID Number (PIN)</div>${val(p.pin,'mono')}</div>
+          ${hasVal(p.serviceDate)?`<div class="info-item"><div class="k">Service Date</div>${val(fmtDate(p.serviceDate),'small')}</div>`:''}
+          ${hasVal(p.answerDate)?`<div class="info-item"><div class="k">Answer Date</div>${val(fmtDate(p.answerDate),'small')}</div>`:''}
+          ${hasVal(p.responseDate)?`<div class="info-item"><div class="k">Response Date</div>${val(fmtDate(p.responseDate),'small')}</div>`:''}
+          ${(p.additionalFields||[]).map(f=>hasVal(f.label)?`<div class="info-item"><div class="k">${esc(f.label)}</div>${val(f.value,'small')}</div>`:'').join('')}
         </div>
       </div>
     </div>`).join('');
@@ -969,6 +1016,9 @@ function buildChargesSection(){
         <div class="info-item"><div class="k">Disposition</div>${val(ch.disposition||'Pending','small')}</div>
         <div class="info-item"><div class="k">Arraignment</div>${val(fmtDate(ch.arraignmentDate),'small')}</div>
         <div class="info-item"><div class="k">Disposition Date</div>${val(fmtDate(ch.dispositionDate),'small')}</div>
+        <div class="info-item"><div class="k">Enhanced Penalty</div>${val(ch.enhancedPenalty===true?'Yes — Sought':(ch.enhancedPenalty===false?'No':null),'small')}</div>
+        <div class="info-item"><div class="k">Preliminary Exam</div>${val(fmtDate(ch.prelimExamDate),'small')}</div>
+        <div class="info-item"><div class="k">Amendments / Reductions</div>${val(ch.amendments,'small')}</div>
       </div>
     </div>`).join('');
   return { id:'charges', label:'Charges', icon:'📜', count: charges.length||null, html: html + `<button class="btn-ghost" style="margin-top:8px" onclick="showAddChargeModal(-1)">+ Add Charge</button>` };
@@ -981,16 +1031,24 @@ function buildBondsSection(){
     <div class="bond-card">
       <div class="bond-top">
         <div><div class="bond-amount">${fmtMoney(b.amount)||'N/A'}</div><div style="font-size:12px;color:var(--muted)">${esc(b.type||'Bond')}</div></div>
-        <button class="mini-btn" onclick="showBondActionModal(${i})">+ Bond Action</button>
+        <div style="display:flex;gap:6px">
+          <button class="mini-btn" onclick="showAddBondModal(${i})">✎ Edit Bond</button>
+          <button class="mini-btn" onclick="showBondActionModal(${i})">+ Bond Action</button>
+        </div>
       </div>
       <div class="info-grid-auto">
         <div class="info-item"><div class="k">Posted By</div>${val(b.postedBy,'small')}</div>
         <div class="info-item"><div class="k">Order Date</div>${val(fmtDate(b.orderDate),'small')}</div>
         <div class="info-item"><div class="k">Judge</div>${val(b.judge,'small')}</div>
+        <div class="info-item"><div class="k">Receipt No.</div>${val(b.receipt,'mono')}</div>
+        <div class="info-item"><div class="k">Date Posted</div>${val(fmtDate(b.postedDate),'small')}</div>
+        <div class="info-item"><div class="k">Date Closed / Released</div>${val(fmtDate(b.closedDate),'small')}</div>
+        <div class="info-item"><div class="k">Payee (Refund)</div>${val(b.payee,'small')}</div>
       </div>
+      ${hasVal(b.notes)?`<div style="font-size:12px;color:var(--muted);margin-top:8px">${esc(b.notes)}</div>`:''}
       ${(b.actions||[]).length?`<div style="margin-top:10px;padding-top:10px;border-top:1px solid #f0ebe3">${b.actions.map(a=>`<div style="font-size:12px;color:var(--muted);padding:3px 0">${esc(fmtDate(a.date))} — ${esc(a.action)} ${a.judge?'('+esc(a.judge)+')':''}</div>`).join('')}</div>`:''}
     </div>`).join('');
-  return { id:'bonds', label:'Bonds', icon:'🔗', count: bonds.length||null, html: html + `<button class="btn-ghost" style="margin-top:8px" onclick="showAddBondModal()">+ Set Bond</button>` };
+  return { id:'bonds', label:'Bonds', icon:'🔗', count: bonds.length||null, html: html + `<button class="btn-ghost" style="margin-top:8px" onclick="showAddBondModal(-1)">+ Set Bond</button>` };
 }
 
 // ── 6. Docket (unified, filterable) ──
@@ -1087,6 +1145,7 @@ function buildHearingsSection(){
           <div>
             <div class="hearing-type">${esc(h.type)}</div>
             <div class="hearing-officer">${esc(h.officer||currentCase.judge||'—')}${h.courtroom?' · '+esc(h.courtroom):''}</div>
+            ${hasVal(h.requestedBy)?`<div style="font-size:11px;color:#9a8f82;margin-top:2px;font-style:italic">Requested by ${esc(h.requestedBy)}</div>`:''}
           </div>
           <span class="hr-pill ${pillCls}">${pillLabel}</span>
         </div>
@@ -1132,7 +1191,6 @@ window.continueHearing = continueHearing;
 async function generateHearingNotice(idx){
   const h = (currentCase.hearings||[])[idx]; if(!h) return;
   await addNotification({ type:'Notice of Hearing', title:'Notice of Hearing', text:`${h.type} scheduled for ${fmtDate(h.date)}${h.time?' at '+h.time:''} before ${h.officer||currentCase.judge||'the assigned judicial officer'}.` });
-  await addAudit(`Generated Notice of Hearing for ${h.type} on ${fmtDate(h.date)}`);
   alert('Notice of Hearing generated — see the Notifications section.');
   renderDetailPage();
 }
@@ -1141,18 +1199,37 @@ window.generateHearingNotice = generateHearingNotice;
 // ── 9. Sentencing ──
 function buildSentencingSection(){
   const list = currentCase.sentencing||[];
-  const html = !list.length ? `<div class="empty-note">No sentencing records.</div>` : list.map(s=>`
+  const html = !list.length ? `<div class="empty-note">No sentencing records.</div>` : list.map((s,i)=>{
+    const csi = s.communityServiceOrIncarceration||{};
+    const prob = s.probation||{};
+    const lic = s.license||{};
+    return `
     <div class="charge-row">
-      <div class="charge-title">${esc(s.chargeRef||s.charge||'Charge not specified')}</div>
+      <div class="charge-top">
+        <div class="charge-title">${esc(s.chargeRef||s.charge||'Charge not specified')}</div>
+        <button class="mini-btn" onclick="showAddSentencingModal(${i})">✎ Edit</button>
+      </div>
       <div class="info-grid-auto" style="margin-top:8px">
         <div class="info-item"><div class="k">Sentence Date</div>${val(fmtDate(s.sentenceDate),'small')}</div>
         <div class="info-item"><div class="k">Probation Term</div>${val(s.probationTerm,'small')}</div>
         <div class="info-item"><div class="k">Incarceration Term</div>${val(s.incarcerationTerm,'small')}</div>
         <div class="info-item"><div class="k">Facility</div>${val(s.facility,'small')}</div>
+        <div class="info-item"><div class="k">CSI Result</div>${val(csi.result,'small')}</div>
+        <div class="info-item"><div class="k">CSI Location</div>${val(csi.location,'small')}</div>
+        <div class="info-item"><div class="k">Credit Time Served</div>${val(csi.creditTimeServed,'small')}</div>
+        <div class="info-item"><div class="k">Terms / Concurrency</div>${val(hasVal(csi.terms)?`${csi.terms}${csi.concurrency?' ('+csi.concurrency+')':''}`:null,'small')}</div>
+        <div class="info-item"><div class="k">Deferred Adjudication</div>${val(csi.deferredAdjudication===true?'Yes':(csi.deferredAdjudication===false?'No':null),'small')}</div>
+        <div class="info-item"><div class="k">Probation Officer</div>${val(prob.officer,'small')}</div>
+        <div class="info-item"><div class="k">Probation Term (detail)</div>${val(prob.term,'small')}</div>
+        <div class="info-item"><div class="k">License Status</div>${val(lic.status,'small')}</div>
+        <div class="info-item"><div class="k">License Days Suspended</div>${val(lic.daysSuspended,'small')}</div>
+        <div class="info-item"><div class="k">License Restrictions</div>${val(lic.restrictions,'small')}</div>
       </div>
+      ${Array.isArray(prob.conditions)&&prob.conditions.length?`<div style="margin-top:8px"><div class="k" style="font-size:10.5px;color:#9a8f82;text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px">Probation Conditions</div>${prob.conditions.map(cd=>`<div style="font-size:12px;color:var(--muted);padding:2px 0">• ${esc(cd)}</div>`).join('')}</div>`:''}
       ${hasVal(s.notes)?`<div style="font-size:12px;color:var(--muted);margin-top:8px">${esc(s.notes)}</div>`:''}
-    </div>`).join('');
-  return { id:'sentencing', label:'Sentencing', icon:'🔨', count: list.length||null, html: html + `<button class="btn-ghost" style="margin-top:8px" onclick="showAddSentencingModal()">+ Add Sentencing Record</button>` };
+    </div>`;
+  }).join('');
+  return { id:'sentencing', label:'Sentencing', icon:'🔨', count: list.length||null, html: html + `<button class="btn-ghost" style="margin-top:8px" onclick="showAddSentencingModal(-1)">+ Add Sentencing Record</button>` };
 }
 
 // ── 10. Financial Orders ──
@@ -1180,10 +1257,14 @@ function buildFinancialsSection(){
         <div class="info-item"><div class="k">Assessed</div>${val(fmtDate(o.assessmentDate),'small')}</div>
         <div class="info-item"><div class="k">Due</div>${val(fmtDate(o.dueDate),'small')}</div>
       </div>
-      <button class="mini-btn green" style="margin-top:8px" onclick="showRecordPaymentModal(${i})">+ Record Payment</button>
+      <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">
+        <button class="mini-btn" onclick="showAddFinancialModal(${i})">✎ Edit Order</button>
+        <button class="mini-btn green" onclick="showRecordPaymentModal(${i})">+ Record Payment</button>
+      </div>
+      ${(o.payments||[]).length?`<div style="margin-top:8px;padding-top:8px;border-top:1px solid #f0ebe3">${o.payments.map(pm=>`<div style="font-size:12px;color:var(--muted);padding:2px 0">${esc(fmtDate(pm.date))} — ${fmtMoney(pm.amount)} (${esc(pm.method||'—')})</div>`).join('')}</div>`:''}
     </div>`;
   }).join('');
-  return { id:'financials', label:'Financial Orders', icon:'💵', count: orders.length||null, html: strip + rows + `<button class="btn-ghost" style="margin-top:10px" onclick="showAddFinancialModal()">+ Add Financial Order</button>` };
+  return { id:'financials', label:'Financial Orders', icon:'💵', count: orders.length||null, html: strip + rows + `<button class="btn-ghost" style="margin-top:10px" onclick="showAddFinancialModal(-1)">+ Add Financial Order</button>` };
 }
 
 // ── 11. Internal Notes ──
@@ -1206,15 +1287,15 @@ async function addInternalNote(){
 }
 window.addInternalNote = addInternalNote;
 
-// ── 12. Notifications ──
+// ── 12. Notifications (auto-issued only — no manual authoring) ──
 function buildNotificationsSection(){
   const notifs = [...(cm.notifications||[])].reverse();
-  const html = !notifs.length ? `<div class="empty-note">No notifications generated yet.</div>` : notifs.map(n=>`
+  const html = !notifs.length ? `<div class="empty-note">No notifications generated yet. Notices (NEFs, hearing notices, order notices) are issued automatically by the system — they cannot be added manually.</div>` : notifs.map(n=>`
     <div class="notif-item">
       <span class="notif-icon">${n.type==='NEF'?'📨':(n.type==='Notice of Hearing'?'📅':'🔔')}</span>
       <div><div class="notif-title">${esc(n.title||n.type)}</div><div class="notif-text">${esc(n.text)}</div><div class="notif-time">${timeAgo(n.at)}</div></div>
     </div>`).join('');
-  return { id:'notifications', label:'Notifications', icon:'🔔', count: notifs.length||null, html };
+  return { id:'notifications', label:'Notifications', icon:'🔔', count: notifs.length||null, html: `<div style="font-size:11px;color:#9a8f82;margin-bottom:10px">Notices are issued automatically by the system and mirrored into the Audit Log.</div>${html}` };
 }
 
 // ── 13. Audit Log ──
@@ -1240,46 +1321,80 @@ function buildTimelineSection(){
 }
 
 // ── Generic modal shell ──
-function openModal(title, bodyHtml, footerHtml){
+function openModal(title, bodyHtml, footerHtml, wide){
   document.getElementById('modal-title').textContent = title;
   document.getElementById('modal-body').innerHTML = bodyHtml;
   document.getElementById('modal-footer').innerHTML = footerHtml;
   document.getElementById('modal').classList.add('show');
+  document.getElementById('modal-box').classList.toggle('wide', !!wide);
 }
 function closeModal(){ document.getElementById('modal').classList.remove('show'); }
 window.closeModal = closeModal;
 function cancelBtn(){ return `<button class="btn-ghost" onclick="closeModal()">Cancel</button>`; }
 
+// Builds a <datalist> of party names/roles for this case, for pre-fill inputs
+// (requested-by, filed-on-behalf-of, posted-by, payor, etc). Free typing is still allowed.
+function partyDatalist(id){
+  const parties = partyList(currentCase);
+  const opts = parties.map(p=>`<option value="${escAttr(p.name)}">${escAttr(p.role||'')}</option>`).join('');
+  return `<datalist id="${id}">${opts}</datalist>`;
+}
+
 // ── Party modal ──
 function showAddPartyModal(idx){
   const editing = idx>=0;
   const p = editing ? partyList(currentCase)[idx] : {};
+  const roleOpts = roleOptionsForCaseType(currentCase.caseType);
+  const currentRole = p.role || roleOpts[0];
+  const roleSelectOpts = (roleOpts.includes(currentRole) ? roleOpts : [currentRole, ...roleOpts]).map(r=>`<option value="${escAttr(r)}" ${p.role===r?'selected':''}>${esc(r)}</option>`).join('');
   openModal(editing?'Edit Party':'Add Party', `
     <div class="mform-row"><label>Role</label>
-      <select id="pm-role">${['Plaintiff','Defendant','Petitioner','Respondent','Appellant','Appellee','Interested Party'].map(r=>`<option value="${r}" ${p.role===r?'selected':''}>${r}</option>`).join('')}</select>
+      <select id="pm-role">${roleSelectOpts}</select>
+      <div class="hint">Role options are tailored to this case's type (${esc(currentCase.caseType||'—')}).</div>
     </div>
     <div class="mform-row"><label>Full Name</label><input id="pm-name" value="${escAttr(p.name||'')}"></div>
+    <div class="mform-row"><label>Aliases (comma-separated)</label><input id="pm-aliases" value="${escAttr((p.aliases||[]).join(', '))}" placeholder="a/k/a names"></div>
     <div class="mform-grid">
       <div class="mform-row"><label>Date of Birth</label><input type="date" id="pm-dob" value="${toInputDate(p.dob)}"></div>
-      <div class="mform-row"><label>Self-Represented?</label><select id="pm-selfrep"><option value="yes" ${p.selfRepresented?'selected':''}>Yes</option><option value="no" ${!p.selfRepresented?'selected':''}>No — has counsel</option></select></div>
+      <div class="mform-row"><label>Personal ID Number (PIN)</label><input id="pm-pin" value="${escAttr(p.pin||'')}" placeholder="Court-issued PIN"></div>
     </div>
     <div class="mform-grid">
-      <div class="mform-row"><label>Attorney Name</label><input id="pm-atty" value="${escAttr(p.attorney?.name||'')}"></div>
+      <div class="mform-row"><label>Self-Represented?</label><select id="pm-selfrep"><option value="yes" ${p.selfRepresented?'selected':''}>Yes</option><option value="no" ${!p.selfRepresented?'selected':''}>No — has counsel</option></select></div>
       <div class="mform-row"><label>Bar Number</label><input id="pm-bar" value="${escAttr(p.attorney?.barNumber||'')}"></div>
     </div>
-  `, `${cancelBtn()}<button class="btn-primary" onclick="savePartyModal(${idx})">Save Party</button>`);
+    <div class="mform-row"><label>Attorney Name</label><input id="pm-atty" value="${escAttr(p.attorney?.name||'')}"></div>
+    <div class="mform-grid">
+      <div class="mform-row"><label>Service Date (civil)</label><input type="date" id="pm-service" value="${toInputDate(p.serviceDate)}"></div>
+      <div class="mform-row"><label>Answer Date (civil defendant)</label><input type="date" id="pm-answer" value="${toInputDate(p.answerDate)}"></div>
+    </div>
+    <div class="mform-row"><label>Response Date (civil plaintiff)</label><input type="date" id="pm-response" value="${toInputDate(p.responseDate)}"></div>
+    <div class="mform-row"><label>Additional Fields (one "Label: Value" per line)</label><textarea id="pm-extra" placeholder="e.g. Immigration Status: N/A">${esc((p.additionalFields||[]).map(f=>`${f.label}: ${f.value}`).join('\n'))}</textarea></div>
+  `, `${cancelBtn()}<button class="btn-primary" onclick="savePartyModal(${idx})">Save Party</button>`, true);
 }
 window.showAddPartyModal = showAddPartyModal;
 async function savePartyModal(idx){
   const role = document.getElementById('pm-role').value;
   const name = document.getElementById('pm-name').value.trim();
   const dob = document.getElementById('pm-dob').value;
+  const pin = document.getElementById('pm-pin').value.trim();
   const selfRepresented = document.getElementById('pm-selfrep').value==='yes';
   const attyName = document.getElementById('pm-atty').value.trim();
   const barNumber = document.getElementById('pm-bar').value.trim();
+  const aliases = document.getElementById('pm-aliases').value.split(',').map(s=>s.trim()).filter(Boolean);
+  const serviceDate = document.getElementById('pm-service').value;
+  const answerDate = document.getElementById('pm-answer').value;
+  const responseDate = document.getElementById('pm-response').value;
+  const extraLines = document.getElementById('pm-extra').value.split('\n').map(s=>s.trim()).filter(Boolean);
+  const additionalFields = extraLines.map(line=>{ const idx2=line.indexOf(':'); return idx2>-1 ? {label:line.slice(0,idx2).trim(), value:line.slice(idx2+1).trim()} : {label:line, value:''}; });
   if(!name){ alert("Please enter the party's name."); return; }
   const partyObj = { role, name, selfRepresented: selfRepresented || !attyName };
   if(dob) partyObj.dob = new Date(dob).toISOString();
+  if(pin) partyObj.pin = pin;
+  if(aliases.length) partyObj.aliases = aliases;
+  if(serviceDate) partyObj.serviceDate = new Date(serviceDate).toISOString();
+  if(answerDate) partyObj.answerDate = new Date(answerDate).toISOString();
+  if(responseDate) partyObj.responseDate = new Date(responseDate).toISOString();
+  if(additionalFields.length) partyObj.additionalFields = additionalFields;
   if(!partyObj.selfRepresented && attyName) partyObj.attorney = { name: attyName, ...(barNumber?{barNumber}:{}) };
   const parties = partyList(currentCase).slice();
   if(idx>=0) parties[idx] = partyObj; else parties.push(partyObj);
@@ -1289,73 +1404,122 @@ async function savePartyModal(idx){
 window.savePartyModal = savePartyModal;
 
 // ── Charge modal ──
+function nextChargeCount(){ const arr=currentCase.charges||[]; return arr.length ? (Math.max(...arr.map(c=>parseInt(c.count,10)||0))+1) : 1; }
 function showAddChargeModal(idx){
   const editing = idx>=0;
   const ch = editing ? (currentCase.charges||[])[idx] : {};
+  const autoCount = editing ? (ch.count||'') : nextChargeCount();
   openModal(editing?'Edit Charge':'Add Charge', `
-    <div class="mform-row"><label>Charge Name</label><input id="chm-name" value="${escAttr(ch.chargeName||ch.title||'')}"></div>
+    <div class="mform-row"><label>Charge Name</label><input id="chm-name" value="${escAttr(ch.chargeName||ch.title||'')}" list="charge-name-options"></div>
+    <datalist id="charge-name-options"><option value="Operating While Intoxicated"><option value="Disorderly Conduct"><option value="Domestic Violence"><option value="Larceny"><option value="Assault and Battery"><option value="Possession of Controlled Substance"><option value="Speeding"><option value="Driving Without a License"></datalist>
     <div class="mform-grid">
       <div class="mform-row"><label>Statute</label><input id="chm-statute" value="${escAttr(ch.statute||'')}"></div>
       <div class="mform-row"><label>Classification</label><select id="chm-class"><option value="">—</option><option ${ch.classification==='Felony'?'selected':''}>Felony</option><option ${ch.classification==='Misdemeanor'?'selected':''}>Misdemeanor</option><option ${ch.classification==='Civil Infraction'?'selected':''}>Civil Infraction</option></select></div>
     </div>
+    <div class="mform-row"><label>Count #</label><div class="mform-locked">${esc(autoCount)}</div><div class="hint">Count numbers are assigned automatically in filing order.</div></div>
     <div class="mform-grid">
-      <div class="mform-row"><label>Count #</label><input id="chm-count" value="${escAttr(ch.count||'')}"></div>
       <div class="mform-row"><label>Arraignment Date</label><input type="date" id="chm-arraign" value="${toInputDate(ch.arraignmentDate)}"></div>
+      <div class="mform-row"><label>Preliminary Exam Date</label><input type="date" id="chm-prelim" value="${toInputDate(ch.prelimExamDate)}"></div>
     </div>
-    <div class="mform-row"><label>Disposition</label><input id="chm-disp" value="${escAttr(ch.disposition||'')}" placeholder="e.g. Pending, Guilty, Dismissed…"></div>
-  `, `${cancelBtn()}<button class="btn-primary" onclick="saveChargeModal(${idx})">Save Charge</button>`);
+    <div class="mform-grid">
+      <div class="mform-row"><label>Disposition</label><input id="chm-disp" value="${escAttr(ch.disposition||(editing?'':'Pending'))}" list="disposition-options"></div>
+      <div class="mform-row"><label>Disposition Date</label><input type="date" id="chm-dispdate" value="${toInputDate(ch.dispositionDate)}"></div>
+    </div>
+    <datalist id="disposition-options"><option value="Pending"><option value="Guilty"><option value="Not Guilty"><option value="Dismissed"><option value="Nolle Prosequi"><option value="Diversion"><option value="Plea Bargain"></datalist>
+    <div class="mform-row"><label>Enhanced Penalty Sought?</label><select id="chm-enhanced"><option value="" ${ch.enhancedPenalty==null?'selected':''}>—</option><option value="yes" ${ch.enhancedPenalty===true?'selected':''}>Yes</option><option value="no" ${ch.enhancedPenalty===false?'selected':''}>No</option></select></div>
+    <div class="mform-row"><label>Amendments / Reductions</label><textarea id="chm-amend">${esc(ch.amendments||'')}</textarea></div>
+  `, `${cancelBtn()}<button class="btn-primary" onclick="saveChargeModal(${idx})">Save Charge</button>`, true);
 }
 window.showAddChargeModal = showAddChargeModal;
 async function saveChargeModal(idx){
   const chargeName = document.getElementById('chm-name').value.trim();
   if(!chargeName){ alert('Please enter the charge name.'); return; }
+  const enhancedVal = document.getElementById('chm-enhanced').value;
   const obj = {
     chargeName, statute: document.getElementById('chm-statute').value.trim()||null,
     classification: document.getElementById('chm-class').value||null,
-    count: document.getElementById('chm-count').value.trim()||null,
+    count: idx>=0 ? (currentCase.charges[idx].count || nextChargeCount()) : nextChargeCount(),
     arraignmentDate: document.getElementById('chm-arraign').value ? new Date(document.getElementById('chm-arraign').value).toISOString() : null,
-    disposition: document.getElementById('chm-disp').value.trim()||null,
+    prelimExamDate: document.getElementById('chm-prelim').value ? new Date(document.getElementById('chm-prelim').value).toISOString() : null,
+    disposition: document.getElementById('chm-disp').value.trim()||'Pending',
+    dispositionDate: document.getElementById('chm-dispdate').value ? new Date(document.getElementById('chm-dispdate').value).toISOString() : null,
+    enhancedPenalty: enhancedVal==='' ? null : (enhancedVal==='yes'),
+    amendments: document.getElementById('chm-amend').value.trim()||null,
   };
   const charges = (currentCase.charges||[]).slice();
   if(idx>=0) charges[idx] = {...charges[idx], ...obj}; else charges.push(obj);
   closeModal();
-  await saveCase({ charges }, idx>=0 ? `Edited charge: ${chargeName}` : `Added charge: ${chargeName}`);
+  await saveCase({ charges }, idx>=0 ? `Edited charge: ${chargeName}` : `Added charge: ${chargeName} (Count ${obj.count})`);
 }
 window.saveChargeModal = saveChargeModal;
 
 // ── Bond modals ──
-function showAddBondModal(){
-  openModal('Set Bond', `
+function showAddBondModal(idx){
+  const editing = idx!=null && idx>=0;
+  const b = editing ? (currentCase.bonds||[])[idx] : {};
+  const bondTypes = ['Cash','Surety','Personal Recognizance'];
+  openModal(editing?'Edit Bond':'Set Bond', `
     <div class="mform-grid">
-      <div class="mform-row"><label>Amount</label><input type="number" id="bm-amount" placeholder="0.00"></div>
-      <div class="mform-row"><label>Type</label><input id="bm-type" placeholder="e.g. Cash, Surety, Personal Recognizance"></div>
+      <div class="mform-row"><label>Amount</label><input type="number" id="bm-amount" value="${escAttr(b.amount??'')}" placeholder="0.00"></div>
+      <div class="mform-row"><label>Type</label><select id="bm-type">${bondTypes.map(t=>`<option value="${t}" ${b.type===t?'selected':''}>${t}</option>`).join('')}</select></div>
     </div>
     <div class="mform-grid">
-      <div class="mform-row"><label>Posted By</label><input id="bm-postedby" placeholder="Defendant"></div>
-      <div class="mform-row"><label>Presiding Judge</label><input id="bm-judge" value="${escAttr(currentCase.judge||'')}"></div>
+      <div class="mform-row"><label>Posted By</label><input id="bm-postedby" value="${escAttr(b.postedBy||'')}" placeholder="Defendant" list="bond-party-options"></div>
+      <div class="mform-row"><label>Presiding Judge</label><input id="bm-judge" value="${escAttr(b.judge||currentCase.judge||'')}"></div>
     </div>
-    <div class="mform-row"><label>Conditions (one per line)</label><textarea id="bm-conditions"></textarea></div>
-  `, `${cancelBtn()}<button class="btn-primary" onclick="saveBondModal()">Save Bond</button>`);
+    ${partyDatalist('bond-party-options')}
+    <div class="mform-grid">
+      <div class="mform-row"><label>Receipt No.</label><input id="bm-receipt" value="${escAttr(b.receipt||'')}"></div>
+      <div class="mform-row"><label>Order Date</label><input type="date" id="bm-orderdate" value="${toInputDate(b.orderDate)||toInputDate(new Date().toISOString())}"></div>
+    </div>
+    <div class="mform-grid">
+      <div class="mform-row"><label>Date Posted</label><input type="date" id="bm-posteddate" value="${toInputDate(b.postedDate)}"></div>
+      <div class="mform-row"><label>Date Closed / Released</label><input type="date" id="bm-closeddate" value="${toInputDate(b.closedDate)}"></div>
+    </div>
+    <div class="mform-row"><label>Payee (Refund)</label><input id="bm-payee" value="${escAttr(b.payee||'')}" list="bond-party-options"></div>
+    <div class="mform-row"><label>Conditions (one per line)</label><textarea id="bm-conditions">${esc((b.conditions||[]).join('\n'))}</textarea></div>
+    <div class="mform-row"><label>Notes</label><textarea id="bm-notes">${esc(b.notes||'')}</textarea></div>
+  `, `${cancelBtn()}<button class="btn-primary" onclick="saveBondModal(${editing?idx:-1})">${editing?'Save Changes':'Save Bond'}</button>`, true);
 }
 window.showAddBondModal = showAddBondModal;
-async function saveBondModal(){
+async function saveBondModal(idx){
+  const editing = idx>=0;
   const amount = parseFloat(document.getElementById('bm-amount').value)||0;
-  const type = document.getElementById('bm-type').value.trim()||'Bond';
+  const type = document.getElementById('bm-type').value||'Cash';
   const postedBy = document.getElementById('bm-postedby').value.trim()||'Defendant';
   const judge = document.getElementById('bm-judge').value.trim()||currentCase.judge||null;
+  const receipt = document.getElementById('bm-receipt').value.trim()||null;
+  const orderDateVal = document.getElementById('bm-orderdate').value;
+  const postedDateVal = document.getElementById('bm-posteddate').value;
+  const closedDateVal = document.getElementById('bm-closeddate').value;
+  const payee = document.getElementById('bm-payee').value.trim()||null;
   const conditions = document.getElementById('bm-conditions').value.split('\n').map(s=>s.trim()).filter(Boolean);
-  const bond = { amount, type, postedBy, judge, orderDate:new Date().toISOString(), conditions, actions:[] };
-  const bonds = [...(currentCase.bonds||[]), bond];
+  const notes = document.getElementById('bm-notes').value.trim()||null;
+  const bonds = [...(currentCase.bonds||[])];
+  const bondObj = {
+    amount, type, postedBy, judge, receipt,
+    orderDate: orderDateVal ? new Date(orderDateVal).toISOString() : new Date().toISOString(),
+    postedDate: postedDateVal ? new Date(postedDateVal).toISOString() : null,
+    closedDate: closedDateVal ? new Date(closedDateVal).toISOString() : null,
+    payee, conditions, notes,
+    actions: editing ? (bonds[idx].actions||[]) : [],
+  };
   closeModal();
-  await saveCase({ bonds }, `Set bond: ${type} — ${fmtMoney(amount)}`);
-  await pushEvent({ type:'order', date:new Date().toISOString(), description:`Bond set: ${type} — ${fmtMoney(amount)}`, judge });
-  renderDetailPage();
+  if(editing){ bonds[idx] = {...bonds[idx], ...bondObj}; await saveCase({ bonds }, `Edited bond: ${type} — ${fmtMoney(amount)}`); }
+  else{
+    bonds.push(bondObj);
+    await saveCase({ bonds }, `Set bond: ${type} — ${fmtMoney(amount)}`);
+    await pushEvent({ type:'order', date:new Date().toISOString(), description:`Bond set: ${type} — ${fmtMoney(amount)}`, judge });
+    renderDetailPage();
+  }
 }
 window.saveBondModal = saveBondModal;
 
 function showBondActionModal(bondIdx){
+  const bondActionTypes = ['Bond posted','Bond revoked','Bond forfeited','Bond exonerated','Bond released'];
   openModal('Add Bond Action', `
-    <div class="mform-row"><label>Action</label><input id="bam-action" placeholder="e.g. Bond posted, Bond revoked, Bond forfeited"></div>
+    <div class="mform-row"><label>Action</label><input id="bam-action" placeholder="e.g. Bond posted, Bond revoked, Bond forfeited" list="bond-action-options"></div>
+    <datalist id="bond-action-options">${bondActionTypes.map(a=>`<option value="${a}">`).join('')}</datalist>
     <div class="mform-row"><label>Judge</label><input id="bam-judge" value="${escAttr(currentCase.judge||'')}"></div>
   `, `${cancelBtn()}<button class="btn-primary" onclick="saveBondActionModal(${bondIdx})">Save</button>`);
 }
@@ -1375,24 +1539,29 @@ async function saveBondActionModal(bondIdx){
 window.saveBondActionModal = saveBondActionModal;
 
 // ── Hearing modals ──
-function showScheduleHearingModal(idx, taskContext){
+function showScheduleHearingModal(idx, taskContext, taskFiledBy){
   const editing = idx!=null && idx>=0;
   const h = editing ? (currentCase.hearings||[])[idx] : {};
   const pool = judgePoolForCourt(currentCase.court);
   const officerOptions = `<option value="">— Judge of Record (${esc(currentCase.judge||'Unassigned')}) —</option>` + pool.map(j=>`<option value="${escAttr(j.name)}" ${h.officer===j.name?'selected':''}>${esc(j.name)} — ${esc(j.role)}</option>`).join('');
+  const cleanType = stripTaskSuffix(taskContext);
+  const hearingTypeOptions = ['Motion Hearing','Status Conference','Pretrial Conference','Arraignment','Sentencing Hearing','Trial','Show Cause Hearing','Probation Violation Hearing'];
+  const defaultRequestedBy = h.requestedBy || taskFiledBy || '';
   openModal(editing?'Reschedule Hearing':'Schedule a Hearing', `
     ${taskContext?`<div class="summary-box" style="margin-bottom:14px"><p>Scheduling in response to: ${esc(taskContext)}</p></div>`:''}
     <div class="mform-grid">
-      <div class="mform-row"><label>Hearing Type</label><input id="hm-type" value="${escAttr(h.type||taskContext||'')}" placeholder="e.g. Motion Hearing, Status Conference"></div>
+      <div class="mform-row"><label>Hearing Type</label><input id="hm-type" value="${escAttr(h.type||cleanType||'')}" placeholder="e.g. Motion Hearing, Status Conference" list="hearing-type-options"></div>
       <div class="mform-row"><label>Date &amp; Time</label><input type="datetime-local" id="hm-date" value="${toInputDateTime(h.date)}"></div>
     </div>
+    <datalist id="hearing-type-options">${hearingTypeOptions.map(t=>`<option value="${t}">`).join('')}</datalist>
     <div class="mform-grid">
       <div class="mform-row"><label>Presiding Officer</label><select id="hm-officer">${officerOptions}</select></div>
       <div class="mform-row"><label>Courtroom</label><input id="hm-courtroom" value="${escAttr(h.courtroom||currentCase.courtroomNumber||'')}"></div>
     </div>
-    <div class="mform-row"><label>Requested By</label><input id="hm-reqby" value="${escAttr(h.requestedBy||'')}" placeholder="e.g. Defense Counsel, Court, Plaintiff"></div>
+    <div class="mform-row"><label>Requested By</label><input id="hm-reqby" value="${escAttr(defaultRequestedBy)}" placeholder="e.g. Defense Counsel, Court, Plaintiff" list="party-options-hearing"></div>
+    ${partyDatalist('party-options-hearing')}
     <div class="mform-row"><label>Notes</label><textarea id="hm-notes">${esc(h.notes||'')}</textarea></div>
-  `, `${cancelBtn()}<button class="btn-primary" onclick="saveHearingModal(${editing?idx:-1})">${editing?'Save Changes':'Schedule Hearing'}</button>`);
+  `, `${cancelBtn()}<button class="btn-primary" onclick="saveHearingModal(${editing?idx:-1})">${editing?'Save Changes':'Schedule Hearing'}</button>`, true);
 }
 window.showScheduleHearingModal = showScheduleHearingModal;
 async function saveHearingModal(idx){
@@ -1411,15 +1580,18 @@ async function saveHearingModal(idx){
   closeModal();
   await saveCase({ hearings }, wasReschedule ? `Rescheduled hearing: ${type} to ${fmtDate(date)}` : `Scheduled hearing: ${type} on ${fmtDate(date)}`);
   await pushEvent({ type:'event', date:new Date().toISOString(), description: wasReschedule ? `Hearing rescheduled: ${type} — now ${fmtDate(date)}` : `Hearing scheduled: ${type} on ${fmtDate(date)}`, judge: officer });
+  await addNotification({ type:'Notice of Hearing', title:'Notice of Hearing', text:`${type} scheduled for ${fmtDate(date)} before ${officer||'the assigned judicial officer'}.` });
   renderDetailPage();
 }
 window.saveHearingModal = saveHearingModal;
 
 function showCompleteHearingModal(idx){
   const h = (currentCase.hearings||[])[idx]; if(!h) return;
+  const resultOptions = ['Motion granted','Motion denied','Adjourned','Held — order to follow','Continued','Defendant failed to appear'];
   openModal('Complete Hearing', `
     <div class="summary-box" style="margin-bottom:14px"><p>${esc(h.type)} — ${esc(fmtDate(h.date))}</p></div>
-    <div class="mform-row"><label>Result</label><input id="chm2-result" placeholder="e.g. Motion granted, Adjourned, Held — order to follow"></div>
+    <div class="mform-row"><label>Result</label><input id="chm2-result" placeholder="e.g. Motion granted, Adjourned, Held — order to follow" list="hearing-result-options"></div>
+    <datalist id="hearing-result-options">${resultOptions.map(r=>`<option value="${r}">`).join('')}</datalist>
     <div class="mform-row"><label>Recorded By (on behalf of ${esc(h.officer||currentCase.judge||'the presiding officer')})</label><input value="${escAttr(userData.name)} (${escAttr(userData.role)})" disabled></div>
     <div class="mform-row"><label>Additional Notes / Docket Entry</label><textarea id="chm2-notes" placeholder="Anything else to record on the docket…"></textarea></div>
   `, `${cancelBtn()}<button class="btn-primary btn-green" onclick="saveCompleteHearing(${idx})">Save Result</button>`);
@@ -1440,79 +1612,148 @@ async function saveCompleteHearing(idx){
 window.saveCompleteHearing = saveCompleteHearing;
 
 // ── Sentencing modal ──
-function showAddSentencingModal(){
-  openModal('Add Sentencing Record', `
-    <div class="mform-row"><label>Charge</label><input id="sm-charge" placeholder="Charge this sentence applies to"></div>
+function showAddSentencingModal(idx){
+  const editing = idx!=null && idx>=0;
+  const s = editing ? (currentCase.sentencing||[])[idx] : {};
+  const csi = s.communityServiceOrIncarceration||{};
+  const prob = s.probation||{};
+  const lic = s.license||{};
+  const chargeOptions = (currentCase.charges||[]).map(c=>`<option value="${escAttr(c.chargeName||c.title||'')}">`).join('');
+  openModal(editing?'Edit Sentencing Record':'Add Sentencing Record', `
+    <div class="mform-row"><label>Charge</label><input id="sm-charge" value="${escAttr(s.chargeRef||s.charge||'')}" placeholder="Charge this sentence applies to" list="sentencing-charge-options"></div>
+    <datalist id="sentencing-charge-options">${chargeOptions}</datalist>
     <div class="mform-grid">
-      <div class="mform-row"><label>Sentence Date</label><input type="date" id="sm-date"></div>
-      <div class="mform-row"><label>Facility</label><input id="sm-facility"></div>
+      <div class="mform-row"><label>Sentence Date</label><input type="date" id="sm-date" value="${toInputDate(s.sentenceDate)}"></div>
+      <div class="mform-row"><label>Facility</label><input id="sm-facility" value="${escAttr(s.facility||'')}"></div>
     </div>
     <div class="mform-grid">
-      <div class="mform-row"><label>Probation Term</label><input id="sm-probation" placeholder="e.g. 12 months"></div>
-      <div class="mform-row"><label>Incarceration Term</label><input id="sm-incarceration" placeholder="e.g. 30 days"></div>
+      <div class="mform-row"><label>Probation Term</label><input id="sm-probation" value="${escAttr(s.probationTerm||'')}" placeholder="e.g. 12 months"></div>
+      <div class="mform-row"><label>Incarceration Term</label><input id="sm-incarceration" value="${escAttr(s.incarcerationTerm||'')}" placeholder="e.g. 30 days"></div>
     </div>
-    <div class="mform-row"><label>Notes</label><textarea id="sm-notes"></textarea></div>
-  `, `${cancelBtn()}<button class="btn-primary" onclick="saveSentencingModal()">Save</button>`);
+    <div class="mform-row" style="border-top:1px solid var(--line);padding-top:12px"><label style="font-size:12px;color:var(--text)">Community Service / Incarceration</label></div>
+    <div class="mform-grid">
+      <div class="mform-row"><label>Result</label><input id="sm-csi-result" value="${escAttr(csi.result||'')}" list="csi-result-options"></div>
+      <div class="mform-row"><label>Location</label><input id="sm-csi-location" value="${escAttr(csi.location||'')}"></div>
+    </div>
+    <datalist id="csi-result-options"><option value="Completed"><option value="In Progress"><option value="Not Started"><option value="Violated"></datalist>
+    <div class="mform-grid">
+      <div class="mform-row"><label>Credit Time Served</label><input id="sm-csi-credit" value="${escAttr(csi.creditTimeServed||'')}"></div>
+      <div class="mform-row"><label>Terms</label><input id="sm-csi-terms" value="${escAttr(csi.terms||'')}"></div>
+    </div>
+    <div class="mform-grid">
+      <div class="mform-row"><label>Concurrency</label><select id="sm-csi-concurrency"><option value="">—</option><option ${csi.concurrency==='Concurrent'?'selected':''}>Concurrent</option><option ${csi.concurrency==='Consecutive'?'selected':''}>Consecutive</option></select></div>
+      <div class="mform-row"><label>Deferred Adjudication?</label><select id="sm-csi-deferred"><option value="" ${csi.deferredAdjudication==null?'selected':''}>—</option><option value="yes" ${csi.deferredAdjudication===true?'selected':''}>Yes</option><option value="no" ${csi.deferredAdjudication===false?'selected':''}>No</option></select></div>
+    </div>
+    <div class="mform-row" style="border-top:1px solid var(--line);padding-top:12px"><label style="font-size:12px;color:var(--text)">Probation Details</label></div>
+    <div class="mform-grid">
+      <div class="mform-row"><label>Probation Officer</label><input id="sm-prob-officer" value="${escAttr(prob.officer||'')}"></div>
+      <div class="mform-row"><label>Term</label><input id="sm-prob-term" value="${escAttr(prob.term||'')}"></div>
+    </div>
+    <div class="mform-row"><label>Probation Conditions (one per line)</label><textarea id="sm-prob-conditions">${esc((prob.conditions||[]).join('\n'))}</textarea></div>
+    <div class="mform-row" style="border-top:1px solid var(--line);padding-top:12px"><label style="font-size:12px;color:var(--text)">License Information</label></div>
+    <div class="mform-grid">
+      <div class="mform-row"><label>Status</label><input id="sm-lic-status" value="${escAttr(lic.status||'')}" list="lic-status-options"></div>
+      <div class="mform-row"><label>Days Suspended/Revoked</label><input id="sm-lic-days" value="${escAttr(lic.daysSuspended||'')}"></div>
+    </div>
+    <datalist id="lic-status-options"><option value="Valid"><option value="Suspended"><option value="Revoked"><option value="Restricted"></datalist>
+    <div class="mform-row"><label>Restrictions</label><input id="sm-lic-restrictions" value="${escAttr(lic.restrictions||'')}"></div>
+    <div class="mform-row"><label>Notes</label><textarea id="sm-notes">${esc(s.notes||'')}</textarea></div>
+  `, `${cancelBtn()}<button class="btn-primary" onclick="saveSentencingModal(${editing?idx:-1})">Save</button>`, true);
 }
 window.showAddSentencingModal = showAddSentencingModal;
-async function saveSentencingModal(){
+async function saveSentencingModal(idx){
   const chargeRef = document.getElementById('sm-charge').value.trim();
   if(!chargeRef){ alert('Please specify the charge.'); return; }
+  const deferredVal = document.getElementById('sm-csi-deferred').value;
   const rec = {
     chargeRef,
     sentenceDate: document.getElementById('sm-date').value ? new Date(document.getElementById('sm-date').value).toISOString() : null,
     facility: document.getElementById('sm-facility').value.trim()||null,
     probationTerm: document.getElementById('sm-probation').value.trim()||null,
     incarcerationTerm: document.getElementById('sm-incarceration').value.trim()||null,
+    communityServiceOrIncarceration: {
+      result: document.getElementById('sm-csi-result').value.trim()||null,
+      location: document.getElementById('sm-csi-location').value.trim()||null,
+      creditTimeServed: document.getElementById('sm-csi-credit').value.trim()||null,
+      terms: document.getElementById('sm-csi-terms').value.trim()||null,
+      concurrency: document.getElementById('sm-csi-concurrency').value||null,
+      deferredAdjudication: deferredVal==='' ? null : (deferredVal==='yes'),
+    },
+    probation: {
+      officer: document.getElementById('sm-prob-officer').value.trim()||null,
+      term: document.getElementById('sm-prob-term').value.trim()||null,
+      conditions: document.getElementById('sm-prob-conditions').value.split('\n').map(s=>s.trim()).filter(Boolean),
+    },
+    license: {
+      status: document.getElementById('sm-lic-status').value.trim()||null,
+      daysSuspended: document.getElementById('sm-lic-days').value.trim()||null,
+      restrictions: document.getElementById('sm-lic-restrictions').value.trim()||null,
+    },
     notes: document.getElementById('sm-notes').value.trim()||null,
   };
-  const sentencing = [...(currentCase.sentencing||[]), rec];
+  const sentencing = [...(currentCase.sentencing||[])];
   closeModal();
-  await saveCase({ sentencing }, `Added sentencing record for ${chargeRef}`);
-  await pushEvent({ type:'order', date:new Date().toISOString(), description:`Sentencing entered: ${chargeRef}`, judge: currentCase.judge||null });
-  renderDetailPage();
+  if(idx>=0){ sentencing[idx] = {...sentencing[idx], ...rec}; await saveCase({ sentencing }, `Edited sentencing record for ${chargeRef}`); }
+  else{
+    sentencing.push(rec);
+    await saveCase({ sentencing }, `Added sentencing record for ${chargeRef}`);
+    await pushEvent({ type:'order', date:new Date().toISOString(), description:`Sentencing entered: ${chargeRef}`, judge: currentCase.judge||null });
+    renderDetailPage();
+  }
 }
 window.saveSentencingModal = saveSentencingModal;
 
 // ── Financial modals ──
-function showAddFinancialModal(){
-  openModal('Add Financial Order', `
+function showAddFinancialModal(idx){
+  const editing = idx!=null && idx>=0;
+  const o = editing ? (currentCase.financialOrders||[])[idx] : {};
+  const finTypes = ['Fine','Court Costs','Restitution','Attorney Fees','Filing Fee','Supervision Fee'];
+  openModal(editing?'Edit Financial Order':'Add Financial Order', `
     <div class="mform-grid">
-      <div class="mform-row"><label>Type</label><input id="fm-type" placeholder="e.g. Fine, Court Costs, Restitution"></div>
-      <div class="mform-row"><label>Amount</label><input type="number" id="fm-amount" placeholder="0.00"></div>
+      <div class="mform-row"><label>Type</label><input id="fm-type" value="${escAttr(o.type||'')}" placeholder="e.g. Fine, Court Costs, Restitution" list="fin-type-options"></div>
+      <div class="mform-row"><label>Amount</label><input type="number" id="fm-amount" value="${escAttr(o.amount??'')}" placeholder="0.00"></div>
     </div>
+    <datalist id="fin-type-options">${finTypes.map(t=>`<option value="${t}">`).join('')}</datalist>
     <div class="mform-grid">
-      <div class="mform-row"><label>Payor</label><input id="fm-payor"></div>
-      <div class="mform-row"><label>Due Date</label><input type="date" id="fm-due"></div>
+      <div class="mform-row"><label>Payor</label><input id="fm-payor" value="${escAttr(o.payor||'')}" list="fin-party-options"></div>
+      <div class="mform-row"><label>Due Date</label><input type="date" id="fm-due" value="${toInputDate(o.dueDate)}"></div>
     </div>
-    <div class="mform-row"><label>Description</label><textarea id="fm-desc"></textarea></div>
-  `, `${cancelBtn()}<button class="btn-primary" onclick="saveFinancialModal()">Save</button>`);
+    ${partyDatalist('fin-party-options')}
+    <div class="mform-row"><label>Description</label><textarea id="fm-desc">${esc(o.description||'')}</textarea></div>
+  `, `${cancelBtn()}<button class="btn-primary" onclick="saveFinancialModal(${editing?idx:-1})">Save</button>`);
 }
 window.showAddFinancialModal = showAddFinancialModal;
-async function saveFinancialModal(){
+async function saveFinancialModal(idx){
   const type = document.getElementById('fm-type').value.trim();
   const amount = parseFloat(document.getElementById('fm-amount').value)||0;
   if(!type){ alert('Please enter a financial order type.'); return; }
+  const editing = idx>=0;
   const order = {
     type, amount, payor: document.getElementById('fm-payor').value.trim()||null,
     dueDate: document.getElementById('fm-due').value ? new Date(document.getElementById('fm-due').value).toISOString() : null,
     description: document.getElementById('fm-desc').value.trim()||null,
-    assessmentDate: new Date().toISOString(), payments:[],
   };
-  const financialOrders = [...(currentCase.financialOrders||[]), order];
+  const financialOrders = [...(currentCase.financialOrders||[])];
   closeModal();
-  await saveCase({ financialOrders }, `Added financial order: ${type} — ${fmtMoney(amount)}`);
-  await pushEvent({ type:'order', date:new Date().toISOString(), description:`Financial order entered: ${type} — ${fmtMoney(amount)}`, judge: currentCase.judge||null });
-  renderDetailPage();
+  if(editing){ financialOrders[idx] = {...financialOrders[idx], ...order}; await saveCase({ financialOrders }, `Edited financial order: ${type} — ${fmtMoney(amount)}`); }
+  else{
+    order.assessmentDate = new Date().toISOString(); order.payments=[];
+    financialOrders.push(order);
+    await saveCase({ financialOrders }, `Added financial order: ${type} — ${fmtMoney(amount)}`);
+    await pushEvent({ type:'order', date:new Date().toISOString(), description:`Financial order entered: ${type} — ${fmtMoney(amount)}`, judge: currentCase.judge||null });
+    renderDetailPage();
+  }
 }
 window.saveFinancialModal = saveFinancialModal;
 
 function showRecordPaymentModal(orderIdx){
+  const methodOptions = ['Cash','Card','Money Order','Check','Online Payment'];
   openModal('Record Payment', `
     <div class="mform-grid">
       <div class="mform-row"><label>Amount</label><input type="number" id="pmy-amount" placeholder="0.00"></div>
-      <div class="mform-row"><label>Method</label><input id="pmy-method" placeholder="e.g. Cash, Card, Money Order"></div>
+      <div class="mform-row"><label>Method</label><input id="pmy-method" placeholder="e.g. Cash, Card, Money Order" list="pmy-method-options"></div>
     </div>
+    <datalist id="pmy-method-options">${methodOptions.map(m=>`<option value="${m}">`).join('')}</datalist>
     <div class="mform-row"><label>Date</label><input type="date" id="pmy-date" value="${toInputDate(new Date().toISOString())}"></div>
   `, `${cancelBtn()}<button class="btn-primary btn-green" onclick="savePaymentModal(${orderIdx})">Record Payment</button>`);
 }
@@ -1537,9 +1778,10 @@ function showIssueOrderModal(taskIdx){
   const pool = judgePoolForCourt(currentCase.court);
   const officerOptions = `<option value="${escAttr(currentCase.judge||'')}">Judge of Record — ${esc(currentCase.judge||'Unassigned')}</option>` + pool.filter(j=>j.name!==currentCase.judge).map(j=>`<option value="${escAttr(j.name)}">${esc(j.name)} — ${esc(j.role)}</option>`).join('');
   const isStaffEnteringForJudge = ACTS_FOR_JUDGE_ROLES.includes(userData.role) && !['Magistrate Judge','Judge','Chief Judge','Justice','Chief Justice'].includes(userData.role);
+  const cleanTaskTitle = task ? stripTaskSuffix(task.title) : '';
   openModal('Issue an Order / Ruling', `
     ${task?`<div class="summary-box" style="margin-bottom:14px"><p>Ruling on: ${esc(task.title)}</p></div>`:''}
-    <div class="mform-row"><label>Order Title</label><input id="om-title" value="${escAttr(task?('Order on '+task.docType):'')}" placeholder="e.g. Order Granting Motion to Dismiss"></div>
+    <div class="mform-row"><label>Order Title</label><input id="om-title" value="${escAttr(task?('Order on '+(task.docType||cleanTaskTitle)):'')}" placeholder="e.g. Order Granting Motion to Dismiss"></div>
     <div class="mform-row"><label>Judge / Justice</label><select id="om-judge">${officerOptions}</select></div>
     ${isStaffEnteringForJudge?`<div class="summary-box" style="margin-bottom:14px"><p>Entered by ${esc(userData.name)} (${esc(userData.role)}) on behalf of the selected judicial officer.</p></div>`:''}
     <div class="mform-row">
@@ -1550,7 +1792,7 @@ function showIssueOrderModal(taskIdx){
     </div>
     <div class="mform-row"><label>Comment / Summary</label><textarea id="om-comment" placeholder="Brief summary of the ruling for the docket…"></textarea></div>
     <div class="mform-row"><label><input type="checkbox" id="om-seal" style="width:auto;margin-right:6px">Seal this order from public access</label></div>
-  `, `${cancelBtn()}<button class="btn-primary btn-purple" id="om-submit-btn" onclick="saveIssueOrder(${taskIdx!=null?taskIdx:-1})">Enter Order</button>`);
+  `, `${cancelBtn()}<button class="btn-primary btn-gold" id="om-submit-btn" onclick="saveIssueOrder(${taskIdx!=null?taskIdx:-1})">Enter Order</button>`);
 }
 window.showIssueOrderModal = showIssueOrderModal;
 async function saveIssueOrder(taskIdx){
@@ -1574,6 +1816,9 @@ async function saveIssueOrder(taskIdx){
     closeModal();
     await pushEvent({ type:'order', date:new Date().toISOString(), description:title, documentLink:link, comment, judge, sealed, enteredBy:userData.name, enteredByRole:userData.role });
     await addAudit(`Entered order: ${title}${judge?' (Judge: '+judge+')':''}${file?' — uploaded '+file.name:''}`);
+    if(!sealed){
+      await addNotification({ type:'NEF', title:'Notice of Entry of Order', text:`${title} was entered on the docket${judge?' by '+judge:''}.` });
+    }
     if(taskIdx!=null && taskIdx>=0) await completeTask(taskIdx);
     else renderDetailPage();
   }catch(err){
@@ -1628,46 +1873,69 @@ window.saveReplaceDoc = saveReplaceDoc;
 function showFileOnBehalfModal(){
   openModal('File on Behalf of a Party', `
     <div class="mform-grid">
-      <div class="mform-row"><label>Document Type</label><input id="fob-doctype" placeholder="e.g. Motion to Dismiss, Response, Notice of Appearance"></div>
-      <div class="mform-row"><label>Filing On Behalf Of</label><input id="fob-filedby" placeholder="Party or attorney name"></div>
+      <div class="mform-row"><label>Document Type</label><input id="fob-doctype" placeholder="e.g. Motion to Dismiss, Response, Notice of Appearance" list="fob-doctype-options"></div>
+      <div class="mform-row"><label>Filing On Behalf Of</label><input id="fob-filedby" placeholder="Party or attorney name" list="fob-party-options"></div>
     </div>
-    <div class="mform-row"><label>Document Link (optional)</label><input id="fob-link" placeholder="https://…"></div>
+    <datalist id="fob-doctype-options"><option value="Motion to Dismiss"><option value="Motion for Continuance"><option value="Response"><option value="Notice of Appearance"><option value="Objection"><option value="Stipulation"></datalist>
+    ${partyDatalist('fob-party-options')}
+    <div class="mform-row">
+      <label>Document</label>
+      <div class="mform-file"><span style="font-size:15px">📄</span><input type="file" id="fob-file" accept="application/pdf"></div>
+      <div class="mform-or">— or —</div>
+      <input id="fob-link" placeholder="Paste a document link (https://…)">
+    </div>
     <div class="mform-row"><label>Notes</label><textarea id="fob-notes" placeholder="Notes for the docket…"></textarea></div>
-  `, `${cancelBtn()}<button class="btn-primary" onclick="saveFileOnBehalf()">File Now</button>`);
+  `, `${cancelBtn()}<button class="btn-primary" id="fob-submit-btn" onclick="saveFileOnBehalf()">File Now</button>`);
 }
 window.showFileOnBehalfModal = showFileOnBehalfModal;
 async function saveFileOnBehalf(){
   const documentType = document.getElementById('fob-doctype').value.trim();
   const filedBy = document.getElementById('fob-filedby').value.trim();
   if(!documentType || !filedBy){ alert('Please enter a document type and who it is being filed on behalf of.'); return; }
-  const link = document.getElementById('fob-link').value.trim()||null;
+  const file = document.getElementById('fob-file')?.files?.[0] || null;
+  let link = document.getElementById('fob-link').value.trim()||null;
   const notesToClerk = document.getElementById('fob-notes').value.trim()||null;
   const nowIso = new Date().toISOString();
-  closeModal();
 
-  const pfDoc = {
-    filingType:'existing', court: currentCase.court, caseFirestoreId: currentCase._id, caseId: currentCase.caseId,
-    documentType, filedBy, filerRole:'Court Staff (Filed on Behalf)', notesToClerk, dateFiled: nowIso,
-    documents:[{ name:documentType, type: link?'link':'pdf', documentType, link, fee:0 }],
-    status:'Accepted', accepted:true, autoFiled:true,
-    reviewedBy:userData.name, reviewedByUid:userData.uid, reviewedByRole:userData.role, reviewedAt: nowIso,
-    linkedCaseId: currentCase.caseId, linkedCaseFirestoreId: currentCase._id,
-    activityLog:[{ text:`Filed on behalf of ${filedBy} by ${userData.name}`, by:userData.name, at:nowIso }],
-  };
-  const newRef = doc(collection(db,'pendingFilings'));
-  await setDoc(newRef, pfDoc);
-  filingsForCase.push({...pfDoc, _id:newRef.id});
+  const submitBtn = document.getElementById('fob-submit-btn');
+  if(submitBtn){ submitBtn.disabled = true; submitBtn.innerHTML = '<span class="spin"></span> Filing…'; }
+  try{
+    if(file){
+      const path = `case-filings/${currentCase._id}/${Date.now()}-${file.name}`;
+      const fileRef = storageRef(storage, path);
+      await uploadBytes(fileRef, file);
+      link = await getDownloadURL(fileRef);
+    }
+    closeModal();
 
-  await pushEvent({ type:'filing', date:nowIso, description:documentType, documentLink:link, comment:notesToClerk, filedBy, role:'Court Staff (Filed on Behalf)' });
-  await addAudit(`Filed on behalf of ${filedBy}: ${documentType}`);
+    const pfDoc = {
+      filingType:'existing', court: currentCase.court, caseFirestoreId: currentCase._id, caseId: currentCase.caseId,
+      documentType, filedBy, filerRole:'Court Staff (Filed on Behalf)', notesToClerk, dateFiled: nowIso,
+      documents:[{ name: file?file.name:documentType, type: link?(file?'pdf':'link'):'pdf', documentType, link, fee:0 }],
+      status:'Accepted', accepted:true, autoFiled:true,
+      reviewedBy:userData.name, reviewedByUid:userData.uid, reviewedByRole:userData.role, reviewedAt: nowIso,
+      linkedCaseId: currentCase.caseId, linkedCaseFirestoreId: currentCase._id,
+      activityLog:[{ text:`Filed on behalf of ${filedBy} by ${userData.name}`, by:userData.name, at:nowIso }],
+    };
+    const newRef = doc(collection(db,'pendingFilings'));
+    await setDoc(newRef, pfDoc);
+    filingsForCase.push({...pfDoc, _id:newRef.id});
 
-  const MOTION_KEYWORDS = ['motion','petition','application','objection'];
-  if(MOTION_KEYWORDS.some(k=>documentType.toLowerCase().includes(k))){
-    const tasks = [...(cm.tasks||[]), { num:(cm.tasks||[]).length+1, id:`${newRef.id}-1`, title:`${documentType} — needs review`, docType:documentType, filedBy, confirmationNumber:null, status:'Open', createdAt:nowIso, suggestedActions:['scheduleHearing','issueRuling'] }];
-    await saveCM({ tasks });
+    await pushEvent({ type:'filing', date:nowIso, description:documentType, documentLink:link, comment:notesToClerk, filedBy, role:'Court Staff (Filed on Behalf)' });
+    await addAudit(`Filed on behalf of ${filedBy}: ${documentType}`);
+
+    const MOTION_KEYWORDS = ['motion','petition','application','objection'];
+    if(MOTION_KEYWORDS.some(k=>documentType.toLowerCase().includes(k))){
+      const tasks = [...(cm.tasks||[]), { num:(cm.tasks||[]).length+1, id:`${newRef.id}-1`, title:`${documentType} — needs review`, docType:documentType, filedBy, confirmationNumber:null, status:'Open', createdAt:nowIso, suggestedActions:['scheduleHearing','issueRuling'] }];
+      await saveCM({ tasks });
+    }
+    await addNotification({ type:'NEF', title:'Notice of Electronic Filing', text:`${documentType} filed by ${filedBy} was entered on the docket.` });
+    renderDetailPage();
+  }catch(err){
+    console.error(err);
+    alert('Could not file this document. Please try again.');
+    if(submitBtn){ submitBtn.disabled=false; submitBtn.textContent='File Now'; }
   }
-  await addNotification({ type:'NEF', title:'Notice of Electronic Filing', text:`${documentType} filed by ${filedBy} was entered on the docket.` });
-  renderDetailPage();
 }
 window.saveFileOnBehalf = saveFileOnBehalf;
 
