@@ -44,13 +44,13 @@
   .login-left::before { content: ''; position: absolute; top: -80px; right: -80px; width: 300px; height: 300px; border-radius: 50%; background: rgba(200,168,75,0.07); pointer-events: none; }
   .login-left::after  { content: ''; position: absolute; bottom: -60px; left: -60px; width: 240px; height: 240px; border-radius: 50%; background: rgba(200,168,75,0.05); pointer-events: none; }
   .ll-top { position: relative; z-index: 1; }
-  .ll-seal { width: 56px; height: 56px; background: var(--gold); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 26px; margin-bottom: 24px; }
+  .ll-seal { width: 56px; height: 56px; background: var(--gold); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-bottom: 24px; }
   .ll-title { font-family: 'Merriweather', serif; color: #fff; font-size: 22px; font-weight: 400; line-height: 1.3; margin-bottom: 10px; }
   .ll-desc { color: var(--blue-muted); font-size: 13px; line-height: 1.7; }
   .ll-divider { border: none; border-top: 1px solid var(--border); margin: 28px 0; }
   .ll-features { display: flex; flex-direction: column; gap: 14px; position: relative; z-index: 1; }
   .ll-feat { display: flex; align-items: flex-start; gap: 12px; }
-  .ll-feat-icon { width: 30px; height: 30px; border-radius: 3px; background: var(--navy-light); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; margin-top: 1px; }
+  .ll-feat-icon { width: 30px; height: 30px; border-radius: 3px; background: var(--navy-light); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; color: var(--gold-light); }
   .ll-feat-text strong { font-size: 12.5px; color: #fff; font-weight: 600; display: block; margin-bottom: 2px; }
   .ll-feat-text span { font-size: 11.5px; color: var(--blue-muted); line-height: 1.5; }
   .ll-bottom { font-size: 10.5px; color: #3a5a7a; line-height: 1.5; position: relative; z-index: 1; }
@@ -110,8 +110,8 @@
   .role-option:last-child .role-option-inner { border-right: none; }
   .role-option-inner:hover { background: #f0ede8; }
   .role-option.selected .role-option-inner { background: var(--navy); }
-  .ro-icon { font-size: 26px; line-height: 1; display: block; transition: transform 0.18s; }
-  .role-option.selected .ro-icon { transform: scale(1.1); }
+  .ro-icon { display: flex; align-items: center; justify-content: center; color: var(--muted); transition: color 0.18s, transform 0.18s; }
+  .role-option.selected .ro-icon { color: var(--gold-light); transform: scale(1.08); }
   .ro-title { font-size: 13.5px; font-weight: 700; color: var(--text); display: block; line-height: 1.2; transition: color 0.18s; }
   .ro-sub { font-size: 11px; color: var(--muted); line-height: 1.45; display: block; transition: color 0.18s; }
   .role-option.selected .ro-title { color: #fff; }
@@ -125,7 +125,7 @@
   .status-box.success { background: var(--green-bg); border: 1px solid var(--green-bdr); }
   .status-box.error   { background: var(--red-bg);   border: 1px solid var(--red-bdr); }
   .status-box.warning { background: var(--amber-bg); border: 1px solid var(--amber-bdr); }
-  .sb-icon { font-size: 15px; flex-shrink: 0; margin-top: 1px; }
+  .sb-icon { flex-shrink: 0; margin-top: 1px; display: flex; align-items: center; }
   .sb-body { flex: 1; }
   .sb-body strong { font-size: 13px; font-weight: 700; display: block; margin-bottom: 3px; }
   .sb-body p { font-size: 12px; line-height: 1.6; }
@@ -170,27 +170,29 @@
 
     <div class="login-left">
       <div class="ll-top">
-        <div class="ll-seal">⚖️</div>
+        <div class="ll-seal">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="var(--navy)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18"/><path d="M5 8l-3 6a4 4 0 0 0 6 0z"/><path d="M19 8l-3 6a4 4 0 0 0 6 0z"/><path d="M5 21h14"/><path d="M5 8h14"/><path d="M9 5l3-2 3 2"/></svg>
+        </div>
         <div class="ll-title">Michigan Court Online Portal</div>
-        <p class="ll-desc">MiCOURT is the official online portal for the Michigan Court system. Sign in with your MiPASS account to access your case records, filings, and court services.</p>
+        <p class="ll-desc">MiCOURT is the official online portal for the Michigan Court system. Sign in with your MiGOVT account to access your case records, filings, and court services.</p>
         <hr class="ll-divider">
         <div class="ll-features">
           <div class="ll-feat">
-            <div class="ll-feat-icon">📋</div>
+            <div class="ll-feat-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2h6l1 4H8l1-4z"/><rect x="4" y="6" width="16" height="16" rx="2"/><path d="M9 12h6"/><path d="M9 16h6"/></svg></div>
             <div class="ll-feat-text">
               <strong>Your Cases</strong>
               <span>View cases you are a party to, track hearing dates, and monitor case status.</span>
             </div>
           </div>
           <div class="ll-feat">
-            <div class="ll-feat-icon">📄</div>
+            <div class="ll-feat-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><path d="M9 13h6"/><path d="M9 17h6"/></svg></div>
             <div class="ll-feat-text">
               <strong>E-Filing</strong>
               <span>Submit documents and filings directly to the clerk's office electronically.</span>
             </div>
           </div>
           <div class="ll-feat">
-            <div class="ll-feat-icon">💳</div>
+            <div class="ll-feat-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg></div>
             <div class="ll-feat-text">
               <strong>Fines &amp; Fees</strong>
               <span>Pay outstanding court fines, fees, and financial obligations online.</span>
@@ -198,16 +200,16 @@
           </div>
         </div>
       </div>
-      <p class="ll-bottom">Authentication is provided through MiPASS — the Michigan State Identity Authentication System. Your identity is verified against the official state registry.</p>
+      <p class="ll-bottom">Authentication is provided through MiGOVT — the Michigan State Identity Authentication System. Your identity is verified against the official state registry.</p>
     </div>
 
     <div class="login-right">
 
-      <!-- STEP 0 — Sign in with MiPASS -->
+      <!-- STEP 0 — Sign in with MiGOVT -->
       <div class="step active" id="step-0">
         <div class="step-header">
           <h2>Sign In to MiCOURT</h2>
-          <p>MiCOURT uses MiPASS — the Michigan State Identity Authentication System — to verify your identity. You'll be redirected to MiPASS and brought back here automatically.</p>
+          <p>MiCOURT uses MiGOVT — the Michigan State Identity Authentication System — to verify your identity. You'll be redirected to MiGOVT and brought back here automatically.</p>
         </div>
 
         <div id="s0-provider">
@@ -215,7 +217,7 @@
           <div class="mipass-btn" onclick="goMipass()">
             <div class="mp-logo-box"><div class="mp-logo-inner"><span>MI</span></div></div>
             <div class="ap-info">
-              <strong>MiPASS</strong>
+              <strong>MiGOVT</strong>
               <span>Michigan State Identity Authentication System</span>
             </div>
             <span class="ap-arrow">›</span>
@@ -225,13 +227,13 @@
         <div class="status-box loading" id="s0-loading">
           <div class="spin-sm"></div>
           <div class="sb-body">
-            <strong id="s0-loading-title">Verifying your MiPASS identity…</strong>
+            <strong id="s0-loading-title">Verifying your MiGOVT identity…</strong>
             <p id="s0-loading-msg">Please wait while we confirm your details.</p>
           </div>
         </div>
 
         <div class="status-box error" id="s0-error">
-          <span class="sb-icon">⚠️</span>
+          <span class="sb-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></span>
           <div class="sb-body">
             <strong>Sign-In Failed</strong>
             <p id="s0-error-msg">Something went wrong. Please try again.</p>
@@ -244,20 +246,20 @@
             <strong id="s0-uc-name">—</strong>
             <span id="s0-uc-pin">PIN: —</span>
           </div>
-          <span class="uc-verified">MiPASS Verified</span>
+          <span class="uc-verified">MiGOVT Verified</span>
         </div>
 
         <button class="btn-primary" id="s0-btn" onclick="goMipass()">
           <div style="width:20px;height:20px;background:white;border-radius:2px;display:flex;align-items:center;justify-content:center;transform:skew(-8deg);flex-shrink:0">
             <span style="transform:skew(8deg);display:block;color:var(--navy);font-size:8px;font-weight:900">MI</span>
           </div>
-          Sign In with MiPASS
+          Sign In with MiGOVT
         </button>
 
         <div class="lr-footer">
           <p>
             By signing in you agree to the MiCOURT Terms of Service. Your identity is verified through
-            <a href="https://miservices.github.io/mipass/" target="_blank">MiPASS</a>.
+            <a href="https://miservices.github.io/mipass/" target="_blank">MiGOVT</a>.
             MiCOURT does not store your Roblox credentials.<br><br>
             <a href="/courts/micourt/help/">Need help signing in?</a> &nbsp;·&nbsp;
             <a href="/courts/micourt/privacy/">Privacy Policy</a>
@@ -269,7 +271,7 @@
       <div class="step" id="step-autologin">
         <div class="step-header" style="margin-bottom:20px">
           <h2>Welcome Back</h2>
-          <p>We found your MiCOURT account linked to this MiPASS identity. Signing you in now…</p>
+          <p>We found your MiCOURT account linked to this MiGOVT identity. Signing you in now…</p>
         </div>
 
         <div class="user-card show" id="sal-user-card">
@@ -278,7 +280,7 @@
             <strong id="sal-uc-name">—</strong>
             <span id="sal-uc-role">—</span>
           </div>
-          <span class="uc-verified">MiPASS Verified</span>
+          <span class="uc-verified">MiGOVT Verified</span>
         </div>
 
         <div class="status-box loading show" id="sal-loading">
@@ -290,15 +292,15 @@
         </div>
 
         <div class="status-box success" id="sal-success">
-          <span class="sb-icon">✅</span>
+          <span class="sb-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span>
           <div class="sb-body">
-            <strong>Signed In!</strong>
+            <strong>Signed In</strong>
             <p>Redirecting you to your MiCOURT dashboard…</p>
           </div>
         </div>
 
         <div class="status-box error" id="sal-error">
-          <span class="sb-icon">⚠️</span>
+          <span class="sb-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></span>
           <div class="sb-body">
             <strong>Sign-In Error</strong>
             <p id="sal-error-msg">Something went wrong. Please try again.</p>
@@ -310,7 +312,7 @@
           <div class="redirect-bar"><div class="redirect-fill" id="sal-redirect-fill"></div></div>
         </div>
 
-        <button class="btn-secondary" id="sal-retry-btn" style="display:none" onclick="goMipass()">← Try Again with MiPASS</button>
+        <button class="btn-secondary" id="sal-retry-btn" style="display:none" onclick="goMipass()">← Try Again with MiGOVT</button>
       </div>
 
       <!-- STEP 1 — Email -->
@@ -328,7 +330,7 @@
             <strong id="s1-uc-name">—</strong>
             <span id="s1-uc-pin">—</span>
           </div>
-          <span class="uc-verified">MiPASS Verified</span>
+          <span class="uc-verified">MiGOVT Verified</span>
         </div>
 
         <div class="form-group">
@@ -342,8 +344,10 @@
           <div class="field-error" id="f-email2-err">Email addresses do not match.</div>
         </div>
 
+        <p style="font-size:11.5px;color:var(--muted);line-height:1.6;margin:-6px 0 16px;">Your email address will be shared with authorized state services to confirm and manage your MiCOURT account.</p>
+
         <div class="status-box error" id="s1-error">
-          <span class="sb-icon">⚠️</span>
+          <span class="sb-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></span>
           <div class="sb-body"><strong>Error</strong><p id="s1-error-msg"></p></div>
         </div>
 
@@ -363,7 +367,7 @@
           <label class="role-option" id="rc-public" onclick="selectRole('public')">
             <input type="radio" name="role" value="public">
             <div class="role-option-inner">
-              <span class="ro-icon">👤</span>
+              <span class="ro-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"/></svg></span>
               <span class="ro-title">Portal User</span>
               <span class="ro-sub">Individual access — cases, fines, filings</span>
               <span class="ro-check">✓</span>
@@ -372,7 +376,7 @@
           <label class="role-option" id="rc-bar" onclick="selectRole('bar')">
             <input type="radio" name="role" value="bar">
             <div class="role-option-inner">
-              <span class="ro-icon">⚖️</span>
+              <span class="ro-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18"/><path d="M5 8l-3 6a4 4 0 0 0 6 0z"/><path d="M19 8l-3 6a4 4 0 0 0 6 0z"/><path d="M5 21h14"/><path d="M5 8h14"/><path d="M9 5l3-2 3 2"/></svg></span>
               <span class="ro-title">Bar Member</span>
               <span class="ro-sub">Licensed attorney or court officer</span>
               <span class="ro-check">✓</span>
@@ -382,7 +386,7 @@
 
         <div id="bar-verify-panel" style="display:none;">
           <div class="note-box">
-            Your bar number will be checked against the Michigan State Bar Member registry. Your MiPASS PIN must match the record on file.
+            Your bar number will be checked against the Michigan State Bar Member registry. Your MiGOVT PIN must match the record on file.
           </div>
           <div class="form-group">
             <label>Michigan State Bar Number</label>
@@ -397,14 +401,14 @@
             </div>
           </div>
           <div class="status-box success" id="bar-success">
-            <span class="sb-icon">✅</span>
+            <span class="sb-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span>
             <div class="sb-body">
               <strong id="bar-success-name">—</strong>
               <p id="bar-success-detail">—</p>
             </div>
           </div>
           <div class="status-box error" id="bar-error">
-            <span class="sb-icon">⚠️</span>
+            <span class="sb-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></span>
             <div class="sb-body">
               <strong>Verification Failed</strong>
               <p id="bar-error-msg">—</p>
@@ -416,7 +420,7 @@
         </div>
 
         <div class="status-box error" id="s2-error">
-          <span class="sb-icon">⚠️</span>
+          <span class="sb-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></span>
           <div class="sb-body"><strong>Error</strong><p id="s2-error-msg"></p></div>
         </div>
 
@@ -442,14 +446,14 @@
         </div>
 
         <div class="status-box error" id="s3-error">
-          <span class="sb-icon">⚠️</span>
+          <span class="sb-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg></span>
           <div class="sb-body"><strong>Account Creation Failed</strong><p id="s3-error-msg"></p></div>
         </div>
 
         <div class="status-box success" id="s3-success">
-          <span class="sb-icon">✅</span>
+          <span class="sb-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></span>
           <div class="sb-body">
-            <strong>Account Created!</strong>
+            <strong>Account Created</strong>
             <p>Your MiCOURT account has been created. Redirecting to your dashboard…</p>
           </div>
         </div>
@@ -589,7 +593,7 @@
     hideEl('sal-retry-btn');
     document.getElementById('sal-redirect-bar').style.display = 'none';
     document.getElementById('sal-loading-title').textContent = 'Signing you in…';
-    document.getElementById('sal-loading-msg').textContent   = 'Authenticating your MiCOURT account via MiPASS.';
+    document.getElementById('sal-loading-msg').textContent   = 'Authenticating your MiCOURT account via MiGOVT.';
 
     await waitForFb();
 
@@ -687,7 +691,7 @@
       const d = docSnap.data();
       if (String(d.pin) !== String(mipassData.pin)) {
         show('bar-error');
-        document.getElementById('bar-error-msg').textContent = 'This bar number is registered to a different identity. Your MiPASS PIN does not match the record on file.';
+        document.getElementById('bar-error-msg').textContent = 'This bar number is registered to a different identity. Your MiGOVT PIN does not match the record on file.';
         btn.disabled = false; return;
       }
       verifiedBarData = { barNumber: barInput, name: d.name || mipassData.name, role: d.role || 'Bar Member', status: d.status || 'Unknown' };
