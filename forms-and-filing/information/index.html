@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Filing Information | Michigan Courts</title>
+
+<script src="/courts/shell.js" data-active="filing"></script>
+
+<link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;1,300&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:#f4f1ec;color:#1a1a1a;min-height:100vh}
+
+/* ── Page Header ── */
+.page-header{background:#0a1628;padding:40px 40px 36px;border-bottom:3px solid #c8a84b}
+.breadcrumb{display:flex;align-items:center;gap:8px;margin-bottom:14px}
+.breadcrumb a{color:#7a9bbf;font-size:11.5px;text-decoration:none;letter-spacing:0.04em}
+.breadcrumb a:hover{color:#c8a84b}
+.breadcrumb span{color:#3a5878;font-size:11.5px}
+.page-header h2{font-family:'Merriweather',serif;color:#fff;font-size:26px;font-weight:300;line-height:1.3}
+.page-header p{color:#7a9bbf;font-size:13.5px;line-height:1.7;margin-top:10px;max-width:720px}
+
+/* ── Toolbar / on-this-page nav ── */
+.toc-bar{background:#fff;border-bottom:1px solid #e0d9cf;padding:14px 40px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;position:sticky;top:0;z-index:50;box-shadow:0 2px 8px rgba(10,22,40,0.06)}
+.toc-label{font-size:11px;color:#9a8f82;text-transform:uppercase;letter-spacing:0.08em;font-weight:700;margin-right:8px;white-space:nowrap}
+.toc-bar a{font-size:12px;color:#1a4a7a;text-decoration:none;padding:6px 10px;border-radius:3px;white-space:nowrap;transition:background 0.15s}
+.toc-bar a:hover{background:#f0ebe3;color:#0a1628}
+
+/* ── Main wrap ── */
+.info-wrap{padding:32px 40px 64px;max-width:920px}
+
+/* ── Rule section ── */
+.rule-section{background:#fff;border:1px solid #e0d9cf;border-radius:4px;margin-bottom:22px;overflow:hidden;scroll-margin-top:64px}
+.rule-head{background:#0a1628;padding:16px 22px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.rule-tag{font-family:monospace;font-size:11.5px;font-weight:700;color:#c8a84b;letter-spacing:0.04em;background:rgba(200,168,75,0.12);border:1px solid rgba(200,168,75,0.35);padding:3px 9px;border-radius:2px;white-space:nowrap}
+.rule-head h3{font-family:'Merriweather',serif;color:#fff;font-size:17px;font-weight:400;flex:1;min-width:180px}
+.rule-body{padding:20px 22px 22px}
+.rule-body p{font-size:13.5px;line-height:1.75;color:#3a352c;margin-bottom:12px}
+.rule-body p:last-child{margin-bottom:0}
+.rule-body strong{color:#0a1628;font-weight:600}
+.rule-body a.inline-link{color:#1a4a7a;font-weight:600;text-decoration:none;border-bottom:1px solid #b8d0f0}
+.rule-body a.inline-link:hover{color:#0a1628;border-bottom-color:#0a1628}
+
+/* ── Sub-list ── */
+.sub-list{list-style:none;margin:0 0 14px 0}
+.sub-list li{position:relative;padding:8px 0 8px 24px;font-size:13.5px;line-height:1.65;color:#3a352c;border-bottom:1px solid #f0ebe3}
+.sub-list li:last-child{border-bottom:none}
+.sub-list li::before{content:'▸';position:absolute;left:2px;color:#c8a84b;font-size:11px;top:9px}
+.sub-list li strong{color:#0a1628;font-weight:600}
+
+/* ── Callout boxes ── */
+.callout{display:flex;gap:12px;padding:14px 16px;border-radius:3px;margin:14px 0;align-items:flex-start}
+.callout svg{width:16px;height:16px;flex-shrink:0;margin-top:1px}
+.callout p{margin:0!important;font-size:13px!important;line-height:1.65!important}
+.callout.note{background:#eaf2fd;border:1px solid #b8d0f0}
+.callout.note svg{color:#1a4a7a}
+.callout.note p{color:#173a5e!important}
+.callout.warn{background:#fef9e7;border:1px solid #f0d878}
+.callout.warn svg{color:#7a5a00}
+.callout.warn p{color:#5c4400!important}
+.callout.current{background:#f3e8ff;border:1px solid #c4b5fd}
+.callout.current svg{color:#5b21b6}
+.callout.current p{color:#432874!important}
+
+/* ── Fee table ── */
+.fee-table{width:100%;border-collapse:collapse;margin:14px 0 4px 0;font-size:13px}
+.fee-table th{text-align:left;background:#f0ebe3;color:#4a4035;font-size:10.5px;text-transform:uppercase;letter-spacing:0.06em;padding:9px 12px;border:1px solid #e0d9cf}
+.fee-table td{padding:9px 12px;border:1px solid #e0d9cf;color:#3a352c;vertical-align:top}
+
+/* ── Chip row (forms link / MC 20 etc) ── */
+.chip{display:inline-flex;align-items:center;gap:6px;background:#f0ebe3;border:1px solid #d6cfc4;color:#4a4035;font-size:11.5px;font-weight:600;padding:4px 10px;border-radius:3px;text-decoration:none;transition:all 0.15s}
+.chip:hover{background:#0a1628;border-color:#0a1628;color:#c8a84b}
+
+@media(max-width:768px){
+  .page-header,.info-wrap{padding-left:20px;padding-right:20px}
+  .toc-bar{padding:12px 20px;overflow-x:auto;flex-wrap:nowrap}
+  .rule-head{padding:14px 16px}
+  .rule-body{padding:16px}
+}
+</style>
+</head>
+<body>
+
+<!-- Page Header -->
+<div class="page-header">
+  <div class="breadcrumb">
+    <a href="/courts/">Home</a>
+    <span>/</span>
+    <a href="/courts/forms/">Forms &amp; Filing</a>
+    <span>/</span>
+    <span style="color:#a0b8d0">Filing Information</span>
+  </div>
+  <h2>Filing Information</h2>
+  <p>How to file a case in Michigan's district and supreme courts — electronic filing through MiCOURT, in-person filing, required forms, notice and service, corrections, and fees.</p>
+</div>
+
+<!-- On-this-page nav -->
+<div class="toc-bar">
+  <span class="toc-label">On this page</span>
+  <a href="#efiling">Electronic &amp; In-Person Filing</a>
+  <a href="#requirements">Filing Requirements</a>
+  <a href="#forms">Court Forms</a>
+  <a href="#notice">Notice &amp; Service</a>
+  <a href="#corrections">Corrections</a>
+  <a href="#fees">Fees &amp; Waivers</a>
+  <a href="#certified">Certified Copies</a>
+</div>
+
+<div class="info-wrap">
+
+  <!-- MCR 7.301 -->
+  <div class="rule-section" id="efiling">
+    <div class="rule-head">
+      <span class="rule-tag">MCR 7.301</span>
+      <h3>Electronic &amp; In-Person Filing</h3>
+    </div>
+    <div class="rule-body">
+      <p>Electronic filing through the <strong>MiCOURT</strong> system is always permissible in every district court and the supreme court. A filer may use MiCOURT for any filing, in any case, at any time.</p>
+      <p>In-person filing is not required to be permitted by any court. The district court and the supreme court may, at their own discretion, accept in-person filings at the clerk's office during regular business hours — but neither court is obligated to do so.</p>
+      <p>Where a court does accept in-person filing, that option is limited to <strong>commencing a new case</strong> only. Once a case has commenced, every subsequent filing in that case — including motions and all other documents — must be made exclusively through MiCOURT and may not be filed in person.</p>
+      <div class="callout current">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="10" cy="10" r="7.5"/><path d="M10 6.5v4l2.5 2"/></svg>
+        <p><strong>Currently in effect:</strong> no court is accepting in-person filings at this time. All filings — new cases and subsequent filings alike — must be submitted through MiCOURT.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- MCR 7.302 -->
+  <div class="rule-section" id="requirements">
+    <div class="rule-head">
+      <span class="rule-tag">MCR 7.302</span>
+      <h3>Filing Requirements</h3>
+    </div>
+    <div class="rule-body">
+      <p><strong>Accepted file formats.</strong> Documents must be submitted as one of the following:</p>
+      <ul class="sub-list">
+        <li><strong>Flattened, text-searchable PDF</strong> — capped at 5 MB and may not contain photographs, scanned images, or other non-text items (pictures of signatures are the one exception). A single filing cannot be split into multiple files to get around the size cap; anything over the limit, or containing non-text items, must instead be filed as a linked drive file.</li>
+        <li><strong>Google Docs</strong> — only where permitted or required, and only with sharing settings that let the court view and edit. This is a temporary format: it must be converted to PDF or a linked drive file within 14 days of filing, or within 3 days of any order issued on the filing, whichever comes first (extendable by the court for good cause, up to 90 days). A Google Docs filing can't be certified as a true copy until it's converted.</li>
+        <li><strong>Google Drive, Microsoft OneDrive, or Dropbox link</strong> — only where permitted or required, with view access for the court. No file-size limit applies here.</li>
+      </ul>
+      <div class="callout warn">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 3l8 14H2z"/><path d="M10 8v4"/><circle cx="10" cy="14.5" r="0.6" fill="currentColor"/></svg>
+        <p>A PDF filing that breaks the format or size rules will be stricken and deleted — the court has no duty to keep it on file. For a document filing a new case in Google Docs format that's never converted, the case itself can be dismissed without prejudice after a grace period of up to 30 days.</p>
+      </div>
+      <p><strong>Paper filings.</strong> Where a document must be filed on paper: 8.5" × 11" pages; margins of 0.5"–1" (supreme court filings need at least 1" on all sides); 12-point type minimum, double-spaced (block quotes and footnotes may run 10–12 point, single-spaced); and any scanned pages must be legible.</p>
+      <p><strong>Hyperlinks.</strong> Links to outside sources or cited authority are allowed for the court's convenience but never replace a proper citation. A party must have a good-faith, reasonable belief the link is relevant — an irrelevant or broken link is simply treated as if it weren't there, and doesn't affect the filing's validity.</p>
+      <p><strong>Page limits</strong> (unless the court orders otherwise):</p>
+      <table class="fee-table">
+        <tr><th>Document type</th><th>Limit</th></tr>
+        <tr><td>Complaints and petitions</td><td>30 pages</td></tr>
+        <tr><td>Motions and supporting briefs</td><td>20 pages</td></tr>
+        <tr><td>Responses to motions</td><td>20 pages</td></tr>
+        <tr><td>Reply briefs</td><td>10 pages</td></tr>
+        <tr><td>Supreme court appellate briefs</td><td>50 pages (appellant), 50 pages (appellee), 15 pages (reply)</td></tr>
+        <tr><td>All other documents</td><td>15 pages, unless the court grants leave to exceed for good cause</td></tr>
+      </table>
+      <p><strong>Signatures.</strong> Every filing must be signed by the filer or their attorney — either "/s/" followed by the signer's name, or an image of a handwritten signature — with the signer's printed name underneath (unless a court-approved form leaves no space for it). Signatures are presumed valid unless a party or the court raises a concern, in which case the court may order the signer to establish authenticity.</p>
+    </div>
+  </div>
+
+  <!-- MCR 7.303 -->
+  <div class="rule-section" id="forms">
+    <div class="rule-head">
+      <span class="rule-tag">MCR 7.303</span>
+      <h3>Official Court Forms</h3>
+    </div>
+    <div class="rule-body">
+      <p>Parties are required to use the official court forms published and maintained by the state court administrative office. These forms are free of charge and can be viewed and downloaded here:</p>
+      <p><a class="chip" href="https://migovt.org/courts/forms-and-filing/forms/" target="_blank" rel="noopener">
+        <svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h8l4 4v8H4V4z"/><path d="M12 4v4h4"/></svg>
+        View &amp; Download Court Forms
+      </a></p>
+      <p><strong>Exceptions (MCR 7.303(B)).</strong> A standard court form is not required for civil complaints and motions where no specific form exists for that motion. Where no standard form is available for the type of document being filed, the party must prepare their own document that complies with the applicable formatting requirements under MCR 7.302.</p>
+      <div class="callout note">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="10" cy="10" r="7.5"/><path d="M10 9v4.5M10 6.5h.01"/></svg>
+        <p><strong>Fee break for self-prepared documents (MCR 7.303(D)):</strong> when a party has to prepare their own document because no standard form exists, the court must waive the first $25 of the applicable filing fee upon written request — either by motion (which itself has its filing fee waived) or by including the request directly in the document at the time of filing.</p>
+      </div>
+      <p><strong>Required caption.</strong> A self-prepared document must include a caption stating: the name of the court, the names of all parties, and the case number — or, if none has been assigned yet, a space to write one in later.</p>
+    </div>
+  </div>
+
+  <!-- MCR 7.305 -->
+  <div class="rule-section" id="notice">
+    <div class="rule-head">
+      <span class="rule-tag">MCR 7.305</span>
+      <h3>Notice &amp; Service</h3>
+    </div>
+    <div class="rule-body">
+      <p>When a document is filed through MiCOURT in a case that has already commenced, a <strong>Notice of Electronic Filing</strong> is automatically sent to every party of record.</p>
+      <p>That automatic notice does not apply — and service must instead be made under the otherwise-applicable law — in three situations:</p>
+      <ul class="sub-list">
+        <li>The filing is the one that <strong>commences a new action</strong>;</li>
+        <li>A court rule specifically requires service by a process server for that type of document; or</li>
+        <li>The court has entered an order requiring process server service for a specific filing, based on a finding of good cause — raised either on the court's own initiative or on a party's motion.</li>
+      </ul>
+      <p>Each party of record is responsible for monitoring MiCOURT for Notices of Electronic Filing in their own cases. A party cannot later claim they didn't have notice of a filing once a Notice of Electronic Filing was properly sent through the system.</p>
+      <p>A Notice of Electronic Filing normally costs, and never exceeds, <strong>$20 per notice</strong>.</p>
+      <div class="callout note">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="10" cy="10" r="7.5"/><path d="M10 9v4.5M10 6.5h.01"/></svg>
+        <p>The court can order process server service in place of a Notice of Electronic Filing — on its own initiative or on a party's motion — but only with a specific finding of good cause, stated on the record or in writing.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- MCR 7.306 -->
+  <div class="rule-section" id="corrections">
+    <div class="rule-head">
+      <span class="rule-tag">MCR 7.306</span>
+      <h3>Corrections to Filed Documents</h3>
+    </div>
+    <div class="rule-body">
+      <p>If a filer discovers a <strong>clerical error</strong> in a document they already filed, they may file a corrected version through MiCOURT within <strong>7 days</strong> of the original filing, without needing the court's leave — as long as the correction doesn't change the substance of the document.</p>
+      <p>Any <strong>substantive</strong> amendment to a filed document instead requires leave of the court, under whatever procedural chapter applies to that filing.</p>
+      <p>A corrected document must be clearly marked as a corrected filing and must identify, on its face, what was corrected. Both the original and the corrected filing stay in the official case file — but the corrected filing supersedes the original for all purposes going forward.</p>
+    </div>
+  </div>
+
+  <!-- MCR 7.401-7.403 -->
+  <div class="rule-section" id="fees">
+    <div class="rule-head">
+      <span class="rule-tag">MCR 7.401–7.403</span>
+      <h3>Filing Fees &amp; Waivers</h3>
+    </div>
+    <div class="rule-body">
+      <p>Filing fees are set out in <a class="inline-link" href="https://migovt.org/courts/rules/mcr/#/rule/7-401" target="_blank" rel="noopener">MCR 7.401</a>.</p>
+      <p>Fees are paid <strong>in person</strong> at the court where the action was filed, within <strong>14 days</strong> of filing — unless a fee waiver has been granted under MCR 7.403, payment has been deferred by court order under MCR 7.402, or another rule sets a different deadline for the specific procedure involved, in which case that rule's deadline controls.</p>
+      <p><strong>Fee waivers.</strong> Submit a completed <span class="chip" style="cursor:default">Form MC 20</span> to the court to request a fee waiver under MCR 7.403.</p>
+      <div class="callout warn">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 3l8 14H2z"/><path d="M10 8v4"/><circle cx="10" cy="14.5" r="0.6" fill="currentColor"/></svg>
+        <p>Different procedures can layer on their own restrictions around fees and deadlines — always check the rules that apply to the specific type of case or motion being filed.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- MCR 7.801 -->
+  <div class="rule-section" id="certified">
+    <div class="rule-head">
+      <span class="rule-tag">MCR 7.801</span>
+      <h3>Certified Copies</h3>
+    </div>
+    <div class="rule-body">
+      <p>Certified copies of filed documents may be requested under MCR 7.801, subject to the applicable copy fees.</p>
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>
