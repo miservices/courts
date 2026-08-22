@@ -4,42 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Michigan Courts</title>
+
+<script src="/courts/shell.js" data-active="home"></script>
+
 <link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;1,300&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'DM Sans',sans-serif;background:#f4f1ec;color:#1a1a1a;min-height:100vh}
-
-/* ── RP Banner ── */
-.rp-banner{background:#071220;color:#7a9bbf;text-align:center;padding:9px 20px;font-size:11.5px;letter-spacing:0.01em;border-bottom:1px solid #1e3a5f;line-height:1.5}
-
-/* ── Header ── */
-.header{background:#0a1628}
-.header-top{display:flex;align-items:center;justify-content:space-between;padding:22px 40px 18px;border-bottom:1px solid #1e3a5f}
-.logo-text h1{font-family:'Merriweather',serif;color:#fff;font-size:22px;font-weight:300;letter-spacing:0.01em}
-.logo-text p{color:#7a9bbf;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;margin-top:3px}
-.header-right{text-align:right}
-.header-right p{color:#7a9bbf;font-size:11px;letter-spacing:0.06em;text-transform:uppercase}
-.header-right .date{color:#c8a84b;font-size:13px;margin-top:3px}
-
-/* ── Nav ── */
-nav{background:#0d1f3c;display:flex;align-items:center;padding:0 40px;position:relative;z-index:100}
-nav > a{color:#a0b8d0;font-size:12.5px;padding:14px 18px;text-decoration:none;letter-spacing:0.04em;border-bottom:3px solid transparent;transition:all 0.15s;white-space:nowrap}
-nav > a:hover{color:#fff;border-bottom-color:#c8a84b}
-nav > a.active{color:#fff;border-bottom-color:#c8a84b}
-nav .nav-right{margin-left:auto;display:flex;gap:8px;align-items:center}
-nav .nav-btn{background:#c8a84b;color:#0a1628;padding:8px 18px;border-radius:3px;font-size:12px;font-weight:600;letter-spacing:0.05em;text-decoration:none;border-bottom:none;white-space:nowrap}
-nav .nav-btn:hover{background:#d4b85e}
-
-/* Dropdowns */
-.nav-dropdown{position:relative;display:inline-block}
-.nav-dropdown > a{color:#a0b8d0;font-size:12.5px;padding:14px 18px;text-decoration:none;letter-spacing:0.04em;border-bottom:3px solid transparent;transition:all 0.15s;white-space:nowrap;display:flex;align-items:center;gap:5px;cursor:pointer}
-.nav-dropdown > a::after{content:'v';font-size:9px;color:#7a9bbf;font-weight:700;margin-top:1px}
-.nav-dropdown:hover > a{color:#fff;border-bottom-color:transparent}.nav-dropdown:hover > a::after{color:#c8a84b}
-.dropdown-menu{display:none;position:absolute;top:100%;left:0;background:#0d1f3c;border:1px solid #1e3a5f;border-top:2px solid #c8a84b;min-width:200px;z-index:200;box-shadow:0 8px 28px rgba(0,0,0,0.4)}
-.nav-dropdown:hover .dropdown-menu{display:block}
-.dropdown-menu a{display:block;padding:10px 18px;color:#a0b8d0;font-size:12px;text-decoration:none;border-bottom:1px solid #1a2d48;letter-spacing:0.03em;border-left:3px solid transparent;transition:all 0.12s}
-.dropdown-menu a:last-child{border-bottom:none}
-.dropdown-menu a:hover{color:#fff;background:#112240;border-left-color:#c8a84b}
 
 /* ── Hero ── */
 .hero{background:#0a1628;padding:52px 40px;display:flex;align-items:flex-start;gap:60px;position:relative;overflow:hidden}
@@ -110,70 +81,9 @@ nav .nav-btn:hover{background:#d4b85e}
 .qlink .ql-icon{width:28px;height:28px;border-radius:3px;background:#f0ebe3;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
 .qlink .ql-text{display:flex;flex-direction:column;gap:2px}
 .qlink .ql-sub{font-size:11px;color:#9a8f82}
-
-/* ── Footer ── */
-.footer{background:#0a1628;padding:24px 40px;display:flex;justify-content:space-between;align-items:center;border-top:3px solid #c8a84b}
-.footer p{color:#4a6a8a;font-size:12px}
 </style>
 </head>
 <body>
-
-<div class="rp-banner">
-  This site is not a real court, does not have legal authority, and is not affiliated with or endorsed by any real court system or government agency.
-</div>
-
-<div class="header">
-  <div class="header-top">
-    <div class="logo-text">
-      <h1>Michigan Courts</h1>
-      <p>One Court of Justice</p>
-    </div>
-    <div class="header-right">
-      <p>SCAO Maintained</p>
-      <div class="date" id="today"></div>
-    </div>
-  </div>
-  </div>
-
-  <nav>
-    <a href="index.html" class="active">Home</a>
-    
-    <div class="nav-dropdown">
-      <a href="#">Directory</a>
-      <div class="dropdown-menu">
-        <a href="#">Supreme Court</a>
-        <a href="#">Genesee Co. District Court</a>
-      </div>
-    </div>
-
-
-    <div class="nav-dropdown">
-      <a href="#">Online Services</a>
-      <div class="dropdown-menu">
-        <a href="#">Online Portal (MiCOURT)</a>
-        <a href="cases.html">Search Cases</a>
-        <a href="#">Pay Fines &amp; Fees</a>
-        <a href="#">Docket Calendar</a>
-        <a href="#">Jury Duty Portal</a>
-        <a href="#">Request Court Records</a>
-      </div>
-    </div>
-
-    <div class="nav-dropdown">
-      <a href="#">Forms &amp; Filing</a>
-      <div class="dropdown-menu">
-        <a href="#">Filing Information</a>
-        <a href="#">Court Forms</a>
-      </div>
-    </div>
-
-    <a href="#">Self Help</a>
-    <a href="#">Careers</a>
-
-    <div class="nav-right">
-      <a href="#" class="nav-btn">Access MiCOURT ></a>
-    </div>
-  </nav>
 
 <!-- Hero -->
 <div class="hero">
@@ -325,13 +235,5 @@ nav .nav-btn:hover{background:#d4b85e}
   </div>
 </div>
 
-<div class="footer">
-  <p>© 2026 Michigan Courts · State Court Administrative Office · P.O. Box 30048, Lansing, MI 48909</p>
-</div>
-
-<script>
-  const d = new Date();
-  document.getElementById('today').textContent = d.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
-</script>
 </body>
 </html>
