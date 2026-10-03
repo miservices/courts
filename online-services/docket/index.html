@@ -68,7 +68,7 @@ main{padding:36px 0 72px}
 .badge{display:inline-block;font-size:12.5px;font-weight:600;padding:2px 10px;border-radius:12px;white-space:nowrap;background:#e1ecf8;color:#164a86}
 .badge.remote{background:#fff8e1;color:#7a4a00;margin-left:6px}
 .badge.vonly{background:#ebe5f7;color:#4a2f8a;margin-left:6px}
-.badge.req{background:#fff8e1;color:#7a4a00;border:1px solid #ffcc80}
+.badge.req{background:#fce8e8;color:#9b1c1c;border:1px solid #ef9a9a}
 .badge.ok{background:#e8f5e9;color:#256029;border:1px solid #a5d6a7}
 .badge.no{background:#eef0f4;color:#4a5568;border:1px solid #cfd6e2}
 
@@ -93,6 +93,7 @@ body.lock{overflow:hidden}
 .modes{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 .mode{border:1px solid #d5dde8;border-radius:4px;padding:14px 16px}
 .mode.on{border-color:#a5d6a7;background:#f3faf4}
+.mode.need{border-color:#ef9a9a;background:#fdf4f3}
 .mode-top{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:4px;font-weight:700;color:#10264a}
 .mode p{font-size:15px}
 .related{list-style:none}
@@ -405,7 +406,7 @@ td.out .num{color:#9aa6b8}
   }
 
   function videoBadge(h) {
-    return h.mode === 'video' ? '<span class="badge vonly">Video only</span>'
+    return h.mode === 'video' ? '<span class="badge req" style="margin-left:6px">Video required</span>'
          : h.mode === 'hybrid' ? '<span class="badge remote">Video available</span>' : '';
   }
 
@@ -547,10 +548,13 @@ td.out .num{color:#9aa6b8}
     const inPerson = h.mode === 'video'
       ? `<div class="mode"><div class="mode-top">In person <span class="badge no">Not available</span></div>
            <p>This hearing is held by videoconference only. You do not go to the courthouse.</p></div>`
+      : h.mode === 'in-person'
+      ? `<div class="mode need"><div class="mode-top">In person <span class="badge req">Required</span></div>
+           <p>You must attend in person: ${esc(h.room)} at the Genesee County District Court. Plan extra time to pass through security.</p></div>`
       : `<div class="mode on"><div class="mode-top">In person <span class="badge ok">Available</span></div>
            <p>${esc(h.room)} at the Genesee County District Court. Plan extra time to pass through security.</p></div>`;
     const video = h.mode === 'video'
-      ? `<div class="mode on"><div class="mode-top">Videoconference <span class="badge req">Required</span></div>
+      ? `<div class="mode need"><div class="mode-top">Videoconference <span class="badge req">Required</span></div>
            <p>You must appear by video. ${h.joinUrl ? '' : 'Contact the clerk\'s office for the video link before the hearing.'}</p>${joinBtn}</div>`
       : h.mode === 'hybrid'
       ? `<div class="mode on"><div class="mode-top">Videoconference <span class="badge ok">Available</span></div>
