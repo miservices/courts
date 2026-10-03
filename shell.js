@@ -193,6 +193,7 @@
         L('State Bar of Michigan',        'supreme-court/state-bar/'),
         L('Judicial Tenure Commission',   'supreme-court/judicial-tenure-commission/'),
         L('Attorney Grievance Commission','supreme-court/attorney-grievance-commission/'),
+        L('Attorney Discipline Board',    'supreme-court/attorney-discipline-board/'),
         L('Board of Law Examiners',       'supreme-court/board-of-law-examiners/'),
       ]},
       { title: 'Genesee Co. District Court', links: [
@@ -213,8 +214,7 @@
         L('Request Court Records', 'online-services/request-records/', 'Copies, certified copies, and transcripts'),
       ]},
       { title: 'Jury Service', links: [
-        L('Juror Information', 'online-services/juror-information/', 'What to expect and how service works'),
-        L('Become a Juror', 'online-services/become-a-juror/', 'Voluntarily sign up to become a juror '),
+        L('Juror Information', 'jury-service/juror-information/', 'What to expect and how service works'),
         L('Jury Duty Portal',  'online-services/jury-portal/',    'Respond to a summons or check your status'),
       ]},
     ]},
@@ -320,7 +320,7 @@
     const link = document.createElement('link');
     link.rel = 'icon';
     link.type = 'image/png';
-    link.href = '/images/favicon.png';
+    link.href = '/courts/images/favicon.png';
     document.head.appendChild(link);
   }
 
