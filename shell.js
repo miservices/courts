@@ -299,6 +299,15 @@
     </footer>`;
   }
 
+  function injectFavicon() {
+    if (document.querySelector('link[rel~="icon"]')) return;
+    const link = document.createElement('link');
+    link.rel = 'icon';
+    link.type = 'image/png';
+    link.href = '/images/favicon.png';
+    document.head.appendChild(link);
+  }
+
   function injectFonts() {
     if (document.querySelector('link[data-mc-fonts]')) return;
     const link = document.createElement('link');
@@ -319,6 +328,7 @@
   function mount() {
     const scriptTag = document.currentScript || document.querySelector('script[src*="shell.js"]');
     const activeId = scriptTag ? (scriptTag.getAttribute('data-active') || '') : '';
+    injectFavicon();
     injectFonts();
     injectStyles();
 
