@@ -56,7 +56,10 @@ main{padding:36px 0 72px}
 .day-head h3{font-size:19px}
 .day-head span{font-size:14px;color:#5a667a}
 .today-tag{display:inline-block;margin-left:8px;font-family:var(--font-ui,system-ui,sans-serif);font-size:12.5px;font-weight:700;color:#256029;background:#e8f5e9;border:1px solid #a5d6a7;padding:1px 9px;border-radius:12px;vertical-align:middle}
-.hearing{display:grid;grid-template-columns:90px 1fr auto;gap:6px 20px;padding:16px 24px;border-bottom:1px solid #e3e9f1;align-items:start}
+.hearing{display:grid;grid-template-columns:90px 1fr auto;gap:6px 20px;padding:16px 24px;border:0;border-bottom:1px solid #e3e9f1;align-items:start;width:100%;text-align:left;font:inherit;color:inherit;background:#fff;cursor:pointer}
+.hearing:hover{background:#f4f8fd}
+.hearing:focus-visible{outline-offset:-3px}
+.view{margin-top:4px;font-size:14px;font-weight:700;color:#1f5fae;text-align:right}
 .hearing:last-child{border-bottom:0}
 .time{font-weight:700;color:#10264a;white-space:nowrap}
 .case-name{font-weight:700;color:#1b2433}
@@ -64,6 +67,41 @@ main{padding:36px 0 72px}
 .meta{font-size:14.5px;color:#5a667a;margin-top:2px}
 .badge{display:inline-block;font-size:12.5px;font-weight:600;padding:2px 10px;border-radius:12px;white-space:nowrap;background:#e1ecf8;color:#164a86}
 .badge.remote{background:#fff8e1;color:#7a4a00;margin-left:6px}
+.badge.ok{background:#e8f5e9;color:#256029;border:1px solid #a5d6a7}
+.badge.no{background:#eef0f4;color:#4a5568;border:1px solid #cfd6e2}
+
+/* Detail dialog */
+dialog{border:0;border-radius:6px;padding:0;width:calc(100% - 32px);max-width:740px;max-height:calc(100vh - 48px);overflow:auto;color:#1b2433;background:#fff;margin:auto}
+dialog::backdrop{background:rgba(16,38,74,.65)}
+body.lock{overflow:hidden}
+.dlg-head{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;background:#10264a;color:#fff;padding:24px 32px}
+.dlg-kicker{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:6px}
+.dlg-no{font-weight:700;color:#9cc4f5;font-variant-numeric:tabular-nums}
+.dlg-head h2{color:#fff;font-size:26px}
+.dlg-head p{color:#c5d3e8;margin-top:4px}
+.dlg-x{flex-shrink:0;width:40px;height:40px;border-radius:50%;border:2px solid #9cc4f5;background:transparent;color:#fff;font-size:26px;line-height:1;cursor:pointer}
+.dlg-x:hover{background:rgba(255,255,255,.12)}
+.dlg-body{padding:24px 32px 32px}
+.dlg-body h3{font-size:18px;margin:24px 0 8px}
+.dlg-body h3:first-child{margin-top:0}
+.dlg-body p{color:#2b3548;max-width:62ch}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px 20px;padding:16px 18px;background:#eef3f9;border-radius:4px}
+.facts dt{font-size:13px;color:#5a667a}
+.facts dd{font-weight:600;color:#10264a}
+.modes{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.mode{border:1px solid #d5dde8;border-radius:4px;padding:14px 16px}
+.mode.on{border-color:#a5d6a7;background:#f3faf4}
+.mode-top{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:4px;font-weight:700;color:#10264a}
+.mode p{font-size:15px}
+.related{list-style:none}
+.related li+li{margin-top:6px}
+.related button{font:inherit;background:none;border:0;color:#1f5fae;font-weight:700;cursor:pointer;text-align:left;text-decoration:underline;padding:0}
+.dlg-actions{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-top:28px;padding-top:20px;border-top:1px solid #e3e9f1}
+.btn{display:inline-block;background:#1f5fae;color:#fff;font:inherit;font-weight:700;text-decoration:none;padding:9px 18px;border:2px solid #1f5fae;border-radius:4px;cursor:pointer}
+.btn:hover{background:#10264a;border-color:#10264a}
+.btn.alt{background:#fff;color:#1f5fae}
+.btn.alt:hover{background:#f4f8fd;color:#10264a}
+.fine{font-size:14px;color:#5a667a;margin-top:18px}
 .badge.criminal{background:#fce8e8;color:#8f1d1d}
 .badge.civil{background:#e2f0e8;color:#1c5a37}
 .empty{background:#fff;border:1px solid #d5dde8;border-radius:4px;padding:36px;text-align:center;color:#5a667a}
@@ -102,6 +140,9 @@ td.out .num{color:#9aa6b8}
 .notice p:last-child{margin-bottom:0}
 
 @media(max-width:860px){
+  .modes{grid-template-columns:1fr}
+  .dlg-head,.dlg-body{padding-left:20px;padding-right:20px}
+  .view{text-align:left}
   .wrap{padding:0 20px}
   .page-header h1{font-size:29px}
   .panel{padding:22px 20px}
@@ -200,6 +241,18 @@ td.out .num{color:#9aa6b8}
   </div>
 </main>
 
+<dialog id="dlg" aria-labelledby="dlg-title">
+  <div class="dlg-head">
+    <div>
+      <div class="dlg-kicker" id="dlg-kicker"></div>
+      <h2 id="dlg-title"></h2>
+      <p id="dlg-when"></p>
+    </div>
+    <button type="button" class="dlg-x" id="dlg-close" aria-label="Close details">&times;</button>
+  </div>
+  <div class="dlg-body" id="dlg-body"></div>
+</dialog>
+
 <script>
   /* Sample hearings. Dates are set as business days from today so the list always looks current.
      Replace RAW with your real data (a Google Sheet CSV works well, like the proposals page). */
@@ -246,9 +299,25 @@ td.out .num{color:#9aa6b8}
   }
   const iso = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
 
-  const HEARINGS = RAW.map(([n, time, no, name, type, cat, room, officer, remote]) =>
-    ({ date: iso(addBusinessDays(n)), time, no, name, type, cat, room, officer, remote }))
-    .sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time));
+  // What each kind of hearing is, who attends, and about how long it runs (sample text; edit to match your court)
+  const TYPE_INFO = {
+    'Arraignment':             { mins: 15,  desc: 'The first court appearance in a criminal case. The judge or magistrate reads the charges, explains your rights, and the defendant enters a plea. Bond may also be set.', who: 'The defendant and their attorney, if they have one.' },
+    'Pretrial Conference':     { mins: 20,  desc: 'A meeting before trial to talk about the status of the case, possible settlement, and scheduling. No witnesses testify.', who: 'The parties and their attorneys.' },
+    'Small Claims Hearing':    { mins: 30,  desc: 'A short, informal hearing where each side presents their case to the judge about a money dispute. Bring documents, photos, and any witnesses.', who: 'The parties and their witnesses. Attorneys are not required.' },
+    'Motion Hearing':          { mins: 30,  desc: 'The judge hears arguments on a request (a motion) made by one side, then rules on it. Witnesses usually do not testify.', who: 'The attorneys and parties.' },
+    'Preliminary Examination': { mins: 60,  desc: 'The prosecution presents evidence so the judge can decide whether there is enough to send the case forward for trial.', who: 'The defendant, attorneys, and any witnesses called.' },
+    'Traffic Hearing':         { mins: 15,  desc: 'A hearing on a traffic ticket or civil infraction, where the driver can respond to the citation and explain their side.', who: 'The driver. The officer may attend.' },
+    'Jury Trial':              { mins: 480, desc: 'A trial where a jury hears the evidence and decides the case. Trials may run longer than one day.', who: 'The parties, attorneys, witnesses, and jurors.' },
+    'Bench Trial':             { mins: 240, desc: 'A trial heard by a judge without a jury. Both sides present evidence and witnesses, and the judge decides the case.', who: 'The parties, attorneys, and witnesses.' },
+    'Sentencing':              { mins: 30,  desc: 'The judge announces the sentence after a conviction or plea, after hearing from both sides and, where applicable, the victim.', who: 'The defendant, attorneys, and any victims who wish to speak.' }
+  };
+
+  const HEARINGS = RAW.map(([n, time, no, name, type, cat, room, officer, remote]) => {
+    const date = iso(addBusinessDays(n));
+    return { id: (no + '-' + date + '-' + time).replace(/[^A-Za-z0-9]+/g, '-').toLowerCase(), date, time, no, name, type, cat, room, officer, remote,
+             info: TYPE_INFO[type] || { mins: 30, desc: '', who: '' } };
+  }).sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time));
+  // To show a join button for a remote hearing, add joinUrl: 'https://...' to that hearing's data.
 
   const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   const fmtDay = s => new Date(s + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
@@ -263,7 +332,7 @@ td.out .num{color:#9aa6b8}
   [...new Set(HEARINGS.map(h => h.type))].sort().forEach(t => $type.insertAdjacentHTML('beforeend', `<option>${esc(t)}</option>`));
 
   // State, restored from the URL so any view can be shared
-  let view = 'list', range = 'all', ym = { y: now.getFullYear(), m: now.getMonth() }, sel = null;
+  let openId = null, view = 'list', range = 'all', ym = { y: now.getFullYear(), m: now.getMonth() }, sel = null;
   const sp = new URLSearchParams(location.search);
   $q.value = sp.get('q') || '';
   if ([...$officer.options].some(o => o.value === sp.get('officer'))) $officer.value = sp.get('officer');
@@ -286,6 +355,7 @@ td.out .num{color:#9aa6b8}
       if (!isCurrentMonth()) p.set('month', monthKey());
       if (sel) p.set('day', sel);
     } else if (range !== 'all') p.set('when', range);
+    if (openId) p.set('hearing', openId);
     const qs = p.toString();
     history.replaceState(null, '', location.pathname + (qs ? '?' + qs : ''));
   }
@@ -309,14 +379,14 @@ td.out .num{color:#9aa6b8}
 
   function hearingHtml(h) {
     return `
-      <div class="hearing">
+      <button type="button" class="hearing" data-id="${h.id}" aria-label="View details: ${esc(h.name)}, ${fmtTime(h.time)}">
         <div class="time">${fmtTime(h.time)}</div>
         <div>
           <div><span class="case-no">${esc(h.no)}</span><span class="case-name">${esc(h.name)}</span></div>
           <div class="meta">${esc(h.room)} · ${esc(h.officer)}</div>
         </div>
-        <div><span class="badge ${h.cat}">${esc(h.type)}</span>${h.remote ? '<span class="badge remote">Remote option</span>' : ''}</div>
-      </div>`;
+        <div><span class="badge ${h.cat}">${esc(h.type)}</span>${h.remote ? '<span class="badge remote">Video available</span>' : ''}<div class="view" aria-hidden="true">Details ›</div></div>
+      </button>`;
   }
 
   function dayHtml(d, list, headTag) {
@@ -420,7 +490,129 @@ td.out .num{color:#9aa6b8}
     if (window.matchMedia('(max-width:860px)').matches) document.getElementById('day-detail').scrollIntoView({ behavior: 'smooth', block: 'start' });
   });
 
+  /* ---------- Hearing details ---------- */
+  const dlg = document.getElementById('dlg');
+  const CANON = 'https://migovt.org/courts/online-services/docket/';
+  const caseType = h => /traffic/i.test(h.type) ? 'Traffic' : /small claims/i.test(h.type) ? 'Small claims' : h.cat === 'criminal' ? 'Criminal' : 'Civil';
+  const fmtLong = s => new Date(s + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+  const durText = m => m >= 480 ? 'a full day or longer' : m >= 120 ? 'about ' + Math.round(m / 60) + ' hours' : 'about ' + m + ' minutes';
+
+  function detailHtml(h) {
+    const related = HEARINGS.filter(x => x.name === h.name && x.id !== h.id);
+    const facts = [
+      ['Date', fmtLong(h.date)],
+      ['Time', fmtTime(h.time)],
+      ['Courtroom', h.room],
+      ['Judge or magistrate', h.officer],
+      ['Hearing type', h.type],
+      ['Case type', caseType(h)],
+      ['Expected length', durText(h.info.mins)],
+      ['Court', 'Genesee County District Court, Flint']
+    ];
+    const video = h.remote
+      ? `<div class="mode on"><div class="mode-top">Videoconference <span class="badge ok">Available</span></div>
+           <p>You may appear by video. ${h.joinUrl ? '' : 'Contact the clerk\'s office to request the video link before the hearing.'}</p>
+           ${h.joinUrl ? `<p style="margin-top:8px"><a class="btn" href="${esc(h.joinUrl)}">Join by video</a></p>` : ''}</div>`
+      : `<div class="mode"><div class="mode-top">Videoconference <span class="badge no">Not available</span></div>
+           <p>This hearing is in person only.</p></div>`;
+    return `
+      <h3>Hearing details</h3>
+      <dl class="facts">${facts.map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join('')}</dl>
+
+      <h3>How to attend</h3>
+      <div class="modes">
+        <div class="mode on"><div class="mode-top">In person <span class="badge ok">Available</span></div>
+          <p>${esc(h.room)} at the Genesee County District Court. Plan extra time to pass through security.</p></div>
+        ${video}
+      </div>
+
+      ${h.info.desc ? `<h3>What happens at this hearing</h3><p>${esc(h.info.desc)}</p>${h.info.who ? `<p style="margin-top:8px"><strong>Who attends:</strong> ${esc(h.info.who)}</p>` : ''}` : ''}
+
+      ${related.length ? `<h3>Other hearings in this case</h3><ul class="related">${related.map(x =>
+        `<li><button type="button" data-open="${x.id}">${esc(fmtDay(x.date))}, ${fmtTime(x.time)}: ${esc(x.type)}</button></li>`).join('')}</ul>` : ''}
+
+      <div class="dlg-actions">
+        <button type="button" class="btn" data-act="ics">Add to calendar</button>
+        <button type="button" class="btn alt" data-act="copy"><span>Copy link</span></button>
+        <a class="btn alt" href="https://migovt.org/courts/case-search/">Search this case</a>
+      </div>
+      <p class="fine">Hearing dates and times can change. Contact the clerk of the court to confirm before you attend, or to ask about interpreters and accommodations. Use the <a href="https://migovt.org/courts/genesee-co-district/directory/">District Court directory</a>.</p>`;
+  }
+
+  function openHearing(id) {
+    const h = HEARINGS.find(x => x.id === id);
+    if (!h) return;
+    openId = id;
+    document.getElementById('dlg-kicker').innerHTML =
+      `<span class="dlg-no">${esc(h.no)}</span><span class="badge ${h.cat}">${esc(h.type)}</span>${h.remote ? '<span class="badge remote">Video available</span>' : ''}`;
+    document.getElementById('dlg-title').textContent = h.name;
+    document.getElementById('dlg-when').textContent = fmtLong(h.date) + ' at ' + fmtTime(h.time);
+    const body = document.getElementById('dlg-body');
+    body.innerHTML = detailHtml(h);
+    if (!dlg.open) { dlg.showModal(); document.body.classList.add('lock'); }
+    dlg.scrollTop = 0;
+    syncUrl();
+  }
+
+  dlg.addEventListener('close', () => { openId = null; document.body.classList.remove('lock'); syncUrl(); });
+  dlg.addEventListener('click', e => { if (e.target === dlg) dlg.close(); });
+  document.getElementById('dlg-close').addEventListener('click', () => dlg.close());
+
+  async function copyText(text) {
+    try { await navigator.clipboard.writeText(text); return true; } catch (e) {}
+    const ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    dlg.appendChild(ta); ta.select();
+    let ok = false;
+    try { ok = document.execCommand('copy'); } catch (e) {}
+    ta.remove();
+    return ok;
+  }
+
+  function downloadIcs(h) {
+    const stamp = s => s.replace(/-/g, '');
+    const pad = n => String(n).padStart(2, '0');
+    const [hh, mm] = h.time.split(':').map(Number);
+    const endMin = hh * 60 + mm + Math.min(h.info.mins, 480);
+    const start = stamp(h.date) + 'T' + pad(hh) + pad(mm) + '00';
+    const end = stamp(h.date) + 'T' + pad(Math.floor(endMin / 60) % 24) + pad(endMin % 60) + '00';
+    const t = x => String(x).replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\n/g, '\\n');
+    const lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Michigan Courts//Docket//EN', 'BEGIN:VEVENT',
+      'UID:' + h.id + '@migovt.org', 'DTSTAMP:' + new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d+/, ''),
+      'DTSTART:' + start, 'DTEND:' + end,
+      'SUMMARY:' + t(h.type + ': ' + h.name),
+      'LOCATION:' + t(h.room + ', Genesee County District Court'),
+      'DESCRIPTION:' + t('Case ' + h.no + '. ' + h.officer + '. Times can change; confirm with the clerk. ' + CANON + '?hearing=' + h.id),
+      'END:VEVENT', 'END:VCALENDAR'];
+    const blob = new Blob([lines.join('\r\n')], { type: 'text/calendar' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob); a.download = 'hearing-' + h.no + '.ics';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  }
+
+  // Open from a row, or from a related-hearing link, or act on a button in the dialog
+  document.addEventListener('click', async e => {
+    const row = e.target.closest('button.hearing');
+    if (row) { openHearing(row.dataset.id); return; }
+    const rel = e.target.closest('[data-open]');
+    if (rel) { openHearing(rel.dataset.open); return; }
+    const act = e.target.closest('[data-act]');
+    if (!act) return;
+    const h = HEARINGS.find(x => x.id === openId);
+    if (!h) return;
+    if (act.dataset.act === 'ics') downloadIcs(h);
+    if (act.dataset.act === 'copy') {
+      const ok = await copyText(CANON + '?hearing=' + h.id);
+      const label = act.querySelector('span');
+      label.textContent = ok ? 'Link copied' : 'Copy failed';
+      setTimeout(() => { label.textContent = 'Copy link'; }, 1800);
+    }
+  });
+
   render();
+  const wantedHearing = sp.get('hearing');
+  if (wantedHearing) openHearing(wantedHearing);
 </script>
 </body>
 </html>
