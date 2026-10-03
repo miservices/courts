@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Michigan Courts</title>
-<link rel="icon" type="image/png" href="/images/favicon.png/""
+<link rel="icon" type="image/png" href="/images/favicon.png">
 
 <script src="/courts/shell.js" data-active="home"></script>
 
@@ -62,8 +62,8 @@ dl.facts{display:grid;grid-template-columns:repeat(2,1fr);margin:18px 26px 0;bor
 dl.facts div{padding:10px 0;border-bottom:1px solid #e3e9f1}
 dl.facts dt{font-size:13px;color:#5a667a}
 dl.facts dd{font-weight:600}
-.court-foot{padding:16px 26px 22px}
-.court-foot a{font-weight:600}
+.court-links{list-style:none;margin:16px 26px 22px;display:grid;grid-template-columns:1fr 1fr;gap:6px 20px}
+.court-links a{font-weight:600;font-size:15px}
 
 /* News */
 .news{background:#fff;border:1px solid #d5dde8;border-radius:4px}
@@ -101,7 +101,7 @@ dl.facts dd{font-weight:600}
       </div>
     </div>
 
-    <form class="search-card" action="/courts/case-search/" method="get" role="search" aria-labelledby="sc-title">
+    <form class="search-card" id="case-form" action="/courts/case-search/" method="get" role="search" aria-labelledby="sc-title">
       <h3 id="sc-title">Search case records</h3>
       <label for="q">Case number or party name</label>
       <input id="q" name="q" type="search" placeholder="Example: 26-48832 or Jordan Williams">
@@ -137,12 +137,15 @@ dl.facts dd{font-weight:600}
     <p class="sub">Common tasks you can complete without visiting the courthouse.</p>
     <div class="services">
       <a class="service" href="/courts/micourt/"><strong>Online Portal</strong><span>File documents, manage appearances, and view your cases.</span></a>
-      <a class="service" href="/courts/online-services/pay-fees/"><strong>Pay fines and fees</strong><span>Traffic fines, court costs, and other fees.</span></a>
+      <a class="service" href="/courts/case-search/"><strong>Search cases</strong><span>Look up District Court case records.</span></a>
       <a class="service" href="/courts/online-services/docket/"><strong>Docket calendar</strong><span>See scheduled hearings and upcoming court dates.</span></a>
-      <a class="service" href="/courts/jury-service/juror-information/"><strong>Jury service</strong><span>Learn about service, respond to a summons, or check status.</span></a>
+      <a class="service" href="/courts/online-services/pay-fees/"><strong>Pay fines and fees</strong><span>Traffic fines, court costs, and other fees.</span></a>
       <a class="service" href="/courts/online-services/request-records/"><strong>Request court records</strong><span>Order copies, certified copies, and transcripts.</span></a>
+      <a class="service" href="/courts/jury-service/juror-information/"><strong>Juror information</strong><span>What to expect and how jury service works.</span></a>
+      <a class="service" href="/courts/online-services/jury-portal/"><strong>Jury duty portal</strong><span>Respond to a summons or check your status.</span></a>
       <a class="service" href="/courts/forms-and-filing/forms/"><strong>Court forms</strong><span>Download standard forms for filing.</span></a>
-      <a class="service" href="/courts/rules/"><strong>Court rules</strong><span>Court rules and rules of evidence.</span></a>
+      <a class="service" href="/courts/forms-and-filing/information/"><strong>Filing information</strong><span>How, where, and when to file.</span></a>
+      <a class="service" href="/courts/rules/"><strong>Rules</strong><span>Court rules and rules of evidence.</span></a>
       <a class="service" href="/courts/rules/proposals/"><strong>Proposed rules</strong><span>Read proposed amendments to the court rules.</span></a>
       <a class="service" href="/courts/self-help/"><strong>Self help</strong><span>Guides for people without a lawyer.</span></a>
     </div>
@@ -165,7 +168,13 @@ dl.facts dd{font-weight:600}
           <div><dt>Selection</dt><dd>Statewide election</dd></div>
           <div><dt>Jurisdiction</dt><dd>Final appeals</dd></div>
         </dl>
-        <div class="court-foot"><a href="/courts/supreme-court/case-search/">Search Supreme Court cases</a></div>
+        <ul class="court-links">
+          <li><a href="/courts/supreme-court/about/">About the Supreme Court</a></li>
+          <li><a href="/courts/supreme-court/justices/">Justices</a></li>
+          <li><a href="/courts/supreme-court/clerk/">Clerk's Office</a></li>
+          <li><a href="/courts/supreme-court/oral-arguments/">Schedule &amp; oral arguments</a></li>
+          <li><a href="/courts/supreme-court/case-search/">Search Supreme Court cases</a></li>
+        </ul>
       </article>
 
       <article class="court">
@@ -181,14 +190,33 @@ dl.facts dd{font-weight:600}
           <div><dt>Chief Judge</dt><dd>Elected</dd></div>
           <div><dt>Associate judges</dt><dd>Appointed</dd></div>
         </dl>
-        <div class="court-foot"><a href="/courts/case-search/">Search District Court cases</a></div>
+        <ul class="court-links">
+          <li><a href="/courts/genesee-co-district/about/">About the District Court</a></li>
+          <li><a href="/courts/genesee-co-district/directory/">Court directory</a></li>
+          <li><a href="/courts/genesee-co-district/administration/">Local administration</a></li>
+          <li><a href="/courts/micourt/">Online Portal</a></li>
+          <li><a href="/courts/case-search/">Search District Court cases</a></li>
+        </ul>
       </article>
     </div>
   </section>
 
   <section>
+    <h2>Supreme Court offices and agencies</h2>
+    <p class="sub">Offices of the Court and the agencies that oversee Michigan's legal profession and judiciary.</p>
+    <div class="services">
+      <a class="service" href="/courts/supreme-court/marshal/"><strong>Marshal of the Court</strong></a>
+      <a class="service" href="/courts/supreme-court/reporter-of-decisions/"><strong>Reporter of Decisions</strong></a>
+      <a class="service" href="/courts/supreme-court/state-bar/"><strong>State Bar of Michigan</strong></a>
+      <a class="service" href="/courts/supreme-court/judicial-tenure-commission/"><strong>Judicial Tenure Commission</strong></a>
+      <a class="service" href="/courts/supreme-court/attorney-grievance-commission/"><strong>Attorney Grievance Commission</strong></a>
+      <a class="service" href="/courts/supreme-court/board-of-law-examiners/"><strong>Board of Law Examiners</strong></a>
+    </div>
+  </section>
+
+  <section>
     <div class="news">
-      <div class="news-head"><h3>Recent announcements</h3><a href="#">View all</a></div>
+      <div class="news-head"><h3>Recent announcements</h3></div>
       <div class="news-item"><span class="who">Supreme Court</span><span>New electronic filing rules via the Online Portal take effect statewide</span><span class="date">April 14, 2026</span></div>
       <div class="news-item"><span class="who">District Court</span><span>Remote hearing procedures extended through end of fiscal year 2026</span><span class="date">April 9, 2026</span></div>
       <div class="news-item"><span class="who">Supreme Court</span><span>Opinion issued in People v. Harmon: Fourth Amendment search and seizure</span><span class="date">March 28, 2026</span></div>
@@ -198,5 +226,12 @@ dl.facts dd{font-weight:600}
   <div class="page-end"></div>
 </div>
 
+<script>
+  // Supreme Court searches go to the Supreme Court case search; everything else to the main one
+  document.getElementById('case-form').addEventListener('submit', function () {
+    this.action = this.court.value === 'Michigan Supreme Court'
+      ? '/courts/supreme-court/case-search/' : '/courts/case-search/';
+  });
+</script>
 </body>
 </html>

@@ -28,7 +28,7 @@ a:focus-visible{outline:3px solid #5b9be0;outline-offset:2px}
 
 /* Layout: sidebar + article */
 .layout{max-width:1180px;margin:0 auto;padding:36px 40px 72px;display:grid;grid-template-columns:230px minmax(0,1fr);gap:40px;align-items:start}
-.sidebar{position:sticky;top:20px}
+.sidebar{position:sticky;top:calc(var(--mc-sticky-top,0px) + 20px);transition:top .25s ease}
 .sidebar h2{font-family:var(--font-ui,sans-serif);font-size:14px;font-weight:700;color:#10264a;margin-bottom:10px}
 .sidebar ul{list-style:none;border-left:2px solid #c3cfe0}
 .sidebar a{display:block;padding:7px 14px;margin-left:-2px;border-left:2px solid transparent;font-size:14.5px;line-height:1.35;color:#33405a;text-decoration:none}
@@ -36,7 +36,7 @@ a:focus-visible{outline:3px solid #5b9be0;outline-offset:2px}
 .sidebar a.current{color:#1f5fae;font-weight:600;border-left-color:#1f5fae}
 
 .article{background:#fff;border:1px solid #d5dde8;border-radius:4px;padding:12px 48px 24px}
-.article .rule-section{padding:36px 0;border-bottom:1px solid #e3e9f1;scroll-margin-top:16px}
+.article .rule-section{padding:36px 0;border-bottom:1px solid #e3e9f1;scroll-margin-top:170px}
 .article .rule-section:last-child{border-bottom:0}
 .rule-head{display:flex;flex-direction:column;gap:8px;margin-bottom:16px}
 .rule-head h3{order:1;font-family:var(--font-head,Georgia,serif);color:#10264a;font-size:28px;font-weight:600;line-height:1.25}

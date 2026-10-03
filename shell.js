@@ -43,7 +43,13 @@
     .mc-shell-banner svg { width: 16px; height: 16px; flex-shrink: 0; color: #5b9be0; }
 
     /* Header */
-    .mc-shell-header { background: var(--navy); font-family: var(--font-ui); }
+    .mc-shell-header {
+      background: var(--navy); font-family: var(--font-ui);
+      position: sticky; top: 0; z-index: 300; transition: transform .25s ease, box-shadow .25s ease;
+    }
+    .mc-shell-header.is-hidden { transform: translateY(-100%); }
+    .mc-shell-header.is-stuck { box-shadow: 0 6px 18px rgba(9,22,40,.28); }
+    @media (prefers-reduced-motion: reduce) { .mc-shell-header { transition: none; } }
     .mc-shell-header-top {
       display: flex; align-items: center; justify-content: space-between;
       padding: 22px 40px; gap: 20px; border-top: 1px solid #22406f;
@@ -106,24 +112,24 @@
 
     /* Mega menus */
     .mc-shell-dropdown-menu a small {
-      display: block; font-size: 12.5px; font-weight: 400; color: var(--muted); margin-top: 2px; line-height: 1.4;
+      display: block; font-size: 12.5px; font-weight: 400; color: var(--muted); margin-top: 4px; line-height: 1.45;
     }
-    .mc-shell-dropdown-menu.mega { padding: 6px 0; }
+    .mc-shell-dropdown-menu.mega { padding: 14px 0 18px; }
     .mc-shell-dropdown:hover .mc-shell-dropdown-menu.mega,
     .mc-shell-dropdown:focus-within .mc-shell-dropdown-menu.mega { display: grid; gap: 0; }
-    .mc-shell-col { border-right: 1px solid #edf1f6; padding: 4px 0; }
+    .mc-shell-col { border-right: 1px solid #edf1f6; padding: 2px 0; }
     .mc-shell-col:last-child { border-right: 0; }
     .mc-shell-col h2 {
       font-family: var(--font-ui); font-size: 13px; font-weight: 700; color: var(--navy);
-      padding: 10px 18px 8px; border-bottom: 2px solid var(--navy-light); margin-bottom: 2px;
+      padding: 8px 24px 14px; border-bottom: 2px solid var(--navy-light); margin-bottom: 10px;
     }
-    .mc-shell-dropdown-menu.mega a { border-bottom: 0; }
+    .mc-shell-dropdown-menu.mega a { border-bottom: 0; padding: 13px 24px; line-height: 1.4; }
 
     /* Footer */
     .mc-shell-footer { background: #091628; color: #9fb3d1; font-family: var(--font-ui); font-size: 14px; line-height: 1.6; border-top: 4px solid var(--accent); }
     .mc-shell-footer-main {
       max-width: 1180px; margin: 0 auto; padding: 44px 40px 36px;
-      display: grid; grid-template-columns: 1.4fr 1fr 1fr 1fr 1fr; gap: 32px;
+      display: grid; grid-template-columns: 1.3fr repeat(5, 1fr); gap: 28px;
     }
     .mc-shell-footer-brand { display: flex; gap: 14px; align-items: flex-start; }
     .mc-shell-footer-brand .mc-shell-seal { width: 44px; height: 44px; }
@@ -141,6 +147,10 @@
       display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap; color: #7f94b5;
     }
 
+    @media (max-width: 1000px) {
+      .mc-shell-footer-main { grid-template-columns: repeat(3, 1fr); padding: 36px 24px; gap: 28px; }
+      .mc-shell-footer-brand { grid-column: 1 / -1; }
+    }
     @media (max-width: 860px) {
       .mc-shell-footer-main { grid-template-columns: 1fr 1fr; padding: 32px 20px; gap: 28px; }
       .mc-shell-footer-brand { grid-column: 1 / -1; }
@@ -287,6 +297,7 @@
           <div><strong>Michigan Courts</strong><span>State Court Administrative Office<br>P.O. Box 30048, Lansing, MI 48909</span></div>
         </div>
         ${footerCol('Supreme Court', group('directory', 0).links)}
+        ${footerCol('Offices & agencies', group('directory', 1).links)}
         ${footerCol('District Court', group('directory', 2).links)}
         ${footerCol('Online services', flat('services'))}
         ${footerCol('Resources', [...flat('rules'), ...flat('forms'),
@@ -294,7 +305,6 @@
       </div>
       <div class="mc-shell-footer-base"><div>
         <span>&copy; ${new Date().getFullYear()} Michigan Courts</span>
-        <span>Portal v2.1 &middot; Secured by MiPASS Identity Authentication</span>
       </div></div>
     </footer>`;
   }
@@ -325,6 +335,28 @@
     document.head.appendChild(style);
   }
 
+  /* Header hides on scroll down, returns on scroll up. Sets --mc-sticky-top for page-level sticky bars. */
+  function initStickyHeader() {
+    const h = document.querySelector('.mc-shell-header');
+    if (!h) return;
+    const root = document.documentElement;
+    let last = window.scrollY;
+    const show = vis => {
+      h.classList.toggle('is-hidden', !vis);
+      root.style.setProperty('--mc-sticky-top', vis ? h.offsetHeight + 'px' : '0px');
+    };
+    show(true);
+    window.addEventListener('scroll', () => {
+      const y = window.scrollY, hh = h.offsetHeight;
+      h.classList.toggle('is-stuck', y > hh);
+      if (y <= hh || h.matches(':hover') || h.contains(document.activeElement)) show(true);
+      else if (y > last + 4) show(false);
+      else if (y < last - 4) show(true);
+      last = y;
+    }, { passive: true });
+    window.addEventListener('resize', () => show(!h.classList.contains('is-hidden')));
+  }
+
   function mount() {
     const scriptTag = document.currentScript || document.querySelector('script[src*="shell.js"]');
     const activeId = scriptTag ? (scriptTag.getAttribute('data-active') || '') : '';
@@ -337,6 +369,7 @@
     body.insertBefore(mk(buildHeader(activeId)), body.firstChild);
     body.insertBefore(mk(buildBanner()), body.firstChild);
     body.appendChild(mk(buildFooter()));
+    initStickyHeader();
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mount);

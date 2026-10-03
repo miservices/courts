@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Page Not Found | Michigan Courts</title>
+<link rel="icon" type="image/png" href="/images/favicon.png">
+<script src="/courts/shell.js" data-active=""></script>
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+
+body{
+  font-family:var(--font-ui,'Public Sans',system-ui,sans-serif);
+  background:#e3e9f2;
+  color:#1b2433;
+  line-height:1.55;
+  font-size:16px;
+}
+
+a{
+  color:#1f5fae;
+}
+
+a:focus-visible{
+  outline:3px solid #9cc4f5;
+  outline-offset:2px;
+}
+
+.wrap{
+  max-width:1180px;
+  margin:0 auto;
+  padding:0 40px;
+}
+
+.error{
+  min-height:calc(100vh - 100px);
+  display:flex;
+  align-items:center;
+  padding:70px 0;
+}
+
+.error-content{
+  width:100%;
+  max-width:720px;
+}
+
+.code{
+  font-family:var(--font-head,Georgia,serif);
+  font-size:84px;
+  line-height:1;
+  letter-spacing:-.035em;
+  font-weight:600;
+  color:#10264a;
+}
+
+h1{
+  margin-top:10px;
+  font-family:var(--font-head,Georgia,serif);
+  font-size:32px;
+  line-height:1.25;
+  font-weight:600;
+  color:#10264a;
+}
+
+.message{
+  margin-top:14px;
+  max-width:650px;
+  color:#5a667a;
+}
+
+.home-link{
+  display:inline-block;
+  margin-top:26px;
+  padding:11px 20px;
+  border-radius:4px;
+  background:#10264a;
+  color:#fff;
+  font-weight:600;
+  font-size:15px;
+  text-decoration:none;
+}
+
+.home-link:hover{
+  background:#17335f;
+}
+
+@media(max-width:600px){
+  .wrap{
+    padding:0 20px;
+  }
+
+  .error{
+    padding:45px 0;
+  }
+
+  .code{
+    font-size:68px;
+  }
+
+  h1{
+    font-size:27px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<main class="error">
+  <div class="wrap">
+    <div class="error-content">
+      <div class="code" aria-hidden="true">404</div>
+
+      <h1>Page not found</h1>
+
+      <p class="message">
+        The page you requested could not be found. The address may be
+        incorrect, or the page may have been moved or removed.
+      </p>
+
+      <a class="home-link" href="/courts/">Return to Michigan Courts</a>
+    </div>
+  </div>
+</main>
+
+</body>
+</html>

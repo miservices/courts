@@ -26,7 +26,7 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible{ou
 .page-header p strong{color:#fff}
 
 /* Toolbar */
-.toolbar{background:#fff;border-bottom:1px solid #d5dde8;box-shadow:0 2px 8px rgba(16,38,74,.08);position:sticky;top:0;z-index:50}
+.toolbar{background:#fff;border-bottom:1px solid #d5dde8;box-shadow:0 2px 8px rgba(16,38,74,.08);position:sticky;top:var(--mc-sticky-top,0px);z-index:50;transition:top .25s ease}
 .toolbar .wrap{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding-top:14px;padding-bottom:14px}
 .search-wrap{position:relative;flex:1;min-width:220px;max-width:380px}
 .search-wrap svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:15px;height:15px;color:#5a667a;pointer-events:none}
