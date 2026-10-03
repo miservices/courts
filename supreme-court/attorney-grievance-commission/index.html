@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Attorney Grievance Commission | Michigan Supreme Court</title>
+<link rel="icon" type="image/png" href="https://migovt.org/images/favicon.png">
+
+<script src="https://migovt.org/courts/shell.js" data-active="directory"></script>
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-ui,'Public Sans',system-ui,sans-serif);background:#e3e9f2;color:#1b2433;line-height:1.7;font-size:16px}
+a{color:#1f5fae}
+a:focus-visible{outline:3px solid #5b9be0;outline-offset:2px}
+.wrap{max-width:1180px;margin:0 auto;padding:0 40px}
+h2,h3{font-family:var(--font-head,Georgia,serif);color:#10264a;font-weight:600;line-height:1.25}
+
+.page-header{background:#10264a;padding:34px 0 40px}
+.breadcrumb{display:flex;align-items:center;gap:8px;margin-bottom:14px;font-size:13px;flex-wrap:wrap}
+.breadcrumb a{color:#9cc4f5;text-decoration:none}
+.breadcrumb a:hover{color:#fff;text-decoration:underline}
+.breadcrumb span{color:#6f87ad}
+.breadcrumb .here{color:#fff}
+.page-header h1{font-family:var(--font-head,Georgia,serif);color:#fff;font-size:36px;font-weight:600;line-height:1.2;letter-spacing:-.01em}
+.page-header p{color:#c5d3e8;margin-top:10px;max-width:700px;line-height:1.6}
+
+main{padding:36px 0 72px}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:28px;align-items:start}
+.panel{background:#fff;border:1px solid #d5dde8;border-radius:4px;padding:32px 40px}
+.panel+.panel{margin-top:24px}
+.panel h2{font-size:26px;margin-bottom:12px}
+.panel p,.panel ul{max-width:68ch}
+.panel p{color:#2b3548;margin-bottom:14px}
+.panel p:last-child{margin-bottom:0}
+.panel ul{margin:0 0 14px 22px;color:#2b3548}
+.panel li{padding:3px 0 3px 4px}
+.panel li::marker{color:#1f5fae}
+.panel strong{color:#10264a;font-weight:600}
+
+.callout{display:flex;gap:12px;padding:14px 18px;border-radius:4px;margin:18px 0;border-left:4px solid #1c7a45;background:#e5f3ea;color:#154d2e;max-width:68ch}
+.callout svg{width:20px;height:20px;flex-shrink:0;margin-top:3px}
+.callout p{margin:0!important;font-size:15px;line-height:1.6;color:inherit!important}
+.callout strong{color:inherit!important}
+
+.can{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:6px}
+.can h3{font-size:18px;margin-bottom:8px}
+.can>div{border:1px solid #d5dde8;border-radius:4px;padding:18px 20px}
+.can ul{margin-bottom:0}
+
+/* Sidebar */
+.side-card{background:#fff;border:1px solid #d5dde8;border-radius:4px;padding:22px 24px}
+.side-card+.side-card{margin-top:20px}
+.side-card h2{font-size:19px;margin-bottom:10px}
+.clerk{display:flex;gap:14px;align-items:center}
+.avatar{width:56px;height:56px;border-radius:50%;background:#10264a;color:#fff;font-family:var(--font-head,Georgia,serif);font-weight:600;font-size:20px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.clerk b{display:block;color:#10264a;line-height:1.3}
+.clerk span{font-size:14px;color:#5a667a}
+.side-card address{font-style:normal;color:#2b3548;font-size:15px}
+.actions{display:flex;flex-direction:column;gap:10px}
+.btn{display:block;text-align:center;font-weight:700;padding:11px 16px;border-radius:4px;text-decoration:none;font-size:15px}
+.btn-primary{background:#10264a;color:#fff;border:2px solid #10264a}
+.btn-primary:hover{background:#17335f}
+.btn-outline{background:#fff;color:#10264a;border:2px solid #10264a}
+.btn-outline:hover{background:#eef3f9}
+.related{list-style:none}
+.related li{padding:7px 0;border-bottom:1px solid #e3e9f1}
+.related li:last-child{border-bottom:0}
+.related a{font-weight:600}
+
+@media(max-width:960px){
+  .wrap{padding:0 20px}
+  .layout{grid-template-columns:1fr}
+  .page-header h1{font-size:29px}
+  .panel{padding:24px 22px}
+  .can{grid-template-columns:1fr}
+}
+.commish{list-style:none}
+.commish li{display:flex;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid #e3e9f1}
+.commish li:last-child{border-bottom:0}
+.commish .avatar{width:44px;height:44px;font-size:16px}
+.commish b{display:block;color:#10264a;line-height:1.3}
+.commish span{font-size:14px;color:#5a667a}
+.steps{list-style:none;margin-left:0!important;counter-reset:s;max-width:68ch}
+.steps li{counter-increment:s;display:grid;grid-template-columns:40px 1fr;gap:14px;padding:12px 0;border-bottom:1px solid #e3e9f1}
+.steps li:last-child{border-bottom:0}
+.steps li::before{content:counter(s);width:32px;height:32px;border-radius:50%;background:#10264a;color:#fff;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:2px}
+.steps strong{display:block}
+.steps span{font-size:15.5px}
+table{width:100%;border-collapse:collapse;margin:10px 0 8px;font-size:15px}
+th{text-align:left;background:#eef3f9;color:#10264a;font-size:14px;font-weight:700;padding:10px 14px;border:1px solid #d5dde8}
+td{padding:10px 14px;border:1px solid #d5dde8;vertical-align:top}
+td.v{font-weight:700;color:#10264a;white-space:nowrap}
+.table-scroll{overflow-x:auto}
+.tag{display:inline-block;font-size:13px;font-weight:600;padding:2px 10px;border-radius:12px}
+.tag.go{background:#e5f3ea;color:#154d2e}
+.tag.stop{background:#eef3f9;color:#33405a}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.two>div{border:1px solid #d5dde8;border-radius:4px;padding:18px 20px}
+.two h3{font-size:18px;margin-bottom:8px}
+.two ul{margin-bottom:0}
+@media(max-width:960px){.two{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <div class="wrap">
+    <div class="breadcrumb">
+      <a href="https://migovt.org/courts/">Home</a><span>/</span>
+      <a href="https://migovt.org/courts/supreme-court/">Supreme Court</a><span>/</span>
+      <span class="here">Attorney Grievance Commission</span>
+    </div>
+    <h1>Attorney Grievance Commission</h1>
+    <p>The Commission investigates complaints about the professional conduct of Michigan attorneys and brings disciplinary cases when it finds misconduct.</p>
+  </div>
+</div>
+
+<main>
+  <div class="wrap layout">
+
+    <div>
+      <div class="panel">
+        <h2>About the Commission</h2>
+        <p>The Attorney Grievance Commission looks into complaints that a lawyer has broken the rules governing attorney conduct. Its job is to protect the public and keep the legal profession honest by investigating allegations and, when warranted, bringing disciplinary cases against attorneys.</p>
+        <p>The Supreme Court oversees the legal profession in Michigan, and the Commission works under the Court's authority. The Court has the final say on whether an attorney is disciplined.</p>
+      </div>
+
+      <div class="panel">
+        <h2>What the Commission handles</h2>
+        <p>The Commission looks at an attorney's <strong>professional conduct</strong>. Complaints can involve things such as:</p>
+        <ul>
+          <li>Dishonesty or misleading a client, the court, or others;</li>
+          <li>Mishandling client money or property;</li>
+          <li>Neglecting a case or failing to communicate with a client;</li>
+          <li>Conflicts of interest;</li>
+          <li>Breaking a court order or the rules of the court.</li>
+        </ul>
+        <div class="two" style="margin-top:20px">
+          <div>
+            <h3>The Commission can</h3>
+            <ul>
+              <li>Review complaints about attorney conduct</li>
+              <li>Investigate and ask the attorney to respond</li>
+              <li>Bring a disciplinary case against an attorney</li>
+            </ul>
+          </div>
+          <div>
+            <h3>The Commission can't</h3>
+            <ul>
+              <li>Give legal advice or represent you</li>
+              <li>Change the result of your case</li>
+              <li>Recover money or award damages</li>
+            </ul>
+          </div>
+        </div>
+        <div class="callout">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="10" cy="10" r="7.5"/><path d="M10 9v4.5M10 6.5h.01"/></svg>
+          <p><strong>Not sure who to contact?</strong> Concerns about a <em>judge or magistrate</em> go to the <a href="https://migovt.org/courts/supreme-court/judicial-tenure-commission/">Judicial Tenure Commission</a>. Concerns about a <em>lawyer</em> go here.</p>
+        </div>
+      </div>
+
+      <div class="panel" id="process">
+        <h2>How a complaint is handled</h2>
+        <ol class="steps">
+          <li><div><strong>You submit a complaint</strong><span>Describe what the attorney did, when it happened, and any case it relates to.</span></div></li>
+          <li><div><strong>The Commission reviews it</strong><span>Staff check whether the complaint describes possible misconduct that the Commission can act on. Complaints that don't are closed.</span></div></li>
+          <li><div><strong>The attorney responds and the Commission investigates</strong><span>The attorney is asked to answer the allegations, and the Commission gathers the facts.</span></div></li>
+          <li><div><strong>The Commission decides whether to proceed</strong><span>If the evidence doesn't show misconduct, the complaint is dismissed. If it does, the Commission brings a disciplinary case.</span></div></li>
+          <li><div><strong>The case is decided</strong><span>The attorney can answer the charges, and the case is resolved under the Supreme Court's authority.</span></div></li>
+        </ol>
+      </div>
+
+      <div class="panel">
+        <h2>Possible outcomes</h2>
+        <p>If the attorney is found to have committed misconduct, the discipline depends on how serious it was.</p>
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>Outcome</th><th>What it means</th></tr></thead>
+            <tbody>
+              <tr><td class="v">Dismissal</td><td>No misconduct was found, and no discipline is imposed.</td></tr>
+              <tr><td class="v">Reprimand</td><td>A formal public warning. The attorney keeps their license.</td></tr>
+              <tr><td class="v">Suspension</td><td>The attorney may not practice law for a set period of time.</td></tr>
+              <tr><td class="v">Disbarment</td><td>The attorney's license is revoked, and they can no longer practice law in Michigan.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>What to include in a complaint</h2>
+        <ul>
+          <li>The attorney's name, and the firm if you know it</li>
+          <li>The case number, if the issue relates to a case</li>
+          <li>The dates and a clear description of what happened</li>
+          <li>Copies of letters, emails, or filings that support your complaint</li>
+        </ul>
+        <p>Complaints should be about what the attorney did, not about whether you won or lost. If you disagree with a court's decision, the remedy is an appeal. See <a href="https://migovt.org/courts/supreme-court/about/#mandatory">mandatory appeals</a>.</p>
+      </div>
+    </div>
+
+    <aside>
+      <div class="side-card">
+        <h2>Have a concern?</h2>
+        <p style="font-size:15px;color:#2b3548;margin-bottom:14px">Report an attorney's professional conduct to the Commission.</p>
+        <div class="actions">
+          <a class="btn btn-primary" href="https://migovt.org/courts/supreme-court/attorney-grievance-commission/complaint/">File a complaint</a>
+        </div>
+      </div>
+
+      <div class="side-card">
+        <h2>Grievance Administrator</h2>
+        <ul class="commish">
+          <li><div class="avatar" aria-hidden="true">PH</div><div><b>Patricia L. Hendricks</b><span>Grievance Administrator</span></div></li>
+        </ul>
+      </div>
+
+      <div class="side-card">
+        <h2>Good to know</h2>
+        <p style="font-size:15px;color:#2b3548">The Commission looks at attorney conduct. It can't give legal advice. For help without a lawyer, see <a href="https://migovt.org/courts/self-help/">Self Help</a>.</p>
+      </div>
+
+      <div class="side-card">
+        <h2>Location</h2>
+        <address>Attorney Grievance Commission<br>Lansing, Michigan</address>
+      </div>
+
+      <div class="side-card">
+        <h2>Related</h2>
+        <ul class="related">
+          <li><a href="https://migovt.org/courts/supreme-court/state-bar/">State Bar of Michigan</a></li>
+          <li><a href="https://migovt.org/courts/supreme-court/judicial-tenure-commission/">Judicial Tenure Commission</a></li>
+          <li><a href="https://migovt.org/courts/supreme-court/board-of-law-examiners/">Board of Law Examiners</a></li>
+        </ul>
+      </div>
+    </aside>
+
+  </div>
+</main>
+
+</body>
+</html>
