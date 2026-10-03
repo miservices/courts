@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Forms &amp; Filing | Michigan Courts</title>
+<link rel="icon" type="image/png" href="/images/favicon.png">
+
+<script src="/courts/shell.js" data-active="forms"></script>
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-ui,'Public Sans',system-ui,sans-serif);background:#e3e9f2;color:#1b2433;line-height:1.6;font-size:16px}
+a:focus-visible{outline:3px solid #5b9be0;outline-offset:2px}
+.wrap{max-width:1180px;margin:0 auto;padding:0 40px}
+h2,h3{font-family:var(--font-head,Georgia,serif);color:#10264a;font-weight:600;line-height:1.25}
+
+.page-header{background:#10264a;padding:34px 0 40px}
+.breadcrumb{display:flex;align-items:center;gap:8px;margin-bottom:14px;font-size:13px;flex-wrap:wrap}
+.breadcrumb a{color:#9cc4f5;text-decoration:none}
+.breadcrumb a:hover{color:#fff;text-decoration:underline}
+.breadcrumb span{color:#6f87ad}
+.breadcrumb .here{color:#fff}
+.page-header h1{font-family:var(--font-head,Georgia,serif);color:#fff;font-size:36px;font-weight:600;line-height:1.2;letter-spacing:-.01em}
+.page-header p{color:#c5d3e8;margin-top:10px;max-width:700px}
+
+main{padding:36px 0 72px}
+.notice{display:flex;gap:12px;padding:14px 18px;border-radius:4px;border-left:4px solid #1c7a45;background:#e5f3ea;color:#154d2e;margin-bottom:28px}
+.notice svg{width:20px;height:20px;flex-shrink:0;margin-top:2px}
+.notice a{color:inherit;font-weight:600}
+
+/* Two main destinations */
+.main-links{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.big{display:flex;flex-direction:column;background:#fff;border:1px solid #d5dde8;border-top:4px solid #10264a;border-radius:4px;padding:26px 28px 24px;text-decoration:none;color:inherit}
+.big:hover{border-top-color:#1f5fae;box-shadow:0 4px 14px rgba(16,38,74,.12)}
+.big h2{font-size:24px}
+.big p{color:#33405a;margin-top:8px;flex:1}
+.big ul{margin:14px 0 0 20px;color:#33405a;font-size:15px}
+.big ul li::marker{color:#1f5fae}
+.big .go{display:inline-block;margin-top:18px;font-weight:700;color:#1f5fae}
+.big:hover .go{text-decoration:underline}
+
+/* Steps */
+section{margin-top:44px}
+section>h2{font-size:26px;margin-bottom:6px}
+section>.sub{color:#5a667a;margin-bottom:20px}
+.steps{list-style:none;counter-reset:s;background:#fff;border:1px solid #d5dde8;border-radius:4px}
+.steps li{counter-increment:s;display:grid;grid-template-columns:44px 1fr;gap:16px;padding:18px 24px;border-bottom:1px solid #e3e9f1}
+.steps li:last-child{border-bottom:0}
+.steps li::before{content:counter(s);width:34px;height:34px;border-radius:50%;background:#10264a;color:#fff;font-weight:700;display:flex;align-items:center;justify-content:center}
+.steps strong{display:block;color:#10264a}
+.steps span{color:#33405a;font-size:15px}
+.steps a{color:#1f5fae;font-weight:600}
+
+/* Related links */
+.related{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.rel{display:block;background:#fff;border:1px solid #d5dde8;border-left:4px solid #1f5fae;border-radius:4px;padding:16px 20px;text-decoration:none;color:inherit}
+.rel:hover{background:#f4f8fd;border-color:#10264a}
+.rel strong{display:block;color:#1f5fae}
+.rel span{display:block;margin-top:3px;font-size:14px;color:#5a667a}
+
+@media(max-width:860px){
+  .wrap{padding:0 20px}
+  .page-header h1{font-size:29px}
+  .main-links,.related{grid-template-columns:1fr}
+  .steps li{padding:16px}
+}
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <div class="wrap">
+    <div class="breadcrumb">
+      <a href="/courts/">Home</a><span>/</span>
+      <span class="here">Forms &amp; Filing</span>
+    </div>
+    <h1>Forms &amp; filing</h1>
+    <p>Everything you need to start a case or file a document: the official forms, the filing rules, and what it costs.</p>
+  </div>
+</div>
+
+<main>
+  <div class="wrap">
+
+    <div class="notice" role="note">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="10" cy="10" r="7.5"/><path d="M10 6.5v4l2.5 2"/></svg>
+      <p><strong>All filings are electronic right now.</strong> No court is accepting in-person filings, so new cases and later documents must be submitted through the <a href="/courts/micourt/">Online Portal</a>.</p>
+    </div>
+
+    <div class="main-links">
+      <a class="big" href="/courts/forms-and-filing/information/">
+        <h2>Filing information</h2>
+        <p>The rules for filing in Michigan's district and supreme courts.</p>
+        <ul>
+          <li>Electronic and in-person filing</li>
+          <li>File formats, page limits, and signatures</li>
+          <li>Notice and service, corrections, and fees</li>
+        </ul>
+        <span class="go">Read filing information</span>
+      </a>
+      <a class="big" href="/courts/forms-and-filing/forms/">
+        <h2>Court forms</h2>
+        <p>Official forms from the State Court Administrative Office. They're free to view, download, or copy.</p>
+        <ul>
+          <li>Search by form number or title</li>
+          <li>Filter by category or court</li>
+          <li>Open the PDF or make an editable copy</li>
+        </ul>
+        <span class="go">Browse court forms</span>
+      </a>
+    </div>
+
+    <section>
+      <h2>How to file</h2>
+      <p class="sub">The basic steps for most cases.</p>
+      <ol class="steps">
+        <li><div><strong>Find the right form</strong><span>Search the <a href="/courts/forms-and-filing/forms/">court forms</a> list. If no form exists for your motion, you can prepare your own document, and the court will waive the first $25 of the fee if you ask. <a href="/courts/forms-and-filing/information/#forms">See the rules</a>.</span></div></li>
+        <li><div><strong>Prepare your document</strong><span>Use a flattened, text-searchable PDF under 5 MB, or a linked drive file. Check the <a href="/courts/forms-and-filing/information/#requirements">page limits and signature rules</a>.</span></div></li>
+        <li><div><strong>File through the Online Portal</strong><span>The clerk reviews filings that start a case and tells you through the portal whether it was accepted or denied.</span></div></li>
+        <li><div><strong>Pay the fee or ask for a waiver</strong><span>Fees are due within 14 days of filing. To request a waiver, submit Form MC 20. <a href="/courts/forms-and-filing/information/#fees">Fees and waivers</a>.</span></div></li>
+        <li><div><strong>Watch for notices</strong><span>After a case starts, you'll get a Notice of Electronic Filing for each new filing. You're responsible for checking the portal. <a href="/courts/forms-and-filing/information/#notice">Notice and service</a>.</span></div></li>
+      </ol>
+    </section>
+
+    <section>
+      <h2>Related</h2>
+      <p class="sub">Other pages people use when filing.</p>
+      <div class="related">
+        <a class="rel" href="/courts/micourt/"><strong>Online Portal</strong><span>File documents and manage your cases.</span></a>
+        <a class="rel" href="/courts/online-services/pay-fees/"><strong>Pay fines and fees</strong><span>Court costs, fines, and other fees.</span></a>
+        <a class="rel" href="/courts/online-services/request-records/"><strong>Request court records</strong><span>Copies, certified copies, and transcripts.</span></a>
+        <a class="rel" href="/courts/rules/"><strong>Rules</strong><span>Court rules and rules of evidence.</span></a>
+        <a class="rel" href="/courts/rules/proposals/"><strong>Proposed rules</strong><span>Proposed amendments to court rules.</span></a>
+        <a class="rel" href="/courts/self-help/"><strong>Self help</strong><span>Guides for people without a lawyer.</span></a>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+</body>
+</html>
