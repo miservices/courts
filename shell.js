@@ -43,13 +43,16 @@
     .mc-shell-banner svg { width: 16px; height: 16px; flex-shrink: 0; color: #5b9be0; }
 
     /* Header */
-    .mc-shell-header {
-      background: var(--navy); font-family: var(--font-ui);
-      position: sticky; top: 0; z-index: 300; transition: transform .25s ease, box-shadow .25s ease;
+    /* Wrapper keeps the header stuck to the top. The disclaimer banner slides away
+       on scroll down and returns on scroll up (transform only, so layout never shifts). */
+    .mc-shell-top {
+      position: sticky; top: 0; z-index: 300; transition: transform .25s ease;
     }
-    .mc-shell-header.is-hidden { transform: translateY(-100%); }
-    .mc-shell-header.is-stuck { box-shadow: 0 6px 18px rgba(9,22,40,.28); }
-    @media (prefers-reduced-motion: reduce) { .mc-shell-header { transition: none; } }
+    .mc-shell-top.banner-hidden { transform: translateY(calc(-1 * var(--mc-banner-h, 36px))); }
+    .mc-shell-top.is-stuck .mc-shell-header { box-shadow: 0 6px 18px rgba(9,22,40,.28); }
+    @media (prefers-reduced-motion: reduce) { .mc-shell-top { transition: none; } }
+
+    .mc-shell-header { background: var(--navy); font-family: var(--font-ui); }
     .mc-shell-header-top {
       display: flex; align-items: center; justify-content: space-between;
       padding: 22px 40px; gap: 20px; border-top: 1px solid #22406f;
@@ -218,7 +221,7 @@
         L('Proposed Rules', 'rules/proposals/', 'Proposed amendments to court rules'),
       ]},
     ]},
-    { id: 'forms', label: 'Forms & Filing', groups: [
+    { id: 'forms', label: 'Forms & Filing', href: BASE + 'forms-and-filing/', groups: [
       { links: [
         L('Filing Information', 'forms-and-filing/information/', 'How, where, and when to file'),
         L('Court Forms',        'forms-and-filing/forms/',       'Standard forms for filing'),
@@ -259,7 +262,7 @@
         } else {
           menu = `<div class="mc-shell-dropdown-menu">${item.groups[0].links.map(linkHtml).join('')}</div>`;
         }
-        items += `<div class="mc-shell-dropdown"><a href="#" class="${cls}" aria-haspopup="true">${item.label}</a>${menu}</div>`;
+        items += `<div class="mc-shell-dropdown"><a href="${item.href || '#'}" class="${cls}" aria-haspopup="true">${item.label}</a>${menu}</div>`;
       } else {
         items += `<a href="${item.href}" class="${cls}">${item.label}</a>`;
       }
@@ -335,26 +338,37 @@
     document.head.appendChild(style);
   }
 
-  /* Header hides on scroll down, returns on scroll up. Sets --mc-sticky-top for page-level sticky bars. */
+  /* Header is always stuck to the top. The disclaimer banner hides on scroll down and
+     returns on any scroll up. --mc-sticky-top tells page-level sticky bars where to sit. */
   function initStickyHeader() {
-    const h = document.querySelector('.mc-shell-header');
-    if (!h) return;
+    const top = document.querySelector('.mc-shell-top');
+    if (!top) return;
+    const banner = top.querySelector('.mc-shell-banner');
+    const header = top.querySelector('.mc-shell-header');
     const root = document.documentElement;
-    let last = window.scrollY;
-    const show = vis => {
-      h.classList.toggle('is-hidden', !vis);
-      root.style.setProperty('--mc-sticky-top', vis ? h.offsetHeight + 'px' : '0px');
+    let hidden = false, last = window.scrollY;
+
+    const measure = () => {
+      root.style.setProperty('--mc-banner-h', banner.offsetHeight + 'px');
+      root.style.setProperty('--mc-sticky-top', (hidden ? header.offsetHeight : top.offsetHeight) + 'px');
     };
-    show(true);
+    const set = v => {
+      if (v === hidden) return;
+      hidden = v;
+      top.classList.toggle('banner-hidden', v);
+      measure();
+    };
+    measure();
+
     window.addEventListener('scroll', () => {
-      const y = window.scrollY, hh = h.offsetHeight;
-      h.classList.toggle('is-stuck', y > hh);
-      if (y <= hh || h.matches(':hover') || h.contains(document.activeElement)) show(true);
-      else if (y > last + 4) show(false);
-      else if (y < last - 4) show(true);
+      const y = window.scrollY, dy = y - last, bh = banner.offsetHeight;
       last = y;
+      top.classList.toggle('is-stuck', y > bh);
+      if (y <= bh) set(false);
+      else if (dy > 0) set(true);
+      else if (dy < 0) set(false);
     }, { passive: true });
-    window.addEventListener('resize', () => show(!h.classList.contains('is-hidden')));
+    window.addEventListener('resize', measure);
   }
 
   function mount() {
@@ -366,8 +380,10 @@
 
     const mk = html => { const d = document.createElement('div'); d.innerHTML = html.trim(); return d.firstElementChild; };
     const body = document.body;
-    body.insertBefore(mk(buildHeader(activeId)), body.firstChild);
-    body.insertBefore(mk(buildBanner()), body.firstChild);
+    const top = document.createElement('div');
+    top.className = 'mc-shell-top';
+    top.append(mk(buildBanner()), mk(buildHeader(activeId)));
+    body.insertBefore(top, body.firstChild);
     body.appendChild(mk(buildFooter()));
     initStickyHeader();
   }
