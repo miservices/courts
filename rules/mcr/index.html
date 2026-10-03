@@ -41,6 +41,23 @@ main{padding:36px 0 72px}
 .search-panel input:focus{border-color:#1f5fae}
 .search-count{font-size:14px;color:#5a667a;white-space:nowrap}
 
+/* Download menu + toolbar */
+.toolbar{display:flex;justify-content:space-between;align-items:center;gap:12px 20px;flex-wrap:wrap;margin-bottom:16px}
+.toolbar .crumb-bar{margin-bottom:0}
+.dl-wrap{display:flex;align-items:center;gap:10px;margin-left:auto}
+.dl-note{font-size:14px;color:#256029}
+.dl-menu{position:relative}
+.dl-menu summary{list-style:none;cursor:pointer;font-size:14px;font-weight:700;color:#1f5fae;border:1px solid #1f5fae;border-radius:4px;padding:4px 12px;background:#fff;white-space:nowrap}
+.dl-menu summary::-webkit-details-marker{display:none}
+.dl-menu summary::after{content:'';display:inline-block;width:6px;height:6px;margin:0 2px 2px 8px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(45deg)}
+.dl-menu summary:hover{background:#f4f8fd}
+.dl-menu summary:focus-visible{outline:3px solid #5b9be0;outline-offset:2px}
+.dl-pop{position:absolute;right:0;top:calc(100% + 6px);z-index:20;min-width:300px;max-width:min(92vw,420px);background:#fff;border:1px solid #d5dde8;border-radius:4px;box-shadow:0 8px 24px rgba(16,38,74,.18);padding:6px}
+.dl-pop button{display:block;width:100%;text-align:left;background:none;border:0;border-radius:3px;padding:8px 10px;font:inherit;font-size:15px;color:#1b2433;cursor:pointer}
+.dl-pop button:hover{background:#f4f8fd}
+.dl-pop .dl-head{padding:6px 10px 4px;font-size:13px;color:#5a667a}
+.sr{position:absolute;left:-9999px}
+
 /* Wayfinding */
 .crumb-bar{display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin-bottom:16px;font-size:15px}
 .crumb-bar button{background:none;border:none;color:#1f5fae;font-weight:700;cursor:pointer;padding:2px 2px}
@@ -76,6 +93,8 @@ main{padding:36px 0 72px}
 .rule-id-row{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap}
 .rule-id{color:#1f5fae;font-weight:700;font-size:15px}
 .rule-title{font-family:var(--font-head,Georgia,serif);font-size:24px;font-weight:600;color:#10264a;line-height:1.3}
+.rule-actions{display:flex;gap:8px;flex-wrap:wrap}
+.print-meta{display:none}
 .rule-action-btn{display:inline-flex;align-items:center;gap:6px;background:#fff;border:1px solid #1f5fae;color:#1f5fae;font-weight:700;font-size:14px;padding:6px 14px;border-radius:4px;cursor:pointer}
 .rule-action-btn:hover{background:#f4f8fd}
 .rule-action-btn.copied{background:#1f5fae;color:#fff}
@@ -111,6 +130,23 @@ mark{background:#fff0a8;color:inherit;padding:0 1px;border-radius:2px}
 .more-btn:hover{background:#10264a}
 .empty-state{margin-top:20px;border:1px dashed #8a97ad;border-radius:4px;padding:32px;text-align:center;color:#5a667a}
 .loading-state{padding:40px;text-align:center;color:#5a667a}
+
+@media print{
+  body.print-rule{background:#fff;font-size:11pt}
+  body.print-rule > *:not(main){display:none!important}
+  body.print-rule main{padding:0}
+  body.print-rule .wrap{max-width:none;padding:0}
+  body.print-rule .search-panel,body.print-rule .toolbar{display:none!important}
+  body.print-rule .rule{border:0;border-top:3px solid #10264a;border-radius:0;margin:0;overflow:visible}
+  body.print-rule .print-meta{display:block;font-size:9pt;color:#444;margin-bottom:8px}
+  body.print-rule .rule-actions,body.print-rule .history-toggle{display:none!important}
+  body.print-rule .rule [hidden]{display:block!important}
+  body.print-rule .rule-text{max-width:none;padding:12px 0}
+  body.print-rule .rule-top{padding:12px 0}
+  body.print-rule .history-inner{padding:0 0 8px}
+  body.print-rule .history-entry,body.print-rule .subsec{break-inside:avoid}
+  body.print-rule [id^="hist-"]::before{content:'Amendment history';display:block;font-weight:700;color:#10264a;margin-top:10px}
+}
 
 @media(max-width:860px){
   .wrap{padding:0 20px}
@@ -151,7 +187,16 @@ mark{background:#fff0a8;color:inherit;padding:0 1px;border-radius:2px}
       <span class="search-count" id="searchCount" role="status" aria-live="polite"></span>
     </div>
 
-    <nav class="crumb-bar" id="crumbBar" aria-label="Rule navigation"></nav>
+    <div class="toolbar">
+      <nav class="crumb-bar" id="crumbBar" aria-label="Rule navigation"></nav>
+      <div class="dl-wrap">
+        <span class="dl-note" id="dlNote" role="status"></span>
+        <details class="dl-menu" id="dlMenu" hidden>
+          <summary>Download CSV</summary>
+          <div class="dl-pop" id="dlList" role="menu"></div>
+        </details>
+      </div>
+    </div>
 
     <div id="main">
       <div class="panel"><div class="loading-state">Loading rules…</div></div>
@@ -368,15 +413,22 @@ mark{background:#fff0a8;color:inherit;padding:0 1px;border-radius:2px}
     return ''+
     '<article class="rule" id="'+rule.id+'">'+
       '<div class="rule-top">'+
+        '<div class="print-meta"></div>'+
         '<div class="rule-id-row">'+
           '<div>'+
             '<div class="rule-id">MCR '+escapeHtml(rule.citation)+'</div>'+
             '<h2 class="rule-title">'+escapeHtml(rule.title)+'</h2>'+
           '</div>'+
-          '<button class="rule-action-btn" onclick="RulesApp.copyLink(\''+rule.id+'\', this)" type="button">'+
-            '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M8 12a3 3 0 0 0 4 0l3-3a3 3 0 0 0-4-4l-1.5 1.5"/><path d="M12 8a3 3 0 0 0-4 0l-3 3a3 3 0 0 0 4 4l1.5-1.5"/></svg>'+
-            'Copy link'+
-          '</button>'+
+          '<div class="rule-actions">'+
+            '<button class="rule-action-btn" onclick="RulesApp.copyLink(\''+rule.id+'\', this)" type="button">'+
+              '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M8 12a3 3 0 0 0 4 0l3-3a3 3 0 0 0-4-4l-1.5 1.5"/><path d="M12 8a3 3 0 0 0-4 0l-3 3a3 3 0 0 0 4 4l1.5-1.5"/></svg>'+
+              'Copy link'+
+            '</button>'+
+            '<button class="rule-action-btn" onclick="window.print()" type="button">'+
+              '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M6 8V3h8v5"/><rect x="3" y="8" width="14" height="7" rx="1.5"/><path d="M6 13h8v4H6z"/></svg>'+
+              'Print / Save as PDF'+
+            '</button>'+
+          '</div>'+
         '</div>'+
       '</div>'+
       '<div class="rule-text">'+renderRuleText(rule.text)+'</div>'+
@@ -395,6 +447,7 @@ mark{background:#fff0a8;color:inherit;padding:0 1px;border-radius:2px}
   var searchInput = document.getElementById('ruleSearch');
 
   function renderChapters(){
+    setCurrent({type:'all'});
     var cards = CHAPTERS.map(function(ch){
       return '<button class="index-card" type="button" onclick="RulesApp.go(\'#/ch/'+ch.num+'\')">'+
         '<span class="num-badge">Chapter '+ch.num+'</span>'+
@@ -416,6 +469,7 @@ mark{background:#fff0a8;color:inherit;padding:0 1px;border-radius:2px}
   function renderChapter(chNum){
     var ch = getChapter(chNum);
     if(!ch){ renderChapters(); return; }
+    setCurrent({type:'ch', ch:ch.num});
     var cards = ch.subs.map(function(sub){
       var key = ch.num+'-'+sub.num;
       var count = (RULES_BY_SUB[key]||[]).length;
@@ -443,6 +497,7 @@ mark{background:#fff0a8;color:inherit;padding:0 1px;border-radius:2px}
     var ch = getChapter(chNum);
     var sub = ch && getSub(chNum, subNum);
     if(!ch || !sub){ renderChapters(); return; }
+    setCurrent({type:'sub', ch:ch.num, sub:sub.num});
     var key = ch.num+'-'+sub.num;
     var rules = RULES_BY_SUB[key] || [];
     var listHtml = rules.length ?
@@ -467,6 +522,7 @@ mark{background:#fff0a8;color:inherit;padding:0 1px;border-radius:2px}
   function renderRule(id){
     var rule = RULES_BY_ID[id];
     if(!rule){ renderChapters(); return; }
+    setCurrent({type:'rule', ch:rule.chapter, sub:rule.subNum});
     var ch = getChapter(rule.chapter);
     var sub = getSub(rule.chapter, rule.subNum);
     main.innerHTML = ruleCard(rule);
@@ -550,6 +606,7 @@ mark{background:#fff0a8;color:inherit;padding:0 1px;border-radius:2px}
   }
 
   function renderSearch(query){
+    setCurrent({type:'search', q:query});
     var res = searchRules(query);
     var total = res.results.length;
     var shown = res.results.slice(0, searchLimit);
@@ -610,6 +667,147 @@ mark{background:#fff0a8;color:inherit;padding:0 1px;border-radius:2px}
     }
     renderChapters(); lastNonSearchHash = '#/';
   }
+
+  /* ══════════════════════ DOWNLOAD (CSV) ══════════════════════ */
+  var CURRENT = {type:'all'};
+  var $dlMenu = document.getElementById('dlMenu');
+  var $dlList = document.getElementById('dlList');
+  var $dlNote = document.getElementById('dlNote');
+  var dlTimer = null;
+
+  function sortRules(list){
+    return list.slice().sort(function(a,b){
+      var c = parseInt(a.chapter,10) - parseInt(b.chapter,10);
+      return c || (a.ruleNumInt - b.ruleNumInt);
+    });
+  }
+
+  function scopeList(){
+    var opts = [];
+    if(CURRENT.type==='search'){
+      var n = searchRules(CURRENT.q).results.length;
+      opts.push({value:'search', label:'Search results ('+n+')'});
+    }
+    if(CURRENT.type==='sub' || CURRENT.type==='rule'){
+      var sub = getSub(CURRENT.ch, CURRENT.sub);
+      var sn = (RULES_BY_SUB[CURRENT.ch+'-'+CURRENT.sub]||[]).length;
+      opts.push({value:'sub', label:'Subchapter '+CURRENT.ch+'.'+CURRENT.sub+(sub?': '+sub.label:'')+' ('+sn+')'});
+    }
+    if(CURRENT.type==='ch' || CURRENT.type==='sub' || CURRENT.type==='rule'){
+      var ch = getChapter(CURRENT.ch);
+      var cn = RULES.filter(function(r){ return r.chapter===CURRENT.ch; }).length;
+      opts.push({value:'ch', label:'Chapter '+CURRENT.ch+(ch?': '+ch.label:'')+' ('+cn+')'});
+    }
+    opts.push({value:'all', label:'All rules ('+RULES.length+')'});
+    return opts;
+  }
+
+  function setCurrent(c){
+    CURRENT = c;
+    refreshDownload();
+  }
+
+  function refreshDownload(){
+    if(!$dlMenu) return;
+    $dlList.innerHTML = '<div class="dl-head">Download as a spreadsheet (CSV)</div>' +
+      scopeList().map(function(o){ return '<button type="button" role="menuitem" data-scope="'+o.value+'">'+escapeHtml(o.label)+'</button>'; }).join('');
+    $dlMenu.hidden = !RULES.length;
+  }
+
+  function rulesForScope(scope){
+    if(scope==='search') return sortRules(searchRules(CURRENT.q).results.map(function(x){ return x.rule; }));
+    if(scope==='sub') return sortRules(RULES_BY_SUB[CURRENT.ch+'-'+CURRENT.sub]||[]);
+    if(scope==='ch') return sortRules(RULES.filter(function(r){ return r.chapter===CURRENT.ch; }));
+    return sortRules(RULES);
+  }
+
+  function parseAmendments(str){
+    return String(str||'').split('|').map(function(x){ return x.trim(); }).filter(Boolean).map(function(e){
+      var i = e.indexOf(';');
+      return { date: i>-1 ? e.slice(0,i).trim() : '', description: i>-1 ? e.slice(i+1).trim() : e };
+    });
+  }
+
+  function ruleRecord(r){
+    var ch = getChapter(r.chapter), sub = getSub(r.chapter, r.subNum);
+    var hist = parseAmendments(r.amendments), last = '', lastD = null;
+    hist.forEach(function(h){
+      var d = new Date(h.date);
+      if(!isNaN(d.getTime()) && (!lastD || d>lastD)){ lastD = d; last = h.date; }
+    });
+    return {
+      citation: r.citation,
+      chapter: r.chapter,
+      chapter_title: ch ? ch.label : '',
+      subchapter: r.chapter+'.'+r.subNum,
+      subchapter_title: sub ? sub.label : '',
+      title: r.title,
+      text: String(r.text||'').replace(/\r\n/g,'\n').trim(),
+      last_amended: last,
+      history: hist.map(function(h){ return (h.date ? h.date+'; ' : '') + h.description; }).join(' | ')
+    };
+  }
+
+  function csvCell(v){
+    var t = String(v==null ? '' : v);
+    if(/^[=+@\t]/.test(t)) t = "'" + t;          // keep spreadsheets from running a cell as a formula
+    return '"' + t.replace(/"/g,'""') + '"';
+  }
+
+  function buildCSV(recs){
+    var cols = ['citation','chapter','chapter_title','subchapter','subchapter_title','title','text','last_amended','amendment_history'];
+    var lines = [cols.join(',')];
+    recs.forEach(function(r){
+      lines.push([r.citation, r.chapter, r.chapter_title, r.subchapter, r.subchapter_title, r.title, r.text, r.last_amended, r.history].map(csvCell).join(','));
+    });
+    return '\uFEFF' + lines.join('\r\n') + '\r\n';     // BOM so Excel reads accents and symbols correctly
+  }
+
+  function fileName(scope){
+    var d = new Date(), stamp = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+    var part = scope==='all' ? 'all' : scope==='ch' ? 'chapter-'+CURRENT.ch : scope==='sub' ? 'subchapter-'+CURRENT.ch+'.'+CURRENT.sub : 'search';
+    return 'michigan-court-rules-'+part+'-'+stamp+'.csv';
+  }
+
+  function say(msg, bad){
+    $dlNote.style.color = bad ? '#b3261e' : '#256029';
+    $dlNote.textContent = msg;
+    clearTimeout(dlTimer);
+    dlTimer = setTimeout(function(){ $dlNote.textContent = ''; }, 3500);
+  }
+
+  function download(scope){
+    var recs = rulesForScope(scope).map(ruleRecord);
+    if(!recs.length){ say('Nothing to download.', true); return; }
+    var blob = new Blob([buildCSV(recs)], {type:'text/csv;charset=utf-8'});
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = fileName(scope);
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function(){ URL.revokeObjectURL(a.href); }, 1000);
+    say('Downloaded ' + recs.length + (recs.length===1 ? ' rule' : ' rules'));
+  }
+
+  $dlList.addEventListener('click', function(e){
+    var b = e.target.closest('button[data-scope]');
+    if(!b) return;
+    $dlMenu.open = false;
+    download(b.dataset.scope);
+  });
+  document.addEventListener('click', function(e){ if($dlMenu.open && !$dlMenu.contains(e.target)) $dlMenu.open = false; });
+  document.addEventListener('keydown', function(e){ if(e.key==='Escape' && $dlMenu.open){ $dlMenu.open = false; $dlMenu.querySelector('summary').focus(); } });
+
+  /* ══════════════════════ PRINT / SAVE AS PDF ══════════════════════ */
+  // Printing a rule view prints only that rule (see the @media print rules). In the print dialog, choose "Save as PDF".
+  window.addEventListener('beforeprint', function(){
+    if(CURRENT.type!=='rule') return;
+    document.body.classList.add('print-rule');
+    var id = (window.location.hash.match(/rule\/([\w-]+)/)||[])[1] || '';
+    document.querySelectorAll('.print-meta').forEach(function(el){
+      el.textContent = 'Michigan Courts · Michigan Court Rules · https://migovt.org/courts/rules/mcr/#/rule/' + id + ' · Printed ' + new Date().toLocaleDateString('en-US', {year:'numeric', month:'long', day:'numeric'});
+    });
+  });
+  window.addEventListener('afterprint', function(){ document.body.classList.remove('print-rule'); });
 
   /* ══════════════════════ INTERACTIONS ══════════════════════ */
   var searchTimer = null;
