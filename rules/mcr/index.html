@@ -3,155 +3,156 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Michigan Court Rules — Michigan Courts</title>
+<title>Michigan Court Rules | Michigan Courts</title>
+<link rel="icon" type="image/png" href="https://migovt.org/images/favicon.png">
 
-<script src="/courts/shell.js" data-active="rules"></script>
+<script src="https://migovt.org/courts/shell.js" data-active="rules"></script>
 
-<link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;1,300&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth}
-body{font-family:'DM Sans',sans-serif;background:#f4f1ec;color:#1a1a1a;min-height:100vh}
-:focus-visible{outline:2px solid #1a4a7a;outline-offset:2px}
-button{font:inherit}
+body{font-family:var(--font-ui,'Public Sans',system-ui,sans-serif);background:#e3e9f2;color:#1b2433;line-height:1.7;font-size:16px}
+a{color:#1f5fae}
+a:focus-visible,button:focus-visible,input:focus-visible{outline:3px solid #5b9be0;outline-offset:2px}
+button{font:inherit;color:inherit}
+.wrap{max-width:1180px;margin:0 auto;padding:0 40px}
+h1,h2,h3{font-family:var(--font-head,Georgia,serif);color:#10264a;font-weight:600;line-height:1.25}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
 
-/* ── Page Header ── */
-.page-header{background:#0a1628;padding:36px 40px 32px;border-bottom:3px solid #c8a84b}
-.breadcrumb{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap}
-.breadcrumb a{color:#7a9bbf;font-size:11.5px;text-decoration:none;letter-spacing:0.04em}
-.breadcrumb a:hover{color:#c8a84b}
-.breadcrumb span{color:#3a5878;font-size:11.5px}
-.page-header h2{font-family:'Merriweather',serif;color:#fff;font-size:25px;font-weight:300;line-height:1.3}
-.page-header p{color:#7a9bbf;font-size:13px;line-height:1.7;margin-top:9px;max-width:720px}
-.header-meta{display:flex;gap:22px;margin-top:18px;flex-wrap:wrap}
-.header-meta div{font-size:11px;color:#5a7fa0;letter-spacing:0.03em}
-.header-meta strong{display:block;color:#dce7f2;font-size:13px;font-weight:500;margin-top:2px;font-family:'JetBrains Mono',monospace}
+.page-header{background:#10264a;padding:34px 0 40px}
+.breadcrumb{display:flex;align-items:center;gap:8px;margin-bottom:14px;font-size:13px;flex-wrap:wrap}
+.breadcrumb a{color:#9cc4f5;text-decoration:none}
+.breadcrumb a:hover{color:#fff;text-decoration:underline}
+.breadcrumb span{color:#6f87ad}
+.breadcrumb .here{color:#fff}
+.page-header h1{color:#fff;font-size:36px;letter-spacing:-.01em}
+.page-header p{color:#c5d3e8;margin-top:10px;max-width:760px;line-height:1.6}
+.header-meta{display:flex;gap:32px;margin-top:20px;flex-wrap:wrap}
+.header-meta div{font-size:14px;color:#9fb4d3}
+.header-meta strong{display:block;color:#fff;font-size:18px;font-weight:600}
 
-/* ── Search ── */
-.search-bar{display:flex;gap:10px;margin-bottom:28px}
-.search-bar input{flex:1;background:#fff;border:1px solid #d6cfc4;border-radius:3px;padding:11px 16px;font-family:'DM Sans',sans-serif;font-size:13.5px;color:#1a1a1a}
-.search-bar input::placeholder{color:#a49a8c}
-.search-bar input:focus{border-color:#1a4a7a}
-.search-count{font-size:11.5px;color:#8a7d6a;align-self:center;white-space:nowrap;letter-spacing:0.02em}
+main{padding:36px 0 72px}
+.panel{background:#fff;border:1px solid #d5dde8;border-radius:4px;padding:32px 40px}
+.panel+.panel{margin-top:24px}
 
-.rules-body{padding:32px 40px 60px}
+/* Search */
+.search-panel{padding:20px 24px;margin-bottom:24px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.search-panel label{position:absolute;left:-9999px}
+.search-panel input{flex:1;min-width:240px;font:inherit;color:#1b2433;border:1px solid #8a97ad;border-radius:4px;padding:10px 14px}
+.search-panel input:focus{border-color:#1f5fae}
+.search-count{font-size:14px;color:#5a667a;white-space:nowrap}
 
-/* ── Crumb / wayfinding bar ── */
-.crumb-bar{display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin-bottom:22px;font-size:12.5px}
-.crumb-bar button{background:none;border:none;color:#1a4a7a;font-weight:600;cursor:pointer;padding:4px 2px;letter-spacing:0.01em}
+/* Wayfinding */
+.crumb-bar{display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin-bottom:16px;font-size:15px}
+.crumb-bar button{background:none;border:none;color:#1f5fae;font-weight:700;cursor:pointer;padding:2px 2px}
 .crumb-bar button:hover{text-decoration:underline}
-.crumb-bar .sep{color:#b8ac99}
-.crumb-bar .current{color:#4a4035;font-weight:600}
+.crumb-bar .sep{color:#6f87ad}
+.crumb-bar .current{color:#1b2433;font-weight:700}
 
-/* ── Section intro ── */
-.level-intro{margin-bottom:20px}
-.level-eyebrow{font-size:10.5px;color:#c8a84b;text-transform:uppercase;letter-spacing:0.12em;font-weight:700;margin-bottom:6px}
-.level-title{font-family:'Merriweather',serif;font-size:22px;font-weight:400;color:#1a1a1a;line-height:1.3}
-.level-sub{font-size:13px;color:#6b5f4e;margin-top:6px;line-height:1.6}
+/* Level intro */
+.level-intro{margin-bottom:8px}
+.level-sub-label{font-size:14px;color:#5a667a;margin-bottom:2px}
+.level-title{font-size:26px}
+.level-sub{color:#2b3548;margin-top:6px;max-width:72ch}
 
-/* ── Index grid (chapters / subchapters) ── */
-.index-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;margin-top:18px}
-.index-card{background:#fff;border:1px solid #e0d9cf;border-radius:4px;text-align:left;cursor:pointer;padding:20px 22px;display:flex;flex-direction:column;gap:8px;transition:box-shadow 0.15s,border-color 0.15s}
-.index-card:hover{box-shadow:0 4px 16px rgba(10,22,40,0.09);border-color:#c8a84b}
-.index-card .num-badge{align-self:flex-start;font-family:'JetBrains Mono',monospace;font-size:12px;color:#c8a84b;background:#0a1628;padding:3px 9px;border-radius:2px;letter-spacing:0.03em}
-.index-card .card-title{font-family:'Merriweather',serif;font-size:15.5px;color:#1a1a1a;line-height:1.4}
-.index-card .card-meta{font-size:11.5px;color:#9a8f7d;letter-spacing:0.02em;margin-top:auto}
+/* Index grid */
+.index-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:20px;margin-top:20px}
+.index-card{background:#fff;border:1px solid #d5dde8;border-top:4px solid #10264a;border-radius:4px;text-align:left;cursor:pointer;padding:20px 22px;display:flex;flex-direction:column;gap:6px}
+.index-card:hover{background:#f4f8fd;border-color:#10264a}
+.index-card .num-badge{align-self:flex-start;background:#10264a;color:#fff;font-weight:700;font-size:13px;padding:1px 10px;border-radius:3px}
+.index-card .card-title{font-family:var(--font-head,Georgia,serif);font-size:18px;font-weight:600;color:#10264a;line-height:1.3}
+.index-card .card-meta{font-size:14px;color:#5a667a;margin-top:auto;padding-top:4px}
 
-/* ── Rule index list (within a subchapter view) ── */
-.rule-index-list{background:#fff;border:1px solid #e0d9cf;border-radius:4px;overflow:hidden;margin-bottom:28px}
-.rule-index-row{display:flex;align-items:baseline;gap:14px;padding:14px 20px;text-decoration:none;border-bottom:1px solid #f0ebe3;cursor:pointer;background:none;border-left:none;border-right:none;border-top:none;width:100%;text-align:left}
-.rule-index-row:last-child{border-bottom:none}
-.rule-index-row:hover{background:#faf8f4}
-.rule-index-row .num{font-family:'JetBrains Mono',monospace;color:#1a4a7a;font-size:12.5px;flex-shrink:0;width:64px}
-.rule-index-row .lbl{color:#2a2620;font-size:13px}
+/* Rule list */
+.rule-index-list{border:1px solid #d5dde8;border-radius:4px;margin-top:20px;overflow:hidden}
+.rule-index-row{display:flex;align-items:baseline;gap:16px;padding:12px 20px;border:0;border-bottom:1px solid #e3e9f2;border-left:4px solid #1f5fae;background:#fff;cursor:pointer;width:100%;text-align:left}
+.rule-index-row:last-child{border-bottom:0}
+.rule-index-row:hover{background:#f4f8fd}
+.rule-index-row .num{color:#1f5fae;font-weight:700;flex-shrink:0;width:72px}
+.rule-index-row .lbl{color:#1b2433}
 
-/* ── Rule card ── */
-.rule{background:#fff;border:1px solid #e0d9cf;border-radius:4px;margin:0 0 20px;overflow:hidden;transition:border-color 0.4s}
-.rule-top{padding:22px 26px 16px;border-bottom:1px solid #f0ebe3}
-.rule-id-row{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:6px}
-.rule-id{font-family:'JetBrains Mono',monospace;font-size:13.5px;color:#1a4a7a;font-weight:500}
-.rule-actions{display:flex;gap:8px;flex-shrink:0}
-.rule-action-btn{display:inline-flex;align-items:center;gap:5px;background:#f4f1ec;border:1px solid #e0d9cf;color:#4a4035;font-size:11px;font-weight:600;padding:6px 11px;border-radius:3px;cursor:pointer;letter-spacing:0.02em;font-family:'DM Sans',sans-serif;transition:background 0.12s}
-.rule-action-btn:hover{background:#e8e2d6}
-.rule-action-btn svg{width:12px;height:12px}
-.rule-action-btn.copied{background:#0a1628;color:#c8a84b;border-color:#0a1628}
-.rule-title{font-family:'Merriweather',serif;font-size:17px;font-weight:400;color:#1a1a1a}
+/* Rule card */
+.rule{background:#fff;border:1px solid #d5dde8;border-top:4px solid #10264a;border-radius:4px;margin-bottom:20px;overflow:hidden}
+.rule-top{padding:24px 32px 16px;border-bottom:1px solid #e3e9f2}
+.rule-id-row{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.rule-id{color:#1f5fae;font-weight:700;font-size:15px}
+.rule-title{font-family:var(--font-head,Georgia,serif);font-size:24px;font-weight:600;color:#10264a;line-height:1.3}
+.rule-action-btn{display:inline-flex;align-items:center;gap:6px;background:#fff;border:1px solid #1f5fae;color:#1f5fae;font-weight:700;font-size:14px;padding:6px 14px;border-radius:4px;cursor:pointer}
+.rule-action-btn:hover{background:#f4f8fd}
+.rule-action-btn.copied{background:#1f5fae;color:#fff}
+.rule-action-btn svg{width:14px;height:14px}
+.rule-text{padding:22px 32px 26px;color:#2b3548;max-width:80ch}
+.subsec{margin:0 0 10px}
+.subsec.indent1{margin-left:24px}
+.subsec.indent2{margin-left:48px}
+.subsec-label{font-weight:700;color:#10264a;margin-right:6px}
 
-.rule-text{padding:20px 26px 22px;font-size:13.5px;line-height:1.85;color:#2a2620}
-.subsec{margin:0 0 8px 0}
-.subsec.indent1{margin-left:22px}
-.subsec.indent2{margin-left:44px}
-.subsec.indent3{margin-left:66px}
-.subsec-label{font-weight:600;color:#0a1628;margin-right:4px}
-
-.rule-footer{border-top:1px solid #f0ebe3;padding:0}
-.history-toggle{width:100%;display:flex;align-items:center;justify-content:space-between;padding:12px 26px;background:none;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;text-align:left}
-.history-toggle:hover{background:#faf8f4}
-.history-toggle-label{display:flex;align-items:center;gap:8px;font-size:11.5px;color:#6b5f4e;letter-spacing:0.03em;text-transform:uppercase;font-weight:600}
-.history-toggle-label svg{width:13px;height:13px;color:#c8a84b}
-.history-chevron{width:11px;height:11px;color:#9a8f7d;transition:transform 0.15s}
+.history-toggle{width:100%;display:flex;align-items:center;justify-content:space-between;padding:14px 32px;background:#f4f8fd;border:0;border-top:1px solid #d5dde8;cursor:pointer;font-weight:700;color:#10264a;text-align:left}
+.history-toggle:hover{background:#e9f1fb}
+.history-chevron{width:12px;height:12px;transition:transform .15s}
 .history-toggle[aria-expanded="true"] .history-chevron{transform:rotate(180deg)}
-.history-panel{max-height:0;overflow:hidden;transition:max-height 0.2s ease}
-.history-panel.open{max-height:600px}
-.history-inner{padding:2px 26px 18px}
-.history-entry{display:flex;gap:14px;padding:9px 0;border-bottom:1px solid #f4f1ec;font-size:12px}
-.history-entry:last-child{border-bottom:none}
-.history-date{font-family:'JetBrains Mono',monospace;color:#1a4a7a;flex-shrink:0;width:88px}
-.history-desc{color:#4a4035;line-height:1.6}
+.history-inner{padding:6px 32px 20px}
+.history-entry{display:flex;gap:20px;padding:10px 0;border-bottom:1px solid #e3e9f2;font-size:15px}
+.history-entry:last-child{border-bottom:0}
+.history-date{color:#1f5fae;font-weight:700;flex-shrink:0;width:110px}
+.history-desc{color:#33405a}
 
-/* ── Search results view ── */
-.search-result-item{background:#fff;border:1px solid #e0d9cf;border-radius:4px;padding:16px 20px;margin-bottom:10px;cursor:pointer;transition:border-color 0.15s}
-.search-result-item:hover{border-color:#c8a84b}
-.search-result-path{font-size:10.5px;color:#9a8f7d;letter-spacing:0.04em;text-transform:uppercase;margin-bottom:5px}
-.search-result-id{font-family:'JetBrains Mono',monospace;color:#1a4a7a;font-size:12.5px;margin-right:8px}
-.search-result-title{font-family:'Merriweather',serif;font-size:14.5px;color:#1a1a1a}
+/* Search results */
+.search-result-item{display:block;width:100%;text-align:left;background:#fff;border:1px solid #d5dde8;border-left:4px solid #1f5fae;border-radius:4px;padding:14px 20px;margin-top:12px;cursor:pointer}
+.search-result-item:hover{background:#f4f8fd;border-color:#10264a}
+.search-result-path{font-size:14px;color:#5a667a;margin-bottom:2px}
+.search-result-id{color:#1f5fae;font-weight:700;margin-right:10px}
+.search-result-title{font-family:var(--font-head,Georgia,serif);font-weight:600;color:#10264a;font-size:17px}
 
-.empty-state{background:#fff;border:1px dashed #d6cfc4;border-radius:4px;padding:40px;text-align:center;color:#9a8f7d;font-size:13px}
-.loading-state{padding:60px;text-align:center;color:#9a8f7d;font-size:13px}
+.empty-state{margin-top:20px;border:1px dashed #8a97ad;border-radius:4px;padding:32px;text-align:center;color:#5a667a}
+.loading-state{padding:40px;text-align:center;color:#5a667a}
 
 @media(max-width:860px){
-  .rules-body{padding-left:20px;padding-right:20px}
-  .page-header{padding-left:20px;padding-right:20px}
-  .rule-id-row{flex-direction:column;align-items:flex-start}
+  .wrap{padding:0 20px}
+  .page-header h1{font-size:29px}
+  .panel{padding:24px 20px}
   .index-grid{grid-template-columns:1fr}
+  .rule-top,.rule-text,.history-toggle,.history-inner{padding-left:20px;padding-right:20px}
+  .history-entry{flex-direction:column;gap:2px}
+  .header-meta{gap:22px}
 }
 </style>
 </head>
 <body>
 
-<!-- Page Header -->
 <div class="page-header">
-  <div class="breadcrumb">
-    <a href="/courts/">Home</a>
-    <span>/</span>
-    <a href="/rules/">Court Rules</a>
-    <span>/</span>
-    <span style="color:#a0b8d0">Michigan Court Rules</span>
-  </div>
-  <h2>Michigan Court Rules</h2>
-  <p>Governs practice and procedure in all Michigan courts, including pleading, motion practice, discovery, trials, judgments, and appeals. Browse by chapter and subchapter, or search across the full text. Every rule carries a stable, linkable address.</p>
-  <div class="header-meta">
-    <div>Rules in force<strong id="statRules">—</strong></div>
-    <div>Chapters<strong id="statChapters">7</strong></div>
-    <div>Last amendment<strong id="statAmended">—</strong></div>
-    <div>Format<strong>HTML</strong></div>
+  <div class="wrap">
+    <div class="breadcrumb">
+      <a href="https://migovt.org/courts/">Home</a><span>/</span>
+      <a href="https://migovt.org/courts/rules/">Court Rules</a><span>/</span>
+      <span class="here">Michigan Court Rules</span>
+    </div>
+    <h1>Michigan Court Rules</h1>
+    <p>These rules govern practice and procedure in all Michigan courts, including pleading, motions, discovery, trials, judgments, and appeals. Browse by chapter and subchapter, or search the full text. Every rule has its own link you can copy.</p>
+    <div class="header-meta">
+      <div>Rules in force<strong id="statRules">—</strong></div>
+      <div>Chapters<strong id="statChapters">7</strong></div>
+      <div>Last amendment<strong id="statAmended">—</strong></div>
+    </div>
   </div>
 </div>
 
-<div class="rules-body">
+<main>
+  <div class="wrap">
 
-  <div class="search-bar">
-    <input type="text" id="ruleSearch" placeholder="Search by rule number or keyword — e.g. &#8220;quo warranto&#8221; or 7.901" aria-label="Search rules">
-    <span class="search-count" id="searchCount"></span>
+    <div class="panel search-panel">
+      <label for="ruleSearch">Search rules</label>
+      <input type="text" id="ruleSearch" placeholder="Search by rule number or keyword, like “quo warranto” or 7.901" autocomplete="off">
+      <span class="search-count" id="searchCount" role="status" aria-live="polite"></span>
+    </div>
+
+    <nav class="crumb-bar" id="crumbBar" aria-label="Rule navigation"></nav>
+
+    <div id="main">
+      <div class="panel"><div class="loading-state">Loading rules…</div></div>
+    </div>
+
   </div>
-
-  <div class="crumb-bar" id="crumbBar"></div>
-
-  <main id="main">
-    <div class="loading-state">Loading rules…</div>
-  </main>
-
-</div>
+</main>
 
 <script>
 (function(){
@@ -237,9 +238,9 @@ button{font:inherit}
 
   var CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vRCnybegVDu9qgaDa4af11YwGRxA5ANmsRZCe4NavKMZFt-HFN8ct8onmx3rxl6IYRlUusCTE07-1Cj/pub?gid=0&single=true&output=csv';
 
-  var RULES = [];          // flat array of {citation, chapter, subNum, ruleNumInt, title, text, amendments, id, search}
-  var RULES_BY_ID = {};    // id -> rule
-  var RULES_BY_SUB = {};   // "chapter-subNum" -> [rules] sorted
+  var RULES = [];
+  var RULES_BY_ID = {};
+  var RULES_BY_SUB = {};
 
   function getChapter(num){ return CHAPTERS.filter(function(c){ return c.num===num; })[0]; }
   function getSub(chNum, subNum){
@@ -290,8 +291,7 @@ button{font:inherit}
       var m = citation.match(/^(\d+)\.(\d+)$/);
       if(!m) continue;
       var chapter = m[1];
-      var ruleNumStr = m[2];
-      var ruleNumInt = parseInt(ruleNumStr,10);
+      var ruleNumInt = parseInt(m[2],10);
       var subNum = String(Math.floor(ruleNumInt/100)*100);
       var title = (iTitle>-1 ? row[iTitle] : '') || '';
       var text = (iText>-1 ? row[iText] : '') || '';
@@ -365,29 +365,20 @@ button{font:inherit}
         '<div class="rule-id-row">'+
           '<div>'+
             '<div class="rule-id">MCR '+escapeHtml(rule.citation)+'</div>'+
-            '<div class="rule-title">'+escapeHtml(rule.title)+'</div>'+
+            '<h2 class="rule-title">'+escapeHtml(rule.title)+'</h2>'+
           '</div>'+
-          '<div class="rule-actions">'+
-            '<button class="rule-action-btn copy-link" onclick="RulesApp.copyLink(\''+rule.id+'\', this)" type="button">'+
-              '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 12a3 3 0 0 0 4 0l3-3a3 3 0 0 0-4-4l-1.5 1.5"/><path d="M12 8a3 3 0 0 0-4 0l-3 3a3 3 0 0 0 4 4l1.5-1.5"/></svg>'+
-              'Copy link'+
-            '</button>'+
-          '</div>'+
+          '<button class="rule-action-btn" onclick="RulesApp.copyLink(\''+rule.id+'\', this)" type="button">'+
+            '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M8 12a3 3 0 0 0 4 0l3-3a3 3 0 0 0-4-4l-1.5 1.5"/><path d="M12 8a3 3 0 0 0-4 0l-3 3a3 3 0 0 0 4 4l1.5-1.5"/></svg>'+
+            'Copy link'+
+          '</button>'+
         '</div>'+
       '</div>'+
       '<div class="rule-text">'+renderRuleText(rule.text)+'</div>'+
-      '<div class="rule-footer">'+
-        '<button class="history-toggle" aria-expanded="false" onclick="RulesApp.toggleHistory(\''+rule.id+'\', this)" type="button">'+
-          '<span class="history-toggle-label">'+
-            '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 10a6 6 0 1 1 2 4.5"/><path d="M4 14v-4h4"/><path d="M10 7v3.5l2.5 1.5"/></svg>'+
-            'Amendment history'+
-          '</span>'+
-          '<svg class="history-chevron" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2.5 4.5 6 8l3.5-3.5"/></svg>'+
-        '</button>'+
-        '<div class="history-panel" id="hist-'+rule.id+'">'+
-          '<div class="history-inner">'+renderAmendments(rule.amendments)+'</div>'+
-        '</div>'+
-      '</div>'+
+      '<button class="history-toggle" aria-expanded="false" aria-controls="hist-'+rule.id+'" onclick="RulesApp.toggleHistory(\''+rule.id+'\', this)" type="button">'+
+        '<span>Amendment history</span>'+
+        '<svg class="history-chevron" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M2.5 4.5 6 8l3.5-3.5"/></svg>'+
+      '</button>'+
+      '<div id="hist-'+rule.id+'" hidden><div class="history-inner">'+renderAmendments(rule.amendments)+'</div></div>'+
     '</article>';
   }
 
@@ -396,23 +387,22 @@ button{font:inherit}
   var crumbBar = document.getElementById('crumbBar');
   var lastNonSearchHash = '#/';
 
-  function go(hash){ window.location.hash = hash; }
-
   function renderChapters(){
     var cards = CHAPTERS.map(function(ch){
-      return '<button class="index-card" onclick="RulesApp.go(\'#/ch/'+ch.num+'\')">'+
-        '<span class="num-badge">CH. '+ch.num+'</span>'+
+      return '<button class="index-card" type="button" onclick="RulesApp.go(\'#/ch/'+ch.num+'\')">'+
+        '<span class="num-badge">Chapter '+ch.num+'</span>'+
         '<span class="card-title">'+escapeHtml(ch.label)+'</span>'+
         '<span class="card-meta">'+ch.subs.length+' subchapter'+(ch.subs.length===1?'':'s')+'</span>'+
       '</button>';
     }).join('');
     main.innerHTML = ''+
-      '<div class="level-intro">'+
-        '<div class="level-eyebrow">Browse</div>'+
-        '<div class="level-title">Select a chapter</div>'+
-        '<div class="level-sub">All seven chapters of the Michigan Court Rules.</div>'+
-      '</div>'+
-      '<div class="index-grid">'+cards+'</div>';
+      '<div class="panel">'+
+        '<div class="level-intro">'+
+          '<h2 class="level-title">Select a chapter</h2>'+
+          '<p class="level-sub">All seven chapters of the Michigan Court Rules.</p>'+
+        '</div>'+
+        '<div class="index-grid">'+cards+'</div>'+
+      '</div>';
     crumbBar.innerHTML = '<span class="current">Michigan Court Rules</span>';
   }
 
@@ -422,23 +412,24 @@ button{font:inherit}
     var cards = ch.subs.map(function(sub){
       var key = ch.num+'-'+sub.num;
       var count = (RULES_BY_SUB[key]||[]).length;
-      var subLabel = ch.num+'.'+sub.num;
-      return '<button class="index-card" onclick="RulesApp.go(\'#/ch/'+ch.num+'/sub/'+sub.num+'\')">'+
-        '<span class="num-badge">'+subLabel+'</span>'+
+      return '<button class="index-card" type="button" onclick="RulesApp.go(\'#/ch/'+ch.num+'/sub/'+sub.num+'\')">'+
+        '<span class="num-badge">'+ch.num+'.'+sub.num+'</span>'+
         '<span class="card-title">'+escapeHtml(sub.label)+'</span>'+
-        '<span class="card-meta">'+count+' rule'+(count===1?'':'s')+' shown</span>'+
+        '<span class="card-meta">'+count+' rule'+(count===1?'':'s')+'</span>'+
       '</button>';
     }).join('');
     main.innerHTML = ''+
-      '<div class="level-intro">'+
-        '<div class="level-eyebrow">Chapter '+ch.num+'</div>'+
-        '<div class="level-title">'+escapeHtml(ch.label)+'</div>'+
-        '<div class="level-sub">Select a subchapter.</div>'+
-      '</div>'+
-      '<div class="index-grid">'+cards+'</div>';
+      '<div class="panel">'+
+        '<div class="level-intro">'+
+          '<div class="level-sub-label">Chapter '+ch.num+'</div>'+
+          '<h2 class="level-title">'+escapeHtml(ch.label)+'</h2>'+
+          '<p class="level-sub">Select a subchapter.</p>'+
+        '</div>'+
+        '<div class="index-grid">'+cards+'</div>'+
+      '</div>';
     crumbBar.innerHTML = ''+
-      '<button onclick="RulesApp.go(\'#/\')">Michigan Court Rules</button>'+
-      '<span class="sep">›</span><span class="current">Ch. '+ch.num+' — '+escapeHtml(ch.label)+'</span>';
+      '<button type="button" onclick="RulesApp.go(\'#/\')">Michigan Court Rules</button>'+
+      '<span class="sep">/</span><span class="current">Ch. '+ch.num+': '+escapeHtml(ch.label)+'</span>';
   }
 
   function renderSubchapter(chNum, subNum){
@@ -449,19 +440,21 @@ button{font:inherit}
     var rules = RULES_BY_SUB[key] || [];
     var listHtml = rules.length ?
       '<div class="rule-index-list">'+rules.map(function(r){
-        return '<button class="rule-index-row" onclick="RulesApp.go(\'#/rule/'+r.id+'\')"><span class="num">'+escapeHtml(r.citation)+'</span><span class="lbl">'+escapeHtml(r.title)+'</span></button>';
+        return '<button class="rule-index-row" type="button" onclick="RulesApp.go(\'#/rule/'+r.id+'\')"><span class="num">'+escapeHtml(r.citation)+'</span><span class="lbl">'+escapeHtml(r.title)+'</span></button>';
       }).join('')+'</div>' :
-      '<div class="empty-state">No rules published in this subchapter yet.</div>';
+      '<div class="empty-state">No rules are published in this subchapter yet.</div>';
     main.innerHTML = ''+
-      '<div class="level-intro">'+
-        '<div class="level-eyebrow">Chapter '+ch.num+' · Subchapter '+ch.num+'.'+sub.num+'</div>'+
-        '<div class="level-title">'+escapeHtml(sub.label)+'</div>'+
-      '</div>'+
-      listHtml;
+      '<div class="panel">'+
+        '<div class="level-intro">'+
+          '<div class="level-sub-label">Chapter '+ch.num+', subchapter '+ch.num+'.'+sub.num+'</div>'+
+          '<h2 class="level-title">'+escapeHtml(sub.label)+'</h2>'+
+        '</div>'+
+        listHtml+
+      '</div>';
     crumbBar.innerHTML = ''+
-      '<button onclick="RulesApp.go(\'#/\')">Michigan Court Rules</button>'+
-      '<span class="sep">›</span><button onclick="RulesApp.go(\'#/ch/'+ch.num+'\')">Ch. '+ch.num+' — '+escapeHtml(ch.label)+'</button>'+
-      '<span class="sep">›</span><span class="current">'+ch.num+'.'+sub.num+' — '+escapeHtml(sub.label)+'</span>';
+      '<button type="button" onclick="RulesApp.go(\'#/\')">Michigan Court Rules</button>'+
+      '<span class="sep">/</span><button type="button" onclick="RulesApp.go(\'#/ch/'+ch.num+'\')">Ch. '+ch.num+': '+escapeHtml(ch.label)+'</button>'+
+      '<span class="sep">/</span><span class="current">'+ch.num+'.'+sub.num+': '+escapeHtml(sub.label)+'</span>';
   }
 
   function renderRule(id){
@@ -471,10 +464,10 @@ button{font:inherit}
     var sub = getSub(rule.chapter, rule.subNum);
     main.innerHTML = ruleCard(rule);
     crumbBar.innerHTML = ''+
-      '<button onclick="RulesApp.go(\'#/\')">Michigan Court Rules</button>'+
-      '<span class="sep">›</span><button onclick="RulesApp.go(\'#/ch/'+rule.chapter+'\')">Ch. '+rule.chapter+' — '+escapeHtml(ch?ch.label:'')+'</button>'+
-      '<span class="sep">›</span><button onclick="RulesApp.go(\'#/ch/'+rule.chapter+'/sub/'+rule.subNum+'\')">'+rule.chapter+'.'+rule.subNum+' — '+escapeHtml(sub?sub.label:'')+'</button>'+
-      '<span class="sep">›</span><span class="current">MCR '+escapeHtml(rule.citation)+'</span>';
+      '<button type="button" onclick="RulesApp.go(\'#/\')">Michigan Court Rules</button>'+
+      '<span class="sep">/</span><button type="button" onclick="RulesApp.go(\'#/ch/'+rule.chapter+'\')">Ch. '+rule.chapter+': '+escapeHtml(ch?ch.label:'')+'</button>'+
+      '<span class="sep">/</span><button type="button" onclick="RulesApp.go(\'#/ch/'+rule.chapter+'/sub/'+rule.subNum+'\')">'+rule.chapter+'.'+rule.subNum+': '+escapeHtml(sub?sub.label:'')+'</button>'+
+      '<span class="sep">/</span><span class="current">MCR '+escapeHtml(rule.citation)+'</span>';
   }
 
   function renderSearch(query){
@@ -484,27 +477,26 @@ button{font:inherit}
       matches.map(function(r){
         var ch = getChapter(r.chapter);
         var sub = getSub(r.chapter, r.subNum);
-        return '<div class="search-result-item" onclick="RulesApp.go(\'#/rule/'+r.id+'\')">'+
-          '<div class="search-result-path">Ch. '+r.chapter+' — '+escapeHtml(ch?ch.label:'')+' › '+r.chapter+'.'+r.subNum+' — '+escapeHtml(sub?sub.label:'')+'</div>'+
+        return '<button class="search-result-item" type="button" onclick="RulesApp.go(\'#/rule/'+r.id+'\')">'+
+          '<div class="search-result-path">Ch. '+r.chapter+': '+escapeHtml(ch?ch.label:'')+' / '+r.chapter+'.'+r.subNum+': '+escapeHtml(sub?sub.label:'')+'</div>'+
           '<div><span class="search-result-id">MCR '+escapeHtml(r.citation)+'</span><span class="search-result-title">'+escapeHtml(r.title)+'</span></div>'+
-        '</div>';
+        '</button>';
       }).join('') :
       '<div class="empty-state">No rules match your search.</div>';
     main.innerHTML = ''+
-      '<div class="level-intro">'+
-        '<div class="level-eyebrow">Search</div>'+
-        '<div class="level-title">Results</div>'+
-      '</div>'+listHtml;
+      '<div class="panel">'+
+        '<div class="level-intro"><h2 class="level-title">Search results</h2></div>'+
+        listHtml+
+      '</div>';
     document.getElementById('searchCount').textContent = matches.length + (matches.length===1?' rule found':' rules found');
     crumbBar.innerHTML = ''+
-      '<button onclick="RulesApp.go(\'#/\')">Michigan Court Rules</button>'+
-      '<span class="sep">›</span><span class="current">Search results</span>';
+      '<button type="button" onclick="RulesApp.go(\'#/\')">Michigan Court Rules</button>'+
+      '<span class="sep">/</span><span class="current">Search results</span>';
   }
 
   function route(){
     var hash = window.location.hash || '#/';
     var parts = hash.replace(/^#\/?/,'').split('/').filter(Boolean);
-    // parts examples: [] , ['ch','3'] , ['ch','3','sub','900'] , ['rule','3-908']
     if(parts.length===0){ renderChapters(); lastNonSearchHash = '#/'; return; }
     if(parts[0]==='ch' && parts[1] && parts[2]==='sub' && parts[3]){
       renderSubchapter(parts[1], parts[3]); lastNonSearchHash = hash; return;
@@ -525,19 +517,24 @@ button{font:inherit}
     if(!q){
       document.getElementById('searchCount').textContent = '';
       window.location.hash = lastNonSearchHash;
+      route();
       return;
     }
     renderSearch(q);
   });
 
   window.RulesApp = {
-    go: function(hash){ window.location.hash = hash; },
+    go: function(hash){
+      searchInput.value = '';
+      document.getElementById('searchCount').textContent = '';
+      if(window.location.hash === hash){ route(); } else { window.location.hash = hash; }
+    },
     copyLink: function(id, btn){
       var url = window.location.origin + window.location.pathname + '#/rule/' + id;
       var restore = btn.innerHTML;
       function done(){
         btn.classList.add('copied');
-        btn.innerHTML = '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 10.5l3 3 7-7"/></svg> Copied';
+        btn.innerHTML = '<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M5 10.5l3 3 7-7"/></svg> Copied';
         setTimeout(function(){ btn.classList.remove('copied'); btn.innerHTML = restore; }, 1600);
       }
       if(navigator.clipboard && navigator.clipboard.writeText){
@@ -548,11 +545,13 @@ button{font:inherit}
       var panel = document.getElementById('hist-'+id);
       var open = btn.getAttribute('aria-expanded') === 'true';
       btn.setAttribute('aria-expanded', String(!open));
-      panel.classList.toggle('open', !open);
+      panel.hidden = open;
     }
   };
 
-  window.addEventListener('hashchange', route);
+  window.addEventListener('hashchange', function(){
+    if(!searchInput.value.trim()) route();
+  });
 
   /* ══════════════════════ INIT ══════════════════════ */
   fetch(CSV_URL)
@@ -567,7 +566,7 @@ button{font:inherit}
     })
     .catch(function(err){
       console.error(err);
-      main.innerHTML = '<div class="empty-state">Could not load rule data right now. Please try again shortly.</div>';
+      main.innerHTML = '<div class="panel"><div class="empty-state">Could not load rule data right now. Refresh the page to try again.</div></div>';
       document.getElementById('statRules').textContent = '—';
     });
 
