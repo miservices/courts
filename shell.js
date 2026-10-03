@@ -43,11 +43,13 @@
     .mc-shell-banner svg { width: 16px; height: 16px; flex-shrink: 0; color: #5b9be0; }
 
     /* Header */
-    /* Wrapper keeps the header stuck to the top. The disclaimer banner slides away
+    /* Wrapper is fixed to the top (immune to overflow rules on page ancestors); a spacer holds its place in the flow. The disclaimer banner slides away
        on scroll down and returns on scroll up (transform only, so layout never shifts). */
     .mc-shell-top {
-      position: sticky; top: 0; z-index: 300; transition: transform .25s ease;
+      position: fixed; top: 0; left: 0; right: 0; z-index: 300; transition: transform .25s ease;
     }
+    .mc-shell-spacer { display: block; width: 100%; height: 0; pointer-events: none; }
+    html { scroll-padding-top: calc(var(--mc-header-h, 0px) + 12px); }
     .mc-shell-top.banner-hidden { transform: translateY(calc(-1 * var(--mc-banner-h, 36px))); }
     .mc-shell-top.is-stuck .mc-shell-header { box-shadow: 0 6px 18px rgba(9,22,40,.28); }
     @media (prefers-reduced-motion: reduce) { .mc-shell-top { transition: none; } }
@@ -345,10 +347,13 @@
     if (!top) return;
     const banner = top.querySelector('.mc-shell-banner');
     const header = top.querySelector('.mc-shell-header');
+    const spacer = document.querySelector('.mc-shell-spacer');
     const root = document.documentElement;
     let hidden = false, last = window.scrollY;
 
     const measure = () => {
+      if (spacer) spacer.style.height = top.offsetHeight + 'px';
+      root.style.setProperty('--mc-header-h', header.offsetHeight + 'px');
       root.style.setProperty('--mc-banner-h', banner.offsetHeight + 'px');
       root.style.setProperty('--mc-sticky-top', (hidden ? header.offsetHeight : top.offsetHeight) + 'px');
     };
@@ -369,6 +374,8 @@
       else if (dy < 0) set(false);
     }, { passive: true });
     window.addEventListener('resize', measure);
+    window.addEventListener('load', measure);
+    if (window.ResizeObserver) new ResizeObserver(measure).observe(top);
   }
 
   function mount() {
@@ -383,6 +390,9 @@
     const top = document.createElement('div');
     top.className = 'mc-shell-top';
     top.append(mk(buildBanner()), mk(buildHeader(activeId)));
+    const spacer = document.createElement('div');
+    spacer.className = 'mc-shell-spacer';
+    body.insertBefore(spacer, body.firstChild);
     body.insertBefore(top, body.firstChild);
     body.appendChild(mk(buildFooter()));
     initStickyHeader();
