@@ -86,6 +86,16 @@ td.vol{font-weight:700;color:#10264a;white-space:nowrap}
 .pill.prep{background:#fff6df;color:#5c3d08}
 .pill.open{background:#e0ecfa;color:#17335f}
 .panel .note{font-size:14.5px;color:#5a667a;margin-top:10px}
+
+.state{display:flex;gap:14px;align-items:center;border:1px solid #d5dde8;border-left:4px solid #1f5fae;border-radius:4px;padding:16px 20px;color:#2b3548}
+.state.error{border-left-color:#b42318;background:#fdf1f0;color:#7a1b13}
+.state p{margin:0!important}
+.spin{width:20px;height:20px;border:3px solid #d5dde8;border-top-color:#10264a;border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.spin{animation-duration:2s}}
+.btn-sm{display:inline-block;font-size:14px;font-weight:700;padding:6px 14px;border-radius:4px;background:#10264a;color:#fff;text-decoration:none;white-space:nowrap}
+.btn-sm:hover{background:#17335f}
+.pill.other{background:#eef3f9;color:#33405a}
 </style>
 </head>
 <body>
@@ -118,35 +128,9 @@ td.vol{font-weight:700;color:#10264a;white-space:nowrap}
 
       <div class="panel">
         <h2>Michigan Reports</h2>
-        <p>The Michigan Reports are the official collection of the Supreme Court's published decisions. Each volume covers decisions released during a set period.</p>
-        <div class="table-scroll">
-          <table>
-            <thead><tr><th>Volume</th><th>Decisions released</th><th>Status</th><th>Cases</th></tr></thead>
-            <tbody>
-              <tr>
-                <td class="vol">Volume 4</td><td>October 1 – December 31, 2026</td>
-                <td><span class="pill open">Open</span></td>
-                <td><a href="/courts/supreme-court/case-search/?from=2026-10-01&amp;to=2026-12-31">Search cases</a></td>
-              </tr>
-              <tr>
-                <td class="vol">Volume 3</td><td>July 1 – September 30, 2026</td>
-                <td><span class="pill prep">In preparation</span></td>
-                <td><a href="/courts/supreme-court/case-search/?from=2026-07-01&amp;to=2026-09-30">Search cases</a></td>
-              </tr>
-              <tr>
-                <td class="vol">Volume 2</td><td>April 1 – June 30, 2026</td>
-                <td><span class="pill pub">Published</span></td>
-                <td><a href="/courts/supreme-court/case-search/?from=2026-04-01&amp;to=2026-06-30">Search cases</a></td>
-              </tr>
-              <tr>
-                <td class="vol">Volume 1</td><td>January 1 – March 31, 2026</td>
-                <td><span class="pill pub">Published</span></td>
-                <td><a href="/courts/supreme-court/case-search/?from=2026-01-01&amp;to=2026-03-31">Search cases</a></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <p class="note"><strong>Open</strong> volumes are still collecting decisions. <strong>In preparation</strong> volumes are closed to new decisions and being edited. <strong>Published</strong> volumes are final.</p>
+        <p>The Michigan Reports are the official collection of the Supreme Court's published decisions. Each volume covers decisions released during a set period, and you can open the volume to read it.</p>
+        <div id="volumes" aria-live="polite"><div class="state"><div class="spin"></div><p>Loading volumes…</p></div></div>
+        <p class="note"><strong>Published</strong> volumes are final. Volumes <strong>in preparation</strong> are still being edited, so their contents may change.</p>
       </div>
 
       <div class="panel">
@@ -195,5 +179,77 @@ td.vol{font-weight:700;color:#10264a;white-space:nowrap}
   </div>
 </main>
 
+<script>
+  const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQnHhVqcjdBGTNLl3_VmFuLQ77GQ-02-6UIW55zl5EV2sUrfxjaRrBDR-LAaFGEklpJ4d5XXJaFA75R/pub?gid=1679897527&single=true&output=csv';
+
+  function parseCSV(text) {
+    const rows = [];
+    let col = '', row = [], inQ = false;
+    for (let i = 0; i < text.length; i++) {
+      const ch = text[i], nx = text[i + 1];
+      if (inQ) {
+        if (ch === '"' && nx === '"') { col += '"'; i++; }
+        else if (ch === '"') { inQ = false; }
+        else { col += ch; }
+      } else {
+        if (ch === '"') { inQ = true; }
+        else if (ch === ',') { row.push(col.trim()); col = ''; }
+        else if (ch === '\n' || (ch === '\r' && nx === '\n')) {
+          row.push(col.trim()); col = '';
+          if (row.some(c => c !== '')) rows.push(row);
+          row = [];
+          if (ch === '\r') i++;
+        } else { col += ch; }
+      }
+    }
+    if (col || row.length) { row.push(col.trim()); if (row.some(c => c !== '')) rows.push(row); }
+    return rows;
+  }
+
+  const esc = s => String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
+  function pill(status) {
+    const k = status.toLowerCase();
+    const cls = k.includes('published') ? 'pub' : k.includes('prep') ? 'prep' : k.includes('open') ? 'open' : 'other';
+    return `<span class="pill ${cls}">${esc(status)}</span>`;
+  }
+
+  async function load() {
+    const box = document.getElementById('volumes');
+    try {
+      const res = await fetch(CSV_URL);
+      if (!res.ok) throw new Error('Request failed');
+      const rows = parseCSV(await res.text());
+      const head = rows[0].map(h => h.toLowerCase().replace(/\s+/g, '_'));
+      const ix = n => head.indexOf(n);
+      // Keep only real volume rows (numeric volume number); ignores any stray rows in the sheet
+      const vols = rows.slice(1)
+        .filter(r => /^\d+$/.test((r[ix('vol_number')] || '').trim()))
+        .map(r => ({
+          num: parseInt(r[ix('vol_number')], 10),
+          range: r[ix('date_range')] || '',
+          status: r[ix('status')] || '',
+          link: r[ix('link')] || ''
+        }))
+        .sort((a, b) => b.num - a.num);
+
+      if (!vols.length) { box.innerHTML = '<div class="state"><p>No volumes have been published yet.</p></div>'; return; }
+
+      box.innerHTML = `<div class="table-scroll"><table>
+        <thead><tr><th>Volume</th><th>Decisions released</th><th>Status</th><th>Read</th></tr></thead>
+        <tbody>${vols.map(v => `
+          <tr>
+            <td class="vol">Volume ${v.num}</td>
+            <td>${esc(v.range)}</td>
+            <td>${pill(v.status)}</td>
+            <td>${v.link ? `<a class="btn-sm" href="${esc(v.link)}" target="_blank" rel="noopener">View volume</a>` : '<span style="color:#5a667a">Not yet available</span>'}</td>
+          </tr>`).join('')}
+        </tbody></table></div>`;
+    } catch (err) {
+      box.innerHTML = '<div class="state error" role="alert"><p>The list of volumes could not be loaded. Refresh the page to try again.</p></div>';
+    }
+  }
+  load();
+</script>
 </body>
 </html>
