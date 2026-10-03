@@ -165,32 +165,46 @@
   const NAV_ITEMS = [
     { id: 'home', label: 'Home', href: BASE },
     { id: 'directory', label: 'Courts', groups: [
-      { links: [
-        L('Supreme Court',              'supreme-court/',      'Final appeals and the state constitution'),
-        L('Genesee Co. District Court', 'genesee-co-district/', 'Trial court for Flint and Genesee County'),
+      { title: 'Supreme Court', links: [
+        L('About the Supreme Court',      'supreme-court/about/',         'History, role, and jurisdiction'),
+        L('Justices',                     'supreme-court/justices/',      'The seven justices of the Court'),
+        L("Clerk's Office",               'supreme-court/clerk/',         'Filings, records, and case processing'),
+        L('Schedule & Oral Arguments',    'supreme-court/oral-arguments/','Argument calendar and recordings'),
+        L('Supreme Court Case Search',    'supreme-court/case-search/',   'Appeals, opinions, and orders'),
+      ]},
+      { title: 'Court Offices & Agencies', links: [
+        L('Marshal of the Court',         'supreme-court/marshal/'),
+        L('Reporter of Decisions',        'supreme-court/reporter-of-decisions/'),
+        L('State Bar of Michigan',        'supreme-court/state-bar/'),
+        L('Judicial Tenure Commission',   'supreme-court/judicial-tenure-commission/'),
+        L('Attorney Grievance Commission','supreme-court/attorney-grievance-commission/'),
+        L('Board of Law Examiners',       'supreme-court/board-of-law-examiners/'),
+      ]},
+      { title: 'Genesee Co. District Court', links: [
+        L('About the District Court', 'genesee-co-district/about/',            'Trial court for Flint and Genesee County'),
+        L('Court Directory',          'genesee-co-district/directory/',        'Judges, departments, and contacts'),
+        L('Local Administration',     'genesee-co-district/administration/',   'Local rules and administrative orders'),
+        L('Online Portal',            'micourt/',                              'File, pay, and manage your cases'),
       ]},
     ]},
     { id: 'services', label: 'Online Services', groups: [
       { title: 'Online Portal', links: [
         L('Online Portal',   'micourt/',      'Sign in to file, pay, and manage cases'),
-        L('Search Cases',    'case-search/',  'Look up cases by name or number'),
+        L('Search Cases',    'case-search/',  'District Court case records'),
         L('Docket Calendar', 'online-services/docket/', 'Upcoming hearings and court dates'),
       ]},
       { title: 'Payments & Records', links: [
         L('Pay Fines & Fees',      'online-services/pay-fees/',        'Traffic fines, court costs, other fees'),
-        L('Request Court Records', 'online-services/request-records/', 'FOIA and public records requests'),
+        L('Request Court Records', 'online-services/request-records/', 'Copies, certified copies, and transcripts'),
       ]},
       { title: 'Jury Service', links: [
-        L('Jury Duty Portal', 'online-services/jury-portal/', 'Respond to a summons or check your status'),
+        L('Juror Information', 'jury-service/juror-information/', 'What to expect and how service works'),
+        L('Jury Duty Portal',  'online-services/jury-portal/',    'Respond to a summons or check your status'),
       ]},
     ]},
     { id: 'rules', label: 'Rules', groups: [
-      { title: 'Court Rules', links: [
-        L('All Rules',                'rules/',              'Browse every rule set'),
-        L('Michigan Court Rules',     'rules/court-rules/',  'Procedure for all Michigan courts'),
-        L('Michigan Rules of Evidence', 'rules/evidence/',   'What can be admitted at trial'),
-      ]},
-      { title: 'Rule Changes', links: [
+      { links: [
+        L('Rules',          'rules/',           'Court rules and rules of evidence'),
         L('Proposed Rules', 'rules/proposals/', 'Proposed amendments to court rules'),
       ]},
     ]},
@@ -202,9 +216,11 @@
     ]},
     { id: 'selfhelp', label: 'Self Help', href: BASE + 'self-help/' },
     { id: 'careers',  label: 'Careers',   href: BASE + 'careers/' },
+    { id: 'about',    label: 'About',     href: BASE + 'about/' },
   ];
 
-  const flat = id => NAV_ITEMS.find(i => i.id === id).groups.flatMap(g => g.links);
+  const group = (id, i) => NAV_ITEMS.find(x => x.id === id).groups[i];
+  const flat  = id => NAV_ITEMS.find(x => x.id === id).groups.flatMap(g => g.links);
 
   const SEAL = `
     <svg class="mc-shell-seal" viewBox="0 0 52 52" aria-hidden="true">
@@ -229,7 +245,7 @@
         if (item.groups.length > 1) {
           const cols = item.groups.map(g =>
             `<div class="mc-shell-col"><h2>${g.title}</h2>${g.links.map(linkHtml).join('')}</div>`).join('');
-          menu = `<div class="mc-shell-dropdown-menu mega" style="grid-template-columns:repeat(${item.groups.length},minmax(200px,1fr))">${cols}</div>`;
+          menu = `<div class="mc-shell-dropdown-menu mega" style="grid-template-columns:repeat(${item.groups.length},minmax(215px,1fr))">${cols}</div>`;
         } else {
           menu = `<div class="mc-shell-dropdown-menu">${item.groups[0].links.map(linkHtml).join('')}</div>`;
         }
@@ -270,10 +286,11 @@
         <div class="mc-shell-footer-brand">${SEAL}
           <div><strong>Michigan Courts</strong><span>State Court Administrative Office<br>P.O. Box 30048, Lansing, MI 48909</span></div>
         </div>
-        ${footerCol('Courts', flat('directory'))}
+        ${footerCol('Supreme Court', group('directory', 0).links)}
+        ${footerCol('District Court', group('directory', 2).links)}
         ${footerCol('Online services', flat('services'))}
-        ${footerCol('Rules', flat('rules'))}
-        ${footerCol('Help', [...flat('forms'), { label: 'Self Help', href: BASE + 'self-help/' }, { label: 'Careers', href: BASE + 'careers/' }])}
+        ${footerCol('Resources', [...flat('rules'), ...flat('forms'),
+          { label: 'Self Help', href: BASE + 'self-help/' }, { label: 'Careers', href: BASE + 'careers/' }, { label: 'About', href: BASE + 'about/' }])}
       </div>
       <div class="mc-shell-footer-base"><div>
         <span>&copy; ${new Date().getFullYear()} Michigan Courts</span>
