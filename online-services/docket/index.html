@@ -6,7 +6,6 @@
 <title>Court Docket | Michigan Courts</title>
 <link rel="icon" type="image/png" href="/courts/images/favicon.png">
 
-
 <script src="https://migovt.org/courts/shell.js" data-active="docket"></script>
 
 <style>
@@ -97,9 +96,6 @@ body.lock{overflow:hidden}
 .mode.need{border-color:#ef9a9a;background:#fdf4f3}
 .mode-top{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:4px;font-weight:700;color:#10264a}
 .mode p{font-size:15px}
-.related{list-style:none}
-.related li+li{margin-top:6px}
-.related button{font:inherit;background:none;border:0;color:#1f5fae;font-weight:700;cursor:pointer;text-align:left;text-decoration:underline;padding:0}
 .dlg-actions{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-top:28px;padding-top:20px;border-top:1px solid #e3e9f1}
 .btn{display:inline-block;background:#1f5fae;color:#fff;font:inherit;font-weight:700;text-decoration:none;padding:9px 18px;border:2px solid #1f5fae;border-radius:4px;cursor:pointer}
 .btn:hover{background:#10264a;border-color:#10264a}
@@ -324,23 +320,17 @@ td.out .num{color:#9aa6b8}
   }
   const iso = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
 
-  // What each kind of hearing is, who attends, and about how long it runs (sample text; edit to match your court)
+  // Approximate length by hearing type, used only to set the end time in the downloaded calendar file
   const TYPE_INFO = {
-    'Arraignment':             { mins: 15,  desc: 'The first court appearance in a criminal case. The judge or magistrate reads the charges, explains your rights, and the defendant enters a plea. Bond may also be set.', who: 'The defendant and their attorney, if they have one.' },
-    'Pretrial Conference':     { mins: 20,  desc: 'A meeting before trial to talk about the status of the case, possible settlement, and scheduling. No witnesses testify.', who: 'The parties and their attorneys.' },
-    'Small Claims Hearing':    { mins: 30,  desc: 'A short, informal hearing where each side presents their case to the judge about a money dispute. Bring documents, photos, and any witnesses.', who: 'The parties and their witnesses. Attorneys are not required.' },
-    'Motion Hearing':          { mins: 30,  desc: 'The judge hears arguments on a request (a motion) made by one side, then rules on it. Witnesses usually do not testify.', who: 'The attorneys and parties.' },
-    'Preliminary Examination': { mins: 60,  desc: 'The prosecution presents evidence so the judge can decide whether there is enough to send the case forward for trial.', who: 'The defendant, attorneys, and any witnesses called.' },
-    'Traffic Hearing':         { mins: 15,  desc: 'A hearing on a traffic ticket or civil infraction, where the driver can respond to the citation and explain their side.', who: 'The driver. The officer may attend.' },
-    'Jury Trial':              { mins: 480, desc: 'A trial where a jury hears the evidence and decides the case. Trials may run longer than one day.', who: 'The parties, attorneys, witnesses, and jurors.' },
-    'Bench Trial':             { mins: 240, desc: 'A trial heard by a judge without a jury. Both sides present evidence and witnesses, and the judge decides the case.', who: 'The parties, attorneys, and witnesses.' },
-    'Sentencing':              { mins: 30,  desc: 'The judge announces the sentence after a conviction or plea, after hearing from both sides and, where applicable, the victim.', who: 'The defendant, attorneys, and any victims who wish to speak.' }
+    'Arraignment': { mins: 15 }, 'Pretrial Conference': { mins: 20 }, 'Small Claims Hearing': { mins: 30 },
+    'Motion Hearing': { mins: 30 }, 'Preliminary Examination': { mins: 60 }, 'Traffic Hearing': { mins: 15 },
+    'Jury Trial': { mins: 480 }, 'Bench Trial': { mins: 240 }, 'Sentencing': { mins: 30 }
   };
 
   const HEARINGS = RAW.map(([n, time, no, name, type, cat, room, officer, mode]) => {
     const date = iso(addBusinessDays(n));
     return { id: (no + '-' + date + '-' + time).replace(/[^A-Za-z0-9]+/g, '-').toLowerCase(), date, time, no, name, type, cat, room, officer, mode,
-             info: TYPE_INFO[type] || { mins: 30, desc: '', who: '' } };
+             info: TYPE_INFO[type] || { mins: 30 } };
   }).sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time));
   // To show a join button for a remote hearing, add joinUrl: 'https://...' to that hearing's data.
 
@@ -530,10 +520,8 @@ td.out .num{color:#9aa6b8}
   const CANON = 'https://migovt.org/courts/online-services/docket/';
   const caseType = h => /traffic/i.test(h.type) ? 'Traffic' : /small claims/i.test(h.type) ? 'Small claims' : h.cat === 'criminal' ? 'Criminal' : 'Civil';
   const fmtLong = s => new Date(s + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
-  const durText = m => m >= 480 ? 'a full day or longer' : m >= 120 ? 'about ' + Math.round(m / 60) + ' hours' : 'about ' + m + ' minutes';
 
   function detailHtml(h) {
-    const related = HEARINGS.filter(x => x.name === h.name && x.id !== h.id);
     const facts = [
       ['Date', fmtLong(h.date)],
       ['Time', fmtTime(h.time)],
@@ -541,7 +529,6 @@ td.out .num{color:#9aa6b8}
       ['Judge or magistrate', h.officer],
       ['Hearing type', h.type],
       ['Case type', caseType(h)],
-      ['Expected length', durText(h.info.mins)],
       ['Court', 'Genesee County District Court, Flint']
     ];
     const HELP = 'https://migovt.org/courts/self-help/#/article/court-hearings';
@@ -572,11 +559,6 @@ td.out .num{color:#9aa6b8}
         ${video}
       </div>
       <p class="help">Not sure how to join by video, or where to go in person? <a href="${HELP}">Read how to attend a court hearing</a>.</p>
-
-      ${h.info.desc ? `<h3>What happens at this hearing</h3><p>${esc(h.info.desc)}</p>${h.info.who ? `<p style="margin-top:8px"><strong>Who attends:</strong> ${esc(h.info.who)}</p>` : ''}` : ''}
-
-      ${related.length ? `<h3>Other hearings in this case</h3><ul class="related">${related.map(x =>
-        `<li><button type="button" data-open="${x.id}">${esc(fmtDay(x.date))}, ${fmtTime(x.time)}: ${esc(x.type)}</button></li>`).join('')}</ul>` : ''}
 
       <div class="dlg-actions">
         <button type="button" class="btn" data-act="ics">Add to calendar</button>
@@ -638,12 +620,10 @@ td.out .num{color:#9aa6b8}
     setTimeout(() => URL.revokeObjectURL(a.href), 1000);
   }
 
-  // Open from a row, or from a related-hearing link, or act on a button in the dialog
+  // Open from a row, or act on a button in the dialog
   document.addEventListener('click', async e => {
     const row = e.target.closest('button.hearing');
     if (row) { openHearing(row.dataset.id); return; }
-    const rel = e.target.closest('[data-open]');
-    if (rel) { openHearing(rel.dataset.open); return; }
     const act = e.target.closest('[data-act]');
     if (!act) return;
     const h = HEARINGS.find(x => x.id === openId);

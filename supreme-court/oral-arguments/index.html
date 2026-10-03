@@ -72,7 +72,6 @@ main{padding:36px 0 72px}
 .case-name{font-weight:700;color:#1b2433}
 .case-no{color:#1f5fae;font-weight:700;font-size:15px;margin-right:10px;font-variant-numeric:tabular-nums}
 .meta{font-size:14.5px;color:#5a667a;margin-top:2px}
-.q{font-size:15px;color:#33405a;margin-top:4px;max-width:70ch}
 .view{margin-top:4px;font-size:14px;font-weight:700;color:#1f5fae;text-align:right}
 .badge{display:inline-block;font-size:12.5px;font-weight:600;padding:2px 10px;border-radius:12px;white-space:nowrap;background:#e1ecf8;color:#164a86}
 .badge+.badge{margin-left:6px}
@@ -197,7 +196,7 @@ body.lock{overflow:hidden}
           <ul>
             <li>Arguments are open to the public.</li>
             <li>All times are Eastern Time.</li>
-            <li>Select any case to see its question, the time each side has, and how to watch.</li>
+            <li>Select any case to see the time each side has and how to watch.</li>
           </ul>
         </div>
       </div>
@@ -207,7 +206,7 @@ body.lock{overflow:hidden}
       <div class="controls" role="search">
         <div class="field">
           <label for="q">Search</label>
-          <input type="search" id="q" placeholder="Docket number, case name, or topic" autocomplete="off">
+          <input type="search" id="q" placeholder="Docket number or case name" autocomplete="off">
         </div>
         <div class="field">
           <label for="type">Case type</label>
@@ -284,24 +283,24 @@ body.lock{overflow:hidden}
 <script>
   /* Sample calendar. Dates are set as business days from today (negative = past) so it always looks current.
      Replace RAW with your real data (a Google Sheet CSV works well, like the proposals page). */
-  // [business days from today, 24h time, docket no., case name, category, minutes per side, question presented, outcome for past: 'argued' | 'submitted']
+  // [business days from today, 24h time, docket no., case name, category, minutes per side, outcome for past: 'argued' | 'submitted']
   const RAW = [
-    [-22, '09:30', '170988', 'People v. Fairchild',                'criminal', 15, 'Whether a defendant who pleaded no contest may later challenge the factual basis for the plea.', 'argued'],
-    [-22, '10:45', '171012', 'Sutter v. Valley Mutual Insurance',    'civil',    20, 'Whether an insurer must cover water damage when the policy excludes "continuous or repeated seepage."', 'argued'],
-    [-15, '09:30', '171066', 'People v. Okonkwo',                    'criminal', 15, 'Whether a sentence imposed after a probation violation exceeded the maximum allowed by statute.', 'argued'],
-    [-15, '13:00', '171090', 'Brightwater Holdings v. Alvarado',     'civil',    20, 'Whether an arbitration clause in a residential lease is enforceable against the tenant.', 'argued'],
-    [-9,  '09:30', '171121', 'Whitcomb v. City of Flint',            'civil',    15, 'Whether a notice of claim was filed on time under the governmental claims deadline.', 'submitted'],
-    [-9,  '10:45', '171133', 'People v. Lindqvist',                  'criminal', 15, 'Whether the evidence at a bench trial was sufficient to prove the defendant ran a red light.', 'argued'],
-    [-4,  '09:30', '171170', 'Harmon v. Northgate Property Mgmt',    'civil',    20, 'Whether a landlord\'s notice to end a tenancy met the notice requirements.', 'argued'],
-    [3,   '09:00', '171204', 'People v. Vandermeer',                 'criminal', 15, 'Whether the trial court correctly denied a motion to suppress a statement made during a traffic stop.'],
-    [3,   '10:15', '171388', 'Kessler v. Department of Treasury',    'civil',    20, 'Whether a tax assessment notice was issued within the time allowed by law.'],
-    [3,   '13:00', '171402', 'People v. Abernathy',                  'criminal', 15, 'Whether a prior conviction was properly counted when calculating the sentencing guidelines.'],
-    [4,   '09:00', '171421', 'In re Estate of Marchetti',            'civil',    30, 'Whether a handwritten change to a will, signed but not witnessed, is valid.'],
-    [4,   '10:30', '171436', 'Pacheco v. Summit Lending',            'civil',    20, 'Whether a lender breached a loan modification agreement by reporting the loan as delinquent.'],
-    [10,  '09:00', '171467', 'Doyle v. Genesee County Board',        'civil',    20, 'Whether a board violated open meetings requirements by deliberating in a closed session.'],
-    [10,  '10:15', '171479', 'People v. Haddad',                     'criminal', 15, 'Whether defense counsel\'s failure to object to hearsay testimony denied the defendant a fair trial.'],
-    [11,  '09:00', '171498', 'Reed v. Tri-County Contracting',       'civil',    20, 'Whether a contractor\'s warranty claim is barred by the time limit in the contract.'],
-    [11,  '13:00', '171510', 'People v. Delacroix',                  'criminal', 15, 'Whether a defendant may be convicted of two offenses for a single act.']
+    [-22, '09:30', '170988', 'People v. Fairchild',                'criminal', 15, 'argued'],
+    [-22, '10:45', '171012', 'Sutter v. Valley Mutual Insurance',    'civil',    20, 'argued'],
+    [-15, '09:30', '171066', 'People v. Okonkwo',                    'criminal', 15, 'argued'],
+    [-15, '13:00', '171090', 'Brightwater Holdings v. Alvarado',     'civil',    20, 'argued'],
+    [-9,  '09:30', '171121', 'Whitcomb v. City of Flint',            'civil',    15, 'submitted'],
+    [-9,  '10:45', '171133', 'People v. Lindqvist',                  'criminal', 15, 'argued'],
+    [-4,  '09:30', '171170', 'Harmon v. Northgate Property Mgmt',    'civil',    20, 'argued'],
+    [3,   '09:00', '171204', 'People v. Vandermeer',                 'criminal', 15],
+    [3,   '10:15', '171388', 'Kessler v. Department of Treasury',    'civil',    20],
+    [3,   '13:00', '171402', 'People v. Abernathy',                  'criminal', 15],
+    [4,   '09:00', '171421', 'In re Estate of Marchetti',            'civil',    30],
+    [4,   '10:30', '171436', 'Pacheco v. Summit Lending',            'civil',    20],
+    [10,  '09:00', '171467', 'Doyle v. Genesee County Board',        'civil',    20],
+    [10,  '10:15', '171479', 'People v. Haddad',                     'criminal', 15],
+    [11,  '09:00', '171498', 'Reed v. Tri-County Contracting',       'civil',    20],
+    [11,  '13:00', '171510', 'People v. Delacroix',                  'criminal', 15]
   ];
 
   function addBusinessDays(n) {
@@ -316,10 +315,10 @@ body.lock{overflow:hidden}
   const todayIso = iso(new Date());
   const now = new Date();
 
-  const CASES = RAW.map(([n, time, no, name, cat, mins, question, outcome]) => {
+  const CASES = RAW.map(([n, time, no, name, cat, mins, outcome]) => {
     const date = iso(addBusinessDays(n));
     const past = date < todayIso;
-    return { id: 'sc-' + no, date, time, no, name, cat, mins, question, past,
+    return { id: 'sc-' + no, date, time, no, name, cat, mins, past,
              status: past ? (outcome === 'submitted' ? 'submitted' : 'argued') : 'scheduled' };
   }).sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time));
 
@@ -365,7 +364,7 @@ body.lock{overflow:hidden}
     return CASES.filter(c =>
       (!useRange || range === 'all' || (range === 'upcoming' ? !c.past : c.past)) &&
       (!$type.value || c.cat === $type.value) &&
-      (!q || (c.no + ' ' + c.name + ' ' + c.question).toLowerCase().includes(q)));
+      (!q || (c.no + ' ' + c.name).toLowerCase().includes(q)));
   }
 
   function argHtml(c) {
@@ -374,7 +373,6 @@ body.lock{overflow:hidden}
         <div class="time">${fmtTime(c.time)}</div>
         <div>
           <div><span class="case-no">${esc(c.no)}</span><span class="case-name">${esc(c.name)}</span></div>
-          <div class="q">${esc(c.question)}</div>
           <div class="meta">${c.mins} minutes per side</div>
         </div>
         <div><span class="badge ${c.cat}">${catLabel(c)}</span>${statusBadge(c)}<div class="view" aria-hidden="true">Details ›</div></div>
@@ -505,9 +503,6 @@ body.lock{overflow:hidden}
          </div>
          <p class="help">Not sure where to go, or how to watch online? <a href="${HELP}">Read how to attend a court hearing</a>.</p>`;
     return `
-      <h3>Question presented</h3>
-      <p>${esc(c.question)}</p>
-
       <h3>Argument details</h3>
       <dl class="facts">${facts.map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join('')}</dl>
 

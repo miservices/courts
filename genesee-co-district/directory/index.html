@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Court Directory | Genesee County District Court</title>
+<link rel="icon" type="image/png" href="/courts/images/favicon.png">
+
+<script src="/courts/shell.js" data-active="directory"></script>
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-ui,'Public Sans',system-ui,sans-serif);background:#e3e9f2;color:#1b2433;line-height:1.7;font-size:16px}
+a{color:#1f5fae}
+a:focus-visible{outline:3px solid #5b9be0;outline-offset:2px}
+.wrap{max-width:1180px;margin:0 auto;padding:0 40px}
+h2,h3{font-family:var(--font-head,Georgia,serif);color:#10264a;font-weight:600;line-height:1.25}
+
+.page-header{background:#10264a;padding:34px 0 40px}
+.breadcrumb{display:flex;align-items:center;gap:8px;margin-bottom:14px;font-size:13px;flex-wrap:wrap}
+.breadcrumb a{color:#9cc4f5;text-decoration:none}
+.breadcrumb a:hover{color:#fff;text-decoration:underline}
+.breadcrumb span{color:#6f87ad}
+.breadcrumb .here{color:#fff}
+.page-header h1{font-family:var(--font-head,Georgia,serif);color:#fff;font-size:36px;font-weight:600;line-height:1.2;letter-spacing:-.01em}
+.page-header p{color:#c5d3e8;margin-top:10px;max-width:700px;line-height:1.6}
+
+main{padding:36px 0 72px}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:28px;align-items:start}
+.panel{background:#fff;border:1px solid #d5dde8;border-radius:4px;padding:32px 40px}
+.panel+.panel{margin-top:24px}
+.panel h2{font-size:26px;margin-bottom:12px}
+.panel p,.panel ul{max-width:68ch}
+.panel p{color:#2b3548;margin-bottom:14px}
+.panel p:last-child{margin-bottom:0}
+.panel ul{margin:0 0 14px 22px;color:#2b3548}
+.panel li{padding:3px 0 3px 4px}
+.panel li::marker{color:#1f5fae}
+.panel strong{color:#10264a;font-weight:600}
+
+.callout{display:flex;gap:12px;padding:14px 18px;border-radius:4px;margin:18px 0;border-left:4px solid #1c7a45;background:#e5f3ea;color:#154d2e;max-width:68ch}
+.callout svg{width:20px;height:20px;flex-shrink:0;margin-top:3px}
+.callout p{margin:0!important;font-size:15px;line-height:1.6;color:inherit!important}
+.callout strong{color:inherit!important}
+
+.can{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:6px}
+.can h3{font-size:18px;margin-bottom:8px}
+.can>div{border:1px solid #d5dde8;border-radius:4px;padding:18px 20px}
+.can ul{margin-bottom:0}
+
+/* Sidebar */
+.side-card{background:#fff;border:1px solid #d5dde8;border-radius:4px;padding:22px 24px}
+.side-card+.side-card{margin-top:20px}
+.side-card h2{font-size:19px;margin-bottom:10px}
+.clerk{display:flex;gap:14px;align-items:center}
+.avatar{width:56px;height:56px;border-radius:50%;background:#10264a;color:#fff;font-family:var(--font-head,Georgia,serif);font-weight:600;font-size:20px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.clerk b{display:block;color:#10264a;line-height:1.3}
+.clerk span{font-size:14px;color:#5a667a}
+.side-card address{font-style:normal;color:#2b3548;font-size:15px}
+.actions{display:flex;flex-direction:column;gap:10px}
+.btn{display:block;text-align:center;font-weight:700;padding:11px 16px;border-radius:4px;text-decoration:none;font-size:15px}
+.btn-primary{background:#10264a;color:#fff;border:2px solid #10264a}
+.btn-primary:hover{background:#17335f}
+.btn-outline{background:#fff;color:#10264a;border:2px solid #10264a}
+.btn-outline:hover{background:#eef3f9}
+.related{list-style:none}
+.related li{padding:7px 0;border-bottom:1px solid #e3e9f1}
+.related li:last-child{border-bottom:0}
+.related a{font-weight:600}
+
+@media(max-width:960px){
+  .wrap{padding:0 20px}
+  .layout{grid-template-columns:1fr}
+  .page-header h1{font-size:29px}
+  .panel{padding:24px 22px}
+  .can{grid-template-columns:1fr}
+}
+table{width:100%;border-collapse:collapse;margin:10px 0 6px;font-size:15px}
+th{text-align:left;background:#eef3f9;color:#10264a;font-size:14px;font-weight:700;padding:10px 14px;border:1px solid #d5dde8}
+td{padding:10px 14px;border:1px solid #d5dde8;vertical-align:top}
+td.v{font-weight:700;color:#10264a;white-space:nowrap}
+.table-scroll{overflow-x:auto}
+.glance{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid #d5dde8;border-radius:4px;margin:20px 0 4px;background:#eef3f9}
+.glance div{padding:14px 18px;border-right:1px solid #d5dde8}
+.glance div:last-child{border-right:0}
+.glance dt{font-size:13px;color:#5a667a}
+.glance dd{font-weight:700;color:#10264a;line-height:1.35}
+.steps{list-style:none;margin-left:0!important;counter-reset:s;max-width:68ch}
+.steps li{counter-increment:s;display:grid;grid-template-columns:40px 1fr;gap:14px;padding:12px 0;border-bottom:1px solid #e3e9f1}
+.steps li:last-child{border-bottom:0}
+.steps li::before{content:counter(s);width:32px;height:32px;border-radius:50%;background:#10264a;color:#fff;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:2px}
+.steps strong{display:block}
+.steps span{font-size:15.5px}
+.commish{list-style:none}
+.commish li{display:flex;gap:12px;align-items:center;padding:10px 0}
+.commish .avatar{width:44px;height:44px;font-size:16px}
+.commish b{display:block;color:#10264a;line-height:1.3}
+.commish span{font-size:14px;color:#5a667a}
+@media(max-width:960px){.glance{grid-template-columns:1fr 1fr}.glance div:nth-child(2){border-right:0}.glance div:nth-child(-n+2){border-bottom:1px solid #d5dde8}}
+
+.people{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:6px}
+.person{border:1px solid #d5dde8;border-radius:4px;padding:18px 20px}
+.person .top{display:flex;gap:14px;align-items:center}
+.person .avatar{width:52px;height:52px;font-size:18px}
+.person b{display:block;color:#10264a;line-height:1.3;font-size:17px}
+.person .role{font-size:14px;color:#5a667a}
+.person dl{margin-top:12px;font-size:14.5px}
+.person dl div{display:flex;justify-content:space-between;gap:10px;padding:5px 0;border-top:1px solid #e3e9f1}
+.person dt{color:#5a667a}
+.person dd{font-weight:600;color:#10264a;text-align:right}
+.person.chief{border-top:4px solid #10264a}
+.panel h3{font-size:19px;margin:22px 0 6px}
+.panel h3:first-of-type{margin-top:6px}
+.note{font-size:14.5px;color:#5a667a}
+.dept td:first-child{white-space:normal;min-width:150px}
+@media(max-width:960px){.people{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <div class="wrap">
+    <div class="breadcrumb">
+      <a href="https://migovt.org/courts/">Home</a><span>/</span>
+      <a href="https://migovt.org/courts/genesee-co-district/">Genesee Co. District Court</a><span>/</span>
+      <span class="here">Court Directory</span>
+    </div>
+    <h1>Court Directory</h1>
+    <p>Judges, magistrates, and departments of the Genesee County District Court, and how to reach them.</p>
+  </div>
+</div>
+
+<main>
+  <div class="wrap layout">
+
+    <div>
+      <div class="panel">
+        <h2>Judges</h2>
+        <p>The court has a Chief Judge, who is elected countywide, and associate judges, who are appointed by the Governor. Each judge is assigned a docket and a courtroom.</p>
+        <div class="people">
+          <div class="person chief">
+            <div class="top"><div class="avatar" aria-hidden="true">EC</div><div><b>Hon. Emily Chen</b><span class="role">Chief Judge</span></div></div>
+            <dl>
+              <div><dt>Docket</dt><dd>Administrative</dd></div>
+              <div><dt>Courtroom</dt><dd>1C</dd></div>
+            </dl>
+          </div>
+          <div class="person">
+            <div class="top"><div class="avatar" aria-hidden="true">SJ</div><div><b>Hon. Sarah Jenkins</b><span class="role">Associate Judge</span></div></div>
+            <dl>
+              <div><dt>Docket</dt><dd>Criminal</dd></div>
+              <div><dt>Courtroom</dt><dd>2A</dd></div>
+            </dl>
+          </div>
+          <div class="person">
+            <div class="top"><div class="avatar" aria-hidden="true">MT</div><div><b>Hon. Michael Torres</b><span class="role">Associate Judge</span></div></div>
+            <dl>
+              <div><dt>Docket</dt><dd>Civil</dd></div>
+              <div><dt>Courtroom</dt><dd>3B</dd></div>
+            </dl>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>Magistrates and court mediator</h2>
+        <p>Magistrates are appointed by the Chief Judge and handle routine matters. The court mediator helps parties in civil cases try to settle before trial.</p>
+        <div class="people">
+          <div class="person">
+            <div class="top"><div class="avatar" aria-hidden="true">DH</div><div><b>Daniel R. Hughes</b><span class="role">Magistrate</span></div></div>
+            <dl><div><dt>Handles</dt><dd>Traffic matters</dd></div></dl>
+          </div>
+          <div class="person">
+            <div class="top"><div class="avatar" aria-hidden="true">PS</div><div><b>Priya N. Shah</b><span class="role">Magistrate</span></div></div>
+            <dl><div><dt>Handles</dt><dd>Routine matters</dd></div></dl>
+          </div>
+          <div class="person">
+            <div class="top"><div class="avatar" aria-hidden="true">LG</div><div><b>Lisa Grant</b><span class="role">Court Mediator</span></div></div>
+            <dl><div><dt>Handles</dt><dd>Civil mediation</dd></div></dl>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>Departments</h2>
+        <div class="table-scroll">
+          <table class="dept">
+            <thead><tr><th>Department</th><th>What they do</th><th>Phone</th></tr></thead>
+            <tbody>
+              <tr><td class="v">Clerk's Office</td><td>Accepts and reviews filings, keeps case records and dockets, and issues copies</td><td>(810) 555-0101</td></tr>
+              <tr><td class="v">Probation Department</td><td>Supervises people sentenced to probation and reports to the court</td><td>(810) 555-0102</td></tr>
+              <tr><td class="v">Court Services</td><td>Interpreters, mediation, and help for people who need accommodations</td><td>(810) 555-0103</td></tr>
+              <tr><td class="v">Court Security</td><td>Building screening and courtroom safety</td><td>(810) 555-0104</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="note">Court staff can explain procedures, but they can't give legal advice. Most requests, like filing a document or paying a fine, can be done online through the <a href="https://migovt.org/courts/micourt/">Online Portal</a>.</p>
+      </div>
+
+      <div class="panel">
+        <h2>Other offices you may deal with</h2>
+        <p>These offices work with the court but are not part of it:</p>
+        <ul>
+          <li><strong>Genesee County Prosecutor's Office:</strong> brings criminal cases on behalf of the State.</li>
+          <li><strong>Public Defender Office:</strong> represents people who are accused of a crime and can't afford a lawyer.</li>
+        </ul>
+        <p>To find out how to get a lawyer, see <a href="https://migovt.org/courts/self-help/">Self Help</a>.</p>
+      </div>
+    </div>
+
+    <aside>
+      <div class="side-card">
+        <h2>Get started</h2>
+        <div class="actions">
+          <a class="btn btn-primary" href="https://migovt.org/courts/micourt/">Online Portal</a>
+          <a class="btn btn-outline" href="https://migovt.org/courts/online-services/docket/">Docket calendar</a>
+          <a class="btn btn-outline" href="https://migovt.org/courts/case-search/">Search cases</a>
+        </div>
+      </div>
+
+      <div class="side-card">
+        <h2>Location</h2>
+        <address>Genesee County District Court<br>Flint, Michigan</address>
+      </div>
+
+      <div class="side-card">
+        <h2>Related</h2>
+        <ul class="related">
+          <li><a href="https://migovt.org/courts/genesee-co-district/about/">About the District Court</a></li>
+          <li><a href="https://migovt.org/courts/genesee-co-district/administration/">Local administration</a></li>
+          <li><a href="https://migovt.org/courts/careers/">Careers</a></li>
+        </ul>
+      </div>
+    </aside>
+
+  </div>
+</main>
+
+</body>
+</html>
