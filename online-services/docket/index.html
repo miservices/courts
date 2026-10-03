@@ -23,11 +23,12 @@ h2,h3{font-family:var(--font-head,Georgia,serif);color:#10264a;font-weight:600;l
 .breadcrumb span{color:#6f87ad}
 .breadcrumb .here{color:#fff}
 .page-header h1{font-family:var(--font-head,Georgia,serif);color:#fff;font-size:36px;font-weight:600;line-height:1.2;letter-spacing:-.01em}
-.page-header p{color:#c5d3e8;margin-top:10px;max-width:700px;line-height:1.6}
+.page-header p{color:#c5d3e8;margin-top:10px;max-width:720px;line-height:1.6}
+.page-header p a{color:#9cc4f5}
 
 main{padding:36px 0 72px}
 .panel{background:#fff;border:1px solid #d5dde8;border-radius:4px;padding:28px 36px}
-.panel+.panel,.panel+.results,.results+.panel{margin-top:24px}
+.panel+.panel{margin-top:24px}
 
 /* Controls */
 .controls{display:grid;grid-template-columns:2fr 1fr 1fr;gap:16px 20px}
@@ -36,19 +37,25 @@ main{padding:36px 0 72px}
 .field input:focus,.field select:focus{border-color:#1f5fae}
 .range{grid-column:1 / -1;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .range>span{font-weight:700;color:#10264a;font-size:15px;margin-right:4px}
+.chips{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
 .chip{font:inherit;font-size:14px;font-weight:600;padding:6px 14px;border-radius:20px;border:2px solid #10264a;background:#fff;color:#10264a;cursor:pointer}
 .chip:hover{background:#eef3f9}
 .chip[aria-pressed="true"]{background:#10264a;color:#fff}
 .reset{margin-left:auto;background:none;border:0;font:inherit;font-weight:700;color:#1f5fae;cursor:pointer;text-decoration:underline}
 
-.status{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:24px 0 12px;font-size:15px;color:#5a667a}
+.status{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin:24px 0 12px;font-size:15px;color:#5a667a}
+.seg{display:inline-flex;border:2px solid #10264a;border-radius:4px;overflow:hidden}
+.seg button{font:inherit;font-weight:700;font-size:14px;padding:6px 18px;background:#fff;color:#10264a;border:0;cursor:pointer}
+.seg button+button{border-left:2px solid #10264a}
+.seg button:hover{background:#eef3f9}
+.seg button[aria-pressed="true"]{background:#10264a;color:#fff}
 
-/* Results */
+/* List */
 .day{background:#fff;border:1px solid #d5dde8;border-top:4px solid #10264a;border-radius:4px;margin-bottom:20px;overflow:hidden}
 .day-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:14px 24px;background:#f4f8fd;border-bottom:1px solid #d5dde8}
 .day-head h3{font-size:19px}
 .day-head span{font-size:14px;color:#5a667a}
-.today{display:inline-block;margin-left:8px;font-family:var(--font-ui,system-ui,sans-serif);font-size:12.5px;font-weight:700;color:#256029;background:#e8f5e9;border:1px solid #a5d6a7;padding:1px 9px;border-radius:12px;vertical-align:middle}
+.today-tag{display:inline-block;margin-left:8px;font-family:var(--font-ui,system-ui,sans-serif);font-size:12.5px;font-weight:700;color:#256029;background:#e8f5e9;border:1px solid #a5d6a7;padding:1px 9px;border-radius:12px;vertical-align:middle}
 .hearing{display:grid;grid-template-columns:90px 1fr auto;gap:6px 20px;padding:16px 24px;border-bottom:1px solid #e3e9f1;align-items:start}
 .hearing:last-child{border-bottom:0}
 .time{font-weight:700;color:#10264a;white-space:nowrap}
@@ -56,11 +63,39 @@ main{padding:36px 0 72px}
 .case-no{color:#1f5fae;font-weight:700;font-size:15px;margin-right:10px;font-variant-numeric:tabular-nums}
 .meta{font-size:14.5px;color:#5a667a;margin-top:2px}
 .badge{display:inline-block;font-size:12.5px;font-weight:600;padding:2px 10px;border-radius:12px;white-space:nowrap;background:#e1ecf8;color:#164a86}
-.badge.supreme{background:#ebe5f7;color:#4a2f8a}
 .badge.remote{background:#fff8e1;color:#7a4a00;margin-left:6px}
 .badge.criminal{background:#fce8e8;color:#8f1d1d}
 .badge.civil{background:#e2f0e8;color:#1c5a37}
 .empty{background:#fff;border:1px solid #d5dde8;border-radius:4px;padding:36px;text-align:center;color:#5a667a}
+
+/* Calendar */
+.cal-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.cal-bar h2{font-size:26px}
+.cal-nav{display:flex;gap:8px}
+.cal-nav button{font:inherit;font-weight:700;font-size:14px;padding:7px 14px;background:#fff;color:#10264a;border:2px solid #10264a;border-radius:4px;cursor:pointer}
+.cal-nav button:hover{background:#eef3f9}
+.cal-grid{width:100%;border-collapse:separate;border-spacing:0;table-layout:fixed;background:#fff;border:1px solid #d5dde8;border-radius:4px;overflow:hidden}
+.cal-grid th{background:#10264a;color:#fff;font-size:14px;font-weight:600;padding:8px 4px;text-align:center}
+.cal-grid td{border-top:1px solid #e3e9f1;border-left:1px solid #e3e9f1;height:118px;padding:0;vertical-align:top}
+.cal-grid td:first-child{border-left:0}
+.cell{display:block;width:100%;height:100%;min-height:118px;padding:6px 8px;text-align:left;background:none;border:0;font:inherit;color:inherit}
+button.cell{cursor:pointer}
+button.cell:hover{background:#f4f8fd}
+button.cell[aria-pressed="true"]{background:#e1ecf8;box-shadow:inset 0 0 0 3px #1f5fae}
+td.out .cell{background:#f7f9fc;color:#9aa6b8}
+td.wknd .cell{background:#fafbfd}
+.num{display:inline-block;min-width:26px;height:26px;line-height:26px;text-align:center;font-weight:700;border-radius:13px;color:#10264a}
+td.today .num{background:#1f5fae;color:#fff}
+td.out .num{color:#9aa6b8}
+.ev{display:block;font-size:12.5px;line-height:1.3;margin-top:3px;padding:2px 6px;border-radius:3px;border-left:3px solid;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.ev.criminal{background:#fce8e8;border-color:#b3261e;color:#6b1a15}
+.ev.civil{background:#e2f0e8;border-color:#256029;color:#1d4a21}
+.more-ev{display:block;font-size:12.5px;color:#5a667a;margin-top:3px;font-weight:600}
+.cnt{display:none}
+.legend{display:flex;gap:18px;flex-wrap:wrap;font-size:14px;color:#5a667a;margin:12px 0 20px}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+.legend .c{background:#fce8e8;border:1px solid #b3261e}
+.legend .v{background:#e2f0e8;border:1px solid #256029}
 
 .notice h2{font-size:20px;margin-bottom:8px}
 .notice p{color:#2b3548;max-width:72ch;margin-bottom:8px}
@@ -74,6 +109,11 @@ main{padding:36px 0 72px}
   .reset{margin-left:0}
   .hearing{grid-template-columns:1fr;gap:4px;padding:14px 20px}
   .day-head{padding:12px 20px}
+  .cal-grid td{height:64px}
+  .cell{min-height:64px;padding:4px;text-align:center}
+  .ev,.more-ev{display:none}
+  .cnt{display:inline-block;margin-top:2px;min-width:22px;font-size:12px;font-weight:700;color:#fff;background:#10264a;border-radius:11px;padding:0 6px}
+  .cal-grid th{font-size:12px}
 }
 </style>
 </head>
@@ -86,7 +126,7 @@ main{padding:36px 0 72px}
       <span class="here">Court docket</span>
     </div>
     <h1>Court Docket</h1>
-    <p>See upcoming hearings and court dates for the Genesee County District Court and the Michigan Supreme Court. Search by case number, case name, or judge.</p>
+    <p>See upcoming hearings and court dates for the Genesee County District Court. Search by case number, case name, or judge, and switch between a list and a calendar. For the Supreme Court, see <a href="https://migovt.org/courts/supreme-court/oral-arguments/">oral arguments</a>.</p>
   </div>
 </div>
 
@@ -100,19 +140,21 @@ main{padding:36px 0 72px}
           <input type="search" id="q" placeholder="Case number, case name, or judge" autocomplete="off">
         </div>
         <div class="field">
-          <label for="court">Court</label>
-          <select id="court"><option value="">All courts</option></select>
+          <label for="officer">Judge or magistrate</label>
+          <select id="officer"><option value="">Everyone</option></select>
         </div>
         <div class="field">
           <label for="type">Hearing type</label>
           <select id="type"><option value="">All types</option></select>
         </div>
-        <div class="range" role="group" aria-label="Date range">
-          <span>When</span>
-          <button type="button" class="chip" data-r="all" aria-pressed="true">All upcoming</button>
-          <button type="button" class="chip" data-r="today" aria-pressed="false">Today</button>
-          <button type="button" class="chip" data-r="7" aria-pressed="false">Next 7 days</button>
-          <button type="button" class="chip" data-r="14" aria-pressed="false">Next 14 days</button>
+        <div class="range">
+          <div class="chips" id="range-chips" role="group" aria-label="Date range">
+            <span style="font-weight:700;color:#10264a;font-size:15px;margin-right:4px">When</span>
+            <button type="button" class="chip" data-r="all" aria-pressed="true">All upcoming</button>
+            <button type="button" class="chip" data-r="today" aria-pressed="false">Today</button>
+            <button type="button" class="chip" data-r="7" aria-pressed="false">Next 7 days</button>
+            <button type="button" class="chip" data-r="14" aria-pressed="false">Next 14 days</button>
+          </div>
           <button type="button" class="reset" id="reset" hidden>Clear filters</button>
         </div>
       </div>
@@ -120,14 +162,39 @@ main{padding:36px 0 72px}
 
     <div class="status">
       <span id="count" role="status" aria-live="polite"></span>
+      <div class="seg" role="group" aria-label="View">
+        <button type="button" data-v="list" aria-pressed="true">List</button>
+        <button type="button" data-v="calendar" aria-pressed="false">Calendar</button>
+      </div>
     </div>
 
-    <div class="results" id="results"></div>
+    <div id="list-view"></div>
 
-    <div class="panel notice">
+    <div id="cal-view" hidden>
+      <div class="cal-bar">
+        <h2 id="cal-title"></h2>
+        <div class="cal-nav">
+          <button type="button" id="prev" aria-label="Previous month">‹ Previous</button>
+          <button type="button" id="today-btn">Today</button>
+          <button type="button" id="next" aria-label="Next month">Next ›</button>
+        </div>
+      </div>
+      <table class="cal-grid">
+        <thead><tr>
+          <th scope="col" abbr="Sunday">Sun</th><th scope="col" abbr="Monday">Mon</th><th scope="col" abbr="Tuesday">Tue</th>
+          <th scope="col" abbr="Wednesday">Wed</th><th scope="col" abbr="Thursday">Thu</th><th scope="col" abbr="Friday">Fri</th>
+          <th scope="col" abbr="Saturday">Sat</th>
+        </tr></thead>
+        <tbody id="cal-body"></tbody>
+      </table>
+      <div class="legend"><span><i class="c"></i>Criminal</span><span><i class="v"></i>Civil and traffic</span><span>Select a day to see its hearings.</span></div>
+      <div id="day-detail" aria-live="polite"></div>
+    </div>
+
+    <div class="panel notice" style="margin-top:24px">
       <h2>Before you go</h2>
-      <p>Hearing dates and times can change. Contact the clerk of the court to confirm before you attend: use the <a href="https://migovt.org/courts/genesee-co-district/directory/">District Court directory</a> or the <a href="https://migovt.org/courts/supreme-court/clerk/">Supreme Court Clerk's Office</a>.</p>
-      <p>Looking for a specific case? <a href="https://migovt.org/courts/case-search/">Search cases</a> by name or number.</p>
+      <p>Hearing dates and times can change. Contact the clerk of the court to confirm before you attend. Use the <a href="https://migovt.org/courts/genesee-co-district/directory/">District Court directory</a>.</p>
+      <p>Looking for a specific case? <a href="https://migovt.org/courts/case-search/">Search cases</a> by name or number. Looking for the Supreme Court? See <a href="https://migovt.org/courts/supreme-court/oral-arguments/">oral arguments</a>.</p>
     </div>
 
   </div>
@@ -135,82 +202,90 @@ main{padding:36px 0 72px}
 
 <script>
   /* Sample hearings. Dates are set as business days from today so the list always looks current.
-     Replace HEARINGS with your real data (a Google Sheet CSV works well, like the proposals page). */
-  const DC = 'Genesee County District Court', SC = 'Michigan Supreme Court';
-  // [business days from today, 24h time, court, case no., case name, type, category, room, officer, remote?]
+     Replace RAW with your real data (a Google Sheet CSV works well, like the proposals page). */
+  // [business days from today, 24h time, case no., case name, type, category, courtroom, judge/magistrate, remote?]
   const RAW = [
-    [0, '08:30', DC, '26-D-0412', 'People v. Calloway',               'Arraignment',          'criminal', 'Courtroom 1', 'Magistrate Chen', false],
-    [0, '09:00', DC, '26-D-0388', 'People v. Reyes',                  'Pretrial Conference',  'criminal', 'Courtroom 2', 'Hon. Brennan', false],
-    [0, '10:00', DC, '26-S-0951', 'Hollis v. Marlow Properties',      'Small Claims Hearing', 'civil',    'Courtroom 3', 'Hon. Okafor', false],
-    [0, '13:30', DC, '26-D-0405', 'People v. Tran',                   'Motion Hearing',       'criminal', 'Courtroom 1', 'Hon. Alvarez', false],
-    [1, '08:30', DC, '26-D-0419', 'People v. Whitaker',               'Arraignment',          'criminal', 'Courtroom 1', 'Magistrate Delgado', false],
-    [1, '09:00', DC, '26-C-1204', 'Greene Credit Union v. Patel',     'Pretrial Conference',  'civil',    'Courtroom 3', 'Hon. Okafor', true],
-    [1, '10:30', DC, '26-D-0371', 'People v. Mbeki',                  'Preliminary Examination','criminal','Courtroom 2','Hon. Whitfield', false],
-    [1, '14:00', DC, '26-T-3318', 'People v. Lindqvist',              'Traffic Hearing',      'civil',    'Courtroom 4', 'Magistrate Chen', false],
-    [2, '09:00', DC, '26-D-0342', 'People v. Ostrowski',              'Jury Trial',           'criminal', 'Courtroom 2', 'Hon. Brennan', false],
-    [2, '09:30', DC, '26-C-1177', 'Fairview Apartments v. Santos',    'Motion Hearing',       'civil',    'Courtroom 3', 'Hon. Okafor', true],
-    [2, '11:00', DC, '26-D-0427', 'People v. Abernathy',              'Sentencing',           'criminal', 'Courtroom 1', 'Hon. Alvarez', false],
-    [3, '09:00', DC, '26-S-0977', 'Nguyen v. Brightway Auto',         'Small Claims Hearing', 'civil',    'Courtroom 3', 'Hon. Whitfield', false],
-    [3, '10:00', DC, '26-D-0396', 'People v. Delacroix',              'Bench Trial',          'criminal', 'Courtroom 2', 'Hon. Brennan', false],
-    [3, '13:00', DC, '26-D-0433', 'People v. Kowalczyk',              'Arraignment',          'criminal', 'Courtroom 1', 'Magistrate Delgado', false],
-    [4, '08:45', DC, '26-T-3342', 'People v. Fontaine',               'Traffic Hearing',      'civil',    'Courtroom 4', 'Magistrate Chen', false],
-    [4, '09:30', DC, '26-C-1190', 'Reed v. Tri-County Contracting',   'Bench Trial',          'civil',    'Courtroom 3', 'Hon. Okafor', false],
-    [4, '10:30', DC, '26-D-0358', 'People v. Haddad',                 'Pretrial Conference',  'criminal', 'Courtroom 1', 'Hon. Alvarez', true],
-    [5, '09:00', SC, '171204',    'People v. Vandermeer',             'Oral Argument',        'criminal', 'Lansing',     'Full Court', false],
-    [5, '10:00', SC, '171388',    'Kessler v. Department of Treasury','Oral Argument',        'civil',    'Lansing',     'Full Court', false],
-    [5, '11:00', DC, '26-D-0441', 'People v. Bishop',                 'Arraignment',          'criminal', 'Courtroom 1', 'Magistrate Delgado', false],
-    [6, '09:00', SC, '171421',    'In re Estate of Marchetti',        'Oral Argument',        'civil',    'Lansing',     'Full Court', false],
-    [6, '09:30', DC, '26-D-0365', 'People v. Chaudhry',               'Motion Hearing',       'criminal', 'Courtroom 2', 'Hon. Whitfield', false],
-    [6, '13:30', DC, '26-S-0990', 'Iverson v. Lakeshore Movers',      'Small Claims Hearing', 'civil',    'Courtroom 3', 'Hon. Okafor', false],
-    [7, '09:00', DC, '26-D-0310', 'People v. Santiago',               'Jury Trial',           'criminal', 'Courtroom 2', 'Hon. Brennan', false],
-    [7, '10:00', DC, '26-C-1215', 'Harmon v. Northgate Property Mgmt','Pretrial Conference',  'civil',    'Courtroom 3', 'Hon. Whitfield', true],
-    [8, '08:30', DC, '26-D-0450', 'People v. Lowry',                  'Arraignment',          'criminal', 'Courtroom 1', 'Magistrate Chen', false],
-    [8, '10:00', DC, '26-D-0399', 'People v. Papadakis',              'Sentencing',           'criminal', 'Courtroom 1', 'Hon. Alvarez', false],
-    [8, '14:00', DC, '26-T-3365', 'People v. Armstrong',              'Traffic Hearing',      'civil',    'Courtroom 4', 'Magistrate Delgado', false],
-    [9, '09:00', SC, '171467',    'Doyle v. Genesee County Board',    'Oral Argument',        'civil',    'Lansing',     'Full Court', false],
-    [9, '09:30', DC, '26-C-1233', 'Pacheco v. Summit Lending',        'Motion Hearing',       'civil',    'Courtroom 3', 'Hon. Okafor', false],
-    [9, '11:00', DC, '26-D-0412B','People v. Calloway',               'Preliminary Examination','criminal','Courtroom 2','Hon. Whitfield', false],
-    [10,'09:00', DC, '26-D-0384', 'People v. Johansson',              'Bench Trial',          'criminal', 'Courtroom 2', 'Hon. Brennan', false]
+    [0, '08:30', '26-D-0412', 'People v. Calloway',               'Arraignment',            'criminal', 'Courtroom 1', 'Magistrate Chen', false],
+    [0, '09:00', '26-D-0388', 'People v. Reyes',                  'Pretrial Conference',    'criminal', 'Courtroom 2', 'Hon. Brennan', false],
+    [0, '10:00', '26-S-0951', 'Hollis v. Marlow Properties',      'Small Claims Hearing',   'civil',    'Courtroom 3', 'Hon. Okafor', false],
+    [0, '13:30', '26-D-0405', 'People v. Tran',                   'Motion Hearing',         'criminal', 'Courtroom 1', 'Hon. Alvarez', false],
+    [1, '08:30', '26-D-0419', 'People v. Whitaker',               'Arraignment',            'criminal', 'Courtroom 1', 'Magistrate Delgado', false],
+    [1, '09:00', '26-C-1204', 'Greene Credit Union v. Patel',     'Pretrial Conference',    'civil',    'Courtroom 3', 'Hon. Okafor', true],
+    [1, '10:30', '26-D-0371', 'People v. Mbeki',                  'Preliminary Examination','criminal', 'Courtroom 2', 'Hon. Whitfield', false],
+    [1, '14:00', '26-T-3318', 'People v. Lindqvist',              'Traffic Hearing',        'civil',    'Courtroom 4', 'Magistrate Chen', false],
+    [2, '09:00', '26-D-0342', 'People v. Ostrowski',              'Jury Trial',             'criminal', 'Courtroom 2', 'Hon. Brennan', false],
+    [2, '09:30', '26-C-1177', 'Fairview Apartments v. Santos',    'Motion Hearing',         'civil',    'Courtroom 3', 'Hon. Okafor', true],
+    [2, '11:00', '26-D-0427', 'People v. Abernathy',              'Sentencing',             'criminal', 'Courtroom 1', 'Hon. Alvarez', false],
+    [3, '09:00', '26-S-0977', 'Nguyen v. Brightway Auto',         'Small Claims Hearing',   'civil',    'Courtroom 3', 'Hon. Whitfield', false],
+    [3, '10:00', '26-D-0396', 'People v. Delacroix',              'Bench Trial',            'criminal', 'Courtroom 2', 'Hon. Brennan', false],
+    [3, '13:00', '26-D-0433', 'People v. Kowalczyk',              'Arraignment',            'criminal', 'Courtroom 1', 'Magistrate Delgado', false],
+    [4, '08:45', '26-T-3342', 'People v. Fontaine',               'Traffic Hearing',        'civil',    'Courtroom 4', 'Magistrate Chen', false],
+    [4, '09:30', '26-C-1190', 'Reed v. Tri-County Contracting',   'Bench Trial',            'civil',    'Courtroom 3', 'Hon. Okafor', false],
+    [4, '10:30', '26-D-0358', 'People v. Haddad',                 'Pretrial Conference',    'criminal', 'Courtroom 1', 'Hon. Alvarez', true],
+    [5, '08:30', '26-D-0441', 'People v. Bishop',                 'Arraignment',            'criminal', 'Courtroom 1', 'Magistrate Delgado', false],
+    [5, '09:30', '26-D-0365', 'People v. Chaudhry',               'Motion Hearing',         'criminal', 'Courtroom 2', 'Hon. Whitfield', false],
+    [5, '13:30', '26-S-0990', 'Iverson v. Lakeshore Movers',      'Small Claims Hearing',   'civil',    'Courtroom 3', 'Hon. Okafor', false],
+    [6, '09:00', '26-D-0310', 'People v. Santiago',               'Jury Trial',             'criminal', 'Courtroom 2', 'Hon. Brennan', false],
+    [6, '10:00', '26-C-1215', 'Harmon v. Northgate Property Mgmt','Pretrial Conference',    'civil',    'Courtroom 3', 'Hon. Whitfield', true],
+    [7, '08:30', '26-D-0450', 'People v. Lowry',                  'Arraignment',            'criminal', 'Courtroom 1', 'Magistrate Chen', false],
+    [7, '10:00', '26-D-0399', 'People v. Papadakis',              'Sentencing',             'criminal', 'Courtroom 1', 'Hon. Alvarez', false],
+    [7, '14:00', '26-T-3365', 'People v. Armstrong',              'Traffic Hearing',        'civil',    'Courtroom 4', 'Magistrate Delgado', false],
+    [8, '09:30', '26-C-1233', 'Pacheco v. Summit Lending',        'Motion Hearing',         'civil',    'Courtroom 3', 'Hon. Okafor', false],
+    [8, '11:00', '26-D-0412B','People v. Calloway',               'Preliminary Examination','criminal', 'Courtroom 2', 'Hon. Whitfield', false],
+    [9, '09:00', '26-D-0384', 'People v. Johansson',              'Bench Trial',            'criminal', 'Courtroom 2', 'Hon. Brennan', false],
+    [10,'09:00', '26-D-0455', 'People v. Voss',                   'Arraignment',            'criminal', 'Courtroom 1', 'Magistrate Chen', false],
+    [10,'13:00', '26-C-1241', 'Alder v. Wexford Rentals',         'Small Claims Hearing',   'civil',    'Courtroom 3', 'Hon. Okafor', false]
   ];
 
   function addBusinessDays(n) {
     const d = new Date(); d.setHours(0, 0, 0, 0);
-    while (d.getDay() === 0 || d.getDay() === 6) d.setDate(d.getDate() + 1);   // start on next business day if weekend
+    while (d.getDay() === 0 || d.getDay() === 6) d.setDate(d.getDate() + 1);
     let left = n;
     while (left > 0) { d.setDate(d.getDate() + 1); if (d.getDay() !== 0 && d.getDay() !== 6) left--; }
     return d;
   }
   const iso = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
 
-  const HEARINGS = RAW.map(([n, time, court, no, name, type, cat, room, officer, remote]) =>
-    ({ date: iso(addBusinessDays(n)), time, court, no, name, type, cat, room, officer, remote }))
+  const HEARINGS = RAW.map(([n, time, no, name, type, cat, room, officer, remote]) =>
+    ({ date: iso(addBusinessDays(n)), time, no, name, type, cat, room, officer, remote }))
     .sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time));
 
   const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-  const fmtDay = iso => new Date(iso + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+  const fmtDay = s => new Date(s + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
   const fmtTime = t => { const [h, m] = t.split(':').map(Number); return (h % 12 || 12) + ':' + String(m).padStart(2, '0') + ' ' + (h < 12 ? 'AM' : 'PM'); };
   const todayIso = iso(new Date());
+  const now = new Date();
 
-  // Filters
-  const $q = document.getElementById('q'), $court = document.getElementById('court'), $type = document.getElementById('type');
+  // Elements
+  const $q = document.getElementById('q'), $officer = document.getElementById('officer'), $type = document.getElementById('type');
   const $reset = document.getElementById('reset');
-  [...new Set(HEARINGS.map(h => h.court))].forEach(c => $court.insertAdjacentHTML('beforeend', `<option>${esc(c)}</option>`));
+  [...new Set(HEARINGS.map(h => h.officer))].sort().forEach(o => $officer.insertAdjacentHTML('beforeend', `<option>${esc(o)}</option>`));
   [...new Set(HEARINGS.map(h => h.type))].sort().forEach(t => $type.insertAdjacentHTML('beforeend', `<option>${esc(t)}</option>`));
-  let range = 'all';
 
-  // Restore filters from the URL so a search can be shared
+  // State, restored from the URL so any view can be shared
+  let view = 'list', range = 'all', ym = { y: now.getFullYear(), m: now.getMonth() }, sel = null;
   const sp = new URLSearchParams(location.search);
   $q.value = sp.get('q') || '';
-  if ([...$court.options].some(o => o.value === sp.get('court'))) $court.value = sp.get('court');
+  if ([...$officer.options].some(o => o.value === sp.get('officer'))) $officer.value = sp.get('officer');
   if ([...$type.options].some(o => o.value === sp.get('type'))) $type.value = sp.get('type');
   if (['today', '7', '14'].includes(sp.get('when'))) range = sp.get('when');
+  if (sp.get('view') === 'calendar') view = 'calendar';
+  if (/^\d{4}-\d{2}$/.test(sp.get('month') || '')) { const [y, m] = sp.get('month').split('-').map(Number); if (m >= 1 && m <= 12) ym = { y, m: m - 1 }; }
+  if (/^\d{4}-\d{2}-\d{2}$/.test(sp.get('day') || '')) sel = sp.get('day');
+
+  const monthKey = () => ym.y + '-' + String(ym.m + 1).padStart(2, '0');
+  const isCurrentMonth = () => ym.y === now.getFullYear() && ym.m === now.getMonth();
 
   function syncUrl() {
     const p = new URLSearchParams();
     if ($q.value.trim()) p.set('q', $q.value.trim());
-    if ($court.value) p.set('court', $court.value);
+    if ($officer.value) p.set('officer', $officer.value);
     if ($type.value) p.set('type', $type.value);
-    if (range !== 'all') p.set('when', range);
+    if (view === 'calendar') {
+      p.set('view', 'calendar');
+      if (!isCurrentMonth()) p.set('month', monthKey());
+      if (sel) p.set('day', sel);
+    } else if (range !== 'all') p.set('when', range);
     const qs = p.toString();
     history.replaceState(null, '', location.pathname + (qs ? '?' + qs : ''));
   }
@@ -223,50 +298,128 @@ main{padding:36px 0 72px}
     return date <= iso(end);
   }
 
-  function render() {
+  function filtered(useRange) {
     const q = $q.value.trim().toLowerCase();
-    const list = HEARINGS.filter(h =>
-      inRange(h.date) &&
-      (!$court.value || h.court === $court.value) &&
+    return HEARINGS.filter(h =>
+      (!useRange || inRange(h.date)) &&
+      (!$officer.value || h.officer === $officer.value) &&
       (!$type.value || h.type === $type.value) &&
       (!q || (h.no + ' ' + h.name + ' ' + h.officer).toLowerCase().includes(q)));
+  }
 
-    document.querySelectorAll('.chip').forEach(c => c.setAttribute('aria-pressed', c.dataset.r === range));
-    $reset.hidden = !(q || $court.value || $type.value || range !== 'all');
+  function hearingHtml(h) {
+    return `
+      <div class="hearing">
+        <div class="time">${fmtTime(h.time)}</div>
+        <div>
+          <div><span class="case-no">${esc(h.no)}</span><span class="case-name">${esc(h.name)}</span></div>
+          <div class="meta">${esc(h.room)} · ${esc(h.officer)}</div>
+        </div>
+        <div><span class="badge ${h.cat}">${esc(h.type)}</span>${h.remote ? '<span class="badge remote">Remote option</span>' : ''}</div>
+      </div>`;
+  }
+
+  function dayHtml(d, list, headTag) {
+    return `
+      <section class="day" aria-labelledby="d-${d}">
+        <div class="day-head">
+          <h3 id="d-${d}">${fmtDay(d)}${d === todayIso ? '<span class="today-tag">Today</span>' : ''}</h3>
+          <span>${list.length} ${list.length === 1 ? 'hearing' : 'hearings'}</span>
+        </div>
+        ${list.map(hearingHtml).join('')}
+      </section>`;
+  }
+
+  function renderList() {
+    const list = filtered(true);
     document.getElementById('count').textContent = list.length + (list.length === 1 ? ' hearing' : ' hearings');
-
     if (!list.length) {
-      document.getElementById('results').innerHTML = '<div class="empty">No hearings match your search. Try fewer words or a wider date range.</div>';
+      document.getElementById('list-view').innerHTML = '<div class="empty">No hearings match your search. Try fewer words or a wider date range.</div>';
       return;
     }
     const days = {};
     list.forEach(h => (days[h.date] = days[h.date] || []).push(h));
-    document.getElementById('results').innerHTML = Object.keys(days).map(d => `
-      <section class="day" aria-labelledby="d-${d}">
-        <div class="day-head">
-          <h3 id="d-${d}">${fmtDay(d)}${d === todayIso ? '<span class="today">Today</span>' : ''}</h3>
-          <span>${days[d].length} ${days[d].length === 1 ? 'hearing' : 'hearings'}</span>
-        </div>
-        ${days[d].map(h => `
-          <div class="hearing">
-            <div class="time">${fmtTime(h.time)}</div>
-            <div>
-              <div><span class="case-no">${esc(h.no)}</span><span class="case-name">${esc(h.name)}</span></div>
-              <div class="meta">${esc(h.court)} · ${esc(h.room)} · ${esc(h.officer)}</div>
-            </div>
-            <div>
-              <span class="badge ${h.court === SC ? 'supreme' : h.cat}">${esc(h.type)}</span>${h.remote ? '<span class="badge remote">Remote option</span>' : ''}
-            </div>
-          </div>`).join('')}
-      </section>`).join('');
+    document.getElementById('list-view').innerHTML = Object.keys(days).map(d => dayHtml(d, days[d])).join('');
   }
 
-  function update() { syncUrl(); render(); }
-  $q.addEventListener('input', update);
-  $court.addEventListener('change', update);
-  $type.addEventListener('change', update);
-  document.querySelectorAll('.chip').forEach(c => c.addEventListener('click', () => { range = c.dataset.r; update(); }));
-  $reset.addEventListener('click', () => { $q.value = ''; $court.value = ''; $type.value = ''; range = 'all'; update(); $q.focus(); });
+  function renderCalendar() {
+    const list = filtered(false);
+    const byDay = {};
+    list.forEach(h => (byDay[h.date] = byDay[h.date] || []).push(h));
+
+    const first = new Date(ym.y, ym.m, 1), last = new Date(ym.y, ym.m + 1, 0);
+    const mKey = monthKey();
+    const inMonth = list.filter(h => h.date.startsWith(mKey));
+    document.getElementById('cal-title').textContent = first.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+    document.getElementById('count').textContent = inMonth.length + (inMonth.length === 1 ? ' hearing' : ' hearings') + ' this month';
+
+    // Make sure the selected day is in this month and has hearings
+    if (!sel || !sel.startsWith(mKey) || !byDay[sel]) {
+      const days = Object.keys(byDay).filter(d => d.startsWith(mKey)).sort();
+      sel = byDay[todayIso] && todayIso.startsWith(mKey) ? todayIso : (days[0] || null);
+    }
+
+    const start = new Date(first); start.setDate(1 - first.getDay());
+    let rows = '', d = new Date(start);
+    while (d <= last || d.getDay() !== 0) {
+      let row = '';
+      for (let i = 0; i < 7; i++) {
+        const s = iso(d), items = byDay[s] || [], out = d.getMonth() !== ym.m;
+        const cls = [out ? 'out' : '', (d.getDay() === 0 || d.getDay() === 6) ? 'wknd' : '', s === todayIso ? 'today' : ''].join(' ').trim();
+        let inner = `<span class="num">${d.getDate()}</span>`;
+        if (items.length) {
+          inner += items.slice(0, 2).map(h => `<span class="ev ${h.cat}">${fmtTime(h.time).replace(':00', '')} ${esc(h.name)}</span>`).join('') +
+            (items.length > 2 ? `<span class="more-ev">+${items.length - 2} more</span>` : '') +
+            `<span class="cnt" aria-hidden="true">${items.length}</span>`;
+          row += `<td class="${cls}"><button type="button" class="cell" data-d="${s}" aria-pressed="${s === sel}" aria-label="${fmtDay(s)}, ${items.length} ${items.length === 1 ? 'hearing' : 'hearings'}">${inner}</button></td>`;
+        } else {
+          row += `<td class="${cls}"><div class="cell">${inner}</div></td>`;
+        }
+        d.setDate(d.getDate() + 1);
+      }
+      rows += `<tr>${row}</tr>`;
+    }
+    document.getElementById('cal-body').innerHTML = rows;
+
+    document.getElementById('day-detail').innerHTML = sel && byDay[sel]
+      ? dayHtml(sel, byDay[sel])
+      : '<div class="empty">No hearings this month match your search.</div>';
+  }
+
+  function render() {
+    const cal = view === 'calendar';
+    document.getElementById('list-view').hidden = cal;
+    document.getElementById('cal-view').hidden = !cal;
+    document.getElementById('range-chips').hidden = cal;
+    document.querySelectorAll('.seg button').forEach(b => b.setAttribute('aria-pressed', b.dataset.v === view));
+    document.querySelectorAll('.chip').forEach(c => c.setAttribute('aria-pressed', c.dataset.r === range));
+    $reset.hidden = !($q.value.trim() || $officer.value || $type.value || (!cal && range !== 'all'));
+    cal ? renderCalendar() : renderList();
+    syncUrl();
+  }
+
+  // Events
+  $q.addEventListener('input', render);
+  $officer.addEventListener('change', render);
+  $type.addEventListener('change', render);
+  document.querySelectorAll('.chip').forEach(c => c.addEventListener('click', () => { range = c.dataset.r; render(); }));
+  document.querySelectorAll('.seg button').forEach(b => b.addEventListener('click', () => { view = b.dataset.v; render(); }));
+  $reset.addEventListener('click', () => { $q.value = ''; $officer.value = ''; $type.value = ''; range = 'all'; render(); $q.focus(); });
+
+  function shift(n) { const d = new Date(ym.y, ym.m + n, 1); ym = { y: d.getFullYear(), m: d.getMonth() }; sel = null; render(); }
+  document.getElementById('prev').addEventListener('click', () => shift(-1));
+  document.getElementById('next').addEventListener('click', () => shift(1));
+  document.getElementById('today-btn').addEventListener('click', () => { ym = { y: now.getFullYear(), m: now.getMonth() }; sel = null; render(); });
+  document.getElementById('cal-body').addEventListener('click', e => {
+    const b = e.target.closest('button.cell');
+    if (!b) return;
+    sel = b.dataset.d;
+    render();
+    const cell = document.querySelector(`button.cell[data-d="${sel}"]`);
+    if (cell) cell.focus();
+    if (window.matchMedia('(max-width:860px)').matches) document.getElementById('day-detail').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+
   render();
 </script>
 </body>
