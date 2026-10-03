@@ -134,7 +134,7 @@ main{padding:36px 0 72px}
 .pname{font-family:var(--font-head,Georgia,serif);font-size:19px;font-weight:600;color:#10264a}
 .aka{font-size:14px;color:#5a667a}
 
-.tag{font-size:12.5px;font-weight:700;padding:1px 10px;border-radius:12px;border:1px solid;white-space:nowrap}
+.tag{display:inline-block;align-self:flex-start;height:fit-content;line-height:1.5;font-size:12.5px;font-weight:700;padding:1px 10px;border-radius:12px;border:1px solid;white-space:nowrap}
 .tag.red{background:#fce8e8;color:#8f1d1d;border-color:#ef9a9a}
 .tag.amber{background:#fff8e1;color:#7a4a00;border-color:#ffcc80}
 .tag.green{background:#e8f5e9;color:#256029;border-color:#a5d6a7}
@@ -144,8 +144,7 @@ main{padding:36px 0 72px}
 .statute{font-size:14px;color:#5a667a}
 .ctitle{font-weight:700;color:#10264a;font-size:17px}
 
-.bond{border-color:#ffcc80}
-.bond .box-head{background:#fff8e1;border-bottom-color:#ffcc80}
+.bond .box-head{background:#fff}
 .bond-amt{font-family:var(--font-head,Georgia,serif);font-size:28px;color:#10264a;font-weight:600}
 ul.clean{margin:8px 0 0 20px;color:#2b3548}
 ul.clean li{padding:2px 0}
@@ -870,7 +869,7 @@ function buildBonds(c){
       <div class="box-body">
         <div class="grid">
           <div class="item"><div class="k">Posted by</div>${val(b.postedBy || 'Defendant')}</div>
-          <div class="item"><div class="k">Receipt no.</div>${val(hasVal(b.receipt) ? b.receipt : 'N/A','mono')}</div>
+          <div class="item"><div class="k">Receipt no.</div>${val(b.receipt,'mono')}</div>
           <div class="item"><div class="k">Date posted</div>${val(fmtDate(b.postedDate))}</div>
           <div class="item"><div class="k">Date closed / released</div>${val(fmtDate(b.closedDate))}</div>
           <div class="item"><div class="k">Payee (refund)</div>${val(b.payee)}</div>
