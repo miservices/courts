@@ -200,12 +200,12 @@
         L('About the District Court', 'genesee-co-district/about/',            'Trial court for Flint and Genesee County'),
         L('Court Directory',          'genesee-co-district/directory/',        'Judges, departments, and contacts'),
         L('Local Administration',     'genesee-co-district/administration/',   'Local rules and administrative orders'),
-        L('Online Portal',            'micourt/',                              'File, pay, and manage your cases'),
+        L('Online Portal',            'online-services/portal/',                              'File, pay, and manage your cases'),
       ]},
     ]},
     { id: 'services', label: 'Online Services', groups: [
       { title: 'Online Portal', links: [
-        L('Online Portal',   'micourt/',      'Sign in to file, pay, and manage cases'),
+        L('Online Portal',   'online-services/portal/',      'Sign in to file, pay, and manage cases'),
         L('Search Cases',    'case-search/',  'District Court case records'),
         L('Docket Calendar', 'online-services/docket/', 'Upcoming hearings and court dates'),
       ]},
@@ -271,7 +271,7 @@
       }
     });
     return `<nav class="mc-shell-nav" aria-label="Main">${items}
-      <div class="mc-shell-nav-right"><a href="${BASE}micourt/" class="mc-shell-nav-btn">Sign in to Online Portal</a></div></nav>`;
+      <div class="mc-shell-nav-right"><a href="${BASE}online-services/portal/" class="mc-shell-nav-btn">Sign in to Online Portal</a></div></nav>`;
   }
 
   function buildHeader(activeId) {
