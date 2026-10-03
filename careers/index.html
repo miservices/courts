@@ -4,9 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Careers | Michigan Courts</title>
-<link rel="icon" type="image/png" href="/images/favicon.png">
+<link rel="icon" type="image/png" href="https://migovt.org/images/favicon.png">
 
-<script src="/courts/shell.js" data-active="careers"></script>
+<script src="https://migovt.org/courts/shell.js" data-active="careers"></script>
 
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -14,7 +14,7 @@ body{font-family:var(--font-ui,'Public Sans',system-ui,sans-serif);background:#e
 a{color:#1f5fae}
 a:focus-visible,summary:focus-visible,button:focus-visible{outline:3px solid #5b9be0;outline-offset:2px}
 .wrap{max-width:1180px;margin:0 auto;padding:0 40px}
-h2,h3{font-family:var(--font-head,Georgia,serif);color:#10264a;font-weight:600;line-height:1.25}
+h2,h3,h4{font-family:var(--font-head,Georgia,serif);color:#10264a;font-weight:600;line-height:1.25}
 
 .page-header{background:#10264a;padding:34px 0 40px}
 .breadcrumb{display:flex;align-items:center;gap:8px;margin-bottom:14px;font-size:13px;flex-wrap:wrap}
@@ -23,32 +23,36 @@ h2,h3{font-family:var(--font-head,Georgia,serif);color:#10264a;font-weight:600;l
 .breadcrumb span{color:#6f87ad}
 .breadcrumb .here{color:#fff}
 .page-header h1{font-family:var(--font-head,Georgia,serif);color:#fff;font-size:36px;font-weight:600;line-height:1.2;letter-spacing:-.01em}
-.page-header p{color:#c5d3e8;margin-top:10px;max-width:700px;line-height:1.6}
+.page-header p{color:#c5d3e8;margin-top:10px;max-width:720px;line-height:1.6}
 
 main{padding:36px 0 72px}
 .layout{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:28px;align-items:start}
 
 /* Filter + list */
-.list-head{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:14px}
-.list-head h2{font-size:24px}
+.list-head{margin-bottom:14px}
+.list-head h2{font-size:24px;margin-bottom:12px}
 .filters{display:flex;gap:8px;flex-wrap:wrap}
 .chip{font:inherit;font-size:14px;font-weight:600;padding:7px 14px;border-radius:20px;border:2px solid #10264a;background:#fff;color:#10264a;cursor:pointer}
 .chip:hover{background:#eef3f9}
 .chip[aria-pressed="true"]{background:#10264a;color:#fff}
 .count{font-size:14px;color:#5a667a;margin-bottom:12px}
 
+.group{margin-bottom:28px}
+.group-title{font-size:20px;margin-bottom:12px;padding-bottom:6px;border-bottom:2px solid #c9d4e4}
+
 .job{background:#fff;border:1px solid #d5dde8;border-radius:4px;margin-bottom:12px}
 .job[open]{border-color:#10264a}
 .job summary{list-style:none;cursor:pointer;padding:18px 24px;display:grid;grid-template-columns:1fr auto;gap:6px 16px;align-items:center}
 .job summary::-webkit-details-marker{display:none}
 .job summary:hover{background:#f4f8fd}
-.job h3{font-size:19px}
-.meta{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:14px;color:#5a667a;margin-top:4px}
+.job-title{font-size:19px}
+.meta{display:flex;flex-wrap:wrap;align-items:center;gap:4px 16px;font-size:14px;color:#5a667a;margin-top:4px}
 .badge{display:inline-block;font-size:12.5px;font-weight:600;padding:2px 10px;border-radius:12px;white-space:nowrap}
 .badge.district{background:#e2f0e8;color:#1c5a37}
 .badge.supreme{background:#ebe5f7;color:#4a2f8a}
-.closes{font-size:14px;font-weight:600;color:#10264a;white-space:nowrap;text-align:right}
-.closes small{display:block;font-weight:400;color:#5a667a;font-size:12.5px}
+.badge.other{background:#e1ecf8;color:#164a86}
+.sched{font-size:14px;font-weight:600;color:#10264a;white-space:nowrap;text-align:right}
+.sched small{display:block;font-weight:400;color:#5a667a;font-size:12.5px}
 .chev{width:10px;height:10px;border-right:2px solid #5a667a;border-bottom:2px solid #5a667a;transform:rotate(45deg);margin:0 4px 0 12px;display:inline-block;transition:transform .15s}
 .job[open] .chev{transform:rotate(-135deg)}
 .job-body{padding:4px 24px 24px;border-top:1px solid #e3e9f1}
@@ -57,11 +61,13 @@ main{padding:36px 0 72px}
 .job-body ul{margin-left:20px;color:#2b3548;max-width:70ch}
 .job-body li{padding:2px 0}
 .job-body li::marker{color:#1f5fae}
-.facts{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:16px;padding:14px 16px;background:#eef3f9;border-radius:4px}
+.note{margin-top:14px;max-width:70ch;padding:10px 16px;background:#eef3f9;border-left:4px solid #1f5fae;border-radius:0 4px 4px 0;color:#10264a;font-weight:600}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:16px;padding:14px 16px;background:#eef3f9;border-radius:4px}
 .facts dt{font-size:13px;color:#5a667a}
 .facts dd{font-weight:600;color:#10264a}
 .apply{display:inline-block;margin-top:20px;background:#10264a;color:#fff;font-weight:700;padding:10px 20px;border-radius:4px;text-decoration:none}
 .apply:hover{background:#17335f}
+.apply-note{display:block;margin-top:6px;font-size:14px;color:#5a667a}
 .empty{background:#fff;border:1px solid #d5dde8;border-radius:4px;padding:32px;text-align:center;color:#5a667a}
 
 /* Sidebar */
@@ -78,11 +84,10 @@ main{padding:36px 0 72px}
   .layout{grid-template-columns:1fr}
   .side{position:static}
   .page-header h1{font-size:29px}
-  .facts{grid-template-columns:1fr 1fr}
 }
 @media(max-width:560px){
   .job summary{grid-template-columns:1fr;padding:16px}
-  .closes{text-align:left}
+  .sched{text-align:left}
   .job-body{padding:4px 16px 20px}
 }
 </style>
@@ -92,11 +97,11 @@ main{padding:36px 0 72px}
 <div class="page-header">
   <div class="wrap">
     <div class="breadcrumb">
-      <a href="/courts/">Home</a><span>/</span>
+      <a href="https://migovt.org/courts/">Home</a><span>/</span>
       <span class="here">Careers</span>
     </div>
     <h1>Careers with Michigan Courts</h1>
-    <p>Help keep the courts running for Flint and Genesee County. See current openings at the Genesee County District Court and the Michigan Supreme Court.</p>
+    <p>Help keep the courts running for Michigan. See open positions at the Michigan Supreme Court, the State Bar, the State Court Administrative Office, the judicial and attorney oversight boards, and the Genesee County District Court.</p>
   </div>
 </div>
 
@@ -105,12 +110,8 @@ main{padding:36px 0 72px}
 
     <div>
       <div class="list-head">
-        <h2>Current openings</h2>
-        <div class="filters" role="group" aria-label="Filter by court">
-          <button class="chip" data-f="all" aria-pressed="true">All courts</button>
-          <button class="chip" data-f="district" aria-pressed="false">District Court</button>
-          <button class="chip" data-f="supreme" aria-pressed="false">Supreme Court</button>
-        </div>
+        <h2>Open positions</h2>
+        <div class="filters" role="group" aria-label="Filter by organization" id="filters"></div>
       </div>
       <div class="count" id="count" aria-live="polite"></div>
       <div id="jobs"></div>
@@ -119,10 +120,10 @@ main{padding:36px 0 72px}
     <aside class="side">
       <h2>How to apply</h2>
       <ol>
-        <li>Open a posting and read the qualifications.</li>
-        <li>Select <strong>Apply</strong> and sign in to the Online Portal.</li>
+        <li>Open a position and read what the role involves.</li>
+        <li>Select the apply button. Judges and magistrates have their own application pages. Every other role uses the general application.</li>
         <li>Submit your resume and a short cover letter.</li>
-        <li>The court contacts selected candidates to schedule interviews.</li>
+        <li>Selected candidates are contacted to schedule interviews.</li>
       </ol>
       <hr>
       <p>Michigan Courts is an equal opportunity employer. All qualified applicants are considered without regard to race, color, religion, sex, national origin, age, disability, or veteran status.</p>
@@ -132,99 +133,200 @@ main{padding:36px 0 72px}
 </main>
 
 <script>
+  const ORGS = [
+    { key: 'supreme',  name: 'Michigan Supreme Court',               cls: 'supreme' },
+    { key: 'statebar', name: 'State Bar of Michigan',                cls: 'other' },
+    { key: 'scao',     name: 'State Court Administrative Office',    cls: 'other' },
+    { key: 'jtc',      name: 'Judicial Tenure Commission',           cls: 'other' },
+    { key: 'agc',      name: 'Attorney Grievance Commission',        cls: 'other' },
+    { key: 'adb',      name: 'Attorney Discipline Board',            cls: 'other' },
+    { key: 'district', name: 'Genesee County District Court',        cls: 'district' }
+  ];
+
+  const BASE = 'https://migovt.org/apply/';
+
   const JOBS = [
+    /* ── Supreme Court ── */
     {
-      id: 'sc-law-clerk', title: 'Law Clerk', court: 'supreme', courtName: 'Michigan Supreme Court',
-      dept: "Justices' Chambers", loc: 'Lansing', type: 'Full-time, 1-year term', pay: '$62,000 – $72,000',
-      closes: '2026-10-16',
-      summary: 'Research legal issues and draft memoranda for a justice on cases before the Court.',
-      duties: ['Research and analyze questions of Michigan and federal law', 'Draft bench memoranda and opinion drafts', 'Review applications and briefs and recommend how to handle them', 'Cite-check opinions before release'],
-      quals: ['Juris Doctor from an accredited law school', 'Strong legal research and writing skills', 'Ability to handle confidential material with discretion', 'Law review or judicial internship experience preferred']
+      id: 'sc-clerk', org: 'supreme', title: 'Supreme Court Clerk', dept: "Clerk's Office", loc: 'Lansing', schedule: 'Moderate',
+      summary: "Manage the Court's docket, filings, and official records.",
+      duties: ['Receive, review, and docket filings in cases before the Court', "Keep the Court's official records and certify copies", "Schedule oral arguments and issue the Court's orders and notices", 'Answer procedural questions from attorneys and the public', "Supervise the clerk's office staff"],
+      quals: ['Experience in court administration or appellate practice', 'Strong knowledge of court rules and filing procedures', 'Close attention to detail', 'Supervisory experience; a law degree is preferred']
     },
     {
-      id: 'dc-deputy-clerk', title: 'Deputy Court Clerk', court: 'district', courtName: 'Genesee Co. District Court',
-      dept: "Clerk's Office", loc: 'Flint', type: 'Full-time', pay: '$38,500 – $47,000',
-      closes: '2026-10-23',
-      summary: 'Process filings, maintain case files, and assist the public at the clerk\'s office.',
-      duties: ['Review and accept or deny filings submitted through the Online Portal', 'Maintain accurate case records and dockets', 'Attend court sessions and record case outcomes', 'Answer questions from the public, attorneys, and agencies'],
-      quals: ['High school diploma or equivalent; some college preferred', 'Strong attention to detail and data entry accuracy', 'Clear written and spoken communication', 'Customer service experience preferred']
+      id: 'sc-reporter', org: 'supreme', title: 'Supreme Court Reporter of Decisions', dept: 'Office of the Reporter of Decisions', loc: 'Lansing', schedule: 'Moderate',
+      summary: "Prepare, edit, and publish the Court's opinions.",
+      duties: ["Edit opinions for accuracy, style, and citation form before release", 'Prepare summaries for published opinions', 'Publish opinions and orders in the official reports', "Work with the justices' chambers to resolve corrections"],
+      quals: ['Law degree', 'Excellent editing and legal citation skills', 'Close attention to detail', 'Ability to meet firm publication deadlines']
     },
     {
-      id: 'dc-probation', title: 'Probation Officer', court: 'district', courtName: 'Genesee Co. District Court',
-      dept: 'Probation Department', loc: 'Flint', type: 'Full-time', pay: '$46,000 – $58,000',
-      closes: '2026-10-30',
-      summary: 'Supervise people sentenced to probation and report their progress to the court.',
-      duties: ['Meet regularly with assigned probationers and monitor compliance', 'Prepare pre-sentence and progress reports for judges', 'Connect probationers with treatment and community services', 'Testify at violation hearings when needed'],
-      quals: ["Bachelor's degree in criminal justice, social work, or a related field", 'Valid driver\'s license', 'Ability to pass a background check', 'Experience in case management or counseling preferred']
+      id: 'sc-marshal', org: 'supreme', title: 'Supreme Court Marshal', dept: 'Marshal’s Office', loc: 'Lansing', schedule: 'Moderate',
+      summary: 'Lead security and courtroom operations for the Michigan Supreme Court.',
+      duties: ['Oversee security for the Court building and for court sessions', 'Open and close sessions and keep order in the courtroom', 'Manage building access and coordinate with law enforcement', 'Supervise security and facilities staff'],
+      quals: ['Experience in law enforcement, security, or the military', 'Leadership and supervisory experience', 'Calm judgment under pressure', 'Ability to pass a background check']
+    },
+
+    /* ── State Bar ── */
+    {
+      id: 'sbm-director', org: 'statebar', title: 'Director', dept: 'Executive Office', schedule: 'Moderate',
+      summary: 'Lead the day-to-day operations of the State Bar of Michigan.',
+      duties: ["Carry out the policies set by the Bar's governing leadership", 'Manage staff, budget, and programs', 'Represent the Bar to the courts, the legislature, and the public', 'Report regularly to Bar leaders on operations'],
+      quals: ['Senior leadership experience in a professional or public organization', 'Strong budget and staff management skills', 'Excellent communication skills', 'Law degree preferred']
     },
     {
-      id: 'dc-security', title: 'Court Security Officer', court: 'district', courtName: 'Genesee Co. District Court',
-      dept: 'Court Security', loc: 'Flint', type: 'Full-time, rotating shifts', pay: '$36,000 – $44,000',
-      closes: '2026-11-06',
-      summary: 'Keep courtrooms and the courthouse safe for staff, litigants, and visitors.',
-      duties: ['Staff entrance screening and monitor building access', 'Provide security in courtrooms during hearings and trials', 'Escort in-custody defendants as directed', 'Respond to incidents and prepare written reports'],
-      quals: ['High school diploma or equivalent', 'Prior security, law enforcement, or military experience preferred', 'Able to stand for long periods and respond physically if needed', 'Ability to pass a background check and training']
+      id: 'sbm-deputy', org: 'statebar', title: 'Deputy Director', dept: 'Executive Office', schedule: 'Moderate',
+      summary: 'Support the Director and run Bar operations when the Director is away.',
+      duties: ['Help manage daily operations, staff, and programs', 'Lead projects assigned by the Director', 'Serve as acting Director when needed', 'Coordinate between Bar departments'],
+      quals: ['Management experience in a professional or public organization', 'Strong organizational and communication skills', 'Ability to work across many teams', 'Law degree preferred']
+    },
+
+    /* ── SCAO ── */
+    {
+      id: 'scao-administrator', org: 'scao', title: 'State Court Administrator', dept: 'Administrator’s Office', loc: 'Lansing', schedule: 'Moderate',
+      summary: 'Lead the State Court Administrative Office and support the courts statewide.',
+      duties: ['Carry out the Supreme Court’s directives on court administration', 'Oversee the shared services and standard forms that SCAO provides to courts', 'Collect and report court data and performance', 'Advise courts on administrative questions'],
+      quals: ['Senior experience in court administration or public administration', 'Strong leadership and budget skills', 'Deep knowledge of how Michigan courts operate', 'Excellent communication skills']
     },
     {
-      id: 'sc-it', title: 'Case Management Systems Specialist', court: 'supreme', courtName: 'Michigan Supreme Court',
-      dept: 'Information Technology', loc: 'Lansing', type: 'Full-time', pay: '$64,000 – $82,000',
-      closes: '2026-11-13',
-      summary: 'Support and improve the case management and Online Portal systems used by the courts.',
-      duties: ['Maintain and troubleshoot the Online Portal and related systems', 'Work with clerks to turn court rule changes into system updates', 'Manage user accounts, permissions, and data security', 'Train court staff and document procedures'],
-      quals: ["Bachelor's degree in information systems or equivalent experience", 'Experience with databases and web applications', 'Strong problem-solving and communication skills', 'Interest in court operations is a plus']
+      id: 'scao-deputy', org: 'scao', title: 'Deputy State Court Administrator', dept: 'Administrator’s Office', loc: 'Lansing', schedule: 'Moderate',
+      summary: 'Support the State Court Administrator in leading SCAO.',
+      duties: ['Help manage SCAO staff, programs, and budget', 'Lead projects assigned by the State Court Administrator', 'Serve as acting State Court Administrator when needed', 'Work with local courts on administrative needs'],
+      quals: ['Management experience in court administration or public administration', 'Strong knowledge of Michigan court operations', 'Excellent organizational and communication skills']
+    },
+
+    /* ── Judicial Tenure Commission ── */
+    {
+      id: 'jtc-commissioner', org: 'jtc', title: 'Commissioner', dept: 'Commission', schedule: 'Light', count: 3,
+      note: 'Three commissioners will be selected. One of the three will be chosen to serve as chairperson.',
+      summary: 'Review complaints about judges and decide what action to take.',
+      duties: ['Review complaints alleging judicial misconduct or disability', 'Vote on whether to investigate, dismiss, or recommend action to the Supreme Court', 'Take part in hearings and deliberations', 'Keep complaint matters confidential as required'],
+      quals: ['Strong commitment to fairness and impartiality', 'Legal, judicial, or public service experience', 'Ability to keep sensitive matters confidential', 'No conflicts of interest with judges in Michigan']
     },
     {
-      id: 'dc-interpreter', title: 'Court Interpreter (Spanish)', court: 'district', courtName: 'Genesee Co. District Court',
-      dept: 'Court Services', loc: 'Flint', type: 'Part-time, as needed', pay: '$38 – $52 per hour',
-      closes: '2026-11-20',
-      summary: 'Interpret Spanish and English for hearings, trials, and the clerk\'s office.',
-      duties: ['Interpret accurately and completely during court proceedings', 'Translate short written documents when requested', 'Remain neutral and keep all case information confidential', 'Be available on short notice for scheduled hearings'],
-      quals: ['Fluency in English and Spanish', 'Court interpreter certification, or ability to obtain it within one year', 'Knowledge of legal terminology preferred', 'Ability to pass a background check']
+      id: 'jtc-grievance-administrator', org: 'jtc', title: 'Grievance Administrator', dept: 'Administration', schedule: 'Light',
+      summary: 'Receive and investigate complaints about judges and present findings to the Commission.',
+      duties: ['Receive and log complaints about judges', 'Direct investigations and gather evidence', 'Present findings and recommendations to the Commission', 'Supervise staff and keep complaint records secure'],
+      quals: ['Law degree and experience investigating or prosecuting complaints', 'Sound judgment and discretion with confidential material', 'Supervisory experience']
+    },
+
+    /* ── Attorney Grievance Commission ── */
+    {
+      id: 'agc-commissioner', org: 'agc', title: 'Commissioner', dept: 'Commission', schedule: 'Light', count: 3,
+      note: 'Three commissioners will be selected. One of the three will be chosen to serve as chairperson.',
+      summary: 'Oversee how complaints about attorneys are reviewed and decided.',
+      duties: ['Review complaints about attorney conduct and the Administrator’s recommendations', 'Vote on whether to dismiss a complaint or move forward with formal action', 'Set policy for how the Commission handles complaints', 'Keep complaint matters confidential as required'],
+      quals: ['Strong commitment to fairness and impartiality', 'Legal or public service experience', 'Ability to keep sensitive matters confidential', 'No conflicts of interest with attorneys under review']
+    },
+    {
+      id: 'agc-grievance-administrator', org: 'agc', title: 'Grievance Administrator', dept: 'Administration', schedule: 'Light',
+      summary: 'Run the office that investigates complaints about attorneys.',
+      duties: ['Receive and investigate complaints about attorneys', 'Decide which matters to recommend to the Commission', 'Bring formal complaints before the Attorney Discipline Board when approved', 'Supervise staff and manage the office budget'],
+      quals: ['Law degree and experience investigating or prosecuting complaints', 'Sound judgment and discretion with confidential material', 'Supervisory experience']
+    },
+
+    /* ── Attorney Discipline Board ── */
+    {
+      id: 'adb-member', org: 'adb', title: 'Member', dept: 'Board', schedule: 'Light', count: 3,
+      note: 'Three members will be selected. One of the three will be chosen to serve as president.',
+      summary: 'Hear and decide attorney discipline cases.',
+      duties: ['Review hearing panel decisions in attorney discipline cases', 'Decide appeals and issue written orders', 'Oversee the hearing panels that handle discipline cases', 'Take part in Board meetings and deliberations'],
+      quals: ['Legal experience, ideally including professional responsibility', 'Strong commitment to fairness and impartiality', 'Ability to write clear decisions', 'No conflicts of interest with attorneys under review']
+    },
+
+    /* ── Genesee County District Court ── */
+    {
+      id: 'dc-judge', org: 'district', title: 'Judge', dept: 'Bench', loc: 'Flint', schedule: 'Heavy', count: 4,
+      note: 'Four judges will be selected. One of the four will be chosen to serve as chief judge.',
+      summary: 'Preside over criminal, civil, traffic, and felony cases in Genesee County.',
+      duties: ['Hear and decide cases, including hearings and trials', 'Rule on motions and impose sentences', 'Manage a courtroom docket', 'Follow the Michigan Court Rules and the Code of Judicial Conduct'],
+      quals: ['Licensed to practice law in Michigan', 'Strong legal knowledge and sound judgment', 'Commitment to fairness and impartiality', 'Ability to manage a heavy caseload'],
+      apply: { url: BASE + 'judge/', label: 'Start the judge application', hint: 'Judge candidates apply on their own page.' }
+    },
+    {
+      id: 'dc-magistrate', org: 'district', title: 'Magistrate', dept: 'Bench', loc: 'Flint', schedule: 'Heavy', count: 6,
+      summary: 'Hear matters that judges assign, including arraignments and early hearings.',
+      duties: ['Conduct arraignments and set bond as authorized', 'Review requests for warrants', 'Hear certain traffic and civil matters assigned by the judges', 'Keep accurate records of every proceeding'],
+      quals: ['Strong knowledge of Michigan law and court procedure', 'Sound judgment and a calm courtroom manner', 'Ability to make quick, careful decisions', 'Law degree preferred'],
+      apply: { url: BASE + 'magistrate/', label: 'Start the magistrate application', hint: 'Magistrate candidates apply on their own page.' }
+    },
+    {
+      id: 'dc-county-clerk', org: 'district', title: 'County Clerk', dept: 'Legal Records Division', loc: 'Flint', schedule: 'Moderate',
+      summary: 'Lead the Legal Records Division, which keeps the court’s official files and dockets.',
+      duties: ['Oversee the Legal Records Division and its staff', 'Make sure filings are accepted, indexed, and preserved correctly', 'Certify copies and respond to records requests', 'Supervise deputy clerks and records staff'],
+      quals: ['Experience managing court or public records', 'Strong knowledge of filing rules and procedures', 'Supervisory experience', 'Close attention to detail']
+    },
+    {
+      id: 'dc-court-administrator', org: 'district', title: 'Court Administrator', dept: 'Court Services Division', loc: 'Flint', schedule: 'Moderate',
+      summary: 'Lead the Court Services Division and keep day-to-day court operations running.',
+      duties: ['Oversee the Court Services Division', 'Lead Probation and Pretrial Services, which supervises people on probation and prepares reports for judges', 'Lead Jury Services, which summons and manages jurors', 'Supervise clerks and other court staff', 'Manage the court’s schedules, budget, and daily operations', 'Carry out court policies set by the judges'],
+      quals: ['Experience in court administration or public administration', 'Strong leadership and budget skills', 'Knowledge of probation, pretrial, and jury operations', 'Excellent communication skills']
     }
-  ].sort((a, b) => a.closes.localeCompare(b.closes));
+  ];
 
-  const fmt = iso => new Date(iso + 'T12:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-  const daysLeft = iso => Math.ceil((new Date(iso + 'T23:59:59') - new Date()) / 864e5);
+  const ORG = Object.fromEntries(ORGS.map(o => [o.key, o]));
 
-  function render(filter) {
-    const list = JOBS.filter(j => (filter === 'all' || j.court === filter) && daysLeft(j.closes) >= 0);
-    document.getElementById('count').textContent = list.length + (list.length === 1 ? ' opening' : ' openings');
-    document.getElementById('jobs').innerHTML = list.length ? list.map(j => `
+  function jobHtml(j) {
+    const o = ORG[j.org];
+    const apply = j.apply || { url: BASE + '?position=' + encodeURIComponent(j.id), label: 'Apply for this position' };
+    const facts = [
+      ['Organization', o.name],
+      j.loc ? ['Location', j.loc + ', Michigan'] : null,
+      ['Schedule', j.schedule],
+      ['Pay', 'TBD'],
+      j.count ? ['Positions', String(j.count)] : null
+    ].filter(Boolean);
+    return `
       <details class="job" id="${j.id}">
         <summary>
           <div>
-            <h3>${j.title}</h3>
+            <h4 class="job-title">${j.title}${j.count ? ` (${j.count} positions)` : ''}</h4>
             <div class="meta">
-              <span class="badge ${j.court}">${j.courtName}</span>
-              <span>${j.dept}</span><span>${j.loc}</span><span>${j.type}</span>
+              <span class="badge ${o.cls}">${o.name}</span>
+              <span>${j.dept}</span>${j.loc ? `<span>${j.loc}</span>` : ''}
             </div>
           </div>
-          <div class="closes"><small>Closes</small>${fmt(j.closes)}<span class="chev" aria-hidden="true"></span></div>
+          <div class="sched"><small>Schedule</small>${j.schedule}<span class="chev" aria-hidden="true"></span></div>
         </summary>
         <div class="job-body">
           <p>${j.summary}</p>
-          <dl class="facts">
-            <div><dt>Court</dt><dd>${j.courtName}</dd></div>
-            <div><dt>Location</dt><dd>${j.loc}, Michigan</dd></div>
-            <div><dt>Schedule</dt><dd>${j.type}</dd></div>
-            <div><dt>Pay</dt><dd>${j.pay}</dd></div>
-          </dl>
+          ${j.note ? `<p class="note">${j.note}</p>` : ''}
+          <dl class="facts">${facts.map(([k, v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join('')}</dl>
           <h4>What you'll do</h4>
           <ul>${j.duties.map(d => `<li>${d}</li>`).join('')}</ul>
           <h4>What you'll need</h4>
           <ul>${j.quals.map(q => `<li>${q}</li>`).join('')}</ul>
-          <a class="apply" href="/courts/micourt/">Apply through the Online Portal</a>
+          <a class="apply" href="${apply.url}">${apply.label}</a>
+          ${apply.hint ? `<span class="apply-note">${apply.hint}</span>` : ''}
         </div>
-      </details>`).join('')
-      : '<div class="empty">No openings right now for this court. Check back soon.</div>';
+      </details>`;
   }
 
-  document.querySelectorAll('.chip').forEach(b => b.addEventListener('click', () => {
-    document.querySelectorAll('.chip').forEach(c => c.setAttribute('aria-pressed', c === b));
+  function render(filter) {
+    const orgs = ORGS.filter(o => filter === 'all' || o.key === filter);
+    let total = 0;
+    const html = orgs.map(o => {
+      const list = JOBS.filter(j => j.org === o.key);
+      total += list.length;
+      return list.length ? `<section class="group" aria-labelledby="g-${o.key}"><h3 class="group-title" id="g-${o.key}">${o.name}</h3>${list.map(jobHtml).join('')}</section>` : '';
+    }).join('');
+    document.getElementById('count').textContent = total + (total === 1 ? ' position' : ' positions');
+    document.getElementById('jobs').innerHTML = html || '<div class="empty">No open positions right now. Check back soon.</div>';
+  }
+
+  const filters = document.getElementById('filters');
+  filters.innerHTML = [{ key: 'all', name: 'All' }, ...ORGS].map((o, i) =>
+    `<button type="button" class="chip" data-f="${o.key}" aria-pressed="${i === 0}">${o.name}</button>`).join('');
+  filters.addEventListener('click', e => {
+    const b = e.target.closest('.chip');
+    if (!b) return;
+    filters.querySelectorAll('.chip').forEach(c => c.setAttribute('aria-pressed', c === b));
     render(b.dataset.f);
-  }));
+  });
+
   render('all');
-  if (location.hash) { const el = document.querySelector(location.hash); if (el) el.open = true; }
+  if (location.hash) {
+    try { const el = document.querySelector(location.hash); if (el && el.tagName === 'DETAILS') { el.open = true; el.scrollIntoView(); } } catch (e) {}
+  }
 </script>
 </body>
 </html>
