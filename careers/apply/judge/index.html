@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Judicial Application | Michigan Courts</title>
+<link rel="icon" type="image/png" href="https://migovt.org/images/favicon.png">
+
+<script src="https://migovt.org/courts/shell.js" data-active="careers"></script>
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-ui,'Public Sans',system-ui,sans-serif);background:#e3e9f2;color:#1b2433;line-height:1.7;font-size:16px}
+a{color:#1f5fae}
+a:focus-visible,button:focus-visible{outline:3px solid #5b9be0;outline-offset:2px}
+.wrap{max-width:1180px;margin:0 auto;padding:0 40px}
+h2,h3{font-family:var(--font-head,Georgia,serif);color:#10264a;font-weight:600;line-height:1.25}
+
+.page-header{background:#10264a;padding:34px 0 40px}
+.breadcrumb{display:flex;align-items:center;gap:8px;margin-bottom:14px;font-size:13px;flex-wrap:wrap}
+.breadcrumb a{color:#9cc4f5;text-decoration:none}
+.breadcrumb a:hover{color:#fff;text-decoration:underline}
+.breadcrumb span{color:#6f87ad}
+.breadcrumb .here{color:#fff}
+.page-header h1{font-family:var(--font-head,Georgia,serif);color:#fff;font-size:36px;font-weight:600;line-height:1.2;letter-spacing:-.01em}
+.page-header p{color:#c5d3e8;margin-top:10px;max-width:740px;line-height:1.6}
+
+main{padding:36px 0 72px}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:24px;align-items:start}
+.panel{background:#fff;border:1px solid #d5dde8;border-radius:4px;padding:32px 40px}
+.panel+.panel{margin-top:24px}
+.panel>h2{font-size:24px;margin-bottom:4px}
+.pts{display:inline-block;margin-left:10px;font-family:var(--font-ui,system-ui,sans-serif);font-size:13px;font-weight:700;color:#164a86;background:#e1ecf8;padding:2px 10px;border-radius:12px;vertical-align:middle}
+.lead{color:#2b3548;margin-bottom:20px;max-width:70ch}
+.anon{border:1px solid #d5dde8;border-left:4px solid #1f5fae;background:#f4f8fd;border-radius:4px;padding:16px 20px;margin-bottom:24px}
+.anon strong{color:#10264a}
+
+/* Fields */
+.field{margin-bottom:22px}
+label,legend{display:block;font-weight:700;color:#10264a;margin-bottom:4px}
+fieldset{border:0}
+.hint{font-size:14px;color:#5a667a;margin-bottom:6px}
+input[type=text],select,textarea{width:100%;font:inherit;color:#1b2433;background:#fff;border:1px solid #8a97ad;border-radius:4px;padding:10px 12px}
+select{max-width:340px}
+textarea{min-height:170px;resize:vertical;line-height:1.6}
+textarea.tall{min-height:380px}
+input:focus,select:focus,textarea:focus{outline:3px solid #5b9be0;outline-offset:1px;border-color:#1f5fae}
+.narrow{max-width:240px}
+.opts{display:grid;gap:6px;margin-top:6px}
+.opt{display:flex;gap:10px;align-items:flex-start;font-weight:400;color:#1b2433;margin:0;padding:8px 12px;border:1px solid #d5dde8;border-radius:4px;cursor:pointer}
+.opt:hover{background:#f4f8fd}
+.opt input{margin-top:6px;width:18px;height:18px;accent-color:#1f5fae;flex-shrink:0}
+.opt:has(input:checked){border-color:#1f5fae;background:#eef3f9}
+.opt:focus-within{outline:3px solid #5b9be0;outline-offset:2px}
+.qnum{color:#5a667a;font-weight:400;font-size:14px;margin-left:6px}
+.q{padding-bottom:22px;margin-bottom:22px;border-bottom:1px solid #e3e9f2}
+.q:last-child{border-bottom:0;margin-bottom:0;padding-bottom:0}
+.wc{font-size:14px;color:#5a667a;margin-top:4px}
+.wc.bad{color:#b3261e;font-weight:600}
+.case{background:#f4f8fd;border:1px solid #d5dde8;border-radius:4px;padding:18px 22px;margin-bottom:20px;max-width:78ch}
+.case h3{font-size:18px;margin-bottom:8px}
+.case p{margin-bottom:10px;color:#2b3548}
+.case ul{margin:0 0 10px 20px;color:#2b3548}
+.case li{padding:2px 0}
+.error-msg{display:none;color:#b3261e;font-size:14px;font-weight:600;margin-top:6px}
+.field.invalid .error-msg,.q.invalid .error-msg{display:block}
+.field.invalid input,.field.invalid select,.field.invalid textarea{border-color:#b3261e}
+.q.invalid .opt{border-color:#e7b4b0}
+.summary-err{display:none;border:1px solid #ef9a9a;border-left:4px solid #b3261e;background:#fdf1f0;color:#6b1a15;border-radius:4px;padding:14px 18px;margin-bottom:24px}
+.summary-err.show{display:block}
+.summary-err ul{margin:6px 0 0 20px}
+.summary-err a{color:#6b1a15;font-weight:700}
+.btn{display:inline-block;background:#1f5fae;color:#fff;font:inherit;font-weight:700;text-decoration:none;padding:11px 24px;border:0;border-radius:4px;cursor:pointer}
+.btn:hover{background:#10264a}
+.btn:disabled{background:#6f87ad;cursor:wait}
+.cancel{font-weight:700;text-decoration:none;margin-left:16px}
+.check{display:flex;gap:10px;align-items:flex-start;font-weight:400;color:#1b2433;margin:0}
+.check input{margin-top:6px;width:18px;height:18px;accent-color:#1f5fae;flex-shrink:0}
+
+/* Sidebar */
+.side{background:#fff;border:1px solid #d5dde8;border-radius:4px;padding:22px 24px;position:sticky;top:calc(var(--mc-sticky-top,0px) + 20px)}
+.side h2{font-size:20px;margin-bottom:10px}
+.side h2+table,.side h2+ul{margin-bottom:6px}
+.side table{width:100%;border-collapse:collapse;font-size:15px}
+.side td{padding:6px 0;border-bottom:1px solid #e3e9f1}
+.side td:last-child{text-align:right;font-weight:700;color:#10264a;white-space:nowrap}
+.side tr.total td{border-bottom:0;font-weight:700}
+.side .sep{border:0;border-top:1px solid #e3e9f1;margin:16px 0}
+.side p,.side li{font-size:14.5px;color:#33405a}
+.side ul{margin-left:18px}
+.progress{list-style:none;margin:0}
+.progress li{display:flex;justify-content:space-between;gap:12px;padding:4px 0;font-size:15px;color:#33405a}
+.progress .done{color:#256029;font-weight:700}
+
+/* Confirmation */
+.confirm{display:none}
+.confirm.show{display:block}
+.confirm-banner{border:1px solid #a5d6a7;border-left:4px solid #256029;background:#e8f5e9;border-radius:4px;padding:18px 22px;margin-bottom:24px}
+.confirm-banner h2{font-size:24px;color:#1d4a21;margin-bottom:4px}
+.confirm-banner p{color:#1d4a21}
+.ref{font-weight:700;font-size:20px;letter-spacing:.04em}
+dl.recap{border:1px solid #d5dde8;border-radius:4px;margin-bottom:24px}
+dl.recap div{display:grid;grid-template-columns:200px 1fr;gap:16px;padding:12px 18px}
+dl.recap div+div{border-top:1px solid #e3e9f2}
+dl.recap dt{color:#5a667a;font-size:15px}
+dl.recap dd{font-weight:600}
+.next h3{font-size:19px;margin-bottom:6px}
+.next p{color:#2b3548;max-width:66ch;margin-bottom:12px}
+
+@media(max-width:960px){
+  .layout{grid-template-columns:1fr}
+  .side{position:static;order:-1}
+}
+@media(max-width:860px){
+  .wrap{padding:0 20px}
+  .page-header h1{font-size:29px}
+  .panel{padding:24px 20px}
+  dl.recap div{grid-template-columns:1fr;gap:2px}
+}
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <div class="wrap">
+    <div class="breadcrumb">
+      <a href="https://migovt.org/courts/">Home</a><span>/</span>
+      <a href="https://migovt.org/courts/careers/">Careers</a><span>/</span>
+      <span class="here"><span class="role-cap">Judge</span> application</span>
+    </div>
+    <h1>District Court <span class="role-word">judge</span> application</h1>
+    <p>Apply for judicial service on the Genesee County District Court. Applications are anonymous and scored on a 100-point scale. You need at least 80 points to qualify for further consideration.</p>
+  </div>
+</div>
+
+<main>
+  <div class="wrap layout">
+
+    <div>
+      <div id="form-area">
+        <div class="panel">
+          <h2>Before you begin</h2>
+          <div class="anon">
+            <strong>This application is anonymous.</strong> It asks only for your State Bar of Michigan number. It never asks for your name or other identifying information, and your identity is not considered when your application is scored. Please leave your name, employer, school, county, and contact details out of every answer.
+          </div>
+          <p class="lead">The State Bar of Michigan administers applications. Plan for about two hours. Your answers are not saved until you submit, so keep this page open until you finish.</p>
+        </div>
+
+        <form id="app-form" novalidate>
+          <div class="summary-err" id="summary-err" role="alert" tabindex="-1"></div>
+
+          <div class="panel" id="part-id">
+            <h2>Your State Bar number</h2>
+            <p class="lead">The State Bar uses this only to confirm that you are an attorney licensed and in good standing in Michigan.</p>
+            <div class="field" id="f-pin">
+              <label for="pin">State Bar of Michigan number *</label>
+              <p class="hint" id="pin-hint">For example, P12345</p>
+              <input class="narrow" type="text" id="pin" name="pin" autocomplete="off" aria-describedby="pin-hint pin-err">
+              <div class="error-msg" id="pin-err">Enter your State Bar number, like P12345.</div>
+            </div>
+          </div>
+
+          <div class="panel" id="part-1">
+            <h2>Part 1: Multiple choice <span class="pts">50 points</span></h2>
+            <p class="lead">Ten questions, five points each. Choose the best answer for each.</p>
+            <div id="mc"></div>
+          </div>
+
+          <div class="panel" id="part-2">
+            <h2>Part 2: Short answer <span class="pts">20 points</span></h2>
+            <p class="lead">Two questions, ten points each. Write 100 to 250 words for each. Reviewers score your answers with a standard rubric.</p>
+            <div id="sa"></div>
+          </div>
+
+          <div class="panel" id="part-3">
+            <h2>Part 3: Written opinion drafting exercise <span class="pts">20 points</span></h2>
+            <p class="lead">Read the case below and write a short opinion deciding it. Write 250 to 1,000 words.</p>
+            <div class="case">
+              <h3>Hollis v. Marlow Properties</h3>
+              <p>Dana Hollis rented an apartment from Marlow Properties and paid a $900 security deposit. Ms. Hollis moved out on March 31. On April 3, she emailed Marlow's office manager her new mailing address. The office manager did not reply.</p>
+              <p>On May 15, Marlow mailed an itemized list to Ms. Hollis's old apartment address. The list claimed $450 for carpet stains and offered to refund the remaining $450. Ms. Hollis never received it. She sued in small claims for the full $900.</p>
+              <p>At the hearing, Marlow produced dated photographs showing stains on the living room carpet. Marlow's manager testified that the email was never seen and that the company's lease says all notices must be sent by regular mail. Ms. Hollis testified that she cleaned the apartment, that the stains were there when she moved in, and that she has no move-in photographs.</p>
+              <p><strong>Assume this rule applies:</strong></p>
+              <ul>
+                <li>A tenant must give the landlord a forwarding address in writing within 4 days after moving out.</li>
+                <li>Within 30 days after the tenant moves out, the landlord must send the tenant an itemized list of any damages claimed, and any refund, to the forwarding address.</li>
+                <li>A landlord who misses the 30-day deadline loses the right to keep any part of the deposit.</li>
+              </ul>
+              <p>Your opinion should state the facts, identify the issues, explain the rule, apply it to the facts, and announce a judgment.</p>
+            </div>
+            <div class="field" id="f-opinion">
+              <label for="opinion">Your opinion *</label>
+              <textarea class="tall" id="opinion" name="opinion" data-min="250" data-max="1000" aria-describedby="wc-opinion op-err"></textarea>
+              <div class="wc" id="wc-opinion"></div>
+              <div class="error-msg" id="op-err"></div>
+            </div>
+          </div>
+
+          <div class="panel" id="part-4">
+            <h2>Part 4: Professional qualifications and experience <span class="pts">10 points</span></h2>
+            <p class="lead">Choose the answer that fits you best. Do not name employers, courts, or clients.</p>
+            <div id="qq"></div>
+          </div>
+
+          <div class="panel">
+            <div class="field" id="f-cert">
+              <label class="check" for="cert">
+                <input type="checkbox" id="cert" name="cert">
+                <span>I certify that my answers are my own work and that I have not included my name or other identifying information in them.</span>
+              </label>
+              <div class="error-msg" id="cert-err">Check the box to certify your application.</div>
+            </div>
+            <button class="btn" type="submit" id="submit-btn">Submit application</button>
+            <a class="cancel" href="https://migovt.org/courts/careers/">Cancel</a>
+          </div>
+        </form>
+      </div>
+
+      <div class="panel confirm" id="confirm" aria-live="polite">
+        <div class="confirm-banner" id="confirm-banner" tabindex="-1">
+          <h2>Application submitted</h2>
+          <p>Your application code is <span class="ref" id="ref"></span>. Keep it. We don't collect your name or contact details, so we can't send you a copy.</p>
+        </div>
+        <dl class="recap" id="recap"></dl>
+        <div class="next">
+          <h3>What happens next</h3>
+          <p>The State Bar of Michigan confirms that your number belongs to an attorney licensed and in good standing. Multiple choice answers and the qualifications questionnaire are scored automatically. Reviewers designated by the State Bar and the Supreme Court score the short answers and your opinion, using standard rubrics, without knowing who you are.</p>
+          <p>Applications that score at least 80 points move forward to the Supreme Court. The Court ranks them without regard to identity. After ranking, applicants' identities may be revealed<span class="chief-only">, and the highest-ranked applicant is designated Chief Judge of the District Court for the next term</span>.</p>
+          <a class="btn" href="https://migovt.org/courts/careers/">Back to careers</a>
+        </div>
+      </div>
+    </div>
+
+    <aside class="side">
+      <h2>How you're scored</h2>
+      <table>
+        <tr><td>Multiple choice</td><td>50</td></tr>
+        <tr><td>Short answer</td><td>20</td></tr>
+        <tr><td>Opinion drafting</td><td>20</td></tr>
+        <tr><td>Qualifications</td><td>10</td></tr>
+        <tr class="total"><td>Total</td><td>100</td></tr>
+      </table>
+      <p style="margin-top:6px">You need 80 points to qualify.</p>
+      <hr class="sep">
+      <h2>Key dates</h2>
+      <ul>
+        <li>The term runs January 1 to December 31.</li>
+        <li>Applications close December 16, 15 days before the term ends.</li>
+      </ul>
+      <hr class="sep">
+      <h2>Your progress</h2>
+      <ul class="progress" id="progress"></ul>
+    </aside>
+
+  </div>
+</main>
+
+<script>
+  // Demo only: this form does not send data anywhere, and no answer key is included in this page.
+  const params = new URLSearchParams(location.search);
+  const ROLE = (/magistrate/i.test(location.pathname) || params.get('role') === 'magistrate') ? 'magistrate' : 'judge';
+  document.querySelectorAll('.role-word').forEach(e => e.textContent = ROLE);
+  document.querySelectorAll('.role-cap').forEach(e => e.textContent = ROLE === 'judge' ? 'Judge' : 'Magistrate');
+  if (ROLE === 'magistrate') {
+    document.querySelectorAll('.chief-only').forEach(e => e.remove());
+    document.title = 'Magistrate Application | Michigan Courts';
+  }
+
+  const MC = [
+    { q: 'Which of the following is hearsay?', o: [
+      'A witness testifies that she saw the defendant run a red light.',
+      'A witness testifies that a bystander told her, "The defendant ran the red light," and the statement is offered to prove the defendant ran it.',
+      'A witness identifies a photograph of the intersection as an accurate picture of how it looked that day.',
+      'A witness testifies that she heard a loud crash and then looked up.'] },
+    { q: 'In a criminal trial, who has the burden of proof, and what is the standard?', o: [
+      'The defendant must prove innocence by a preponderance of the evidence.',
+      'The prosecution must prove guilt by clear and convincing evidence.',
+      'The prosecution must prove every element of the crime beyond a reasonable doubt.',
+      'The judge sets the standard after hearing the opening statements.'] },
+    { q: 'An attorney for one side calls your chambers to discuss the merits of a pending motion. The other side is not on the call. What should you do?', o: [
+      'Listen, since you can disregard anything improper later.',
+      'Decline to discuss the merits, and make sure the other side has notice and a chance to respond to anything raised.',
+      'Hear the call and then call the other attorney to even things out.',
+      'Ask the attorney to put the argument in a letter that only you will read.'] },
+    { q: 'Which situation most clearly requires you to consider disqualifying yourself from a case?', o: [
+      'You ruled against one of the parties in an unrelated case last year.',
+      'One of the lawyers belongs to the same bar association as you.',
+      'A party criticized one of your earlier rulings in the news.',
+      'A close family member is a party, or has a financial stake in the outcome.'] },
+    { q: 'On a motion for summary disposition claiming there is no genuine issue of material fact, how should the court view the evidence?', o: [
+      'In the light most favorable to the party opposing the motion, without weighing credibility.',
+      'In the light most favorable to the party making the motion.',
+      'By weighing which witnesses seem more believable.',
+      'Only through the pleadings, ignoring any affidavits or documents.'] },
+    { q: 'A defendant is questioned in custody without being read Miranda warnings. In general, what happens to the statement?', o: [
+      'It may be used for any purpose without limit.',
+      'It is generally not admissible in the prosecution\'s case-in-chief.',
+      'It is admissible only if the defendant signs a transcript.',
+      'It is admissible if the officer says the defendant seemed willing to talk.'] },
+    { q: 'What is the main purpose of conditions of pretrial release?', o: [
+      'To punish the defendant before a verdict.',
+      'To raise money for the court.',
+      'To reasonably assure the defendant\'s appearance in court and protect the safety of the community.',
+      'To make sure the defendant admits the charge.'] },
+    { q: 'What makes contempt "direct" contempt?', o: [
+      'It happens outside the courthouse and is reported to the judge later.',
+      'It involves a violation of a written court order.',
+      'It happens in the immediate view and presence of the court.',
+      'It is committed by an attorney rather than a party.'] },
+    { q: 'A reporter asks you about a pending case in your court. What is the best response?', o: [
+      'Give your opinion about who is likely to win, as long as you say it is only your opinion.',
+      'Make no public comment that could reasonably affect the outcome or fairness of the case.',
+      'Explain why you think one side\'s lawyer is being unreasonable.',
+      'Describe the evidence you have found most persuasive so far.'] },
+    { q: 'A prosecutor uses a peremptory challenge to remove a juror, and the defense says it was based on the juror\'s race. What should the court do?', o: [
+      'Deny the objection, since peremptory challenges need no explanation at all.',
+      'Dismiss the entire jury panel without further inquiry.',
+      'Ask the prosecutor for a race-neutral reason and decide whether the stated reason is genuine.',
+      'Allow the challenge and note the objection for appeal.'] }
+  ];
+
+  const SA = [
+    { id: 'sa1', pts: 10, q: 'A person representing themselves is struggling to present their case and keeps asking you what to do next. How do you respond? Explain how you help the person be heard while staying impartial.' },
+    { id: 'sa2', pts: 10, q: 'On the morning of a bench trial, the defendant asks for an adjournment because their only witness is unavailable. The prosecutor objects, and the case is eight months old. Explain your reasoning and what you decide.' }
+  ];
+
+  const YEARS = ['Less than 3 years', '3 to 5 years', '6 to 10 years', '11 to 20 years', 'More than 20 years'];
+  const QQ = [
+    { id: 'licensed', type: 'select', label: 'How long have you been licensed to practice law?', o: YEARS },
+    { id: 'courtyrs', type: 'select', label: 'How many years have you regularly appeared in court?', o: ['None', ...YEARS] },
+    { id: 'trials', type: 'select', label: 'About how many trials (bench or jury) have you handled as lead counsel?', o: ['None', '1 to 5', '6 to 20', '21 to 50', 'More than 50'] },
+    { id: 'areas', type: 'checks', label: 'Which areas have you practiced in? Choose all that apply.', o: ['Criminal defense', 'Prosecution', 'Civil litigation', 'Landlord-tenant and small claims', 'Family law', 'Traffic and civil infractions', 'Government or administrative law', 'Appeals'] },
+    { id: 'judicial', type: 'select', label: 'What is your highest level of prior judicial or quasi-judicial experience?', o: ['None', 'Mediator, arbitrator, or referee', 'Administrative law judge or hearing officer', 'Magistrate', 'Temporary or visiting judge', 'Judge'] },
+    { id: 'prose', type: 'select', label: 'How often do you work with people who represent themselves?', o: ['Rarely or never', 'Occasionally', 'Often'] }
+  ];
+
+  const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  const words = t => (t.trim().match(/\S+/g) || []).length;
+
+  // Build form
+  document.getElementById('mc').innerHTML = MC.map((m, i) => `
+    <fieldset class="q" id="q${i}">
+      <legend>${i + 1}. ${esc(m.q)} <span class="qnum">5 points</span></legend>
+      <div class="opts">${m.o.map((o, j) => `
+        <label class="opt"><input type="radio" name="mc${i}" value="${j}"><span>${esc(o)}</span></label>`).join('')}
+      </div>
+      <div class="error-msg">Choose an answer.</div>
+    </fieldset>`).join('');
+
+  document.getElementById('sa').innerHTML = SA.map((s, i) => `
+    <div class="field" id="f-${s.id}">
+      <label for="${s.id}">${i + 1}. ${esc(s.q)} <span class="qnum">${s.pts} points</span></label>
+      <textarea id="${s.id}" name="${s.id}" data-min="100" data-max="250" aria-describedby="wc-${s.id} err-${s.id}"></textarea>
+      <div class="wc" id="wc-${s.id}"></div>
+      <div class="error-msg" id="err-${s.id}"></div>
+    </div>`).join('');
+
+  document.getElementById('qq').innerHTML = QQ.map(f => {
+    if (f.type === 'select') return `
+      <div class="field" id="f-${f.id}">
+        <label for="${f.id}">${esc(f.label)}</label>
+        <select id="${f.id}" name="${f.id}"><option value="">Select one</option>${f.o.map(o => `<option>${esc(o)}</option>`).join('')}</select>
+        <div class="error-msg">Choose an answer.</div>
+      </div>`;
+    return `
+      <fieldset class="field" id="f-${f.id}">
+        <legend>${esc(f.label)}</legend>
+        <div class="opts">${f.o.map(o => `<label class="opt"><input type="checkbox" name="${f.id}" value="${esc(o)}"><span>${esc(o)}</span></label>`).join('')}</div>
+        <div class="error-msg">Choose at least one.</div>
+      </fieldset>`;
+  }).join('');
+
+  // Word counters
+  function updateWc(t) {
+    const n = words(t.value), min = +t.dataset.min, max = +t.dataset.max;
+    const el = document.getElementById('wc-' + t.id);
+    el.textContent = `${n} words (${min} to ${max})`;
+    el.classList.toggle('bad', n > max);
+  }
+  document.querySelectorAll('textarea').forEach(t => { updateWc(t); t.addEventListener('input', () => updateWc(t)); });
+
+  // Progress
+  function progress() {
+    const mcDone = MC.filter((_, i) => document.querySelector(`input[name="mc${i}"]:checked`)).length;
+    const saDone = SA.filter(s => words(document.getElementById(s.id).value) >= 100).length;
+    const opDone = words(document.getElementById('opinion').value) >= 250 ? 1 : 0;
+    const qqDone = QQ.filter(f => f.type === 'select' ? document.getElementById(f.id).value : document.querySelector(`input[name="${f.id}"]:checked`)).length;
+    const rows = [
+      ['State Bar number', /^P?\d{5,6}$/i.test(document.getElementById('pin').value.trim()) ? 1 : 0, 1],
+      ['Multiple choice', mcDone, MC.length],
+      ['Short answer', saDone, SA.length],
+      ['Opinion', opDone, 1],
+      ['Qualifications', qqDone, QQ.length]
+    ];
+    document.getElementById('progress').innerHTML = rows.map(([n, d, t]) =>
+      `<li class="${d === t ? 'done' : ''}"><span>${n}</span><span>${d === t ? 'Done' : d + ' of ' + t}</span></li>`).join('');
+  }
+  document.getElementById('app-form').addEventListener('input', progress);
+  document.getElementById('app-form').addEventListener('change', progress);
+  progress();
+
+  // Validation
+  const EMAIL = /\S+@\S+\.\S+/, PHONE = /\(?\d{3}\)?[-.\s]\d{3}[-.\s]\d{4}/;
+  function flag(el, bad) { el.classList.toggle('invalid', bad); }
+
+  function validate() {
+    const errs = [];
+
+    const pin = document.getElementById('pin').value.trim();
+    const pinBad = !/^P?\d{5,6}$/i.test(pin);
+    flag(document.getElementById('f-pin'), pinBad);
+    if (pinBad) errs.push(['pin', 'Enter your State Bar number, like P12345.']);
+
+    MC.forEach((_, i) => {
+      const bad = !document.querySelector(`input[name="mc${i}"]:checked`);
+      flag(document.getElementById('q' + i), bad);
+      if (bad) errs.push([`q${i}`, `Answer multiple choice question ${i + 1}.`, `input[name="mc${i}"]`]);
+    });
+
+    const checkText = (id, label, errId) => {
+      const t = document.getElementById(id), n = words(t.value), min = +t.dataset.min, max = +t.dataset.max;
+      let msg = '';
+      if (n < min) msg = `${label} needs at least ${min} words. You have ${n}.`;
+      else if (n > max) msg = `${label} can't be longer than ${max} words. You have ${n}.`;
+      else if (EMAIL.test(t.value) || PHONE.test(t.value)) msg = `Remove email addresses and phone numbers from ${label.toLowerCase()}. This application is anonymous.`;
+      document.getElementById(errId).textContent = msg;
+      flag(t.closest('.field'), !!msg);
+      if (msg) errs.push([id, msg]);
+    };
+    SA.forEach((s, i) => checkText(s.id, `Short answer ${i + 1}`, 'err-' + s.id));
+    checkText('opinion', 'Your opinion', 'op-err');
+
+    QQ.forEach(f => {
+      const bad = f.type === 'select' ? !document.getElementById(f.id).value : !document.querySelector(`input[name="${f.id}"]:checked`);
+      flag(document.getElementById('f-' + f.id), bad);
+      if (bad) errs.push([f.type === 'select' ? f.id : 'f-' + f.id, `Answer: ${f.label}`, f.type === 'checks' ? `input[name="${f.id}"]` : null]);
+    });
+
+    const certBad = !document.getElementById('cert').checked;
+    flag(document.getElementById('f-cert'), certBad);
+    if (certBad) errs.push(['cert', 'Check the box to certify your application.']);
+    return errs;
+  }
+
+  const form = document.getElementById('app-form');
+  const summary = document.getElementById('summary-err');
+
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    const errs = validate();
+    if (errs.length) {
+      summary.innerHTML = `<strong>Fix ${errs.length === 1 ? 'this issue' : 'these ' + errs.length + ' issues'} to submit:</strong><ul>` +
+        errs.map((x, i) => `<li><a href="#" data-i="${i}">${esc(x[1])}</a></li>`).join('') + '</ul>';
+      summary.classList.add('show');
+      summary.querySelectorAll('a').forEach(a => a.addEventListener('click', ev => {
+        ev.preventDefault();
+        const x = errs[+a.dataset.i];
+        const target = (x[2] && document.querySelector(x[2])) || document.getElementById(x[0]);
+        if (target) { target.scrollIntoView({ block: 'center' }); target.focus && target.focus(); }
+      }));
+      summary.scrollIntoView({ block: 'center' });
+      summary.focus();
+      return;
+    }
+    summary.classList.remove('show');
+    const btn = document.getElementById('submit-btn');
+    btn.disabled = true; btn.textContent = 'Submitting…';
+    // Simulated delay. Nothing is sent.
+    setTimeout(showConfirmation, 1400);
+  });
+
+  function showConfirmation() {
+    const code = 'JA-' + new Date().getFullYear() + '-' + Math.random().toString(36).slice(2, 8).toUpperCase();
+    document.getElementById('ref').textContent = code;
+    const rows = [
+      ['Position', ROLE === 'judge' ? 'District Court judge' : 'District Court magistrate'],
+      ['Part 1: Multiple choice', `${MC.length} of ${MC.length} answered`],
+      ['Part 2: Short answer', SA.map(s => words(document.getElementById(s.id).value) + ' words').join(', ')],
+      ['Part 3: Opinion', words(document.getElementById('opinion').value) + ' words'],
+      ['Part 4: Qualifications', `${QQ.length} of ${QQ.length} answered`],
+      ['Submitted', new Date().toLocaleString('en-US', { dateStyle: 'long', timeStyle: 'short' })]
+    ];
+    document.getElementById('recap').innerHTML = rows.map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join('');
+    document.getElementById('form-area').style.display = 'none';
+    document.getElementById('confirm').classList.add('show');
+    window.scrollTo({ top: 0 });
+    document.getElementById('confirm-banner').focus();
+  }
+</script>
+</body>
+</html>
