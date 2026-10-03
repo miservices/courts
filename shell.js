@@ -36,51 +36,53 @@
 
     /* Banner */
     .mc-shell-banner {
-      background: #e8edf4; color: #3b475c; font-family: var(--font-ui);
-      font-size: 12.5px; line-height: 1.5; padding: 7px 40px;
-      border-bottom: 1px solid var(--border);
+      background: #091628; color: #b9c8de; font-family: var(--font-ui);
+      font-size: 13px; line-height: 1.45; padding: 9px 40px;
+      display: flex; align-items: center; gap: 10px;
     }
+    .mc-shell-banner svg { width: 16px; height: 16px; flex-shrink: 0; color: #5b9be0; }
 
     /* Header */
-    .mc-shell-header { background: #fff; font-family: var(--font-ui); border-bottom: 1px solid var(--border); }
+    .mc-shell-header { background: var(--navy); font-family: var(--font-ui); }
     .mc-shell-header-top {
       display: flex; align-items: center; justify-content: space-between;
-      padding: 18px 40px; gap: 20px;
+      padding: 22px 40px; gap: 20px; border-top: 1px solid #22406f;
     }
-    .mc-shell-brand { display: flex; align-items: center; gap: 14px; text-decoration: none; color: inherit; }
-    .mc-shell-seal { width: 52px; height: 52px; flex-shrink: 0; }
+    .mc-shell-brand { display: flex; align-items: center; gap: 16px; text-decoration: none; color: inherit; }
+    .mc-shell-seal { width: 56px; height: 56px; flex-shrink: 0; }
     .mc-shell-logo h1 {
-      font-family: var(--font-head); color: var(--navy);
-      font-size: 24px; font-weight: 600; line-height: 1.1;
+      font-family: var(--font-head); color: #fff;
+      font-size: 28px; font-weight: 600; line-height: 1.1; letter-spacing: -.005em;
     }
-    .mc-shell-logo p { color: var(--muted); font-size: 13px; margin-top: 3px; }
-    .mc-shell-header-right { text-align: right; font-size: 13px; color: var(--muted); }
-    .mc-shell-date { color: var(--text); font-weight: 600; margin-top: 2px; }
+    .mc-shell-logo p { color: #9cc4f5; font-size: 13px; margin-top: 4px; font-weight: 500; }
+    .mc-shell-header-right { text-align: right; font-size: 13px; color: #9fb3d1; }
+    .mc-shell-date { color: #fff; font-weight: 600; margin-top: 2px; }
 
     /* Nav */
     .mc-shell-nav {
-      background: var(--navy); display: flex; align-items: center;
+      background: #fff; display: flex; align-items: center;
       padding: 0 32px; position: relative; z-index: 100; flex-wrap: wrap;
+      border-bottom: 1px solid var(--border); box-shadow: 0 1px 0 rgba(16,38,74,.04);
     }
     .mc-shell-nav > a, .mc-shell-dropdown > a {
-      color: #dbe5f3; font-size: 14.5px; font-weight: 500; padding: 15px 14px;
+      color: var(--navy); font-size: 14.5px; font-weight: 600; padding: 15px 14px;
       text-decoration: none; border-bottom: 3px solid transparent;
       white-space: nowrap; display: flex; align-items: center; gap: 6px;
     }
     .mc-shell-nav > a:hover, .mc-shell-nav > a.active,
     .mc-shell-dropdown:hover > a, .mc-shell-dropdown > a.active {
-      color: #fff; background: var(--navy-mid); border-bottom-color: #fff;
+      color: var(--accent); background: var(--navy-light); border-bottom-color: var(--accent);
     }
     .mc-shell-nav > a:focus-visible, .mc-shell-dropdown a:focus-visible, .mc-shell-nav-btn:focus-visible {
-      outline: 3px solid #9cc4f5; outline-offset: -3px;
+      outline: 3px solid #5b9be0; outline-offset: -3px;
     }
     .mc-shell-nav-right { margin-left: auto; padding: 8px 0; }
     .mc-shell-nav-btn {
-      background: #fff; color: var(--navy) !important; padding: 9px 18px;
+      background: var(--navy); color: #fff !important; padding: 9px 18px;
       border-radius: 4px; font-size: 14px; font-weight: 700;
       text-decoration: none; white-space: nowrap; display: inline-block;
     }
-    .mc-shell-nav-btn:hover { background: #e3ecf8; }
+    .mc-shell-nav-btn:hover { background: var(--navy-mid); }
 
     .mc-shell-dropdown { position: relative; display: inline-block; }
     .mc-shell-dropdown > a::after {
@@ -90,8 +92,8 @@
     }
     .mc-shell-dropdown-menu {
       display: none; position: absolute; top: 100%; left: 0; background: #fff;
-      border: 1px solid var(--border); border-top: 0; min-width: 240px; z-index: 200;
-      box-shadow: 0 10px 24px rgba(16,38,74,.18);
+      border: 1px solid var(--border); border-top: 3px solid var(--accent); min-width: 250px; z-index: 200;
+      box-shadow: 0 12px 28px rgba(16,38,74,.2);
     }
     .mc-shell-dropdown:hover .mc-shell-dropdown-menu,
     .mc-shell-dropdown:focus-within .mc-shell-dropdown-menu { display: block; }
@@ -103,19 +105,38 @@
     .mc-shell-dropdown-menu a:hover { background: var(--navy-light); border-left-color: var(--accent); color: var(--navy); }
 
     /* Footer */
-    .mc-shell-footer {
-      background: var(--navy); color: #b9c8de; font-family: var(--font-ui);
-      padding: 28px 40px; display: flex; justify-content: space-between;
-      align-items: center; gap: 20px; font-size: 13px; line-height: 1.6;
+    .mc-shell-footer { background: #091628; color: #9fb3d1; font-family: var(--font-ui); font-size: 14px; line-height: 1.6; border-top: 4px solid var(--accent); }
+    .mc-shell-footer-main {
+      max-width: 1180px; margin: 0 auto; padding: 44px 40px 36px;
+      display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr; gap: 40px;
     }
-    .mc-shell-footer strong { color: #fff; font-weight: 600; }
+    .mc-shell-footer-brand { display: flex; gap: 14px; align-items: flex-start; }
+    .mc-shell-footer-brand .mc-shell-seal { width: 44px; height: 44px; }
+    .mc-shell-footer-brand strong { display: block; font-family: var(--font-head); color: #fff; font-size: 19px; font-weight: 600; }
+    .mc-shell-footer-brand span { display: block; margin-top: 6px; font-size: 13.5px; max-width: 280px; }
+    .mc-shell-footer h2 { color: #fff; font-family: var(--font-ui); font-size: 14px; font-weight: 700; margin-bottom: 12px; }
+    .mc-shell-footer ul { list-style: none; }
+    .mc-shell-footer li { margin-bottom: 8px; }
+    .mc-shell-footer a { color: #b9c8de; text-decoration: none; }
+    .mc-shell-footer a:hover { color: #fff; text-decoration: underline; }
+    .mc-shell-footer a:focus-visible { outline: 3px solid #5b9be0; outline-offset: 2px; }
+    .mc-shell-footer-base { border-top: 1px solid #1c3358; }
+    .mc-shell-footer-base div {
+      max-width: 1180px; margin: 0 auto; padding: 18px 40px; font-size: 12.5px;
+      display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap; color: #7f94b5;
+    }
 
+    @media (max-width: 860px) {
+      .mc-shell-footer-main { grid-template-columns: 1fr 1fr; padding: 32px 20px; gap: 28px; }
+      .mc-shell-footer-brand { grid-column: 1 / -1; }
+      .mc-shell-footer-base div { padding: 16px 20px; }
+    }
     @media (max-width: 780px) {
-      .mc-shell-banner { padding: 7px 20px; }
-      .mc-shell-header-top { padding: 14px 20px; }
+      .mc-shell-banner { padding: 9px 20px; }
+      .mc-shell-header-top { padding: 16px 20px; }
       .mc-shell-header-right { display: none; }
+      .mc-shell-logo h1 { font-size: 23px; }
       .mc-shell-nav { padding: 0 8px; }
-      .mc-shell-footer { padding: 22px 20px; flex-direction: column; text-align: center; }
     }
   `;
 
@@ -145,12 +166,12 @@
 
   const SEAL = `
     <svg class="mc-shell-seal" viewBox="0 0 52 52" aria-hidden="true">
-      <circle cx="26" cy="26" r="25" fill="#10264a"/>
-      <circle cx="26" cy="26" r="21.5" fill="none" stroke="#fff" stroke-width="1" opacity=".6"/>
-      <path d="M26 11v26M17 15h18" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
-      <path d="M17 15l-6 12h12zM35 15l-6 12h12z" fill="none" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/>
-      <path d="M11 27a6 3 0 0 0 12 0M29 27a6 3 0 0 0 12 0" fill="#fff"/>
-      <path d="M19 38h14" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/>
+      <circle cx="26" cy="26" r="25" fill="#fff"/>
+      <circle cx="26" cy="26" r="21.5" fill="none" stroke="#10264a" stroke-width="1" opacity=".5"/>
+      <path d="M26 11v26M17 15h18" stroke="#10264a" stroke-width="2" stroke-linecap="round"/>
+      <path d="M17 15l-6 12h12zM35 15l-6 12h12z" fill="none" stroke="#10264a" stroke-width="1.6" stroke-linejoin="round"/>
+      <path d="M11 27a6 3 0 0 0 12 0M29 27a6 3 0 0 0 12 0" fill="#10264a"/>
+      <path d="M19 38h14" stroke="#10264a" stroke-width="2.4" stroke-linecap="round"/>
     </svg>`;
 
   function buildNav(activeId) {
@@ -180,13 +201,31 @@
   }
 
   function buildBanner() {
-    return `<div class="mc-shell-banner">This site is not a real court, does not have legal authority, and is not affiliated with or endorsed by any real court system or government agency.</div>`;
+    return `<div class="mc-shell-banner" role="note">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="10" cy="10" r="8"/><path d="M10 9v5M10 6v.01" stroke-linecap="round"/></svg>
+      <span>This site is not a real court, does not have legal authority, and is not affiliated with or endorsed by any real court system or government agency.</span>
+    </div>`;
+  }
+
+  function footerCol(title, items) {
+    return `<nav aria-label="${title}"><h2>${title}</h2><ul>${items.map(c => `<li><a href="${c.href}">${c.label}</a></li>`).join('')}</ul></nav>`;
   }
 
   function buildFooter() {
+    const find = id => NAV_ITEMS.find(i => i.id === id).children;
     return `<footer class="mc-shell-footer">
-      <div><strong>Michigan Courts</strong><br>State Court Administrative Office, P.O. Box 30048, Lansing, MI 48909</div>
-      <div>&copy; ${new Date().getFullYear()} Michigan Courts &middot; Portal v2.1<br>Secured by MiPASS Identity Authentication</div>
+      <div class="mc-shell-footer-main">
+        <div class="mc-shell-footer-brand">${SEAL}
+          <div><strong>Michigan Courts</strong><span>State Court Administrative Office<br>P.O. Box 30048, Lansing, MI 48909</span></div>
+        </div>
+        ${footerCol('Courts', find('directory'))}
+        ${footerCol('Online services', find('services').slice(0, 4))}
+        ${footerCol('Help', [...find('forms'), { label: 'Self Help', href: BASE + 'self-help/' }, { label: 'Careers', href: BASE + 'careers/' }])}
+      </div>
+      <div class="mc-shell-footer-base"><div>
+        <span>&copy; ${new Date().getFullYear()} Michigan Courts</span>
+        <span>Portal v2.1 &middot; Secured by MiPASS Identity Authentication</span>
+      </div></div>
     </footer>`;
   }
 
