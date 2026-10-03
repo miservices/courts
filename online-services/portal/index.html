@@ -107,9 +107,6 @@ main{padding:36px 0 72px}
 .usercard .av{width:38px;height:38px;border-radius:50%;background:#10264a;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0}
 .usercard b{display:block;color:#154d2e;line-height:1.3}
 .usercard span{font-size:13.5px;color:#2e6b3a}
-.bar{height:5px;background:#d5dde8;border-radius:3px;overflow:hidden;margin:4px 0 16px}
-.bar i{display:block;height:100%;width:0;background:#10264a;transition:width 3s linear}
-@media(prefers-reduced-motion:reduce){.bar i{transition:none}}
 
 @media(max-width:960px){
   .wrap{padding:0 20px}
@@ -195,7 +192,6 @@ main{padding:36px 0 72px}
         <div class="status loading" id="sal-loading" role="status"><div class="spin"></div><div><strong>Signing you in…</strong><p>Confirming your account.</p></div></div>
         <div class="status success" id="sal-success" hidden role="status"><div><strong>Signed in</strong><p>Taking you to your dashboard…</p></div></div>
         <div class="status error" id="sal-error" hidden role="alert"><div><strong>Sign-in error</strong><p id="sal-error-msg"></p></div></div>
-        <div class="bar" id="sal-bar" hidden><i id="sal-fill"></i></div>
         <button class="btn btn-outline" id="sal-retry" type="button" hidden onclick="goMigovt()">Try again with MiGOVT</button>
       </div>
 
@@ -256,7 +252,6 @@ main{padding:36px 0 72px}
         <div class="status loading" id="s3-loading" role="status"><div class="spin"></div><div><strong id="s3-title">Creating account…</strong><p id="s3-msg">Please wait.</p></div></div>
         <div class="status error" id="s3-error" hidden role="alert"><div><strong>Account creation failed</strong><p id="s3-error-msg"></p></div></div>
         <div class="status success" id="s3-success" hidden role="status"><div><strong>Account created</strong><p>Taking you to your dashboard…</p></div></div>
-        <div class="bar" id="s3-bar" hidden><i id="s3-fill"></i></div>
         <button class="btn btn-outline" id="s3-retry" type="button" hidden onclick="retryAccount()">Try again</button>
       </div>
 
@@ -353,11 +348,7 @@ main{padding:36px 0 72px}
     });
   }
 
-  function redirectWithBar(barId, fillId) {
-    show(barId);
-    setTimeout(() => { $(fillId).style.width = '100%'; }, 50);
-    setTimeout(() => { window.location.href = DASHBOARD; }, 3200);
-  }
+  function goToDashboard() { setTimeout(() => { window.location.href = DASHBOARD; }, 700); }
 
   /* ---------- existing account ---------- */
   async function findAccount(pin) {
@@ -381,7 +372,7 @@ main{padding:36px 0 72px}
       await window._signIn(window._auth, acct.email, String(migovt.pin));
       await waitForAuthUser();
       hide('sal-loading'); show('sal-success');
-      redirectWithBar('sal-bar', 'sal-fill');
+      goToDashboard();
     } catch (err) {
       hide('sal-loading');
       let msg = 'We could not sign you in automatically. ';
@@ -455,7 +446,7 @@ main{padding:36px 0 72px}
   /* ---------- new account: create ---------- */
   async function submitAccount() {
     goToStep(3);
-    hide('s3-error'); hide('s3-success'); hide('s3-bar'); hide('s3-retry'); show('s3-loading');
+    hide('s3-error'); hide('s3-success'); hide('s3-retry'); show('s3-loading');
 
     const email = $('f-email').value.trim();
     const isBar = role === 'bar' && barData;
@@ -478,7 +469,7 @@ main{padding:36px 0 72px}
 
       await waitForAuthUser();
       hide('s3-loading'); show('s3-success');
-      redirectWithBar('s3-bar', 's3-fill');
+      goToDashboard();
     } catch (err) {
       hide('s3-loading');
       let msg = err.message || 'An unexpected error occurred.';
