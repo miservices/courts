@@ -167,7 +167,7 @@ dl.recap dd{font-weight:600;overflow-wrap:anywhere}
               Under the Voluntary Jury Act, certain people, including anyone who holds public employment, must register themselves. Signing up here is how you do that.
             </div>
             <div class="callout" id="pub-exempt-note" role="status">
-              <strong>You are exempt.</strong> People who work for a city fire or police department are exempt under the Voluntary Jury Act. You don't need to register and you won't be summoned.
+              <strong>You aren't required to register.</strong> People who work for a city fire or police department are exempt from mandatory registration under the Voluntary Jury Act. You're still welcome to sign up on your own. If you do, the same rules apply to you as to any other juror.
             </div>
             <div class="error-msg" id="pub-err">Choose one.</div>
           </fieldset>
@@ -210,7 +210,7 @@ dl.recap dd{font-weight:600;overflow-wrap:anywhere}
         <li>Your information is added to the court's database and the voluntary juror pool.</li>
         <li>When a case has a jury, jurors are chosen at random from the pool.</li>
         <li>If you are summoned, you are required to appear.</li>
-        <li>City fire and police department employees are exempt.</li>
+        <li>City fire and police department employees aren't required to register, but may sign up.</li>
         <li>You are paid $85.00 for every 5 minutes of service.</li>
       </ul>
       <hr>
@@ -239,7 +239,6 @@ dl.recap dd{font-weight:600;overflow-wrap:anywhere}
     const v = (document.querySelector('input[name="pub"]:checked') || {}).value;
     document.getElementById('pub-other-note').classList.toggle('show', v === 'other');
     document.getElementById('pub-exempt-note').classList.toggle('show', v === 'exempt');
-    document.getElementById('submit-btn').disabled = v === 'exempt';   // exempt: nothing to register
   }
   document.querySelectorAll('input[name="pub"]').forEach(r => r.addEventListener('change', pubChanged));
 
@@ -284,7 +283,7 @@ dl.recap dd{font-weight:600;overflow-wrap:anywhere}
       ['Discord username', document.getElementById('discord').value.trim()],
       ['In-game username', document.getElementById('game').value.trim()],
       ['Time zone', zone],
-      ['Public employment', document.querySelector('input[name="pub"]:checked').value === 'other' ? 'Yes (registered as required)' : 'No'],
+      ['Public employment', ({ other: 'Yes (registered as required)', exempt: 'Yes, city fire or police (signed up voluntarily)', no: 'No' })[document.querySelector('input[name="pub"]:checked').value]],
       ['Registered', new Date().toLocaleString('en-US', { dateStyle: 'long', timeStyle: 'short' })]
     ];
     document.getElementById('recap').innerHTML = rows.map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join('');
