@@ -4,309 +4,249 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Case Search | Michigan Courts</title>
+<link rel="icon" type="image/png" href="/courts/images/favicon.png">
 
-<script src="/courts/shell.js" data-active="services"></script>
+<script src="https://migovt.org/courts/shell.js" data-active="services"></script>
 
-<link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;1,300&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'DM Sans',sans-serif;background:#f4f1ec;color:#1a1a1a;min-height:100vh}
+body{font-family:var(--font-ui,'Public Sans',system-ui,sans-serif);background:#e3e9f2;color:#1b2433;line-height:1.65;font-size:16px}
+a{color:#1f5fae}
+a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #5b9be0;outline-offset:2px}
+.wrap{max-width:1180px;margin:0 auto;padding:0 40px}
+h1,h2,h3,h4{font-family:var(--font-head,Georgia,serif);color:#10264a;font-weight:600;line-height:1.25}
+[hidden]{display:none!important}
+mark{background:#fff0a8;color:inherit;padding:0 1px;border-radius:2px}
 
-/* ── Page Header Bar ── */
-.page-bar{background:#0a1628;border-bottom:3px solid #c8a84b;padding:28px 40px}
-.page-bar h2{font-family:'Merriweather',serif;color:#fff;font-size:24px;font-weight:300}
-.page-bar p{color:#7a9bbf;font-size:13px;margin-top:5px}
-.breadcrumb{display:flex;align-items:center;gap:8px;margin-bottom:12px}
-.breadcrumb a{color:#7a9bbf;font-size:11.5px;text-decoration:none;letter-spacing:0.04em}
-.breadcrumb a:hover{color:#c8a84b}
-.breadcrumb span{color:#3a5a7a;font-size:11px}
-.breadcrumb .current{color:#c8a84b;font-size:11.5px}
+.page-header{background:#10264a;padding:34px 0 40px}
+.breadcrumb{display:flex;align-items:center;gap:8px;margin-bottom:14px;font-size:13px;flex-wrap:wrap}
+.breadcrumb a{color:#9cc4f5;text-decoration:none}
+.breadcrumb a:hover{color:#fff;text-decoration:underline}
+.breadcrumb span{color:#6f87ad}
+.breadcrumb .here{color:#fff}
+.page-header h1{color:#fff;font-size:36px;letter-spacing:-.01em}
+.page-header p{color:#c5d3e8;margin-top:10px;max-width:740px;line-height:1.6}
+.page-header p a{color:#9cc4f5}
 
-/* ═══════════════════════════════════════
-   SEARCH PAGE
-═══════════════════════════════════════ */
-#search-screen{display:block}
+main{padding:36px 0 72px}
+.panel{background:#fff;border:1px solid #d5dde8;border-radius:4px;padding:28px 36px}
+.panel+.panel{margin-top:24px}
 
-.search-section{padding:36px 40px}
-.search-card{background:#fff;border:1px solid #e0d9cf;border-radius:4px;padding:30px 32px}
-.search-card h3{font-family:'Merriweather',serif;font-size:16px;font-weight:400;color:#1a1a1a;margin-bottom:20px}
-.search-row{display:flex;gap:12px;margin-bottom:16px}
-.search-input-wrap{flex:1;position:relative}
-.search-input-wrap input,.filter-select{width:100%;padding:11px 14px;border:1px solid #d6cfc4;border-radius:3px;font-family:'DM Sans',sans-serif;font-size:14px;color:#1a1a1a;background:#faf9f7;transition:border 0.15s;outline:none}
-.search-input-wrap input:focus,.filter-select:focus{border-color:#1a4a7a;background:#fff}
-.filter-row{display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap}
-.filter-group{display:flex;flex-direction:column;gap:5px;min-width:160px}
-.filter-group label{font-size:11px;color:#9a8f82;text-transform:uppercase;letter-spacing:0.08em}
-.filter-select{padding:9px 12px;font-size:13px}
-.btn-search{background:#0a1628;color:#fff;padding:11px 28px;border-radius:3px;font-size:13.5px;font-weight:600;letter-spacing:0.04em;border:none;cursor:pointer;transition:all 0.15s;white-space:nowrap}
-.btn-search:hover{background:#0d1f3c}
-.btn-clear{background:none;color:#9a8f82;padding:11px 18px;border-radius:3px;font-size:13px;border:1px solid #d6cfc4;cursor:pointer;transition:all 0.15s}
-.btn-clear:hover{border-color:#9a8f82;color:#4a4035}
-.search-tips{background:#f8f5f0;border:1px solid #e8e0d5;border-radius:3px;padding:12px 16px;margin-top:16px}
-.search-tips p{font-size:12px;color:#6b5f4e;line-height:1.6}
-.search-tips strong{color:#4a4035}
+/* Search controls */
+.big-search{display:flex;gap:12px;flex-wrap:wrap}
+.big-search input{flex:1;min-width:240px;font:inherit;font-size:17px;color:#1b2433;border:1px solid #8a97ad;border-radius:4px;padding:12px 16px}
+.big-search input:focus{border-color:#1f5fae}
+.btn{display:inline-block;background:#1f5fae;color:#fff;font:inherit;font-weight:700;text-decoration:none;padding:11px 24px;border:2px solid #1f5fae;border-radius:4px;cursor:pointer}
+.btn:hover{background:#10264a;border-color:#10264a}
+.btn.alt{background:#fff;color:#1f5fae}
+.btn.alt:hover{background:#f4f8fd;color:#10264a}
+.btn.sm{padding:6px 14px;font-size:14px}
+.filters{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px 18px;margin-top:18px}
+.field label{display:block;font-weight:700;color:#10264a;margin-bottom:3px;font-size:14px}
+.field select{width:100%;font:inherit;color:#1b2433;background:#fff;border:1px solid #8a97ad;border-radius:4px;padding:9px 12px}
+.tips{margin-top:16px;font-size:14.5px;color:#5a667a}
+.tips strong{color:#33405a}
+.linkbtn{background:none;border:0;font:inherit;font-weight:700;color:#1f5fae;cursor:pointer;text-decoration:underline;padding:0}
 
-/* Results */
-.results-section{padding:0 40px 40px}
-.results-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
-.results-count{font-size:13px;color:#6b5f4e}
-.results-count strong{color:#1a1a1a;font-weight:600}
-.no-results{background:#fff;border:1px solid #e0d9cf;border-radius:4px;padding:48px;text-align:center}
-.no-results .nr-icon{font-size:40px;margin-bottom:12px}
-.no-results h3{font-family:'Merriweather',serif;font-size:18px;font-weight:300;color:#1a1a1a;margin-bottom:8px}
-.no-results p{color:#9a8f82;font-size:13.5px}
+.status{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin:24px 0 12px;font-size:15px;color:#5a667a}
+.status select{font:inherit;color:#1b2433;border:1px solid #8a97ad;border-radius:4px;padding:6px 10px}
+.status label{margin-right:6px}
 
-.result-card{background:#fff;border:1px solid #e0d9cf;border-radius:4px;margin-bottom:12px;overflow:hidden;cursor:pointer;transition:all 0.15s;text-decoration:none;display:block}
-.result-card:hover{border-color:#1a4a7a;box-shadow:0 4px 16px rgba(10,22,40,0.1)}
-.result-card:hover .rc-arrow{opacity:1;transform:translateX(0)}
-.rc-top{display:flex;align-items:flex-start;justify-content:space-between;padding:18px 22px 14px;border-bottom:1px solid #f0ebe3}
-.rc-ids{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.rc-case-num{font-family:'Merriweather',serif;font-size:13px;color:#1a4a7a;font-weight:400;letter-spacing:0.02em}
-.rc-badge{font-size:10px;font-weight:700;letter-spacing:0.08em;padding:3px 9px;border-radius:2px;text-transform:uppercase}
-.rc-badge.criminal{background:#fef2f2;color:#dc2626;border:1px solid #fee2e2}
-.rc-badge.civil{background:#eff6ff;color:#1d4ed8;border:1px solid #dbeafe}
-.rc-badge.appellate{background:#f5f3ff;color:#6d28d9;border:1px solid #ede9fe}
-.rc-badge.administrative{background:#f0fdf4;color:#15803d;border:1px solid #dcfce7}
-.rc-badge.traffic{background:#fff7ed;color:#c2410c;border:1px solid #fed7aa}
-.rc-status{font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;padding:4px 10px;border-radius:2px}
-.status-active,.status-pre-trial{background:#fef9e7;color:#a16207;border:1px solid #fde68a}
-.status-pending,.status-pending-decision,.status-pending-review{background:#eff6ff;color:#1e40af;border:1px solid #bfdbfe}
-.status-closed,.status-dismissed{background:#f8f5f0;color:#9a8f82;border:1px solid #e0d9cf}
-.status-default{background:#f0fdf4;color:#15803d;border:1px solid #dcfce7}
-.rc-body{padding:14px 22px}
-.rc-title{font-family:'Merriweather',serif;font-size:16px;font-weight:400;color:#1a1a1a;margin-bottom:6px;line-height:1.4}
-.rc-summary{font-size:12.5px;color:#6b5f4e;line-height:1.6;max-width:700px}
-.rc-footer{display:flex;align-items:center;justify-content:space-between;padding:10px 22px;background:#faf9f7;border-top:1px solid #f0ebe3}
-.rc-meta{display:flex;gap:22px;flex-wrap:wrap}
-.rc-meta-item{display:flex;flex-direction:column;gap:2px}
-.rc-meta-item .k{font-size:10px;color:#9a8f82;text-transform:uppercase;letter-spacing:0.08em}
-.rc-meta-item .v{font-size:12.5px;color:#1a1a1a;font-weight:500}
-.rc-arrow{color:#c8a84b;font-size:13px;font-weight:700;opacity:0;transform:translateX(-4px);transition:all 0.15s}
+/* Result cards */
+.result{display:block;background:#fff;border:1px solid #d5dde8;border-left:4px solid #10264a;border-radius:4px;padding:18px 24px;margin-bottom:12px;text-decoration:none;color:inherit}
+.result:hover{background:#f4f8fd;border-color:#1f5fae;border-left-color:#1f5fae}
+.result:focus-visible{outline-offset:2px}
+.r-top{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center;margin-bottom:6px}
+.r-ids{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.r-no{font-weight:700;color:#1f5fae;font-variant-numeric:tabular-nums}
+.r-title{font-family:var(--font-head,Georgia,serif);font-size:20px;font-weight:600;color:#10264a;line-height:1.3}
+.r-sum{margin-top:4px;color:#33405a;font-size:15px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;max-width:80ch}
+.r-meta{display:flex;flex-wrap:wrap;gap:4px 24px;margin-top:10px;font-size:14px;color:#5a667a}
+.r-meta b{color:#33405a;font-weight:600}
+.r-next{color:#164a86}
+.more{display:block;margin:16px auto 0}
 
-/* ═══════════════════════════════════════
-   CASE DETAIL PAGE — single scroll, no tabs
-═══════════════════════════════════════ */
-#detail-screen{display:none}
-#detail-screen.active{display:block}
+.badge{display:inline-block;font-size:12.5px;font-weight:600;padding:2px 10px;border-radius:12px;white-space:nowrap;background:#e1ecf8;color:#164a86}
+.badge.criminal{background:#fce8e8;color:#8f1d1d}
+.badge.civil{background:#e2f0e8;color:#1c5a37}
+.badge.traffic{background:#fff0dc;color:#8a4b00}
+.badge.administrative{background:#ebe5f7;color:#4a2f8a}
+.st{display:inline-block;font-size:13px;font-weight:700;padding:2px 12px;border-radius:12px;white-space:nowrap;border:1px solid}
+.st-active{background:#fff8e1;color:#7a4a00;border-color:#ffcc80}
+.st-pending{background:#e1ecf8;color:#164a86;border-color:#b3cdee}
+.st-closed{background:#eef0f4;color:#4a5568;border-color:#cfd6e2}
+.st-default{background:#e8f5e9;color:#256029;border-color:#a5d6a7}
 
-.detail-hero{background:#0a1628;padding:32px 0;border-bottom:1px solid #1e3a5f}
-.hero-inner{padding:0 40px}
-.detail-back{display:inline-flex;align-items:center;gap:7px;color:#7a9bbf;font-size:12px;text-decoration:none;letter-spacing:0.04em;margin-bottom:18px;cursor:pointer;border:none;background:none;padding:0;font-family:inherit}
-.detail-back:hover{color:#c8a84b}
-.detail-hero-top{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;flex-wrap:wrap}
-.detail-badges{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
-.detail-case-num{font-size:12px;color:#7a9bbf;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:6px}
-.detail-title{font-family:'Merriweather',serif;color:#fff;font-size:26px;font-weight:300;line-height:1.35;max-width:680px}
-.detail-court{color:#7a9bbf;font-size:13px;margin-top:8px}
-.detail-status-block{text-align:right;flex-shrink:0}
-.detail-status-label{font-size:10px;color:#7a9bbf;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px}
-.detail-status-pill{font-size:13px;font-weight:600;letter-spacing:0.05em;padding:8px 16px;border-radius:3px;display:inline-block}
-.detail-filed{color:#7a9bbf;font-size:12px;margin-top:6px;text-align:right}
+.empty,.errbox{background:#fff;border:1px solid #d5dde8;border-radius:4px;padding:40px;text-align:center;color:#5a667a}
+.errbox{border-left:4px solid #b3261e;text-align:left;color:#6b1a15;background:#fdf1f0}
+.empty h3,.errbox h3{margin-bottom:6px}
+.skeleton{background:#fff;border:1px solid #d5dde8;border-radius:4px;height:112px;margin-bottom:12px;position:relative;overflow:hidden}
+.skeleton::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(31,95,174,.08),transparent);animation:sh 1.2s infinite}
+@keyframes sh{from{transform:translateX(-100%)}to{transform:translateX(100%)}}
 
-/* Jump nav — anchors only, not tabs; whole page still scrolls as one document */
-.jump-nav{background:#0d1f3c;border-bottom:2px solid #1e3a5f;position:sticky;top:0;z-index:90}
-.jump-nav-inner{padding:0 40px;display:flex;overflow-x:auto;scrollbar-width:thin}
-.jump-nav a{color:#a0b8d0;font-size:11.5px;letter-spacing:0.05em;text-transform:uppercase;padding:12px 16px;text-decoration:none;white-space:nowrap;border-bottom:2px solid transparent;transition:all 0.12s}
-.jump-nav a:hover{color:#fff;border-bottom-color:#3a5a7a}
-.jump-nav a.jump-current{color:#fff;border-bottom-color:#c8a84b}
+.notice h2{font-size:20px;margin-bottom:8px}
+.notice p{color:#2b3548;max-width:74ch;margin-bottom:8px}
+.notice p:last-child{margin-bottom:0}
 
-.detail-body{padding:32px 40px 60px;display:flex;flex-direction:column;gap:28px}
+/* ───────── Case detail ───────── */
+.hero{background:#10264a;padding:30px 0 34px}
+.hero .back{background:none;border:0;color:#9cc4f5;font:inherit;font-size:14px;font-weight:700;cursor:pointer;padding:0;margin-bottom:12px}
+.hero .back:hover{color:#fff;text-decoration:underline}
+.hero-top{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;align-items:flex-start}
+.hero-badges{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.hero .no{color:#9cc4f5;font-weight:700;font-variant-numeric:tabular-nums}
+.hero h1{color:#fff;font-size:32px;max-width:760px}
+.hero .sub{color:#c5d3e8;margin-top:6px}
+.hero-actions{display:flex;gap:10px;flex-wrap:wrap}
+.hero-actions .btn{background:transparent;border-color:#9cc4f5;color:#fff;padding:7px 16px;font-size:14px}
+.hero-actions .btn:hover{background:rgba(255,255,255,.12)}
 
-.section-block{scroll-margin-top:52px}
-.section-heading{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px;padding-top:22px;border-top:1px solid #e6ded1}
-.section-block:first-child .section-heading{border-top:none;padding-top:0}
-.section-heading h2{font-family:'Merriweather',serif;font-size:19px;font-weight:400;color:#1a1a1a;letter-spacing:0.01em}
-.section-heading .sh-count{font-size:11.5px;color:#9a8f82;letter-spacing:0.04em}
+.keyfacts{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:0;background:#fff;border:1px solid #d5dde8;border-radius:4px;margin-top:-22px;position:relative;overflow:hidden}
+.kf{padding:16px 20px;border-right:1px solid #e3e9f1}
+.kf:last-child{border-right:0}
+.kf .k{font-size:13px;color:#5a667a}
+.kf .v{font-weight:700;color:#10264a;margin-top:2px}
+.kf .v small{display:block;font-weight:400;color:#5a667a;font-size:13.5px}
 
-.d-card{background:#fff;border:1px solid #e0d9cf;border-radius:4px;overflow:hidden;margin-bottom:14px}
-.d-card:last-child{margin-bottom:0}
-.d-card-header{padding:14px 22px;border-bottom:1px solid #f0ebe3;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
-.d-card-header h3{font-family:'Merriweather',serif;font-size:14.5px;font-weight:400;color:#1a1a1a}
-.d-card-header .d-card-tag{font-size:10px;color:#9a8f82;text-transform:uppercase;letter-spacing:0.08em}
-.d-card-body{padding:20px 22px}
+.jump{background:#fff;border:1px solid #d5dde8;border-radius:4px;margin-top:20px;position:sticky;top:var(--mc-sticky-top,0px);z-index:30}
+.jump-in{display:flex;overflow-x:auto;scrollbar-width:thin}
+.jump a{padding:11px 16px;font-weight:700;font-size:15px;color:#10264a;text-decoration:none;white-space:nowrap;border-bottom:3px solid transparent}
+.jump a:hover{background:#f4f8fd}
+.jump a.cur{color:#1f5fae;border-bottom-color:#1f5fae}
 
-.info-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
-.info-item .k{font-size:10.5px;color:#9a8f82;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:3px}
-.info-item .v{font-size:14px;color:#1a1a1a;font-weight:500;line-height:1.4}
-.info-item .v.mono{font-family:monospace;font-size:13px}
-.info-item .v.small{font-size:13px}
-.info-item .v.muted{color:#b0a898;font-weight:400;font-style:italic}
+.sec{scroll-margin-top:calc(var(--mc-sticky-top,0px) + 70px);margin-top:24px}
+.sec>.panel>h2{font-size:24px}
+.sec-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.sec-head .ct{font-size:14px;color:#5a667a}
+.summary{margin-bottom:16px;padding:14px 18px;background:#f4f8fd;border-left:4px solid #1f5fae;border-radius:0 4px 4px 0;color:#2b3548;max-width:90ch}
 
-/* Content-sized grid: each field starts at its natural content width, then grows
-   to fill the rest of its row — so short rows fill out instead of leaving dead
-   space, while a row with long values still wraps to fewer columns. Use this
-   ONLY where different rows genuinely have different field sets (e.g. Parties,
-   where a Defendant and a Plaintiff show different fields). */
-.info-grid-auto{display:flex;flex-wrap:wrap;gap:14px 30px}
-.info-grid-auto .info-item{flex:1 1 auto;min-width:110px;max-width:100%}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px 24px}
+.item .k{font-size:13px;color:#5a667a;margin-bottom:1px}
+.item .v{font-weight:600;color:#10264a;overflow-wrap:anywhere}
+.item .v.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:15px}
+.item .v.muted{font-weight:400;color:#8793a6;font-style:italic}
 
-/* Fixed-column grids: for repeating rows that share the EXACT SAME fields
-   (Hearings, Charges, Financial Order fields) — every row/card uses identical
-   column widths so labels and values line up vertically like a real table,
-   instead of each row sizing itself independently off its own content. */
-.hearing-fields{display:grid;grid-template-columns:130px minmax(170px,1fr) minmax(150px,1fr) minmax(160px,1fr);gap:10px 24px}
-.charge-fields{display:grid;grid-template-columns:150px 120px 130px 130px 110px minmax(180px,1.5fr);gap:12px 24px}
-.finorder-fields{display:grid;grid-template-columns:minmax(160px,1fr) 130px 130px;gap:12px 24px}
-@media(max-width:960px){
-  .hearing-fields{grid-template-columns:1fr 1fr}
-  .charge-fields{grid-template-columns:1fr 1fr}
-  .finorder-fields{grid-template-columns:1fr 1fr}
+.box{border:1px solid #d5dde8;border-radius:4px;margin-bottom:14px;overflow:hidden}
+.box:last-child{margin-bottom:0}
+.box-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;background:#f4f8fd;padding:12px 20px;border-bottom:1px solid #d5dde8}
+.box-body{padding:18px 20px}
+.role{display:inline-block;font-size:13px;font-weight:700;color:#fff;background:#10264a;padding:1px 12px;border-radius:3px}
+.pname{font-family:var(--font-head,Georgia,serif);font-size:19px;font-weight:600;color:#10264a}
+.aka{font-size:14px;color:#5a667a}
+
+.tag{font-size:12.5px;font-weight:700;padding:1px 10px;border-radius:12px;border:1px solid;white-space:nowrap}
+.tag.red{background:#fce8e8;color:#8f1d1d;border-color:#ef9a9a}
+.tag.amber{background:#fff8e1;color:#7a4a00;border-color:#ffcc80}
+.tag.green{background:#e8f5e9;color:#256029;border-color:#a5d6a7}
+.tag.blue{background:#e1ecf8;color:#164a86;border-color:#b3cdee}
+
+.count-label{font-size:13px;font-weight:700;color:#164a86;letter-spacing:.04em;text-transform:uppercase}
+.statute{font-size:14px;color:#5a667a}
+.ctitle{font-weight:700;color:#10264a;font-size:17px}
+
+.bond{border-color:#ffcc80}
+.bond .box-head{background:#fff8e1;border-bottom-color:#ffcc80}
+.bond-amt{font-family:var(--font-head,Georgia,serif);font-size:28px;color:#10264a;font-weight:600}
+ul.clean{margin:8px 0 0 20px;color:#2b3548}
+ul.clean li{padding:2px 0}
+ul.clean li::marker{color:#1f5fae}
+.subhead{margin:18px 0 8px;font-weight:700;color:#10264a;font-size:15px;padding-top:14px;border-top:1px solid #e3e9f1}
+.act-row{display:flex;gap:14px;flex-wrap:wrap;padding:6px 0;border-bottom:1px solid #eef1f6;font-size:15px}
+.act-row:last-child{border-bottom:0}
+.act-date{min-width:110px;color:#5a667a}
+.act-judge{margin-left:auto;color:#5a667a}
+
+.hearing{display:flex;gap:18px;padding:16px 0;border-bottom:1px solid #e3e9f1}
+.hearing:last-child{border-bottom:0;padding-bottom:0}
+.hearing:first-child{padding-top:0}
+.hdate{flex-shrink:0;text-align:center;background:#eef3f9;border-radius:4px;padding:8px 12px;min-width:74px}
+.hdate .m{font-size:13px;color:#5a667a;text-transform:uppercase;letter-spacing:.06em}
+.hdate .d{font-family:var(--font-head,Georgia,serif);font-size:26px;font-weight:600;color:#10264a;line-height:1.1}
+.hdate .y{font-size:13px;color:#5a667a}
+.hdate .t{font-size:13px;font-weight:700;color:#1f5fae;margin-top:2px}
+.hbody{flex:1;min-width:0}
+.hnotes{margin-top:8px;color:#33405a;font-size:15px}
+
+.sent-head{background:#10264a;color:#fff;padding:12px 20px}
+.sent-head .c{font-weight:700}
+.sent-head .s{color:#c5d3e8;font-size:14px}
+.sub-title{font-size:14px;font-weight:700;color:#164a86;text-transform:uppercase;letter-spacing:.06em;margin:18px 0 10px;padding-bottom:6px;border-bottom:1px solid #e3e9f1}
+.sub-title:first-child{margin-top:0}
+.note-box{margin-top:16px;padding:12px 16px;background:#f4f8fd;border-radius:4px;color:#33405a;font-size:15px}
+
+.fin-strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));border:1px solid #d5dde8;border-radius:4px;overflow:hidden;margin-bottom:16px}
+.fin-strip>div{padding:14px 18px;border-right:1px solid #e3e9f1}
+.fin-strip>div:last-child{border-right:0}
+.fin-strip .k{font-size:13px;color:#5a667a}
+.fin-strip .v{font-family:var(--font-head,Georgia,serif);font-size:22px;font-weight:600}
+.fin-order{padding:16px 0;border-bottom:1px solid #e3e9f1}
+.fin-order:first-child{padding-top:0}
+.fin-order:last-child{border-bottom:0;padding-bottom:0}
+.fin-top{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:10px}
+.fin-right{text-align:right}
+.fin-amt{font-family:var(--font-head,Georgia,serif);font-size:21px;font-weight:600;color:#10264a}
+table.tbl{width:100%;border-collapse:collapse;margin-top:10px;font-size:15px}
+table.tbl th{background:#10264a;color:#fff;font-size:13px;text-align:left;padding:6px 10px;font-weight:600}
+table.tbl td{padding:7px 10px;border-bottom:1px solid #e3e9f1}
+table.tbl .amt{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+table.tbl tfoot td{font-weight:700;border-bottom:0;background:#f4f8fd}
+
+/* Events */
+.ev-tools{display:flex;gap:10px 14px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.ev-tools input{flex:1;min-width:200px;font:inherit;border:1px solid #8a97ad;border-radius:4px;padding:8px 12px}
+.chip{font:inherit;font-size:14px;font-weight:600;padding:5px 14px;border-radius:20px;border:2px solid #10264a;background:#fff;color:#10264a;cursor:pointer}
+.chip:hover{background:#eef3f9}
+.chip[aria-pressed="true"]{background:#10264a;color:#fff}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.day-head{font-weight:700;color:#10264a;font-size:15px;padding:12px 0 4px;border-top:1px solid #e3e9f1;margin-top:8px}
+.day-head:first-child{border-top:0;margin-top:0;padding-top:0}
+.event{display:flex;gap:14px;padding:12px 0}
+.enum{flex-shrink:0;width:32px;height:32px;border-radius:50%;background:#eef3f9;color:#33405a;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;border:1px solid #d5dde8}
+.event.filing .enum{background:#e1ecf8;color:#164a86;border-color:#b3cdee}
+.event.order .enum{background:#ebe5f7;color:#4a2f8a;border-color:#cfc3ec}
+.ebody{flex:1;min-width:0}
+.etop{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:baseline}
+.etime{font-size:14px;color:#5a667a}
+.edesc{font-weight:600;color:#1b2433}
+.ecomment{margin-top:3px;font-size:15px;color:#33405a}
+.emeta{margin-top:5px;font-size:14px;color:#5a667a}
+.emeta strong{color:#33405a}
+.eref{display:inline-block;margin-top:6px;font-size:14px;color:#33405a;background:#eef3f9;padding:2px 10px;border-radius:3px}
+.eacts{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.sealed-note{margin-top:6px;font-size:14px;color:#8f1d1d}
+.nodoc{margin-top:6px;font-size:14px;color:#5a667a;font-style:italic}
+
+.nexth{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-top:20px;padding:14px 20px;background:#e1ecf8;border:1px solid #b3cdee;border-left:4px solid #1f5fae;border-radius:4px;color:#10264a}
+.nexth strong{font-weight:700}
+.nexth a{font-weight:700;margin-left:auto}
+
+.sealed-state{max-width:640px;margin:40px auto}
+
+@media(max-width:960px){.kf{border-right:0;border-bottom:1px solid #e3e9f1}.kf:last-child{border-bottom:0}}
+@media(max-width:860px){
+  .wrap{padding:0 20px}
+  .page-header h1{font-size:29px}
+  .hero h1{font-size:26px}
+  .panel{padding:22px 20px}
+  .result{padding:16px 18px}
+  .hearing{flex-direction:column;gap:10px}
+  .hdate{align-self:flex-start}
+  .act-judge{margin-left:0}
+  .fin-right{text-align:left}
 }
 
-/* Compact data table — used for line-item data like payments where a
-   header row + aligned columns reads more clearly than stacked labels */
-.data-table{width:100%;border-collapse:collapse}
-.data-table th{font-size:10px;color:#9a8f82;text-transform:uppercase;letter-spacing:0.07em;text-align:left;font-weight:600;padding:0 10px 6px 0;border-bottom:1px solid #e0d9cf}
-.data-table td{font-size:12.5px;color:#4a4035;padding:7px 10px 7px 0;border-bottom:1px solid #f0ebe3;vertical-align:top}
-.data-table tr:last-child td{border-bottom:none}
-.data-table td.dt-amount,.data-table th.dt-amount{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
-.data-table tfoot td{border-top:1px solid #e0d9cf;border-bottom:none;font-weight:700;color:#1a1a1a;padding-top:8px}
-
-.summary-box{background:#f4f1ec;border:1px solid #e0d9cf;border-left:3px solid #c8a84b;border-radius:3px;padding:14px 18px}
-.summary-box p{font-size:13.5px;color:#4a4035;line-height:1.7;font-style:italic}
-
-/* Parties */
-.party-card{background:#fff;border:1px solid #e0d9cf;border-radius:4px;margin-bottom:12px;overflow:hidden}
-.party-card:last-child{margin-bottom:0}
-.party-card-head{background:#f4f1ec;padding:12px 20px;display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap;border-bottom:1px solid #e0d9cf}
-.party-role-pill{font-size:10px;color:#c8a84b;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;background:#0a1628;padding:4px 10px;border-radius:2px}
-.party-name{font-size:17px;color:#1a1a1a;font-family:'Merriweather',serif;font-weight:400}
-.party-card-body{padding:16px 20px}
-.party-aliases{font-size:12px;color:#9a8f82;margin-top:2px}
-
-/* Charges */
-.charge-row{border:1px solid #e8e0d5;border-radius:3px;padding:14px 16px;margin-bottom:10px}
-.charge-row:last-child{margin-bottom:0}
-.charge-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:8px}
-.charge-title{font-size:14px;color:#1a1a1a;font-weight:600;line-height:1.3}
-.charge-status-badge{font-size:10px;font-weight:700;letter-spacing:0.06em;padding:3px 9px;border-radius:2px;text-transform:uppercase;white-space:nowrap}
-
-/* Bonds */
-.bond-card{border:1px solid #fde68a;background:#fffdf5;border-radius:4px;padding:18px 20px;margin-bottom:12px}
-.bond-card:last-child{margin-bottom:0}
-.bond-top{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:12px}
-.bond-amount{font-family:'Merriweather',serif;font-size:26px;color:#1a1a1a}
-.bond-type{font-size:12px;color:#6b5f4e;margin-top:2px}
-.bond-actions-title{font-size:10.5px;color:#9a8f82;text-transform:uppercase;letter-spacing:0.08em;margin:14px 0 8px;padding-top:12px;border-top:1px solid #f5e8bd}
-.bond-action-row{display:flex;gap:12px;align-items:baseline;padding:6px 0;font-size:12.5px;color:#4a4035;border-bottom:1px solid #f8f0d8}
-.bond-action-row:last-child{border-bottom:none}
-.bond-action-date{color:#9a8f82;font-size:11px;min-width:76px}
-.bond-action-judge{color:#6b5f4e;font-size:11.5px}
-
-/* Hearings */
-.hearing-row{display:flex;gap:16px;padding:14px 0;border-bottom:1px solid #f8f5f0;align-items:flex-start}
-.hearing-row:last-child{border-bottom:none}
-.hearing-date-block{flex-shrink:0;text-align:center;background:#f4f1ec;border-radius:3px;padding:8px 12px;min-width:58px}
-.hearing-date-block .hd-month{font-size:10px;color:#9a8f82;text-transform:uppercase;letter-spacing:0.08em}
-.hearing-date-block .hd-day{font-family:'Merriweather',serif;font-size:22px;color:#1a1a1a;line-height:1}
-.hearing-date-block .hd-year{font-size:10px;color:#9a8f82}
-.hearing-date-block .hd-time{font-size:10px;color:#c8a84b;margin-top:3px;font-weight:600}
-.hearing-info{flex:1;min-width:0}
-.hearing-type{font-size:13.5px;font-weight:600;color:#1a1a1a;margin-bottom:3px}
-.hearing-officer{font-size:12px;color:#6b5f4e}
-.hearing-requested{font-size:11.5px;color:#9a8f82;margin-top:3px;font-style:italic}
-.hearing-result{font-size:11px;margin-top:6px;padding:2px 8px;border-radius:2px;display:inline-block}
-.hearing-notes{font-size:12px;color:#6b5f4e;margin-top:6px;line-height:1.5}
-.hr-pending{background:#fef9e7;color:#a16207}
-.hr-complete{background:#f0fdf4;color:#15803d}
-.hr-adjourned{background:#f5f3ff;color:#6d28d9}
-.hr-nogagree{background:#fef2f2;color:#dc2626}
-
-/* Sentencing */
-.sentencing-card{border:1px solid #e0d9cf;border-radius:4px;margin-bottom:14px;overflow:hidden}
-.sentencing-card:last-child{margin-bottom:0}
-.sentencing-head{background:#0a1628;padding:11px 20px}
-.sentencing-head .sc-charge{color:#fff;font-size:13px;font-weight:500}
-.sentencing-head .sc-sub{color:#7a9bbf;font-size:11px;margin-top:2px}
-.sentencing-body{padding:18px 20px}
-.sc-subsection{margin-bottom:16px}
-.sc-subsection:last-child{margin-bottom:0}
-.sc-subsection-title{font-size:10.5px;color:#c8a84b;text-transform:uppercase;letter-spacing:0.09em;font-weight:700;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid #f0ebe3}
-.sc-conditions{display:flex;flex-direction:column;gap:5px;margin-top:8px}
-.sc-condition{font-size:12.5px;color:#4a4035;display:flex;gap:6px;align-items:flex-start}
-.sc-condition::before{content:'•';color:#c8a84b;flex-shrink:0}
-.sc-notes-box{background:#f8f5f0;border-radius:3px;padding:12px 14px;margin-top:14px;font-size:12.5px;color:#6b5f4e;line-height:1.6}
-
-/* Financials */
-.fin-summary-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border:1px solid #e0d9cf;border-radius:4px;overflow:hidden;margin-bottom:14px}
-.fin-strip-item{padding:16px 20px;border-right:1px solid #f0ebe3;background:#fff}
-.fin-strip-item:last-child{border-right:none}
-.fin-strip-item .k{font-size:10.5px;color:#9a8f82;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:5px}
-.fin-strip-item .v{font-family:'Merriweather',serif;font-size:19px}
-.fin-order{padding:18px 0;border-bottom:1px solid #f8f5f0}
-.fin-order:last-child{border-bottom:none}
-.fin-order-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:14px}
-.fin-order-fields{margin-bottom:4px}
-.fin-type{font-size:13.5px;color:#1a1a1a;font-weight:600}
-.fin-desc{font-size:12px;color:#6b5f4e;margin-top:2px}
-.fin-right{text-align:right;flex-shrink:0}
-.fin-amount{font-family:'Merriweather',serif;font-size:18px;color:#1a1a1a;font-weight:400;white-space:nowrap}
-.fin-status{font-size:10px;font-weight:700;letter-spacing:0.06em;padding:2px 8px;border-radius:2px;text-transform:uppercase;margin-top:4px;display:inline-block}
-.fin-paid{background:#f0fdf4;color:#15803d;border:1px solid #dcfce7}
-.fin-unpaid{background:#fef2f2;color:#dc2626;border:1px solid #fee2e2}
-.fin-partial{background:#fff7ed;color:#c2410c;border:1px solid #fed7aa}
-.payment-sub{background:#f8f5f0;border-radius:3px;padding:10px 14px;margin-top:12px}
-.payment-sub .ps-title{font-size:10px;color:#9a8f82;text-transform:uppercase;letter-spacing:0.07em;margin-bottom:6px}
-
-/* Events — unified log: event / filing / order, grouped by day */
-.event-day-group{border-top:1px solid #e6ded1;padding-top:6px;margin-top:6px}
-.event-day-group:first-child{border-top:none;padding-top:0;margin-top:0}
-.event-day-heading{font-size:11.5px;font-weight:700;color:#0a1628;text-transform:uppercase;letter-spacing:0.06em;padding:8px 0}
-.event-row{display:flex;gap:16px;padding:16px 0;border-bottom:1px solid #f8f5f0}
-.event-row:last-child{border-bottom:none}
-.event-num-block{flex-shrink:0;width:44px;text-align:center}
-.event-num{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:50%;font-size:11px;font-weight:700;background:#f4f1ec;color:#6b5f4e;border:1px solid #e0d9cf}
-.event-row.type-filing .event-num{background:#eff6ff;color:#1d4ed8;border-color:#dbeafe}
-.event-row.type-order .event-num{background:#f5f3ff;color:#6d28d9;border-color:#ede9fe}
-.event-main{flex:1;min-width:0}
-.event-top{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:4px}
-.event-date{font-size:11.5px;color:#9a8f82;letter-spacing:0.03em}
-.event-badges{display:flex;gap:6px;align-items:center}
-.event-kind-badge{font-size:9.5px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;padding:2px 8px;border-radius:2px}
-.ek-event{background:#f4f1ec;color:#6b5f4e}
-.ek-filing{background:#eff6ff;color:#1d4ed8}
-.ek-order{background:#f5f3ff;color:#6d28d9}
-.ek-sealed{background:#fef2f2;color:#dc2626}
-.event-desc{font-size:14px;color:#1a1a1a;font-weight:500;line-height:1.4}
-.event-comment{font-size:12.5px;color:#6b5f4e;margin-top:5px;line-height:1.6}
-.event-submeta{display:flex;gap:16px;flex-wrap:wrap;margin-top:8px}
-.event-submeta-item{font-size:11.5px;color:#9a8f82}
-.event-submeta-item strong{color:#4a4035;font-weight:600}
-.event-link-ref{font-size:11.5px;color:#6b5f4e;margin-top:6px;background:#f8f5f0;display:inline-block;padding:3px 10px;border-radius:2px}
-.event-actions{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
-.filing-btn{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:600;letter-spacing:0.03em;padding:5px 12px;border-radius:2px;text-decoration:none;border:1px solid;transition:all 0.12s;cursor:pointer;font-family:'DM Sans',sans-serif}
-.filing-btn-open{color:#1a4a7a;border-color:#bfdbfe;background:#eff6ff}
-.filing-btn-open:hover{background:#dbeafe;border-color:#93c5fd;color:#1e3a8a}
-.filing-btn-download{color:#15803d;border-color:#bbf7d0;background:#f0fdf4}
-.filing-btn-download:hover{background:#dcfce7;border-color:#86efac;color:#14532d}
-.filing-no-doc{font-size:11px;color:#b0a898;margin-top:7px;font-style:italic}
-.filing-sealed-note{font-size:11.5px;color:#dc2626;margin-top:7px;font-style:italic}
-
-.empty-note{color:#9a8f82;font-size:13px;padding:4px 0}
-
-.loading-state{text-align:center;padding:60px 40px}
-.loading-state .spin{display:inline-block;width:32px;height:32px;border:3px solid #e0d9cf;border-top-color:#c8a84b;border-radius:50%;animation:spin 0.8s linear infinite;margin-bottom:14px}
-@keyframes spin{to{transform:rotate(360deg)}}
-.loading-state p{color:#9a8f82;font-size:13px}
-
-.error-state{text-align:center;padding:48px 40px;background:#fff;border:1px solid #e0d9cf;border-radius:4px}
-.error-state .e-icon{font-size:32px;margin-bottom:12px}
-.error-state h3{font-family:'Merriweather',serif;font-size:17px;font-weight:400;margin-bottom:8px}
-.error-state p{color:#9a8f82;font-size:13px}
-
-@media(max-width:800px){
-  .info-grid{grid-template-columns:1fr 1fr}
-  .fin-summary-strip{grid-template-columns:1fr 1fr}
-  .fin-strip-item{border-bottom:1px solid #f0ebe3}
-}
-@media(max-width:700px){
-  .info-grid{grid-template-columns:1fr}
-  .fin-summary-strip{grid-template-columns:1fr}
-  .rc-meta{gap:12px}
-  .page-bar,.search-section,.results-section,.hero-inner,.detail-body{padding-left:18px;padding-right:18px}
-  .jump-nav-inner{padding:0 18px}
-  .filter-row{flex-direction:column}
-  .search-row{flex-direction:column}
+@media print{
+  body{background:#fff;font-size:11pt}
+  body > *:not(main):not(#detail-screen):not(#search-screen){display:none!important}
+  .jump,.hero-actions,.back,.ev-tools,.eacts,#search-screen{display:none!important}
+  .hero{background:#fff;padding:0 0 10px;border-bottom:2px solid #10264a}
+  .hero h1,.hero .no,.hero .sub{color:#10264a}
+  .panel,.keyfacts{border:1px solid #bbb;break-inside:avoid}
+  .keyfacts{margin-top:10px}
+  .box,.hearing,.event,.fin-order{break-inside:avoid}
+  .sent-head{background:#eee;color:#000}
+  .sent-head .s{color:#333}
+  .nexth a{display:none}
 }
 </style>
 </head>
@@ -314,81 +254,71 @@ body{font-family:'DM Sans',sans-serif;background:#f4f1ec;color:#1a1a1a;min-heigh
 
 <!-- ═══════════ SEARCH SCREEN ═══════════ -->
 <div id="search-screen">
-  <div class="page-bar">
-    <div class="breadcrumb">
-      <a href="/courts/">Home</a>
-      <span>›</span>
-      <span class="current">Case Search</span>
-    </div>
-    <h2>Public Case Records Search</h2>
-    <p>Search the Michigan Courts case database across all courts and case types.</p>
-  </div>
-
-  <div class="search-section">
-    <div class="search-card">
-      <h3>Search Cases</h3>
-      <div class="search-row">
-        <div class="search-input-wrap">
-          <input type="text" id="search-input" placeholder="Search by case number, party name, or keyword…">
-        </div>
-        <button class="btn-search" id="search-btn">Search</button>
-        <button class="btn-clear" id="clear-btn">Clear</button>
+  <div class="page-header">
+    <div class="wrap">
+      <div class="breadcrumb">
+        <a href="https://migovt.org/courts/">Home</a><span>/</span>
+        <span class="here">Case search</span>
       </div>
-      <div class="filter-row">
-        <div class="filter-group">
-          <label>Court</label>
-          <select class="filter-select" id="filter-court">
-            <option value="">All Courts</option>
-            <option value="Michigan Supreme Court">Michigan Supreme Court</option>
-            <option value="Genesee Co. District Court">Genesee Co. District Court</option>
-          </select>
-        </div>
-        <div class="filter-group">
-          <label>Case Type</label>
-          <select class="filter-select" id="filter-type">
-            <option value="">All Types</option>
-            <option value="Criminal">Criminal</option>
-            <option value="Civil">Civil</option>
-            <option value="Appellate">Appellate</option>
-            <option value="Administrative">Administrative</option>
-            <option value="Traffic">Traffic</option>
-          </select>
-        </div>
-        <div class="filter-group">
-          <label>Status</label>
-          <select class="filter-select" id="filter-status">
-            <option value="">All Statuses</option>
-            <option value="Active">Active</option>
-            <option value="Pre-Trial">Pre-Trial</option>
-            <option value="Pending">Pending</option>
-            <option value="Pending Decision">Pending Decision</option>
-            <option value="Pending Review">Pending Review</option>
-            <option value="Closed">Closed</option>
-            <option value="Dismissed">Dismissed</option>
-          </select>
-        </div>
-      </div>
-      <div class="search-tips">
-        <p><strong>Search Tips:</strong> Enter a full or partial case number (e.g. <em>26-48</em>), a party name (e.g. <em>Williams</em>), or a keyword from the docket (e.g. <em>assault</em>). Searches are case-insensitive.</p>
-      </div>
+      <h1>Case Search</h1>
+      <p>Search public records for criminal, civil, traffic, and administrative cases in the trial courts. Looking for appeals, opinions, or orders? Use <a href="https://migovt.org/courts/supreme-court/case-search/">Supreme Court case search</a>.</p>
     </div>
   </div>
 
-  <div class="results-section" id="results-section" style="display:none">
-    <div class="results-header">
-      <div class="results-count" id="results-count"></div>
+  <main>
+    <div class="wrap">
+
+      <div class="panel">
+        <form class="big-search" id="search-form" role="search">
+          <label for="q" class="sr" style="position:absolute;left:-9999px">Search cases</label>
+          <input type="search" id="q" placeholder="Case number, party name, charge, or keyword" autocomplete="off">
+          <button type="submit" class="btn">Search</button>
+        </form>
+        <div class="filters">
+          <div class="field" id="f-court" hidden><label for="court">Court</label><select id="court"><option value="">All courts</option></select></div>
+          <div class="field"><label for="type">Case type</label><select id="type"><option value="">All types</option></select></div>
+          <div class="field"><label for="status">Status</label><select id="status"><option value="">All statuses</option></select></div>
+          <div class="field"><label for="judge">Judge</label><select id="judge"><option value="">All judges</option></select></div>
+          <div class="field"><label for="filed">Filed</label>
+            <select id="filed">
+              <option value="">Any time</option>
+              <option value="30">Last 30 days</option>
+              <option value="180">Last 6 months</option>
+              <option value="365">Last 12 months</option>
+            </select>
+          </div>
+        </div>
+        <p class="tips"><strong>Tips:</strong> Type several words to narrow results, like <em>Calloway assault</em>. Put a phrase in quotes to match it exactly. A partial case number, like <em>26-D-04</em>, works too. <button type="button" class="linkbtn" id="reset" hidden>Clear all</button></p>
+      </div>
+
+      <div class="status">
+        <span id="count" role="status" aria-live="polite"></span>
+        <span><label for="sort">Sort by</label>
+          <select id="sort">
+            <option value="filed-desc">Newest filed</option>
+            <option value="filed-asc">Oldest filed</option>
+            <option value="updated">Recently updated</option>
+            <option value="number">Case number</option>
+          </select>
+        </span>
+      </div>
+
+      <div id="results"></div>
+      <button type="button" class="btn alt more" id="more" hidden>Show more cases</button>
+
+      <div class="panel notice" style="margin-top:24px">
+        <h2>About these records</h2>
+        <p>These are public records from the trial courts. Cases sealed by court order are not shown. Some documents in a case may also be sealed.</p>
+        <p>For hearing dates across all cases, see the <a href="https://migovt.org/courts/online-services/docket/">court docket</a>. For appeals, opinions, and orders, use <a href="https://migovt.org/courts/supreme-court/case-search/">Supreme Court case search</a>.</p>
+      </div>
     </div>
-    <div id="results-list"></div>
-  </div>
+  </main>
 </div>
 
-<!-- ═══════════ DETAIL SCREEN — single scrolling page ═══════════ -->
-<div id="detail-screen">
-  <div id="detail-loading" class="loading-state" style="padding:80px 40px">
-    <div class="spin"></div>
-    <p>Loading case record…</p>
-  </div>
-  <div id="detail-content" style="display:none"></div>
+<!-- ═══════════ DETAIL SCREEN ═══════════ -->
+<div id="detail-screen" hidden>
+  <div id="detail-loading"><main><div class="wrap"><div class="skeleton" style="height:160px"></div><div class="skeleton"></div><div class="skeleton"></div></div></main></div>
+  <div id="detail-content" hidden></div>
 </div>
 
 <script type="module">
@@ -406,43 +336,46 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// ─── Helpers ───
+const SUPREME_SEARCH = 'https://migovt.org/courts/supreme-court/case-search/';
+const CANON = 'https://migovt.org/courts/case-search/';
+const PAGE_SIZE = 20;
+const $ = id => document.getElementById(id);
+
+/* ───────── Helpers ───────── */
 function esc(v){
   if (v == null) return '';
   return String(v).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 }
-function hasVal(v){
-  return v !== undefined && v !== null && String(v).trim() !== '';
-}
-// Show real value, or an explicit N/A when the field applies to this record but is empty.
+const hasVal = v => v !== undefined && v !== null && String(v).trim() !== '';
 function val(v, cls){
   if (hasVal(v)) return `<div class="v${cls?(' '+cls):''}">${esc(v)}</div>`;
   return `<div class="v muted">N/A</div>`;
 }
-function fmtDate(str) {
+function safeUrl(u){
+  const s = String(u || '').trim();
+  return /^(https?:\/\/|\/)/i.test(s) ? s : '';
+}
+function fmtDate(str){
   if (!hasVal(str)) return null;
   const d = new Date(str);
   return isNaN(d) ? str : d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
 }
-function fmtDateTime(str) {
+function fmtDateTime(str){
   if (!hasVal(str)) return null;
   const d = new Date(str);
   return isNaN(d) ? str : d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'});
 }
 function fmtTime(str){
   if (!hasVal(str)) return null;
-  // Accept either an ISO datetime or a bare "HH:MM" string
   if (/^\d{1,2}:\d{2}/.test(str) && str.length <= 8) {
     const [h,m] = str.split(':');
     const hh = parseInt(h,10);
-    const ampm = hh >= 12 ? 'PM' : 'AM';
-    const h12 = ((hh+11)%12)+1;
-    return `${h12}:${m} ${ampm}`;
+    return `${((hh+11)%12)+1}:${m} ${hh >= 12 ? 'PM' : 'AM'}`;
   }
   const d = new Date(str);
   return isNaN(d) ? str : d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
 }
-function fmtMoney(n) {
+function fmtMoney(n){
   if (n == null || n === '') return null;
   return '$' + Number(n).toLocaleString('en-US',{minimumFractionDigits:2});
 }
@@ -452,727 +385,697 @@ function addDays(dateStr, days){
   d.setDate(d.getDate()+days);
   return d.toISOString();
 }
+const escRe = s => s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+function highlight(text, terms){
+  const safe = esc(text);
+  const parts = terms.map(t => escRe(esc(t))).filter(Boolean);
+  return parts.length ? safe.replace(new RegExp('('+parts.join('|')+')','gi'), '<mark>$1</mark>') : safe;
+}
 
-/**
- * Smart case captioning.
- */
-function getCaseTitle(c) {
+/* Trial courts only: appeals live in the Supreme Court's own case search. */
+function isTrialCase(c){
   const t = (c.caseType || '').toLowerCase();
-  const p = c.parties || {};
-  const list = Array.isArray(p) ? p : null;
-
-  function findRole(roleNames){
-    if (!list) return null;
-    return list.find(x => roleNames.includes((x.role||'').toLowerCase()));
-  }
-
-  if (t === 'criminal' || t === 'traffic') {
-    const def = list ? findRole(['defendant'])?.name : p.primaryDefendant?.name;
-    return def ? `State of Michigan v. ${def}` : `State of Michigan v. Unknown`;
-  }
-
-  if (t === 'civil') {
-    const pl = list ? findRole(['plaintiff'])?.name : p.primaryPlaintiff?.name;
-    const df = list ? findRole(['defendant'])?.name : p.primaryDefendant?.name;
-    if (pl && df) return `${pl} v. ${df}`;
-    if (pl)       return `Ex parte ${pl}`;
-    if (df)       return `In re ${df}`;
-    const snippet = c.docketSummary?.split('.')[0]?.trim();
-    return (snippet && snippet.length < 90) ? snippet : (c.caseId || 'Civil Matter');
-  }
-
-  if (t === 'appellate' || t === 'appeal') {
-    const ap  = list ? findRole(['appellant'])?.name : p.appellant?.name;
-    const apl = list ? findRole(['appellee'])?.name : p.appellee?.name;
-    if (ap && apl) return `${ap} v. ${apl}`;
-    if (ap)        return `Ex parte ${ap}`;
-    if (apl)       return `In re ${apl}`;
-    const snippet = c.docketSummary?.split('.')[0]?.trim();
-    return (snippet && snippet.length > 4 && snippet.length < 90) ? snippet : (c.caseId || 'Appellate Matter');
-  }
-
-  if (t === 'administrative') {
-    const pet = list ? findRole(['petitioner'])?.name : (p.primaryPetitioner?.name || p.petitioner?.name);
-    const res = list ? findRole(['respondent'])?.name : p.respondent?.name;
-    if (pet && res) return `${pet} v. ${res}`;
-    if (pet)        return `Ex parte ${pet}`;
-    if (res)        return `In re ${res}`;
-    return c.administrativeSubtype || c.docketSummary?.split('.')[0]?.trim() || 'Administrative Matter';
-  }
-
-  return c.caseId || 'Case Record';
+  return !/supreme/i.test(c.court || '') && t !== 'appellate' && t !== 'appeal';
 }
+/* A case sealed by court order is withheld entirely from public search and direct lookup. */
+const isPublic = c => c && c.sealed !== true;
 
-function getStatusClass(status) {
-  if (!status) return 'status-default';
-  const s = status.toLowerCase().replace(/[\s-]/g,'');
-  if (s.includes('pretrial') || s === 'active') return 'status-active';
-  if (s.includes('pending')) return 'status-pending';
-  if (s.includes('closed') || s.includes('dismissed')) return 'status-closed';
-  return 'status-default';
-}
-
-function getBadgeClass(type) {
-  const t = (type||'').toLowerCase();
-  if (t === 'criminal') return 'criminal';
-  if (t === 'civil') return 'civil';
-  if (t === 'appellate' || t === 'appeal') return 'appellate';
-  if (t === 'administrative') return 'administrative';
-  return 'civil';
-}
-
-// ─── Cache ───
-let allCases = null;
-async function fetchAllCases() {
-  if (allCases) return allCases;
-  const snap = await getDocs(collection(db,'cases'));
-  allCases = [];
-  snap.forEach(d => allCases.push({...d.data(), _id: d.id}));
-  return allCases;
-}
-
-// A case sealed by court order is withheld entirely from public search and direct lookup.
-function isPubliclyVisible(c){
-  return c && c.sealed !== true;
-}
-
-// ─── Search ───
-async function doSearch() {
-  const query  = document.getElementById('search-input').value.trim().toLowerCase();
-  const court  = document.getElementById('filter-court').value;
-  const type   = document.getElementById('filter-type').value;
-  const status = document.getElementById('filter-status').value;
-
-  const resultsSec  = document.getElementById('results-section');
-  const resultsList = document.getElementById('results-list');
-  resultsSec.style.display = 'block';
-  resultsList.innerHTML = `<div class="loading-state"><div class="spin"></div><p>Searching case records…</p></div>`;
-
-  const cases = (await fetchAllCases()).filter(isPubliclyVisible);
-  const filtered = cases.filter(c => {
-    if (court  && c.court !== court)   return false;
-    if (type   && c.caseType !== type) return false;
-    if (status && c.status !== status) return false;
-    if (!query) return true;
-    const title  = getCaseTitle(c).toLowerCase();
-    const caseId = (c.caseId||'').toLowerCase();
-    const docket = (c.docketSummary||'').toLowerCase();
-    const partiesStr = JSON.stringify(c.parties||{}).toLowerCase();
-    return title.includes(query) || caseId.includes(query) || docket.includes(query) || partiesStr.includes(query);
-  });
-
-  document.getElementById('results-count').innerHTML =
-    `<strong>${filtered.length}</strong> case${filtered.length !== 1 ? 's' : ''} found${query ? ` for "<em>${esc(query)}</em>"` : ''}`;
-
-  if (filtered.length === 0) {
-    resultsList.innerHTML = `<div class="no-results"><div class="nr-icon">📂</div><h3>No Cases Found</h3><p>Try adjusting your search terms or clearing the filters.</p></div>`;
-    return;
-  }
-
-  resultsList.innerHTML = filtered.map(c => renderResultCard(c)).join('');
-  resultsList.querySelectorAll('.result-card').forEach(card => {
-    card.addEventListener('click', e => { e.preventDefault(); navigateToCase(card.dataset.caseid); });
-  });
-}
-
-function renderResultCard(c) {
-  const title     = getCaseTitle(c);
-  const statusCls = getStatusClass(c.status);
-  const badgeCls  = getBadgeClass(c.caseType);
-  const judge = c.judge || (Array.isArray(c.judges) ? c.judges[0] : null) || '—';
-  const filed = fmtDate(c.dates?.filed) || '—';
-  return `<a class="result-card" href="#case-${c._id}" data-caseid="${c._id}">
-    <div class="rc-top">
-      <div class="rc-ids">
-        <span class="rc-case-num">${esc(c.caseId)}</span>
-        <span class="rc-badge ${badgeCls}">${esc(c.caseType)}</span>
-      </div>
-      <span class="rc-status ${statusCls}">${esc(c.status)}</span>
-    </div>
-    <div class="rc-body">
-      <div class="rc-title">${esc(title)}</div>
-      <div class="rc-summary">${esc(c.docketSummary || '')}</div>
-    </div>
-    <div class="rc-footer">
-      <div class="rc-meta">
-        <div class="rc-meta-item"><div class="k">Court</div><div class="v">${esc(c.court)}</div></div>
-        <div class="rc-meta-item"><div class="k">Filed</div><div class="v">${esc(filed)}</div></div>
-        <div class="rc-meta-item"><div class="k">Presiding</div><div class="v">${esc(judge)}</div></div>
-      </div>
-      <span class="rc-arrow">View Case ›</span>
-    </div>
-  </a>`;
-}
-
-document.getElementById('search-btn').addEventListener('click', doSearch);
-document.getElementById('search-input').addEventListener('keydown', e => { if (e.key === 'Enter') doSearch(); });
-document.getElementById('clear-btn').addEventListener('click', () => {
-  document.getElementById('search-input').value = '';
-  document.getElementById('filter-court').value = '';
-  document.getElementById('filter-type').value  = '';
-  document.getElementById('filter-status').value = '';
-  document.getElementById('results-section').style.display = 'none';
-});
-
-// ─── Routing ───
-function navigateToCase(id) { window.location.hash = `case-${id}`; }
-function navigateBack()     { window.location.hash = ''; showSearchScreen(); }
-window.navigateBack = navigateBack;
-
-window.addEventListener('hashchange', handleHash);
-
-function handleHash() {
-  const hash = window.location.hash;
-  if (hash.startsWith('#case-')) {
-    showDetailScreen(hash.slice(6));
-  } else {
-    showSearchScreen();
-  }
-}
-
-handleHash();
-
-function showSearchScreen() {
-  document.getElementById('detail-screen').classList.remove('active');
-  document.getElementById('detail-screen').style.display = 'none';
-  document.getElementById('search-screen').style.display = 'block';
-}
-
-function renderSealedState(caseId){
-  document.getElementById('detail-content').style.display = 'block';
-  document.getElementById('detail-content').innerHTML = `<div style="padding:40px"><div class="error-state"><div class="e-icon">🔒</div><h3>Case Sealed</h3><p>This case record has been sealed by court order and is not available for public access.</p><button onclick="navigateBack()" style="margin-top:16px;background:#0a1628;color:#fff;border:none;padding:10px 22px;border-radius:3px;cursor:pointer;font-size:13px;font-family:inherit">← Back to Search</button></div></div>`;
-}
-
-async function showDetailScreen(caseId) {
-  document.getElementById('search-screen').style.display = 'none';
-  const ds = document.getElementById('detail-screen');
-  ds.style.display = 'block';
-  ds.classList.add('active');
-  document.getElementById('detail-loading').style.display = 'block';
-  document.getElementById('detail-content').style.display = 'none';
-  document.getElementById('detail-content').innerHTML = '';
-  window.scrollTo(0,0);
-
-  try {
-    let caseData = null;
-    const snap = await getDoc(doc(db, 'cases', caseId));
-    if (snap.exists()) {
-      caseData = {...snap.data(), _id: snap.id};
-    } else {
-      const all = await fetchAllCases();
-      caseData = all.find(c => c._id === caseId || c.caseId === caseId) || null;
-    }
-    document.getElementById('detail-loading').style.display = 'none';
-    if (!caseData) {
-      document.getElementById('detail-content').style.display = 'block';
-      document.getElementById('detail-content').innerHTML = `<div style="padding:40px"><div class="error-state"><div class="e-icon">📭</div><h3>Case Not Found</h3><p>No record found for "<strong>${esc(caseId)}</strong>".</p><button onclick="navigateBack()" style="margin-top:16px;background:#0a1628;color:#fff;border:none;padding:10px 22px;border-radius:3px;cursor:pointer;font-size:13px;font-family:inherit">← Back to Search</button></div></div>`;
-      return;
-    }
-    if (!isPubliclyVisible(caseData)) {
-      renderSealedState(caseId);
-      return;
-    }
-    renderDetailPage(caseData);
-  } catch(err) {
-    document.getElementById('detail-loading').style.display = 'none';
-    document.getElementById('detail-content').style.display = 'block';
-    document.getElementById('detail-content').innerHTML = `<div style="padding:40px"><div class="error-state"><div class="e-icon">⚠️</div><h3>Error Loading Case</h3><p>${esc(err.message)}</p><button onclick="navigateBack()" style="margin-top:16px;background:#0a1628;color:#fff;border:none;padding:10px 22px;border-radius:3px;cursor:pointer;font-size:13px;font-family:inherit">← Back to Search</button></div></div>`;
-  }
-}
-
-// ═══════════════════════════════════════
-// DETAIL PAGE — one continuous scroll
-// ═══════════════════════════════════════
-function renderDetailPage(c) {
-  const title     = getCaseTitle(c);
-  const statusCls = getStatusClass(c.status);
-  const badgeCls  = getBadgeClass(c.caseType);
-  const judge  = c.judge || (Array.isArray(c.judges) ? c.judges.join(', ') : null) || '—';
-  const filed  = fmtDate(c.dates?.filed) || '—';
-  const closed = fmtDate(c.dates?.closed);
-
-  const isCriminalOrTraffic = c.caseType === 'Criminal' || c.caseType === 'Traffic';
-  const isCriminal = c.caseType === 'Criminal';
-
-  const sections = [];
-  sections.push({ id:'case-details', label:'Case Details', html: buildCaseDetailsSection(c) });
-  sections.push({ id:'parties',      label:'Parties',      html: buildPartiesSection(c) });
-  if (isCriminalOrTraffic && c.charges?.length)
-    sections.push({ id:'charges', label:'Charges', html: buildChargesSection(c) });
-  if (isCriminalOrTraffic && c.bonds?.length)
-    sections.push({ id:'bonds', label:'Bonds', html: buildBondsSection(c) });
-  if (c.hearings?.length)
-    sections.push({ id:'hearings', label:'Hearings', html: buildHearingsSection(c) });
-  if (isCriminalOrTraffic && c.sentencing?.length)
-    sections.push({ id:'sentencing', label:'Sentencing', html: buildSentencingSection(c) });
-  if (c.financialOrders?.length)
-    sections.push({ id:'financials', label:'Financial Orders', html: buildFinancialsSection(c) });
-  if (c.events?.length)
-    sections.push({ id:'events', label:'Events', html: buildEventsSection(c) });
-
-  const jumpNav = sections.map((s,i) => `<a href="#sec-${s.id}" class="jump-link${i===0?' jump-current':''}" data-target="sec-${s.id}">${s.label}</a>`).join('');
-  const body = sections.map(s => `<section class="section-block" id="sec-${s.id}">${s.html}</section>`).join('');
-
-  document.getElementById('detail-content').innerHTML = `
-    <div class="detail-hero">
-      <div class="hero-inner">
-        <button class="detail-back" onclick="navigateBack()">← Back to Search</button>
-        <div class="detail-hero-top">
-          <div class="detail-hero-left">
-            <div class="detail-badges">
-              <span class="rc-badge ${badgeCls}">${esc(c.caseType)}</span>
-            </div>
-            <div class="detail-case-num">Case No. ${esc(c.caseId)} · ${esc(c.court)}</div>
-            <div class="detail-title">${esc(title)}</div>
-            <div class="detail-court">Presiding: ${esc(judge)}${closed ? ' · Closed: ' + esc(closed) : ''}</div>
-          </div>
-          <div class="detail-status-block">
-            <div class="detail-status-label">Case Status</div>
-            <span class="rc-status ${statusCls} detail-status-pill">${esc(c.status)}</span>
-            <div class="detail-filed">Filed: ${esc(filed)}</div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="jump-nav" id="jump-nav"><div class="jump-nav-inner">${jumpNav}</div></div>
-    <div class="detail-body">${body}</div>
-  `;
-  document.getElementById('detail-content').style.display = 'block';
-
-  // Smooth scroll for jump links
-  document.querySelectorAll('.jump-link').forEach(a => {
-    a.addEventListener('click', e => {
-      e.preventDefault();
-      document.getElementById(a.dataset.target)?.scrollIntoView({behavior:'smooth'});
-    });
-  });
-
-  // Scrollspy — highlight the current section in the jump nav as the page scrolls
-  const spySections = sections.map(s => document.getElementById('sec-'+s.id)).filter(Boolean);
-  function onScroll(){
-    let current = spySections[0];
-    for (const el of spySections){
-      if (el.getBoundingClientRect().top - 90 <= 0) current = el;
-    }
-    document.querySelectorAll('.jump-link').forEach(a => {
-      a.classList.toggle('jump-current', a.dataset.target === current?.id);
-    });
-  }
-  window.addEventListener('scroll', onScroll, {passive:true});
-  onScroll();
-}
-
-// ── 1. Case Details ──
-function buildCaseDetailsSection(c) {
-  const filed   = fmtDateTime(c.dates?.filed);
-  const updated = fmtDateTime(c.dates?.lastUpdated);
-  const closedDate = fmtDate(c.dates?.closed);
-  const isAppellate = c.caseType === 'Appellate' || c.caseType === 'Appeal';
-  const lower   = isAppellate ? fmtDateTime(c.dates?.lowerCourtDecisionDate) : null;
-  const judge   = c.judge || (Array.isArray(c.judges) ? c.judges.join(', ') : null);
-  const subtype = c.appellateSubtype || c.civilSubtype || c.administrativeSubtype || c.offenseType;
-
-  return `
-    <div class="section-heading"><h2>Case Details</h2></div>
-    ${c.docketSummary ? `<div class="summary-box" style="margin-bottom:14px"><p>${esc(c.docketSummary)}</p></div>` : ''}
-    <div class="d-card">
-      <div class="d-card-body">
-        <div class="info-grid">
-          <div class="info-item"><div class="k">Case ID</div>${val(c.caseId,'mono')}</div>
-          <div class="info-item"><div class="k">Court</div>${val(c.court,'small')}</div>
-          <div class="info-item"><div class="k">Case Type</div>${val(c.caseType)}</div>
-          <div class="info-item"><div class="k">Sub-Type</div>${val(subtype,'small')}</div>
-          <div class="info-item"><div class="k">Status</div>${val(c.status)}</div>
-          <div class="info-item"><div class="k">Judge of Record</div>${val(judge,'small')}</div>
-          <div class="info-item"><div class="k">Date Filed</div>${val(filed,'small')}</div>
-          <div class="info-item"><div class="k">Date Closed</div>${val(closedDate,'small')}</div>
-          <div class="info-item"><div class="k">Last Updated</div>${val(updated,'small')}</div>
-          ${lower ? `<div class="info-item"><div class="k">Lower Court Decision</div>${val(lower,'small')}</div>` : ''}
-        </div>
-      </div>
-    </div>`;
-}
-
-// ── 2. Parties ──
 function partyList(c){
   const p = c.parties;
   if (Array.isArray(p)) return p;
   if (!p) return [];
-  // legacy object shape fallback
   const out = [];
   const add = (obj, roleFallback) => { if (obj) out.push({role: obj.role || roleFallback, ...obj}); };
   add(p.primaryPlaintiff,'Plaintiff'); add(p.primaryDefendant,'Defendant');
-  add(p.appellant,'Appellant'); add(p.appellee,'Appellee');
   add(p.primaryPetitioner||p.petitioner,'Petitioner'); add(p.respondent,'Respondent');
   (p.additionalParties||p.interestedParties||[]).forEach(x=>add(x,'Interested Party'));
   return out;
 }
 
-function buildPartiesSection(c) {
+/* Smart case captioning */
+function getCaseTitle(c){
+  const t = (c.caseType || '').toLowerCase();
+  const list = partyList(c);
+  const find = names => list.find(x => names.includes((x.role||'').toLowerCase()))?.name;
+  if (t === 'criminal' || t === 'traffic') {
+    const def = find(['defendant']);
+    return `State of Michigan v. ${def || 'Unknown'}`;
+  }
+  if (t === 'civil') {
+    const pl = find(['plaintiff']), df = find(['defendant']);
+    if (pl && df) return `${pl} v. ${df}`;
+    if (pl) return `Ex parte ${pl}`;
+    if (df) return `In re ${df}`;
+    const snippet = c.docketSummary?.split('.')[0]?.trim();
+    return (snippet && snippet.length < 90) ? snippet : (c.caseId || 'Civil Matter');
+  }
+  if (t === 'administrative') {
+    const pet = find(['petitioner']), res = find(['respondent']);
+    if (pet && res) return `${pet} v. ${res}`;
+    if (pet) return `Ex parte ${pet}`;
+    if (res) return `In re ${res}`;
+    return c.administrativeSubtype || c.docketSummary?.split('.')[0]?.trim() || 'Administrative Matter';
+  }
+  return c.caseId || 'Case Record';
+}
+
+function statusClass(status){
+  const s = String(status || '').toLowerCase().replace(/[\s-]/g,'');
+  if (!s) return 'st-default';
+  if (s.includes('pretrial') || s === 'active') return 'st-active';
+  if (s.includes('pending')) return 'st-pending';
+  if (s.includes('closed') || s.includes('dismissed')) return 'st-closed';
+  return 'st-default';
+}
+function typeClass(type){
+  const t = (type || '').toLowerCase();
+  return ['criminal','civil','traffic','administrative'].includes(t) ? t : '';
+}
+
+/* ───────── Data ───────── */
+let RAW = null;          // every record, as stored
+let CASES = [];          // public trial-court cases, decorated for search
+let LOADING = null;
+
+function hearingWhen(h){
+  if (!hasVal(h.date)) return null;
+  let s = String(h.date);
+  if (/^\d{4}-\d{2}-\d{2}$/.test(s) && /^\d{1,2}:\d{2}/.test(h.time || '')) s += 'T' + h.time.padStart(5,'0');
+  const d = new Date(s);
+  return isNaN(d) ? null : d;
+}
+function nextHearingOf(c){
+  const start = new Date(); start.setHours(0,0,0,0);
+  const list = (c.hearings || [])
+    .filter(h => !hasVal(h.result))
+    .map(h => ({h, d: hearingWhen(h)}))
+    .filter(x => x.d && x.d >= start)
+    .sort((a,b) => a.d - b.d);
+  return list[0] || null;
+}
+
+function decorate(c){
+  const parties = partyList(c);
+  const judge = c.judge || (Array.isArray(c.judges) ? c.judges[0] : '') || '';
+  const nh = nextHearingOf(c);
+  const text = [
+    c.caseId, getCaseTitle(c), c.docketSummary, c.caseType, c.status, judge,
+    ...parties.flatMap(p => [p.name, ...(Array.isArray(p.aliases) ? p.aliases : []), p.attorney?.name]),
+    ...(c.charges || []).flatMap(ch => [ch.chargeName, ch.title, ch.statute])
+  ].filter(hasVal).join(' ').toLowerCase();
+  return { c, id: c._id, title: getCaseTitle(c), judge,
+    filedTs: new Date(c.dates?.filed || 0).getTime() || 0,
+    updatedTs: new Date(c.dates?.lastUpdated || c.dates?.filed || 0).getTime() || 0,
+    next: nh, text };
+}
+
+function loadAll(){
+  if (!LOADING) LOADING = (async () => {
+    const snap = await getDocs(collection(db,'cases'));
+    const rows = [];
+    snap.forEach(d => rows.push({...d.data(), _id: d.id}));
+    RAW = rows;
+    CASES = RAW.filter(c => isPublic(c) && isTrialCase(c)).map(decorate);
+    return RAW;
+  })().catch(err => { LOADING = null; throw err; });
+  return LOADING;
+}
+
+/* ───────── Search screen ───────── */
+const state = { q:'', court:'', type:'', status:'', judge:'', filed:'', sort:'filed-desc', limit:PAGE_SIZE };
+const els = { q:$('q'), court:$('court'), type:$('type'), status:$('status'), judge:$('judge'), filed:$('filed'), sort:$('sort') };
+let fromSearch = false;
+
+function fillSelect(sel, values, label){
+  const keep = sel.value;
+  sel.innerHTML = `<option value="">${label}</option>` + values.map(v => `<option>${esc(v)}</option>`).join('');
+  if (values.includes(keep)) sel.value = keep;
+}
+function populateFilters(){
+  const uniq = f => [...new Set(CASES.map(x => f(x)).filter(hasVal))].sort((a,b) => String(a).localeCompare(String(b)));
+  const courts = uniq(x => x.c.court);
+  $('f-court').hidden = courts.length < 2;        // only worth showing when there is more than one trial court
+  fillSelect(els.court, courts, 'All courts');
+  fillSelect(els.type, uniq(x => x.c.caseType), 'All types');
+  fillSelect(els.status, uniq(x => x.c.status), 'All statuses');
+  fillSelect(els.judge, uniq(x => x.judge), 'All judges');
+}
+
+function readUrl(){
+  const sp = new URLSearchParams(location.search);
+  state.q = sp.get('q') || ''; els.q.value = state.q;
+  ['court','type','status','judge','filed'].forEach(k => { state[k] = sp.get(k) || ''; });
+  state.sort = ['filed-desc','filed-asc','updated','number'].includes(sp.get('sort')) ? sp.get('sort') : 'filed-desc';
+}
+function writeControls(){
+  ['court','type','status','judge','filed'].forEach(k => { els[k].value = state[k]; });
+  els.sort.value = state.sort;
+}
+function syncUrl(){
+  const p = new URLSearchParams();
+  if (state.q) p.set('q', state.q);
+  ['court','type','status','judge','filed'].forEach(k => { if (state[k]) p.set(k, state[k]); });
+  if (state.sort !== 'filed-desc') p.set('sort', state.sort);
+  const qs = p.toString();
+  history.replaceState(null, '', location.pathname + (qs ? '?' + qs : '') + location.hash);
+}
+
+function parseTerms(q){
+  const terms = [], re = /"([^"]+)"|(\S+)/g; let m;
+  while ((m = re.exec(q.toLowerCase()))) { const t = (m[1] || m[2] || '').trim(); if (t) terms.push(t); }
+  return terms;
+}
+
+function filtered(){
+  const terms = parseTerms(state.q);
+  const cutoff = state.filed ? Date.now() - Number(state.filed) * 864e5 : 0;
+  const list = CASES.filter(x =>
+    (!state.court  || x.c.court === state.court) &&
+    (!state.type   || x.c.caseType === state.type) &&
+    (!state.status || x.c.status === state.status) &&
+    (!state.judge  || x.judge === state.judge) &&
+    (!cutoff || x.filedTs >= cutoff) &&
+    terms.every(t => x.text.includes(t)));
+  const sorters = {
+    'filed-desc': (a,b) => b.filedTs - a.filedTs,
+    'filed-asc':  (a,b) => a.filedTs - b.filedTs,
+    'updated':    (a,b) => b.updatedTs - a.updatedTs,
+    'number':     (a,b) => String(a.c.caseId||'').localeCompare(String(b.c.caseId||''), undefined, {numeric:true})
+  };
+  return { list: list.sort(sorters[state.sort]), terms };
+}
+
+function resultHtml(x, terms){
+  const c = x.c;
+  const tc = typeClass(c.caseType);
+  const filed = fmtDate(c.dates?.filed) || 'N/A';
+  const next = x.next ? `<span class="r-next"><b>Next hearing:</b> ${esc(fmtDate(x.next.d.toISOString()))}${hasVal(x.next.h.time) ? ' at ' + esc(fmtTime(x.next.h.time)) : ''}</span>` : '';
+  return `<a class="result" href="#case-${esc(x.id)}" data-id="${esc(x.id)}">
+    <div class="r-top">
+      <div class="r-ids"><span class="r-no">${highlight(c.caseId || '', terms)}</span><span class="badge ${tc}">${esc(c.caseType)}</span></div>
+      <span class="st ${statusClass(c.status)}">${esc(c.status || 'Status unknown')}</span>
+    </div>
+    <div class="r-title">${highlight(x.title, terms)}</div>
+    ${hasVal(c.docketSummary) ? `<div class="r-sum">${highlight(c.docketSummary, terms)}</div>` : ''}
+    <div class="r-meta">
+      <span><b>Court:</b> ${esc(c.court || 'N/A')}</span>
+      <span><b>Filed:</b> ${esc(filed)}</span>
+      <span><b>Judge:</b> ${esc(x.judge || 'N/A')}</span>
+      ${next}
+    </div>
+  </a>`;
+}
+
+function renderResults(){
+  const { list, terms } = filtered();
+  const anyFilter = state.q || state.court || state.type || state.status || state.judge || state.filed;
+  $('reset').hidden = !anyFilter;
+  $('count').innerHTML = `<strong>${list.length}</strong> case${list.length === 1 ? '' : 's'}${state.q ? ` for “${esc(state.q)}”` : (anyFilter ? '' : ' in total')}`;
+  if (!list.length) {
+    $('results').innerHTML = `<div class="empty"><h3>No cases found</h3><p>Try fewer words, check the spelling, or clear the filters.</p></div>`;
+    $('more').hidden = true;
+    return;
+  }
+  const shown = list.slice(0, state.limit);
+  $('results').innerHTML = shown.map(x => resultHtml(x, terms)).join('');
+  $('more').hidden = list.length <= shown.length;
+  $('more').textContent = `Show ${Math.min(PAGE_SIZE, list.length - shown.length)} more cases (${list.length - shown.length} left)`;
+}
+
+function update(resetLimit = true){
+  if (resetLimit) state.limit = PAGE_SIZE;
+  syncUrl();
+  renderResults();
+}
+
+let qTimer;
+els.q.addEventListener('input', () => { clearTimeout(qTimer); qTimer = setTimeout(() => { state.q = els.q.value.trim(); update(); }, 180); });
+$('search-form').addEventListener('submit', e => { e.preventDefault(); clearTimeout(qTimer); state.q = els.q.value.trim(); update(); });
+['court','type','status','judge','filed'].forEach(k => els[k].addEventListener('change', () => { state[k] = els[k].value; update(); }));
+els.sort.addEventListener('change', () => { state.sort = els.sort.value; update(); });
+$('more').addEventListener('click', () => { state.limit += PAGE_SIZE; update(false); });
+$('reset').addEventListener('click', () => {
+  Object.assign(state, { q:'', court:'', type:'', status:'', judge:'', filed:'' });
+  els.q.value = ''; writeControls(); update(); els.q.focus();
+});
+$('results').addEventListener('click', e => { if (e.target.closest('a.result')) fromSearch = true; });
+
+/* ───────── Routing ───────── */
+function goBack(){
+  if (fromSearch && history.length > 1) history.back();
+  else { location.hash = ''; }
+}
+window.addEventListener('hashchange', handleHash);
+
+function handleHash(){
+  const h = location.hash;
+  if (h.startsWith('#case-')) showDetail(decodeURIComponent(h.slice(6)));
+  else showSearch();
+}
+
+let spyHandler = null;
+function stopSpy(){ if (spyHandler) { window.removeEventListener('scroll', spyHandler); spyHandler = null; } }
+
+function showSearch(){
+  stopSpy();
+  $('detail-screen').hidden = true;
+  $('search-screen').hidden = false;
+  document.title = 'Case Search | Michigan Courts';
+}
+
+/* ───────── Detail screen ───────── */
+function stateMessage(icon, title, bodyHtml){
+  return `<main><div class="wrap"><div class="panel sealed-state" style="text-align:center">
+    <div style="font-size:34px" aria-hidden="true">${icon}</div><h2 style="margin:6px 0">${title}</h2>
+    <p style="color:#33405a;margin-bottom:16px">${bodyHtml}</p>
+    <button type="button" class="btn" data-act="back">Back to search</button></div></div></main>`;
+}
+
+async function showDetail(id){
+  stopSpy();
+  $('search-screen').hidden = true;
+  $('detail-screen').hidden = false;
+  $('detail-loading').hidden = false;
+  const box = $('detail-content');
+  box.hidden = true; box.innerHTML = '';
+  window.scrollTo(0,0);
+
+  try {
+    await loadAll().catch(() => null);
+    let c = (RAW || []).find(x => x._id === id || x.caseId === id) || null;
+    if (!c) {
+      const snap = await getDoc(doc(db, 'cases', id));
+      if (snap.exists()) c = {...snap.data(), _id: snap.id};
+    }
+    $('detail-loading').hidden = true;
+    box.hidden = false;
+    if (!c) { box.innerHTML = stateMessage('📭','Case not found',`No record found for “<strong>${esc(id)}</strong>”.`); return; }
+    if (!isPublic(c)) { box.innerHTML = stateMessage('🔒','Case sealed','This case record has been sealed by court order and is not available for public access.'); return; }
+    if (!isTrialCase(c)) {
+      box.innerHTML = stateMessage('⚖️','This is a Supreme Court case',`Appeals, opinions, and orders are in <a href="${SUPREME_SEARCH}">Supreme Court case search</a>.`);
+      return;
+    }
+    renderDetail(c);
+  } catch (err) {
+    $('detail-loading').hidden = true;
+    box.hidden = false;
+    box.innerHTML = stateMessage('⚠️','Error loading case',esc(err.message));
+  }
+}
+
+function renderDetail(c){
+  const title = getCaseTitle(c);
+  document.title = `${c.caseId || 'Case'} | Case Search | Michigan Courts`;
+  const judge = c.judge || (Array.isArray(c.judges) ? c.judges.join(', ') : '') || '';
+  const filed = fmtDate(c.dates?.filed);
+  const closed = fmtDate(c.dates?.closed);
+  const next = nextHearingOf(c);
+  const crimOrTraffic = c.caseType === 'Criminal' || c.caseType === 'Traffic';
+
+  const sections = [
+    ['case-details','Case details', buildDetails(c)],
+    ['parties','Parties', buildParties(c)]
+  ];
+  if (crimOrTraffic && c.charges?.length)   sections.push(['charges','Charges', buildCharges(c)]);
+  if (crimOrTraffic && c.bonds?.length)     sections.push(['bonds','Bonds', buildBonds(c)]);
+  if (c.hearings?.length)                    sections.push(['hearings','Hearings', buildHearings(c)]);
+  if (crimOrTraffic && c.sentencing?.length) sections.push(['sentencing','Sentencing', buildSentencing(c)]);
+  if (c.financialOrders?.length)             sections.push(['financials','Financial orders', buildFinancials(c)]);
+  if (c.events?.length)                      sections.push(['events','Docket', buildEventsShell(c)]);
+
+  $('detail-content').innerHTML = `
+    <div class="hero"><div class="wrap">
+      <button type="button" class="back" data-act="back">← Back to search</button>
+      <div class="hero-top">
+        <div>
+          <div class="hero-badges"><span class="badge ${typeClass(c.caseType)}">${esc(c.caseType)}</span><span class="st ${statusClass(c.status)}">${esc(c.status || 'Status unknown')}</span></div>
+          <div class="no">Case ${esc(c.caseId)}</div>
+          <h1>${esc(title)}</h1>
+          <div class="sub">${esc(c.court || '')}</div>
+        </div>
+        <div class="hero-actions">
+          <button type="button" class="btn" data-act="copy"><span>Copy link</span></button>
+          <button type="button" class="btn" data-act="print">Print</button>
+        </div>
+      </div>
+    </div></div>
+
+    <main><div class="wrap">
+      <div class="keyfacts">
+        <div class="kf"><div class="k">Judge</div><div class="v">${esc(judge || 'N/A')}</div></div>
+        <div class="kf"><div class="k">Filed</div><div class="v">${esc(filed || 'N/A')}</div></div>
+        <div class="kf"><div class="k">${closed ? 'Closed' : 'Next hearing'}</div><div class="v">${closed ? esc(closed) :
+          (next ? esc(fmtDate(next.d.toISOString())) + (hasVal(next.h.time) ? `<small>${esc(fmtTime(next.h.time))}${hasVal(next.h.courtroom) ? ' · ' + esc(next.h.courtroom) : ''}</small>` : '') : 'None scheduled')}</div></div>
+        <div class="kf"><div class="k">Last updated</div><div class="v">${esc(fmtDate(c.dates?.lastUpdated) || 'N/A')}</div></div>
+      </div>
+
+      ${next && !closed ? `<div class="nexth"><span><strong>Next hearing:</strong> ${esc(next.h.type || 'Hearing')} on ${esc(fmtDateTime(next.d.toISOString()))}${hasVal(next.h.officer || next.h.court) ? ' before ' + esc(next.h.officer || next.h.court) : ''}</span>
+        <a href="https://migovt.org/courts/online-services/docket/">See the court docket</a></div>` : ''}
+
+      <nav class="jump" aria-label="Case sections"><div class="jump-in">
+        ${sections.map((s,i) => `<a href="#sec-${s[0]}" data-target="sec-${s[0]}"${i===0?' class="cur"':''}>${s[1]}</a>`).join('')}
+      </div></nav>
+
+      ${sections.map(s => `<section class="sec" id="sec-${s[0]}">${s[2]}</section>`).join('')}
+    </div></main>`;
+
+  // Jump links + scrollspy
+  const links = [...document.querySelectorAll('.jump a')];
+  links.forEach(a => a.addEventListener('click', e => {
+    e.preventDefault();
+    document.getElementById(a.dataset.target)?.scrollIntoView({behavior:'smooth'});
+  }));
+  const secEls = sections.map(s => document.getElementById('sec-' + s[0])).filter(Boolean);
+  spyHandler = () => {
+    let cur = secEls[0];
+    for (const el of secEls) if (el.getBoundingClientRect().top - 110 <= 0) cur = el;
+    links.forEach(a => a.classList.toggle('cur', a.dataset.target === cur?.id));
+  };
+  window.addEventListener('scroll', spyHandler, {passive:true});
+  spyHandler();
+
+  if (c.events?.length) initEvents(c);
+}
+
+/* Delegated actions inside the detail screen */
+$('detail-screen').addEventListener('click', async e => {
+  const b = e.target.closest('[data-act]');
+  if (!b) return;
+  const act = b.dataset.act;
+  if (act === 'back') goBack();
+  if (act === 'print') window.print();
+  if (act === 'copy') {
+    const url = CANON + location.hash;
+    let ok = false;
+    try { await navigator.clipboard.writeText(url); ok = true; }
+    catch (_) {
+      const ta = document.createElement('textarea'); ta.value = url; ta.style.cssText = 'position:fixed;opacity:0';
+      document.body.appendChild(ta); ta.select();
+      try { ok = document.execCommand('copy'); } catch (__) {}
+      ta.remove();
+    }
+    const span = b.querySelector('span');
+    span.textContent = ok ? 'Link copied' : 'Copy failed';
+    setTimeout(() => { span.textContent = 'Copy link'; }, 1800);
+  }
+});
+
+/* ── Section builders ── */
+function heading(title, count){
+  return `<div class="sec-head"><h2>${esc(title)}</h2>${count ? `<span class="ct">${esc(count)}</span>` : ''}</div>`;
+}
+
+function buildDetails(c){
+  const updated = fmtDateTime(c.dates?.lastUpdated);
+  const subtype = c.civilSubtype || c.administrativeSubtype || c.offenseType;
+  const judge = c.judge || (Array.isArray(c.judges) ? c.judges.join(', ') : null);
+  return `<div class="panel">${heading('Case details')}
+    ${hasVal(c.docketSummary) ? `<div class="summary">${esc(c.docketSummary)}</div>` : ''}
+    <div class="grid">
+      <div class="item"><div class="k">Case ID</div>${val(c.caseId,'mono')}</div>
+      <div class="item"><div class="k">Court</div>${val(c.court)}</div>
+      <div class="item"><div class="k">Case type</div>${val(c.caseType)}</div>
+      <div class="item"><div class="k">Sub-type</div>${val(subtype)}</div>
+      <div class="item"><div class="k">Status</div>${val(c.status)}</div>
+      <div class="item"><div class="k">Judge of record</div>${val(judge)}</div>
+      <div class="item"><div class="k">Date filed</div>${val(fmtDateTime(c.dates?.filed))}</div>
+      <div class="item"><div class="k">Date closed</div>${val(fmtDate(c.dates?.closed))}</div>
+      <div class="item"><div class="k">Last updated</div>${val(updated)}</div>
+    </div></div>`;
+}
+
+function buildParties(c){
   const parties = partyList(c);
   const isCivil = c.caseType === 'Civil';
-  if (!parties.length) {
-    return `<div class="section-heading"><h2>Parties</h2></div><div class="d-card"><div class="d-card-body"><p class="empty-note">No party information available.</p></div></div>`;
-  }
-  return `
-    <div class="section-heading"><h2>Parties</h2><span class="sh-count">${parties.length} part${parties.length===1?'y':'ies'}</span></div>
+  if (!parties.length) return `<div class="panel">${heading('Parties')}<p style="color:#5a667a">No party information available.</p></div>`;
+  return `<div class="panel">${heading('Parties', `${parties.length} part${parties.length === 1 ? 'y' : 'ies'}`)}
     ${parties.map(p => {
-      const role = (p.role||'Party');
-      const roleLower = role.toLowerCase();
-      const dob = fmtDate(p.dob);
+      const role = p.role || 'Party', rl = role.toLowerCase();
       const selfRep = p.selfRepresented === true;
+      let civil = '';
+      if (isCivil && rl.includes('defendant')) civil = `<div class="item"><div class="k">Service date</div>${val(fmtDate(p.serviceDate))}</div><div class="item"><div class="k">Answer date</div>${val(fmtDate(p.answerDate))}</div>`;
+      else if (isCivil && rl.includes('plaintiff')) civil = `<div class="item"><div class="k">Response date</div>${val(fmtDate(p.responseDate))}</div>`;
+      const extra = Array.isArray(p.additionalFields) ? p.additionalFields.filter(f => hasVal(f.label))
+        .map(f => `<div class="item"><div class="k">${esc(f.label)}</div>${val(f.value)}</div>`).join('') : '';
+      return `<div class="box">
+        <div class="box-head"><span class="role">${esc(role)}</span></div>
+        <div class="box-body">
+          <div class="pname">${esc(p.name)}</div>
+          ${Array.isArray(p.aliases) && p.aliases.length ? `<div class="aka">a/k/a ${p.aliases.map(esc).join(', ')}</div>` : ''}
+          <div class="grid" style="margin-top:14px">
+            <div class="item"><div class="k">Date of birth</div>${val(fmtDate(p.dob))}</div>
+            <div class="item"><div class="k">Representation</div>${val(selfRep ? 'Self-represented' : (p.attorney?.name || null))}</div>
+            ${!selfRep ? `<div class="item"><div class="k">Bar number</div>${val(p.attorney?.barNumber,'mono')}</div>` : ''}
+            ${civil}${extra}
+          </div>
+        </div></div>`;
+    }).join('')}</div>`;
+}
 
-      let civilFields = '';
-      if (isCivil) {
-        if (roleLower.includes('defendant')) {
-          civilFields = `
-            <div class="info-item"><div class="k">Service Date</div>${val(fmtDate(p.serviceDate),'small')}</div>
-            <div class="info-item"><div class="k">Answer Date</div>${val(fmtDate(p.answerDate),'small')}</div>`;
-        } else if (roleLower.includes('plaintiff')) {
-          civilFields = `<div class="info-item"><div class="k">Response Date</div>${val(fmtDate(p.responseDate),'small')}</div>`;
-        }
-      }
-
-      const extraFields = Array.isArray(p.additionalFields) ? p.additionalFields
-        .filter(f => hasVal(f.label))
-        .map(f => `<div class="info-item"><div class="k">${esc(f.label)}</div>${val(f.value,'small')}</div>`).join('') : '';
-
-      return `<div class="party-card">
-        <div class="party-card-head">
+function buildCharges(c){
+  return `<div class="panel">${heading('Charges', `${c.charges.length} count${c.charges.length === 1 ? '' : 's'}`)}
+    ${c.charges.map(ch => {
+      const felony = (ch.classification || '').toLowerCase() === 'felony';
+      const enhanced = ch.enhancedPenalty === true ? `<div class="v" style="color:#8f1d1d">Yes, sought</div>` : ch.enhancedPenalty === false ? `<div class="v">No</div>` : val(null);
+      return `<div class="box"><div class="box-body">
+        <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap">
           <div>
-            <span class="party-role-pill">${esc(role)}</span>
+            ${hasVal(ch.count) ? `<div class="count-label">Count ${esc(ch.count)}</div>` : ''}
+            <div class="ctitle">${esc(ch.chargeName || ch.title)}</div>
+            ${hasVal(ch.statute) ? `<div class="statute">${esc(ch.statute)}</div>` : ''}
           </div>
+          ${hasVal(ch.classification) ? `<span class="tag ${felony ? 'red' : 'amber'}">${esc(ch.classification)}</span>` : ''}
         </div>
-        <div class="party-card-body">
-          <div class="party-name">${esc(p.name)}</div>
-          ${Array.isArray(p.aliases) && p.aliases.length ? `<div class="party-aliases">a/k/a ${p.aliases.map(esc).join(', ')}</div>` : ''}
-          <div class="info-grid-auto" style="margin-top:14px">
-            <div class="info-item"><div class="k">Date of Birth</div>${val(dob,'small')}</div>
-            <div class="info-item"><div class="k">Representation</div>${val(selfRep ? 'Self-Represented' : (p.attorney?.name || null),'small')}</div>
-            ${!selfRep ? `<div class="info-item"><div class="k">Bar Number</div>${val(p.attorney?.barNumber,'mono')}</div>` : ''}
-            ${civilFields}
-            ${extraFields}
-          </div>
-        </div>
-      </div>`;
-    }).join('')}`;
+        <div class="grid" style="margin-top:14px">
+          <div class="item"><div class="k">Enhanced penalty</div>${enhanced}</div>
+          <div class="item"><div class="k">Arraignment</div>${val(fmtDate(ch.arraignmentDate))}</div>
+          ${felony ? `<div class="item"><div class="k">Preliminary exam</div>${val(fmtDate(ch.prelimExamDate))}</div>` : ''}
+          <div class="item"><div class="k">Disposition date</div>${val(fmtDate(ch.dispositionDate))}</div>
+          <div class="item"><div class="k">Disposition</div>${val(ch.disposition || 'Pending')}</div>
+          <div class="item"><div class="k">Amendments / reductions</div>${val(ch.amendments)}</div>
+        </div></div></div>`;
+    }).join('')}</div>`;
 }
 
-// ── 3. Charges (criminal / traffic only) ──
-function buildChargesSection(c) {
-  return `
-    <div class="section-heading"><h2>Charges</h2><span class="sh-count">${c.charges.length} count(s)</span></div>
-    <div class="d-card">
-      <div class="d-card-body">
-        ${c.charges.map(ch => {
-          const classificationLower = (ch.classification||'').toLowerCase();
-          const isFelony = classificationLower === 'felony';
-
-          let enhancedHtml;
-          if (ch.enhancedPenalty === true) enhancedHtml = `<div class="v small" style="color:#dc2626;font-weight:700">Yes — Sought</div>`;
-          else if (ch.enhancedPenalty === false) enhancedHtml = `<div class="v small">No</div>`;
-          else enhancedHtml = val(null);
-
-          return `<div class="charge-row">
-            <div class="charge-top">
-              <div>
-                ${hasVal(ch.count) ? `<div style="font-size:10px;color:#c8a84b;font-weight:700;letter-spacing:0.08em;margin-bottom:4px">COUNT ${esc(ch.count)}</div>` : ''}
-                <div class="charge-title">${esc(ch.chargeName || ch.title)}</div>
-                ${hasVal(ch.statute) ? `<div style="font-size:11.5px;color:#9a8f82;margin-top:2px">${esc(ch.statute)}</div>` : ''}
-              </div>
-              ${hasVal(ch.classification) ? `<span class="charge-status-badge ${isFelony?'status-active':'status-pending'}">${esc(ch.classification)}</span>` : ''}
-            </div>
-            <div class="info-grid-auto" style="margin-top:12px">
-              <div class="info-item"><div class="k">Enhanced Penalty</div>${enhancedHtml}</div>
-              <div class="info-item"><div class="k">Arraignment</div>${val(fmtDate(ch.arraignmentDate),'small')}</div>
-              ${isFelony ? `<div class="info-item"><div class="k">Preliminary Exam</div>${val(fmtDate(ch.prelimExamDate),'small')}</div>` : ''}
-              <div class="info-item"><div class="k">Disposition Date</div>${val(fmtDate(ch.dispositionDate),'small')}</div>
-              <div class="info-item"><div class="k">Disposition</div>${val(ch.disposition || 'Pending','small')}</div>
-              <div class="info-item"><div class="k">Amendments / Reductions</div>${val(ch.amendments,'small')}</div>
-            </div>
-          </div>`;
-        }).join('')}
+function buildBonds(c){
+  return `<div class="panel">${heading('Bonds', `${c.bonds.length} bond${c.bonds.length === 1 ? '' : 's'}`)}
+    ${c.bonds.map(b => `<div class="box bond">
+      <div class="box-head">
+        <div><div class="bond-amt">${esc(fmtMoney(b.amount) || 'N/A')}</div><div class="aka">${esc(b.type || 'Bond')}</div></div>
+        <div class="grid" style="grid-template-columns:repeat(2,auto);gap:6px 28px">
+          <div class="item"><div class="k">Order date</div>${val(fmtDate(b.orderDate))}</div>
+          <div class="item"><div class="k">Presiding judge</div>${val(b.judge)}</div>
+        </div>
       </div>
-    </div>`;
-}
-
-// ── 4. Bonds (criminal / traffic only) ──
-function buildBondsSection(c) {
-  return `
-    <div class="section-heading"><h2>Bonds</h2><span class="sh-count">${c.bonds.length} bond(s)</span></div>
-    ${c.bonds.map(b => {
-      const postedBy = b.postedBy || 'Defendant';
-      const receipt = hasVal(b.receipt) ? b.receipt : 'N/A';
-      const posted = fmtDate(b.postedDate);
-      const closedDate = fmtDate(b.closedDate);
-      return `<div class="bond-card">
-        <div class="bond-top">
-          <div>
-            <div class="bond-amount">${fmtMoney(b.amount) || 'N/A'}</div>
-            <div class="bond-type">${esc(b.type || 'Bond')}</div>
-          </div>
-          <div class="info-grid" style="grid-template-columns:repeat(2,auto);gap:18px">
-            <div class="info-item"><div class="k">Order Date</div>${val(fmtDate(b.orderDate),'small')}</div>
-            <div class="info-item"><div class="k">Presiding Judge</div>${val(b.judge,'small')}</div>
-          </div>
+      <div class="box-body">
+        <div class="grid">
+          <div class="item"><div class="k">Posted by</div>${val(b.postedBy || 'Defendant')}</div>
+          <div class="item"><div class="k">Receipt no.</div>${val(hasVal(b.receipt) ? b.receipt : 'N/A','mono')}</div>
+          <div class="item"><div class="k">Date posted</div>${val(fmtDate(b.postedDate))}</div>
+          <div class="item"><div class="k">Date closed / released</div>${val(fmtDate(b.closedDate))}</div>
+          <div class="item"><div class="k">Payee (refund)</div>${val(b.payee)}</div>
         </div>
-        <div class="info-grid">
-          <div class="info-item"><div class="k">Posted By</div><div class="v small">${esc(postedBy)}</div></div>
-          <div class="info-item"><div class="k">Receipt No.</div><div class="v mono">${esc(receipt)}</div></div>
-          <div class="info-item"><div class="k">Date Posted</div>${val(posted,'small')}</div>
-          <div class="info-item"><div class="k">Date Closed / Released</div>${val(closedDate,'small')}</div>
-          <div class="info-item"><div class="k">Payee (Refund)</div>${val(b.payee,'small')}</div>
+        ${Array.isArray(b.conditions) && b.conditions.length ? `<div class="subhead">Conditions</div><ul class="clean">${b.conditions.map(x => `<li>${esc(x)}</li>`).join('')}</ul>` : ''}
+        ${Array.isArray(b.actions) && b.actions.length ? `<div class="subhead">Bond actions</div>${b.actions.map(a => `<div class="act-row"><span class="act-date">${esc(fmtDate(a.date) || 'N/A')}</span><span>${esc(a.action)}</span><span class="act-judge">${esc(a.judge || '')}</span></div>`).join('')}` : ''}
+        ${hasVal(b.notes) ? `<p style="margin-top:10px;color:#5a667a;font-size:15px">${esc(b.notes)}</p>` : ''}
+      </div></div>`).join('')}</div>`;
+}
+
+function buildHearings(c){
+  const start = new Date(); start.setHours(0,0,0,0);
+  const items = c.hearings.map(h => ({h, d: hearingWhen(h)}));
+  const isUp = x => x.d && x.d >= start && !hasVal(x.h.result);
+  const up = items.filter(isUp).sort((a,b) => a.d - b.d);
+  const past = items.filter(x => !isUp(x)).sort((a,b) => (b.d || 0) - (a.d || 0));
+  const row = x => {
+    const h = x.h, d = x.d;
+    const month = d ? d.toLocaleDateString('en-US',{month:'short'}) : '—';
+    const time = fmtTime(h.time || h.date);
+    return `<div class="hearing">
+      <div class="hdate"><div class="m">${esc(month)}</div><div class="d">${d ? d.getDate() : '—'}</div><div class="y">${d ? d.getFullYear() : ''}</div>${time ? `<div class="t">${esc(time)}</div>` : ''}</div>
+      <div class="hbody">
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:6px"><strong style="color:#10264a">${esc(h.type || 'Hearing')}</strong>${isUp(x) ? '<span class="tag blue">Upcoming</span>' : ''}</div>
+        <div class="grid">
+          <div class="item"><div class="k">Officer / court</div>${val((h.officer || h.court) ? `${h.officer || h.court}${h.courtroom ? ' · ' + h.courtroom : ''}` : null)}</div>
+          <div class="item"><div class="k">Requested by</div>${val(h.requestedBy)}</div>
+          <div class="item"><div class="k">Result</div>${val(h.result)}</div>
         </div>
-        ${Array.isArray(b.conditions) && b.conditions.length ? `
-          <div class="bond-actions-title">Conditions</div>
-          <div class="sc-conditions">${b.conditions.map(cd=>`<div class="sc-condition">${esc(cd)}</div>`).join('')}</div>` : ''}
-        ${Array.isArray(b.actions) && b.actions.length ? `
-          <div class="bond-actions-title">Bond Actions</div>
-          ${b.actions.map(a => `<div class="bond-action-row">
-            <span class="bond-action-date">${esc(fmtDate(a.date) || 'N/A')}</span>
-            <span style="flex:1">${esc(a.action)}</span>
-            <span class="bond-action-judge">${esc(a.judge || '')}</span>
-          </div>`).join('')}` : ''}
-        ${hasVal(b.notes) ? `<div style="font-size:12px;color:#9a8f82;margin-top:10px">${esc(b.notes)}</div>` : ''}
-      </div>`;
-    }).join('')}`;
+        ${hasVal(h.notes) ? `<div class="hnotes">${esc(h.notes)}</div>` : ''}
+      </div></div>`;
+  };
+  return `<div class="panel">${heading('Hearings', `${c.hearings.length} proceeding${c.hearings.length === 1 ? '' : 's'}`)}
+    ${up.map(row).join('')}${past.map(row).join('')}</div>`;
 }
 
-// ── 5. Hearings ──
-function buildHearingsSection(c) {
-  return `
-    <div class="section-heading"><h2>Hearings</h2><span class="sh-count">${c.hearings.length} proceeding(s)</span></div>
-    <div class="d-card">
-      <div class="d-card-body">
-        ${c.hearings.map(h => {
-          const d = h.date ? new Date(h.date) : null;
-          const month = d && !isNaN(d) ? d.toLocaleDateString('en-US',{month:'short'}) : '—';
-          const day   = d && !isNaN(d) ? d.getDate() : '—';
-          const year  = d && !isNaN(d) ? d.getFullYear() : '';
-          const time  = fmtTime(h.time || h.date);
-          return `<div class="hearing-row">
-            <div class="hearing-date-block">
-              <div class="hd-month">${esc(month)}</div>
-              <div class="hd-day">${esc(day)}</div>
-              <div class="hd-year">${esc(year)}</div>
-              ${time ? `<div class="hd-time">${esc(time)}</div>` : ''}
-            </div>
-            <div class="hearing-info">
-              <div class="hearing-fields">
-                <div class="info-item"><div class="k">Type</div><div class="v small">${esc(h.type)}</div></div>
-                <div class="info-item"><div class="k">Officer / Court</div>${val((h.officer || h.court) ? `${h.officer || h.court}${h.courtroom ? ' · '+h.courtroom : ''}` : null,'small')}</div>
-                <div class="info-item"><div class="k">Requested By</div>${val(h.requestedBy,'small')}</div>
-                <div class="info-item"><div class="k">Result</div>${val(h.result,'small')}</div>
-              </div>
-              ${hasVal(h.notes) ? `<div class="hearing-notes">${esc(h.notes)}</div>` : ''}
-            </div>
-          </div>`;
-        }).join('')}
-      </div>
-    </div>`;
-}
-
-// ── 6. Sentencing (criminal / traffic only, per charge) ──
-function buildSentencingSection(c) {
-  return `
-    <div class="section-heading"><h2>Sentencing</h2><span class="sh-count">${c.sentencing.length} record(s)</span></div>
+function buildSentencing(c){
+  return `<div class="panel">${heading('Sentencing', `${c.sentencing.length} record${c.sentencing.length === 1 ? '' : 's'}`)}
     ${c.sentencing.map(s => {
       const csi = s.communityServiceOrIncarceration || s.communityServiceIncarceration || {};
-      const prob = s.probation || {};
-      const lic = s.license || {};
+      const prob = s.probation || {}, lic = s.license || {};
       const concurrency = csi.concurrency || (hasVal(csi.terms) ? 'Consecutive' : null);
-
-      return `<div class="sentencing-card">
-        <div class="sentencing-head">
-          <div class="sc-charge">${esc(s.chargeRef || s.charge || 'Charge not specified')}</div>
-          ${hasVal(s.sentenceDate) ? `<div class="sc-sub">Sentenced ${esc(fmtDate(s.sentenceDate))}</div>` : ''}
-        </div>
-        <div class="sentencing-body">
-          <div class="sc-subsection">
-            <div class="sc-subsection-title">Overview</div>
-            <div class="info-grid">
-              <div class="info-item"><div class="k">Probation Term</div>${val(s.probationTerm,'small')}</div>
-              <div class="info-item"><div class="k">Incarceration Term</div>${val(s.incarcerationTerm,'small')}</div>
-              <div class="info-item"><div class="k">Facility</div>${val(s.facility,'small')}</div>
-            </div>
+      return `<div class="box">
+        <div class="sent-head"><div class="c">${esc(s.chargeRef || s.charge || 'Charge not specified')}</div>${hasVal(s.sentenceDate) ? `<div class="s">Sentenced ${esc(fmtDate(s.sentenceDate))}</div>` : ''}</div>
+        <div class="box-body">
+          <div class="sub-title">Overview</div>
+          <div class="grid">
+            <div class="item"><div class="k">Probation term</div>${val(s.probationTerm)}</div>
+            <div class="item"><div class="k">Incarceration term</div>${val(s.incarcerationTerm)}</div>
+            <div class="item"><div class="k">Facility</div>${val(s.facility)}</div>
           </div>
-
-          <div class="sc-subsection">
-            <div class="sc-subsection-title">Community Service / Incarceration</div>
-            <div class="info-grid">
-              <div class="info-item"><div class="k">Result</div>${val(csi.result,'small')}</div>
-              <div class="info-item"><div class="k">Location</div>${val(csi.location,'small')}</div>
-              <div class="info-item"><div class="k">Credit Time Served</div>${val(csi.creditTimeServed,'small')}</div>
-              <div class="info-item"><div class="k">Terms</div>${val(hasVal(csi.terms) ? `${csi.terms}${concurrency ? ' (served '+concurrency.toLowerCase()+')' : ''}` : null,'small')}</div>
-              <div class="info-item"><div class="k">Deferred Adjudication</div>${val(csi.deferredAdjudication === true ? 'Yes' : (csi.deferredAdjudication === false ? 'No' : null),'small')}</div>
-            </div>
+          <div class="sub-title">Community service / incarceration</div>
+          <div class="grid">
+            <div class="item"><div class="k">Result</div>${val(csi.result)}</div>
+            <div class="item"><div class="k">Location</div>${val(csi.location)}</div>
+            <div class="item"><div class="k">Credit for time served</div>${val(csi.creditTimeServed)}</div>
+            <div class="item"><div class="k">Terms</div>${val(hasVal(csi.terms) ? `${csi.terms}${concurrency ? ' (served ' + concurrency.toLowerCase() + ')' : ''}` : null)}</div>
+            <div class="item"><div class="k">Deferred adjudication</div>${val(csi.deferredAdjudication === true ? 'Yes' : (csi.deferredAdjudication === false ? 'No' : null))}</div>
           </div>
-
           ${(hasVal(prob.officer) || hasVal(prob.term) || (Array.isArray(prob.conditions) && prob.conditions.length)) ? `
-          <div class="sc-subsection">
-            <div class="sc-subsection-title">Probation Details</div>
-            <div class="info-grid">
-              <div class="info-item"><div class="k">Probation Officer</div>${val(prob.officer,'small')}</div>
-              <div class="info-item"><div class="k">Term</div>${val(prob.term,'small')}</div>
-            </div>
-            ${Array.isArray(prob.conditions) && prob.conditions.length ? `<div class="sc-conditions">${prob.conditions.map(cd=>`<div class="sc-condition">${esc(cd)}</div>`).join('')}</div>` : ''}
-          </div>` : ''}
-
+            <div class="sub-title">Probation</div>
+            <div class="grid"><div class="item"><div class="k">Probation officer</div>${val(prob.officer)}</div><div class="item"><div class="k">Term</div>${val(prob.term)}</div></div>
+            ${Array.isArray(prob.conditions) && prob.conditions.length ? `<ul class="clean">${prob.conditions.map(x => `<li>${esc(x)}</li>`).join('')}</ul>` : ''}` : ''}
           ${(hasVal(lic.status) || hasVal(lic.daysSuspended) || hasVal(lic.restrictions)) ? `
-          <div class="sc-subsection">
-            <div class="sc-subsection-title">License Information</div>
-            <div class="info-grid">
-              <div class="info-item"><div class="k">Status</div>${val(lic.status,'small')}</div>
-              <div class="info-item"><div class="k">Days Suspended/Revoked</div>${val(lic.daysSuspended,'small')}</div>
-              <div class="info-item"><div class="k">Restrictions</div>${val(lic.restrictions,'small')}</div>
-            </div>
-          </div>` : ''}
-
-          ${hasVal(s.notes) ? `<div class="sc-notes-box">${esc(s.notes)}</div>` : ''}
-        </div>
-      </div>`;
-    }).join('')}`;
+            <div class="sub-title">License</div>
+            <div class="grid"><div class="item"><div class="k">Status</div>${val(lic.status)}</div><div class="item"><div class="k">Days suspended / revoked</div>${val(lic.daysSuspended)}</div><div class="item"><div class="k">Restrictions</div>${val(lic.restrictions)}</div></div>` : ''}
+          ${hasVal(s.notes) ? `<div class="note-box">${esc(s.notes)}</div>` : ''}
+        </div></div>`;
+    }).join('')}</div>`;
 }
 
-// ── 7. Financial Orders ──
-function buildFinancialsSection(c) {
+function buildFinancials(c){
   const orders = c.financialOrders || [];
-  const totalOwed = orders.reduce((s,o) => s+(o.amount||0), 0);
-  const totalPaid = orders.reduce((s,o) => s+(o.payments||[]).reduce((ss,p)=>ss+(p.amount||0),0), 0);
-  const balance   = Math.max(0, totalOwed - totalPaid);
-
-  return `
-    <div class="section-heading"><h2>Financial Orders</h2><span class="sh-count">${orders.length} order(s)</span></div>
-    <div class="fin-summary-strip">
-      <div class="fin-strip-item"><div class="k">Total Assessed</div><div class="v">${fmtMoney(totalOwed) || '$0.00'}</div></div>
-      <div class="fin-strip-item"><div class="k">Total Paid</div><div class="v" style="color:${totalPaid>=totalOwed && totalOwed>0?'#15803d':'#c2410c'}">${fmtMoney(totalPaid) || '$0.00'}</div></div>
-      <div class="fin-strip-item"><div class="k">Balance</div><div class="v" style="color:${balance<=0?'#15803d':'#dc2626'}">${fmtMoney(balance) || '$0.00'}</div></div>
-      <div class="fin-strip-item"><div class="k">Orders</div><div class="v">${orders.length}</div></div>
+  const paidOf = o => (o.payments || []).reduce((s,p) => s + (p.amount || 0), 0);
+  const totalOwed = orders.reduce((s,o) => s + (o.amount || 0), 0);
+  const totalPaid = orders.reduce((s,o) => s + paidOf(o), 0);
+  const balance = Math.max(0, totalOwed - totalPaid);
+  return `<div class="panel">${heading('Financial orders', `${orders.length} order${orders.length === 1 ? '' : 's'}`)}
+    <div class="fin-strip">
+      <div><div class="k">Total assessed</div><div class="v">${esc(fmtMoney(totalOwed) || '$0.00')}</div></div>
+      <div><div class="k">Total paid</div><div class="v" style="color:${totalPaid >= totalOwed && totalOwed > 0 ? '#256029' : '#7a4a00'}">${esc(fmtMoney(totalPaid) || '$0.00')}</div></div>
+      <div><div class="k">Balance</div><div class="v" style="color:${balance <= 0 ? '#256029' : '#8f1d1d'}">${esc(fmtMoney(balance) || '$0.00')}</div></div>
     </div>
-    <div class="d-card">
-      <div class="d-card-body">
-        ${orders.map(o => {
-          const paidAmt = (o.payments||[]).reduce((s,p)=>s+(p.amount||0),0);
-          const stCls   = paidAmt >= (o.amount||0) && o.amount ? 'fin-paid' : (paidAmt>0?'fin-partial':'fin-unpaid');
-          const stLabel = paidAmt >= (o.amount||0) && o.amount ? 'Paid' : (paidAmt>0?'Partial':'Unpaid');
-          const due = hasVal(o.dueDate) ? fmtDate(o.dueDate) : fmtDate(addDays(o.assessmentDate, 21));
-          return `<div class="fin-order">
-            <div class="fin-order-head">
-              <div>
-                <div class="fin-type">${esc(o.type)}</div>
-                ${hasVal(o.description) ? `<div class="fin-desc">${esc(o.description)}</div>` : ''}
-              </div>
-              <div class="fin-right">
-                <div class="fin-amount">${fmtMoney(o.amount) || 'N/A'}</div>
-                <span class="fin-status ${stCls}">${stLabel}</span>
-              </div>
-            </div>
-            <div class="info-grid-auto fin-order-fields">
-              <div class="info-item"><div class="k">Payor</div>${val(o.payor || o.owedBy,'small')}</div>
-              <div class="info-item"><div class="k">Assessed</div>${val(fmtDate(o.assessmentDate),'small')}</div>
-              <div class="info-item"><div class="k">Due</div>${val(due,'small')}</div>
-            </div>
-            ${(o.payments||[]).length ? `<div class="payment-sub">
-              <div class="ps-title">Payments</div>
-              <table class="data-table">
-                <thead><tr><th>Date</th><th>Method</th><th class="dt-amount">Amount</th></tr></thead>
-                <tbody>
-                  ${o.payments.map(pm=>`<tr>
-                    <td>${esc(fmtDate(pm.date) || 'N/A')}</td>
-                    <td>${esc(pm.method || '—')}</td>
-                    <td class="dt-amount">${esc(fmtMoney(pm.amount) || 'N/A')}</td>
-                  </tr>`).join('')}
-                </tbody>
-                <tfoot><tr><td colspan="2">Payments Total</td><td class="dt-amount">${esc(fmtMoney(paidAmt))}</td></tr></tfoot>
-              </table>
-            </div>` : ''}
-          </div>`;
-        }).join('')}
-      </div>
-    </div>`;
+    ${orders.map(o => {
+      const paid = paidOf(o);
+      const full = o.amount && paid >= o.amount;
+      const tag = full ? ['green','Paid'] : paid > 0 ? ['amber','Partial'] : ['red','Unpaid'];
+      const due = hasVal(o.dueDate) ? fmtDate(o.dueDate) : fmtDate(addDays(o.assessmentDate, 21));
+      return `<div class="fin-order">
+        <div class="fin-top">
+          <div><strong style="color:#10264a">${esc(o.type)}</strong>${hasVal(o.description) ? `<div class="aka">${esc(o.description)}</div>` : ''}</div>
+          <div class="fin-right"><div class="fin-amt">${esc(fmtMoney(o.amount) || 'N/A')}</div><span class="tag ${tag[0]}">${tag[1]}</span></div>
+        </div>
+        <div class="grid">
+          <div class="item"><div class="k">Payor</div>${val(o.payor || o.owedBy)}</div>
+          <div class="item"><div class="k">Assessed</div>${val(fmtDate(o.assessmentDate))}</div>
+          <div class="item"><div class="k">Due</div>${val(due)}</div>
+        </div>
+        ${(o.payments || []).length ? `<table class="tbl"><thead><tr><th>Payment date</th><th>Method</th><th class="amt">Amount</th></tr></thead><tbody>
+          ${o.payments.map(pm => `<tr><td>${esc(fmtDate(pm.date) || 'N/A')}</td><td>${esc(pm.method || '—')}</td><td class="amt">${esc(fmtMoney(pm.amount) || 'N/A')}</td></tr>`).join('')}
+          </tbody><tfoot><tr><td colspan="2">Payments total</td><td class="amt">${esc(fmtMoney(paid))}</td></tr></tfoot></table>` : ''}
+      </div>`;
+    }).join('')}</div>`;
 }
 
-// ── 8. Events — unified log (event / filing / order), grouped by day ──
-// Events whose `sealed` flag is true keep their docket description visible (so the
-// public can see something was filed) but withhold the underlying document.
-function buildEventsSection(c) {
-  const events = [...c.events].sort((a,b) => {
-    const ad = new Date(a.date||0), bd = new Date(b.date||0);
-    if (ad - bd !== 0) return ad - bd;
-    const an = a.eventNumber ?? 0, bn = b.eventNumber ?? 0;
-    return an - bn;
-  });
-
-  // Bucket events into day groups, preserving chronological order
-  const groups = [];
-  let currentKey = null, currentGroup = null;
-  events.forEach(e => {
-    const d = e.date ? new Date(e.date) : null;
-    const key = d && !isNaN(d) ? d.toDateString() : 'undated';
-    if (key !== currentKey) {
-      currentGroup = { key, label: d && !isNaN(d) ? fmtDate(e.date) : 'Undated', items: [] };
-      groups.push(currentGroup);
-      currentKey = key;
-    }
-    currentGroup.items.push(e);
-  });
-
-  return `
-    <div class="section-heading"><h2>Events</h2><span class="sh-count">${events.length} event(s)</span></div>
-    <div class="d-card">
-      <div class="d-card-body">
-        ${groups.map(g => `<div class="event-day-group">
-          <div class="event-day-heading">${esc(g.label)}</div>
-          ${g.items.map(e => {
-            const type = (e.type||'event').toLowerCase();
-            const isFiling = type === 'filing';
-            const isOrder  = type === 'order';
-            const kindLabel = isFiling ? 'Filing' : (isOrder ? 'Order' : 'Event');
-            const kindCls   = isFiling ? 'ek-filing' : (isOrder ? 'ek-order' : 'ek-event');
-            const rowCls    = isFiling ? 'type-filing' : (isOrder ? 'type-order' : 'type-event');
-            const time = fmtTime(e.date);
-            const sealed = e.sealed === true;
-
-            let actions = '';
-            if (isFiling) {
-              if (sealed) {
-                actions = `<div class="filing-sealed-note">🔒 Document sealed by court order — not available for public access</div>`;
-              } else {
-                actions = hasVal(e.documentLink)
-                  ? `<div class="event-actions">
-                       <a class="filing-btn filing-btn-open" href="${esc(e.documentLink)}" target="_blank" rel="noopener"><span>↗</span> Open</a>
-                       <a class="filing-btn filing-btn-download" href="${esc(e.documentLink)}" download target="_blank" rel="noopener"><span>⬇</span> Download</a>
-                     </div>`
-                  : `<div class="filing-no-doc">Document not available for public access</div>`;
-              }
-            }
-
-            const submeta = [];
-            if (isFiling && hasVal(e.filedBy)) submeta.push(`<div class="event-submeta-item"><strong>Filed by:</strong> ${esc(e.filedBy)}${e.role ? ' ('+esc(e.role)+')' : ''}</div>`);
-            if (isOrder && hasVal(e.judge)) submeta.push(`<div class="event-submeta-item"><strong>Judge:</strong> ${esc(e.judge)}</div>`);
-
-            return `<div class="event-row ${rowCls}">
-              <div class="event-num-block"><span class="event-num">${esc(e.eventNumber ?? '—')}</span></div>
-              <div class="event-main">
-                <div class="event-top">
-                  <span class="event-date">${esc(time || '')}</span>
-                  <span class="event-badges">
-                    ${sealed ? `<span class="event-kind-badge ek-sealed">🔒 Sealed</span>` : ''}
-                    <span class="event-kind-badge ${kindCls}">${kindLabel}</span>
-                  </span>
-                </div>
-                <div class="event-desc">${esc(e.description)}</div>
-                ${hasVal(e.comment) ? `<div class="event-comment">${esc(e.comment)}</div>` : ''}
-                ${submeta.length ? `<div class="event-submeta">${submeta.join('')}</div>` : ''}
-                ${isOrder && hasVal(e.linkedTo) ? `<div class="event-link-ref">↳ Regarding: ${esc(e.linkedTo)}</div>` : ''}
-                ${actions}
-              </div>
-            </div>`;
-          }).join('')}
-        </div>`).join('')}
+/* ── Docket (events): filter, search, sort ── */
+function buildEventsShell(c){
+  return `<div class="panel">${heading('Docket', `${c.events.length} entr${c.events.length === 1 ? 'y' : 'ies'}`)}
+    <div class="ev-tools">
+      <div class="chips" role="group" aria-label="Show">
+        <button type="button" class="chip" data-ef="all" aria-pressed="true">All</button>
+        <button type="button" class="chip" data-ef="filing" aria-pressed="false">Filings</button>
+        <button type="button" class="chip" data-ef="order" aria-pressed="false">Orders</button>
+        <button type="button" class="chip" data-ef="event" aria-pressed="false">Events</button>
       </div>
-    </div>`;
+      <label for="ev-q" style="position:absolute;left:-9999px">Search the docket</label>
+      <input type="search" id="ev-q" placeholder="Search this docket" autocomplete="off">
+      <button type="button" class="chip" id="ev-sort" aria-label="Change sort order">Newest first</button>
+    </div>
+    <p id="ev-count" role="status" aria-live="polite" style="font-size:14px;color:#5a667a;margin-bottom:8px"></p>
+    <div id="ev-list"></div></div>`;
 }
+
+function initEvents(c){
+  const ev = { filter:'all', q:'', desc:true };
+  const list = $('ev-list');
+  const draw = () => {
+    const q = ev.q.toLowerCase();
+    let items = c.events.filter(e => {
+      const type = (e.type || 'event').toLowerCase();
+      if (ev.filter !== 'all' && type !== ev.filter) return false;
+      return !q || [e.description, e.comment, e.filedBy, e.judge, e.linkedTo].filter(hasVal).join(' ').toLowerCase().includes(q);
+    });
+    items.sort((a,b) => {
+      const diff = new Date(a.date || 0) - new Date(b.date || 0);
+      return (diff || ((a.eventNumber ?? 0) - (b.eventNumber ?? 0))) * (ev.desc ? -1 : 1);
+    });
+    $('ev-count').textContent = items.length === c.events.length ? '' : `${items.length} of ${c.events.length} entries`;
+    if (!items.length) { list.innerHTML = '<p style="color:#5a667a;padding:12px 0">No entries match.</p>'; return; }
+
+    const groups = []; let key = null, g = null;
+    items.forEach(e => {
+      const d = e.date ? new Date(e.date) : null;
+      const k = d && !isNaN(d) ? d.toDateString() : 'undated';
+      if (k !== key) { g = { label: d && !isNaN(d) ? fmtDate(e.date) : 'Undated', items: [] }; groups.push(g); key = k; }
+      g.items.push(e);
+    });
+    list.innerHTML = groups.map(gr => `<div class="day-head">${esc(gr.label)}</div>${gr.items.map(eventHtml).join('')}`).join('');
+  };
+  document.querySelectorAll('[data-ef]').forEach(b => b.addEventListener('click', () => {
+    ev.filter = b.dataset.ef;
+    document.querySelectorAll('[data-ef]').forEach(x => x.setAttribute('aria-pressed', x === b));
+    draw();
+  }));
+  $('ev-q').addEventListener('input', e => { ev.q = e.target.value.trim(); draw(); });
+  $('ev-sort').addEventListener('click', e => { ev.desc = !ev.desc; e.target.textContent = ev.desc ? 'Newest first' : 'Oldest first'; draw(); });
+  draw();
+}
+
+function eventHtml(e){
+  const type = (e.type || 'event').toLowerCase();
+  const isFiling = type === 'filing', isOrder = type === 'order';
+  const kind = isFiling ? ['blue','Filing'] : isOrder ? ['','Order'] : ['','Event'];
+  const sealed = e.sealed === true;
+  const time = fmtTime(e.date);
+  const link = safeUrl(e.documentLink);
+
+  let actions = '';
+  if (isFiling) {
+    if (sealed) actions = `<div class="sealed-note">🔒 Document sealed by court order. Not available for public access.</div>`;
+    else if (link) actions = `<div class="eacts">
+        <a class="btn alt sm" href="${esc(link)}" target="_blank" rel="noopener">Open</a>
+        <a class="btn alt sm" href="${esc(link)}" download target="_blank" rel="noopener">Download</a></div>`;
+    else actions = `<div class="nodoc">Document not available for public access</div>`;
+  }
+  const meta = [];
+  if (isFiling && hasVal(e.filedBy)) meta.push(`<strong>Filed by:</strong> ${esc(e.filedBy)}${e.role ? ' (' + esc(e.role) + ')' : ''}`);
+  if (isOrder && hasVal(e.judge)) meta.push(`<strong>Judge:</strong> ${esc(e.judge)}`);
+
+  return `<div class="event ${isFiling ? 'filing' : isOrder ? 'order' : ''}">
+    <span class="enum" aria-hidden="true">${esc(e.eventNumber ?? '—')}</span>
+    <div class="ebody">
+      <div class="etop"><span class="etime">${esc(time || '')}</span>
+        <span>${sealed ? '<span class="tag red">🔒 Sealed</span> ' : ''}<span class="tag ${kind[0] || ''}" ${kind[0] ? '' : 'style="background:#eef0f4;color:#4a5568;border-color:#cfd6e2"'}>${kind[1]}</span></span></div>
+      <div class="edesc">${esc(e.description)}</div>
+      ${hasVal(e.comment) ? `<div class="ecomment">${esc(e.comment)}</div>` : ''}
+      ${meta.length ? `<div class="emeta">${meta.join(' &nbsp;·&nbsp; ')}</div>` : ''}
+      ${isOrder && hasVal(e.linkedTo) ? `<div class="eref">↳ Regarding: ${esc(e.linkedTo)}</div>` : ''}
+      ${actions}
+    </div></div>`;
+}
+
+/* ───────── Init ───────── */
+readUrl();
+$('results').innerHTML = '<div class="skeleton"></div><div class="skeleton"></div><div class="skeleton"></div>';
+$('count').textContent = 'Loading cases…';
+handleHash();
+loadAll().then(() => {
+  populateFilters();
+  writeControls();
+  renderResults();
+}).catch(err => {
+  $('count').textContent = '';
+  $('results').innerHTML = `<div class="errbox" role="alert"><h3>Couldn't load cases</h3><p>${esc(err.message)}. Refresh the page to try again.</p></div>`;
+});
 </script>
 </body>
 </html>
