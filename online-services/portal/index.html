@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Online Portal | Michigan Courts</title>
+<link rel="icon" type="image/png" href="/courts/images/favicon.png">
+
+<script src="https://migovt.org/courts/shell.js" data-active="services"></script>
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-ui,'Public Sans',system-ui,sans-serif);background:#e3e9f2;color:#1b2433;line-height:1.6;font-size:16px}
+a{color:#1f5fae}
+a:focus-visible{outline:3px solid #5b9be0;outline-offset:2px}
+.wrap{max-width:1180px;margin:0 auto;padding:0 40px}
+h2,h3{font-family:var(--font-head,Georgia,serif);color:#10264a;font-weight:600;line-height:1.25}
+
+.page-header{background:#10264a;padding:34px 0 40px}
+.breadcrumb{display:flex;align-items:center;gap:8px;margin-bottom:14px;font-size:13px;flex-wrap:wrap}
+.breadcrumb a{color:#9cc4f5;text-decoration:none}
+.breadcrumb a:hover{color:#fff;text-decoration:underline}
+.breadcrumb span{color:#6f87ad}
+.breadcrumb .here{color:#fff}
+.page-header h1{font-family:var(--font-head,Georgia,serif);color:#fff;font-size:36px;font-weight:600;line-height:1.2;letter-spacing:-.01em}
+.page-header p{color:#c5d3e8;margin-top:10px;max-width:700px}
+
+main{padding:36px 0 72px}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 400px;gap:28px;align-items:start}
+
+.panel{background:#fff;border:1px solid #d5dde8;border-radius:4px;padding:32px 40px}
+.panel+.panel{margin-top:24px}
+.panel h2{font-size:26px;margin-bottom:12px}
+.panel>p{color:#2b3548;max-width:62ch;margin-bottom:14px}
+
+.features{display:grid;gap:0;margin-top:8px}
+.feat{display:grid;grid-template-columns:44px 1fr;gap:16px;padding:16px 0;border-top:1px solid #e3e9f1}
+.feat:first-child{border-top:0}
+.feat .ico{width:40px;height:40px;border-radius:50%;background:#e6edf6;color:#10264a;display:flex;align-items:center;justify-content:center}
+.feat .ico svg{width:20px;height:20px}
+.feat strong{display:block;color:#10264a;font-size:17px}
+.feat span{color:#33405a;font-size:15.5px}
+
+.callout{display:flex;gap:12px;padding:14px 18px;border-radius:4px;margin-top:20px;border-left:4px solid #1f5fae;background:#eaf2fd;color:#17335f}
+.callout svg{width:20px;height:20px;flex-shrink:0;margin-top:3px}
+.callout p{font-size:15px;line-height:1.6;color:inherit}
+.callout a{color:inherit;font-weight:600}
+
+/* Sign in card */
+.signin{background:#fff;border:1px solid #d5dde8;border-top:4px solid #10264a;border-radius:4px;padding:30px 32px;position:sticky;top:calc(var(--mc-sticky-top,0px) + 20px)}
+.signin h2{font-size:24px}
+.signin .lead{color:#33405a;font-size:15.5px;margin:8px 0 20px}
+.btn{display:block;text-align:center;font-weight:700;font-size:16px;padding:13px 18px;border-radius:4px;text-decoration:none}
+.btn-primary{background:#10264a;color:#fff;border:2px solid #10264a}
+.btn-primary:hover{background:#17335f;border-color:#17335f}
+.btn-outline{background:#fff;color:#10264a;border:2px solid #10264a}
+.btn-outline:hover{background:#eef3f9}
+.or{display:flex;align-items:center;gap:12px;color:#5a667a;font-size:14px;margin:18px 0}
+.or::before,.or::after{content:'';flex:1;height:1px;background:#d5dde8}
+.small{font-size:14px;color:#5a667a;margin-top:18px;line-height:1.55}
+.small a{font-weight:600}
+
+@media(max-width:960px){
+  .wrap{padding:0 20px}
+  .layout{grid-template-columns:1fr}
+  .signin{position:static;order:-1}
+  .page-header h1{font-size:29px}
+  .panel{padding:24px 22px}
+}
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <div class="wrap">
+    <div class="breadcrumb">
+      <a href="https://migovt.org/courts/">Home</a><span>/</span>
+      <span class="here">Online Portal</span>
+    </div>
+    <h1>Online Portal</h1>
+    <p>Sign in to file documents, follow your cases, and pay fines and fees without visiting the courthouse.</p>
+  </div>
+</div>
+
+<main>
+  <div class="wrap layout">
+
+    <div>
+      <div class="panel">
+        <h2>What you can do in the portal</h2>
+        <div class="features">
+          <div class="feat">
+            <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></div>
+            <div><strong>Your cases</strong><span>See the cases you're a party to, track hearing dates, and check each case's status.</span></div>
+          </div>
+          <div class="feat">
+            <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M12 17v-6M9.5 13.5L12 11l2.5 2.5"/></svg></div>
+            <div><strong>File documents</strong><span>Submit filings to the clerk's office electronically. All filings are made through the portal right now.</span></div>
+          </div>
+          <div class="feat">
+            <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg></div>
+            <div><strong>Fines and fees</strong><span>Pay court fines, costs, and other fees online.</span></div>
+          </div>
+        </div>
+        <div class="callout">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="10" cy="10" r="7.5"/><path d="M10 9v4.5M10 6.5h.01"/></svg>
+          <p><strong>You don't need an account to look up a case.</strong> Public case records are available through the <a href="https://migovt.org/courts/case-search/">case search</a> and the <a href="https://migovt.org/courts/supreme-court/case-search/">Supreme Court case search</a>.</p>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>Before you file</h2>
+        <p>Check the <a href="https://migovt.org/courts/forms-and-filing/information/">filing information</a> for file formats, page limits, and fees, and find the form you need in the <a href="https://migovt.org/courts/forms-and-filing/forms/">court forms</a> list. If you don't have a lawyer, start with <a href="https://migovt.org/courts/self-help/">Self Help</a>.</p>
+      </div>
+    </div>
+
+    <aside class="signin" aria-labelledby="si-title">
+      <h2 id="si-title">Sign in</h2>
+      <p class="lead">Use your MiGOVT account to sign in to the Online Portal.</p>
+      <a class="btn btn-primary" href="https://migovt.org/login/">Sign in</a>
+      <div class="or">or</div>
+      <a class="btn btn-outline" href="https://migovt.org/signup/">Create an account</a>
+      <p class="small">New to the portal? Create an account first, then come back and sign in. Need help? Visit <a href="https://migovt.org/courts/self-help/">Self Help</a>.</p>
+    </aside>
+
+  </div>
+</main>
+
+</body>
+</html>
