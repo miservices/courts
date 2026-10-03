@@ -4,9 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Judicial Tenure Commission | Michigan Supreme Court</title>
-<link rel="icon" type="image/png" href="/images/favicon.png">
+<link rel="icon" type="image/png" href="https://migovt.org/images/favicon.png">
 
-<script src="/courts/shell.js" data-active="directory"></script>
+<script src="https://migovt.org/courts/shell.js" data-active="directory"></script>
 
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -87,6 +87,19 @@ main{padding:36px 0 72px}
 .steps li::before{content:counter(s);width:32px;height:32px;border-radius:50%;background:#10264a;color:#fff;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:2px}
 .steps strong{display:block}
 .steps span{font-size:15.5px}
+table{width:100%;border-collapse:collapse;margin:10px 0 8px;font-size:15px}
+th{text-align:left;background:#eef3f9;color:#10264a;font-size:14px;font-weight:700;padding:10px 14px;border:1px solid #d5dde8}
+td{padding:10px 14px;border:1px solid #d5dde8;vertical-align:top}
+td.v{font-weight:700;color:#10264a;white-space:nowrap}
+.table-scroll{overflow-x:auto}
+.tag{display:inline-block;font-size:13px;font-weight:600;padding:2px 10px;border-radius:12px}
+.tag.go{background:#e5f3ea;color:#154d2e}
+.tag.stop{background:#eef3f9;color:#33405a}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.two>div{border:1px solid #d5dde8;border-radius:4px;padding:18px 20px}
+.two h3{font-size:18px;margin-bottom:8px}
+.two ul{margin-bottom:0}
+@media(max-width:960px){.two{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -94,12 +107,12 @@ main{padding:36px 0 72px}
 <div class="page-header">
   <div class="wrap">
     <div class="breadcrumb">
-      <a href="/courts/">Home</a><span>/</span>
-      <a href="/courts/supreme-court/">Supreme Court</a><span>/</span>
+      <a href="https://migovt.org/courts/">Home</a><span>/</span>
+      <a href="https://migovt.org/courts/supreme-court/">Supreme Court</a><span>/</span>
       <span class="here">Judicial Tenure Commission</span>
     </div>
     <h1>Judicial Tenure Commission</h1>
-    <p>The Commission receives and investigates complaints about the conduct of judges and other judicial officers.</p>
+    <p>The Commission receives and investigates complaints about the conduct of judges and other judicial officers, and brings cases to the Supreme Court when it finds misconduct.</p>
   </div>
 </div>
 
@@ -109,53 +122,98 @@ main{padding:36px 0 72px}
     <div>
       <div class="panel">
         <h2>About the Commission</h2>
-        <p>The Judicial Tenure Commission was established by Administrative Order No. 2 to receive, investigate, and act on allegations about the conduct of judicial officers. It exists so that people have a place to raise concerns about how a judge or magistrate behaves, and so those concerns are looked into fairly.</p>
-        <p>The Commission is independent of the courts it reviews. It has three commissioners, and one of them serves as chairperson. No commissioner may be a former or current justice, or a current judge or magistrate.</p>
+        <p>The Judicial Tenure Commission was established by Administrative Order No. 2 to receive, investigate, and act on allegations about the conduct of judicial officers. It gives people a place to raise concerns about how a judge or magistrate behaves, and makes sure those concerns are looked into fairly.</p>
+        <p>The Commission is independent of the courts it reviews. It works through three commissioners, a chairperson, and a Grievance Administrator, and it reports to the Supreme Court.</p>
       </div>
 
       <div class="panel">
-        <h2>What the Commission does</h2>
+        <h2>Who makes up the Commission</h2>
+        <h3>The commissioners</h3>
+        <p>The Commission has <strong>three commissioners</strong>, and one of them serves as <strong>chairperson</strong>. To keep the Commission independent, no commissioner may be a former or current justice, or a current judge or magistrate. The commissioners are the ones who decide whether a complaint goes forward.</p>
+        <h3>The Grievance Administrator</h3>
+        <p>The Grievance Administrator is the Commission's <strong>prosecutor</strong>. When the Commission decides to bring a case, the Grievance Administrator presents it to the Supreme Court.</p>
         <ul>
-          <li><strong>Receives complaints</strong> about judicial conduct.</li>
-          <li><strong>Investigates</strong> the allegations using its own procedures.</li>
-          <li><strong>Recommends action</strong> to the Supreme Court when it finds it appropriate, such as discipline, suspension, or removal of a judicial officer.</li>
-          <li><strong>Reports to the Court</strong> on its proceedings and recommendations when the Court requires.</li>
+          <li>The <strong>chairperson nominates</strong> the Grievance Administrator.</li>
+          <li>The <strong>full Commission votes</strong> to confirm the nomination. Confirmation needs at least two of the three commissioners, so a vote of 2-1 or 3-0.</li>
+          <li>The Grievance Administrator prosecutes only the cases the Commission chooses to bring. The commissioners, not the Administrator, decide whether misconduct occurred.</li>
+        </ul>
+      </div>
+
+      <div class="panel" id="process">
+        <h2>How a formal report is handled</h2>
+        <p>A complaint that reaches the Commission is called a <strong>formal report</strong>. Every formal report is handled in the same way.</p>
+        <ol class="steps">
+          <li><div><strong>The Commission receives the report</strong><span>Anyone can submit one. See <a href="https://migovt.org/courts/supreme-court/judicial-tenure-commission/complaint/">how to file a complaint</a>.</span></div></li>
+          <li><div><strong>The Commission reviews and investigates</strong><span>The commissioners look into the allegation under the Commission's procedures.</span></div></li>
+          <li><div><strong>The commissioners vote</strong><span>Each commissioner votes on whether the report shows misconduct. The vote is decided by a majority of the three.</span></div></li>
+          <li><div><strong>If misconduct is found, the Commission files with the Supreme Court</strong><span>It recommends a punishment and sends the Grievance Administrator to prosecute the case.</span></div></li>
+          <li><div><strong>The Supreme Court decides</strong><span>The Court hears the case and takes the final action.</span></div></li>
+        </ol>
+
+        <h3>How the vote works</h3>
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th>Vote on misconduct</th><th>Result</th></tr></thead>
+            <tbody>
+              <tr><td class="v">3-0</td><td><span class="tag go">Misconduct found</span> The Commission files with the Supreme Court.</td></tr>
+              <tr><td class="v">2-1</td><td><span class="tag go">Misconduct found</span> The Commission files with the Supreme Court.</td></tr>
+              <tr><td class="v">1-2</td><td><span class="tag stop">Not found</span> The report does not go to the Supreme Court.</td></tr>
+              <tr><td class="v">0-3</td><td><span class="tag stop">Not found</span> The report does not go to the Supreme Court.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>At least two commissioners must agree before a case can be filed. A single commissioner can't send a report forward on their own.</p>
+      </div>
+
+      <div class="panel">
+        <h2>What the Commission can recommend</h2>
+        <p>When it files with the Supreme Court, the Commission recommends the action it thinks is right. Options include:</p>
+        <ul>
+          <li><strong>Discipline</strong> of the judicial officer;</li>
+          <li><strong>Suspension</strong> from the bench;</li>
+          <li><strong>Removal</strong> from office; or</li>
+          <li><strong>Another appropriate action</strong> that fits the conduct.</li>
         </ul>
         <div class="callout">
           <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="10" cy="10" r="7.5"/><path d="M10 9v4.5M10 6.5h.01"/></svg>
-          <p><strong>The Commission recommends. The Supreme Court decides.</strong> Any discipline, suspension, or removal is the Supreme Court's decision, based on the Commission's recommendation.</p>
+          <p><strong>The Commission recommends. The Supreme Court decides.</strong> The Court makes the final decision on whether to discipline, suspend, or remove, after the Grievance Administrator presents the case.</p>
         </div>
+        <p>The Commission also reports on its proceedings and recommendations to the Supreme Court whenever the Court requires.</p>
       </div>
 
       <div class="panel">
         <h2>What the Commission can't do</h2>
-        <p>The Commission looks at a judicial officer's <em>conduct</em>. It is not a way to appeal a ruling. If you disagree with how a judge decided your case, the remedy is an appeal, not a complaint. See <a href="/courts/supreme-court/about/#mandatory">mandatory appeals</a>.</p>
-        <ul>
-          <li>It can't change, reverse, or reopen the outcome of a case.</li>
-          <li>It can't give legal advice or represent you.</li>
-          <li>It can't decide a judge's punishment by itself. It can only recommend to the Supreme Court.</li>
-        </ul>
-      </div>
-
-      <div class="panel">
-        <h2>How a complaint works</h2>
-        <ol class="steps">
-          <li><div><strong>You file a complaint</strong><span>Describe what the judicial officer did, when it happened, and which case it relates to.</span></div></li>
-          <li><div><strong>The Commission reviews it</strong><span>The commissioners look at whether the allegation concerns judicial conduct and investigate under the Commission's procedures.</span></div></li>
-          <li><div><strong>The Commission decides what to recommend</strong><span>If action is warranted, it recommends discipline, suspension, removal, or another appropriate step to the Supreme Court.</span></div></li>
-          <li><div><strong>The Supreme Court acts</strong><span>The Court receives the Commission's report and takes final action.</span></div></li>
-        </ol>
-        <h2 style="margin-top:22px">What to include in a complaint</h2>
-        <ul>
-          <li>The name of the judge or magistrate and the court they serve in</li>
-          <li>The case number, if it relates to a case</li>
-          <li>The date and a clear description of what happened</li>
-          <li>Any documents or witnesses that support your complaint</li>
-        </ul>
+        <p>The Commission looks at a judicial officer's <em>conduct</em>. It is not a way to appeal a ruling. If you disagree with how a judge decided your case, the remedy is an appeal. See <a href="https://migovt.org/courts/supreme-court/about/#mandatory">mandatory appeals</a>.</p>
+        <div class="two">
+          <div>
+            <h3>The Commission can</h3>
+            <ul>
+              <li>Review complaints about judicial conduct</li>
+              <li>Investigate the allegations</li>
+              <li>Recommend discipline, suspension, or removal</li>
+            </ul>
+          </div>
+          <div>
+            <h3>The Commission can't</h3>
+            <ul>
+              <li>Change or reverse the outcome of a case</li>
+              <li>Give legal advice or represent you</li>
+              <li>Punish a judge itself. Only the Supreme Court can</li>
+            </ul>
+          </div>
+        </div>
       </div>
     </div>
 
     <aside>
+      <div class="side-card">
+        <h2>Have a concern?</h2>
+        <p style="font-size:15px;color:#2b3548;margin-bottom:14px">Report a judge or magistrate's conduct to the Commission.</p>
+        <div class="actions">
+          <a class="btn btn-primary" href="https://migovt.org/courts/supreme-court/judicial-tenure-commission/complaint/">File a complaint</a>
+        </div>
+      </div>
+
       <div class="side-card">
         <h2>Commissioners</h2>
         <ul class="commish">
@@ -166,8 +224,10 @@ main{padding:36px 0 72px}
       </div>
 
       <div class="side-card">
-        <h2>Good to know</h2>
-        <p style="font-size:15px;color:#2b3548">Complaints are about conduct, not about rulings. To challenge a decision, file an appeal instead.</p>
+        <h2>Grievance Administrator</h2>
+        <ul class="commish">
+          <li><div class="avatar" aria-hidden="true">RS</div><div><b>Raymond K. Sullivan</b><span>Prosecutor for the Commission</span></div></li>
+        </ul>
       </div>
 
       <div class="side-card">
@@ -178,9 +238,9 @@ main{padding:36px 0 72px}
       <div class="side-card">
         <h2>Related</h2>
         <ul class="related">
-          <li><a href="/courts/supreme-court/attorney-grievance-commission/">Attorney Grievance Commission</a></li>
-          <li><a href="/courts/supreme-court/board-of-law-examiners/">Board of Law Examiners</a></li>
-          <li><a href="/courts/supreme-court/justices/">Justices</a></li>
+          <li><a href="https://migovt.org/courts/supreme-court/attorney-grievance-commission/">Attorney Grievance Commission</a></li>
+          <li><a href="https://migovt.org/courts/supreme-court/board-of-law-examiners/">Board of Law Examiners</a></li>
+          <li><a href="https://migovt.org/courts/supreme-court/justices/">Justices</a></li>
         </ul>
       </div>
     </aside>
