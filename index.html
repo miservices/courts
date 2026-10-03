@@ -7,232 +7,191 @@
 
 <script src="/courts/shell.js" data-active="home"></script>
 
-<link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;1,300&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'DM Sans',sans-serif;background:#f4f1ec;color:#1a1a1a;min-height:100vh}
+body{font-family:var(--font-ui,'Public Sans',system-ui,sans-serif);background:#e3e9f2;color:#1b2433;line-height:1.55;font-size:16px}
+a{color:#1f5fae}
+a:focus-visible,button:focus-visible,input:focus-visible{outline:3px solid #9cc4f5;outline-offset:2px}
+.wrap{max-width:1180px;margin:0 auto;padding:0 40px}
+h2,h3{font-family:var(--font-head,Georgia,serif);color:#10264a;font-weight:600;line-height:1.25}
 
-/* ── Hero ── */
-.hero{background:#0a1628;padding:52px 40px;display:flex;align-items:flex-start;gap:60px;position:relative;overflow:hidden}
-.hero::before{content:'';position:absolute;right:-40px;top:-40px;width:320px;height:320px;border-radius:50%;border:1px solid #1e3a5f;opacity:0.5}
-.hero::after{content:'';position:absolute;right:40px;top:40px;width:200px;height:200px;border-radius:50%;border:1px solid #1e3a5f;opacity:0.3}
-.hero-text{flex:1;position:relative;z-index:1}
-.hero-text h2{font-family:'Merriweather',serif;color:#fff;font-size:32px;font-weight:300;line-height:1.35;max-width:520px}
-.hero-text h2 em{color:#c8a84b;font-style:italic}
-.hero-text p{color:#7a9bbf;font-size:14px;line-height:1.75;margin-top:16px;max-width:460px}
-.hero-actions{display:flex;gap:12px;margin-top:28px;flex-wrap:wrap}
-.btn-primary{background:#c8a84b;color:#0a1628;padding:11px 24px;border-radius:3px;text-decoration:none;font-size:13px;font-weight:600;letter-spacing:0.04em}
-.btn-primary:hover{background:#d4b85e}
-.btn-ghost{border:1px solid #2d4f6e;color:#a0b8d0;padding:11px 24px;border-radius:3px;text-decoration:none;font-size:13px}
-.btn-ghost:hover{border-color:#c8a84b;color:#fff}
+/* Hero: the main job is finding a case or doing a task */
+.hero{background:#10264a;padding:48px 0 52px}
+.hero .wrap{display:grid;grid-template-columns:1.1fr 1fr;gap:56px;align-items:start}
+.hero h2{font-size:38px;letter-spacing:-.01em;color:#fff}
+.hero p.lead{margin-top:14px;color:#c5d3e8;max-width:520px}
+.hero-links{margin-top:22px;display:flex;gap:12px;flex-wrap:wrap}
+.btn{display:inline-block;padding:11px 20px;border-radius:4px;font-weight:600;font-size:15px;text-decoration:none}
+.btn-primary{background:#fff;color:#10264a}
+.btn-primary:hover{background:#e3ecf8}
+.btn-outline{border:2px solid #fff;color:#fff;padding:9px 18px}
+.btn-outline:hover{background:#17335f}
 
-.micourt-callout{display:flex;align-items:flex-start;gap:14px;background:#0d1f3c;border:1px solid #2d4f6e;border-left:3px solid #c8a84b;border-radius:3px;padding:14px 18px;margin-top:22px;max-width:420px}
-.mc-icon{font-size:22px;flex-shrink:0;margin-top:2px}
-.mc-body .mc-title{color:#c8a84b;font-size:13px;font-weight:600;letter-spacing:0.04em}
-.mc-body .mc-sub{color:#7a9bbf;font-size:12px;line-height:1.55;margin-top:3px}
-.mc-body a{color:#c8a84b;font-size:12px;font-weight:600;text-decoration:none;display:inline-block;margin-top:7px}
-.mc-body a:hover{text-decoration:underline}
+.search-card{background:#fff;border:0;border-top:4px solid #5b9be0;border-radius:4px;padding:26px 28px}
+.search-card h3{font-size:20px}
+.search-card label{display:block;font-size:14px;font-weight:600;margin:16px 0 6px}
+.search-card input,.search-card select{width:100%;padding:11px 12px;font:inherit;border:1px solid #8896ab;border-radius:4px;background:#fff;color:#1b2433}
+.search-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.search-card button{margin-top:20px;width:100%;border:0;cursor:pointer;font:inherit;font-weight:700;background:#10264a;color:#fff;padding:12px;border-radius:4px}
+.search-card button:hover{background:#17335f}
+.search-card .hint{font-size:13px;color:#5a667a;margin-top:12px}
 
-.hero-stats{display:flex;flex-direction:column;gap:20px;position:relative;z-index:1;flex-shrink:0}
-.hstat{text-align:center;padding:20px 28px;background:#0d1f3c;border:1px solid #1e3a5f;border-radius:4px}
-.hstat .n{font-family:'Merriweather',serif;font-size:36px;color:#c8a84b;font-weight:700;line-height:1}
-.hstat .l{color:#7a9bbf;font-size:11px;text-transform:uppercase;letter-spacing:0.08em;margin-top:6px}
+/* Sections */
+section{padding:44px 0 0}
+section h2{font-size:26px;margin-bottom:6px}
+section .sub{color:#5a667a;margin-bottom:22px}
 
-/* ── Section Label ── */
-.section-label{display:flex;align-items:center;gap:12px;margin-bottom:24px}
-.section-label span{font-family:'Merriweather',serif;font-size:13px;font-weight:400;color:#6b5f4e;text-transform:uppercase;letter-spacing:0.12em}
-.section-label::after{content:'';flex:1;height:1px;background:#d6cfc4}
+/* Services */
+.services{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.service{display:block;background:#fff;border:1px solid #d5dde8;border-radius:4px;padding:18px 20px;text-decoration:none;color:inherit}
+.service{border-left:4px solid #1f5fae}
+.service:hover{border-color:#10264a;background:#f4f8fd}
+.service strong{display:block;color:#1f5fae;font-size:16px}
+.service span{display:block;margin-top:4px;font-size:14px;color:#5a667a}
 
-/* ── Court Cards ── */
-.courts-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;padding:0 40px 40px}
-.court-card{background:#fff;border-radius:4px;overflow:hidden;border:1px solid #e0d9cf}
-.court-card-top{background:#0a1628;padding:24px 28px;position:relative}
-.court-tier{font-size:10px;color:#c8a84b;text-transform:uppercase;letter-spacing:0.12em;margin-bottom:8px}
-.court-card-top h3{font-family:'Merriweather',serif;color:#fff;font-size:20px;font-weight:300}
-.court-card-top p{color:#7a9bbf;font-size:12px;margin-top:6px}
-.court-tag{position:absolute;top:24px;right:24px;background:#c8a84b;color:#0a1628;font-size:10px;font-weight:700;letter-spacing:0.08em;padding:4px 10px;border-radius:2px;text-transform:uppercase}
-.court-body{padding:24px 28px}
-.court-body p{font-size:13.5px;color:#4a4035;line-height:1.7;margin-bottom:18px}
-.court-meta{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}
-.meta-item .k{font-size:10px;color:#9a8f82;text-transform:uppercase;letter-spacing:0.08em}
-.meta-item .v{font-size:14px;font-weight:600;color:#1a1a1a;margin-top:2px}
-.court-footer{border-top:1px solid #f0ebe3;padding:14px 28px;display:flex;justify-content:space-between;align-items:center}
-.court-footer a{font-size:12.5px;color:#1a4a7a;font-weight:600;text-decoration:none;letter-spacing:0.02em}
-.court-footer a:hover{text-decoration:underline}
-.court-footer .jurisdiction{font-size:11px;color:#9a8f82;text-transform:uppercase;letter-spacing:0.06em}
+/* Courts */
+.courts{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.court{background:#fff;border:1px solid #d5dde8;border-radius:4px;display:flex;flex-direction:column}
+.court-head{padding:22px 26px;background:#17335f;border-radius:3px 3px 0 0}
+.court-head .tier{font-size:13px;color:#9cc4f5;font-weight:600}
+.court-head h3{font-size:22px;margin-top:2px;color:#fff}
+.court-head .loc{font-size:14px;color:#c5d3e8;margin-top:2px}
+.court p{padding:20px 26px 0;font-size:15px;color:#33405a;flex:1}
+dl.facts{display:grid;grid-template-columns:repeat(2,1fr);margin:18px 26px 0;border-top:1px solid #e3e9f1}
+dl.facts div{padding:10px 0;border-bottom:1px solid #e3e9f1}
+dl.facts dt{font-size:13px;color:#5a667a}
+dl.facts dd{font-weight:600}
+.court-foot{padding:16px 26px 22px}
+.court-foot a{font-weight:600}
 
-/* ── Bottom Grid ── */
-.bottom-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;padding:0 40px 40px}
-.side-card{background:#fff;border:1px solid #e0d9cf;border-radius:4px;overflow:hidden}
-.side-card-header{padding:18px 22px;border-bottom:1px solid #f0ebe3;display:flex;align-items:center;justify-content:space-between}
-.side-card-header h3{font-family:'Merriweather',serif;font-size:15px;font-weight:400;color:#1a1a1a}
-.side-card-header a{font-size:11.5px;color:#1a4a7a;text-decoration:none}
-.side-card-body{padding:6px 0}
-.news-row{padding:12px 22px;border-bottom:1px solid #f8f5f0;display:flex;flex-direction:column;gap:3px}
-.news-row:last-child{border-bottom:none}
-.news-row .court-label{font-size:10px;color:#c8a84b;font-weight:700;text-transform:uppercase;letter-spacing:0.08em}
-.news-row .title{font-size:13px;color:#1a1a1a;line-height:1.45}
-.news-row .date{font-size:11px;color:#9a8f82}
+/* News */
+.news{background:#fff;border:1px solid #d5dde8;border-radius:4px}
+.news-head{display:flex;justify-content:space-between;align-items:baseline;padding:18px 24px;background:#17335f;border-radius:3px 3px 0 0}
+.news-head h3{color:#fff}
+.news-head a{color:#9cc4f5}
+.news-head h3{font-size:19px}
+.news-item{display:grid;grid-template-columns:120px 1fr 130px;gap:20px;padding:15px 24px;border-bottom:1px solid #edf1f6;align-items:baseline}
+.news-item:last-child{border-bottom:0}
+.news-item .who{font-size:13px;font-weight:600;color:#10264a}
+.news-item .date{font-size:13px;color:#5a667a;text-align:right}
+.page-end{height:56px}
 
-.qlink{padding:11px 22px;display:flex;align-items:center;gap:12px;border-bottom:1px solid #f8f5f0;text-decoration:none;color:#1a1a1a;font-size:13px;transition:background 0.1s}
-.qlink:last-child{border-bottom:none}
-.qlink:hover{background:#f8f5f0}
-.qlink .arrow{margin-left:auto;color:#c8a84b;font-size:13px;font-weight:700;flex-shrink:0}
-.qlink .ql-icon{width:28px;height:28px;border-radius:3px;background:#f0ebe3;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
-.qlink .ql-text{display:flex;flex-direction:column;gap:2px}
-.qlink .ql-sub{font-size:11px;color:#9a8f82}
+@media(max-width:860px){
+  .wrap{padding:0 20px}
+  .hero .wrap,.courts{grid-template-columns:1fr}
+  .services{grid-template-columns:1fr 1fr}
+  .hero h2{font-size:30px}
+  .news-item{grid-template-columns:1fr;gap:2px}
+  .news-item .date{text-align:left}
+}
+@media(max-width:520px){.services{grid-template-columns:1fr}.search-row{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 
-<!-- Hero -->
 <div class="hero">
-  <div class="hero-text">
-    <h2>Justice for Every <em>Michigan</em> Citizen</h2>
-    <p>The Michigan court system serves all residents through two courts of law — the Genesee County District Court and the Supreme Court. Find cases, access records, and navigate the legal system from this unified portal.</p>
-    <div class="hero-actions">
-      <a href="#" class="btn-primary">Access MiCOURT</a>
-      <a href="cases.html" class="btn-ghost">Search Cases</a>
-    </div>
-    <div class="micourt-callout">
-      <div class="mc-body">
-        <div class="mc-title">MiCOURT — Online Court Portal</div>
-        <div class="mc-sub">File documents, pay fines and fees, manage your appearances, and access case records — all in one place.</div>
-        <a href="#">Launch MiCOURT ></a>
+  <div class="wrap">
+    <div>
+      <h2>Find a case, pay a fine, or file online</h2>
+      <p class="lead">Michigan's courts serve every resident through the Genesee County District Court and the Michigan Supreme Court. Start here to look up records and manage your court matters.</p>
+      <div class="hero-links">
+        <a href="#" class="btn btn-primary">Sign in to MiCOURT</a>
+        <a href="#" class="btn btn-outline">Pay fines &amp; fees</a>
       </div>
     </div>
-  </div>
-  <div class="hero-stats">
-    <div class="hstat"><div class="n">2</div><div class="l">Court Tiers</div></div>
-    <div class="hstat"><div class="n">1</div><div class="l">District</div></div>
-    <div class="hstat"><div class="n">7</div><div class="l">Justices</div></div>
-  </div>
-</div>
 
-<div style="padding:40px 40px 0;background:#f4f1ec">
-  <div class="section-label"><span>Our Courts</span></div>
-</div>
-
-<div class="courts-grid">
-  <div class="court-card">
-    <div class="court-card-top">
-      <div class="court-tier">Court of Last Resort</div>
-      <h3>Michigan Supreme Court</h3>
-      <p>Lansing, Michigan</p>
-      <div class="court-tag">Highest Court</div>
-    </div>
-    <div class="court-body">
-      <p>The Supreme Court is the final authority on Michigan law. Seven justices hear appeals of significant legal questions, interpret the state constitution, and issue binding opinions across all courts. Justices are elected statewide during the annual general election (January 1 – December 31) and serve one-year terms.</p>
-      <div class="court-meta">
-        <div class="meta-item"><div class="k">Justices</div><div class="v">7</div></div>
-        <div class="meta-item"><div class="k">Term</div><div class="v">1 Year</div></div>
-        <div class="meta-item"><div class="k">Election</div><div class="v">Statewide</div></div>
-        <div class="meta-item"><div class="k">Location</div><div class="v">Lansing</div></div>
+    <form class="search-card" action="cases.html" method="get" role="search" aria-labelledby="sc-title">
+      <h3 id="sc-title">Search case records</h3>
+      <label for="q">Case number or party name</label>
+      <input id="q" name="q" type="search" placeholder="Example: 26-48832 or Jordan Williams">
+      <div class="search-row">
+        <div>
+          <label for="court">Court</label>
+          <select id="court" name="court">
+            <option value="">All courts</option>
+            <option>Michigan Supreme Court</option>
+            <option>Genesee Co. District Court</option>
+          </select>
+        </div>
+        <div>
+          <label for="type">Case type</label>
+          <select id="type" name="type">
+            <option value="">All types</option>
+            <option>Criminal</option>
+            <option>Civil</option>
+            <option>Administrative</option>
+            <option>Appeal</option>
+          </select>
+        </div>
       </div>
-    </div>
-    <div class="court-footer">
-      <span class="jurisdiction">Final Appellate Jurisdiction</span>
-      <a href="cases.html">Search Supreme Court Cases ></a>
-    </div>
-  </div>
-
-  <div class="court-card">
-    <div class="court-card-top">
-      <div class="court-tier">Trial Court of General Jurisdiction</div>
-      <h3>Genesee County District Court</h3>
-      <p>Flint, Michigan</p>
-      <div class="court-tag">Trial Court</div>
-    </div>
-    <div class="court-body">
-      <p>The Genesee County District Court handles all trial matters for Genesee County with no jurisdictional limits — criminal, civil, traffic, and felony proceedings. The Chief Judge is elected countywide each year. Associate judges are appointed by the Governor from a nonpartisan commission shortlist. Magistrates are appointed by the Chief Judge.</p>
-      <div class="court-meta">
-        <div class="meta-item"><div class="k">Jurisdiction</div><div class="v">Genesee Co.</div></div>
-        <div class="meta-item"><div class="k">Authority</div><div class="v">General</div></div>
-        <div class="meta-item"><div class="k">Chief Judge</div><div class="v">Elected</div></div>
-        <div class="meta-item"><div class="k">Judges</div><div class="v">Appointed</div></div>
-      </div>
-    </div>
-    <div class="court-footer">
-      <span class="jurisdiction">Original General Jurisdiction</span>
-      <a href="cases.html">Search District Court Cases ></a>
-    </div>
+      <button type="submit">Search cases</button>
+      <p class="hint">Records shown are public. Sealed or confidential cases will not appear.</p>
+    </form>
   </div>
 </div>
 
-<div style="padding:0 40px 8px;background:#f4f1ec">
-  <div class="section-label"><span>News &amp; Resources</span></div>
-</div>
+<div class="wrap">
+  <section>
+    <h2>Online services</h2>
+    <p class="sub">Common tasks you can complete without visiting the courthouse.</p>
+    <div class="services">
+      <a class="service" href="#"><strong>MiCOURT online portal</strong><span>File documents, manage appearances, and view your cases.</span></a>
+      <a class="service" href="#"><strong>Pay fines and fees</strong><span>Traffic fines, court costs, and other fees.</span></a>
+      <a class="service" href="#"><strong>Docket calendar</strong><span>See scheduled hearings and upcoming court dates.</span></a>
+      <a class="service" href="#"><strong>Jury duty</strong><span>Respond to a summons or check your status.</span></a>
+      <a class="service" href="#"><strong>Request court records</strong><span>Submit a FOIA or public records request.</span></a>
+      <a class="service" href="#"><strong>Court forms</strong><span>Download standard forms for filing.</span></a>
+    </div>
+  </section>
 
-<div class="bottom-grid">
-  <div class="side-card">
-    <div class="side-card-header">
-      <h3>Recent Announcements</h3>
-      <a href="#">View All</a>
-    </div>
-    <div class="side-card-body">
-      <div class="news-row">
-        <span class="court-label">Supreme Court</span>
-        <span class="title">New electronic filing rules via MiCOURT take effect statewide</span>
-        <span class="date">April 14, 2026</span>
-      </div>
-      <div class="news-row">
-        <span class="court-label">District Court</span>
-        <span class="title">Remote hearing procedures extended through end of fiscal year 2026</span>
-        <span class="date">April 9, 2026</span>
-      </div>
-      <div class="news-row">
-        <span class="court-label">Supreme Court</span>
-        <span class="title">Opinion issued in People v. Harmon — Fourth Amendment search and seizure</span>
-        <span class="date">March 28, 2026</span>
-      </div>
-      <div class="news-row">
-        <span class="court-label">District Court</span>
-        <span class="title">Genesee County District Court annex reopens following renovations</span>
-        <span class="date">March 15, 2026</span>
-      </div>
-    </div>
-  </div>
+  <section>
+    <h2>Our courts</h2>
+    <p class="sub">Michigan's judiciary has two tiers on this portal.</p>
+    <div class="courts">
+      <article class="court">
+        <div class="court-head">
+          <div class="tier">Court of last resort</div>
+          <h3>Michigan Supreme Court</h3>
+          <div class="loc">Lansing, Michigan</div>
+        </div>
+        <p>The final authority on Michigan law. Seven justices hear appeals on significant legal questions, interpret the state constitution, and issue opinions that bind all other courts. Justices are elected statewide in the annual general election (January 1 to December 31) and serve one-year terms.</p>
+        <dl class="facts">
+          <div><dt>Justices</dt><dd>7</dd></div>
+          <div><dt>Term</dt><dd>1 year</dd></div>
+          <div><dt>Selection</dt><dd>Statewide election</dd></div>
+          <div><dt>Jurisdiction</dt><dd>Final appeals</dd></div>
+        </dl>
+        <div class="court-foot"><a href="cases.html">Search Supreme Court cases</a></div>
+      </article>
 
-  <div class="side-card">
-    <div class="side-card-header"><h3>Quick Access</h3></div>
-    <div class="side-card-body">
-      <a href="#" class="qlink">
-        <div class="ql-icon">⚖</div>
-        <div class="ql-text"><span>MiCOURT Online Portal</span><span class="ql-sub">File, pay, manage appearances, and view cases</span></div>
-        <span class="arrow">></span>
-      </a>
-      <a href="cases.html" class="qlink">
-        <div class="ql-icon">🔎</div>
-        <div class="ql-text"><span>Search Case Records</span><span class="ql-sub">Look up cases by name, number, or party</span></div>
-        <span class="arrow">></span>
-      </a>
-      <a href="#" class="qlink">
-        <div class="ql-icon">💳</div>
-        <div class="ql-text"><span>Pay Fines &amp; Fees</span><span class="ql-sub">Traffic fines, court costs, and other fees</span></div>
-        <span class="arrow">></span>
-      </a>
-      <a href="#" class="qlink">
-        <div class="ql-icon">📅</div>
-        <div class="ql-text"><span>Docket Calendar</span><span class="ql-sub">View scheduled hearings and upcoming court dates</span></div>
-        <span class="arrow">></span>
-      </a>
-      <a href="#" class="qlink">
-        <div class="ql-icon">🏛</div>
-        <div class="ql-text"><span>Jury Duty Portal</span><span class="ql-sub">Respond to a summons or check your status</span></div>
-        <span class="arrow">></span>
-      </a>
-      <a href="#" class="qlink">
-        <div class="ql-icon">📁</div>
-        <div class="ql-text"><span>Request Court Records</span><span class="ql-sub">Submit a FOIA or public records request</span></div>
-        <span class="arrow">></span>
-      </a>
-      <a href="#" class="qlink">
-        <div class="ql-icon">📝</div>
-        <div class="ql-text"><span>Downloadable Court Forms</span><span class="ql-sub">Access standardized forms for filing</span></div>
-        <span class="arrow">></span>
-      </a>
+      <article class="court">
+        <div class="court-head">
+          <div class="tier">Trial court</div>
+          <h3>Genesee County District Court</h3>
+          <div class="loc">Flint, Michigan</div>
+        </div>
+        <p>Handles all trial matters in Genesee County with no jurisdictional limits: criminal, civil, traffic, and felony proceedings. The Chief Judge is elected countywide each year. Associate judges are appointed by the Governor from a nonpartisan commission shortlist, and magistrates are appointed by the Chief Judge.</p>
+        <dl class="facts">
+          <div><dt>Area served</dt><dd>Genesee County</dd></div>
+          <div><dt>Authority</dt><dd>General</dd></div>
+          <div><dt>Chief Judge</dt><dd>Elected</dd></div>
+          <div><dt>Associate judges</dt><dd>Appointed</dd></div>
+        </dl>
+        <div class="court-foot"><a href="cases.html">Search District Court cases</a></div>
+      </article>
     </div>
-  </div>
+  </section>
+
+  <section>
+    <div class="news">
+      <div class="news-head"><h3>Recent announcements</h3><a href="#">View all</a></div>
+      <div class="news-item"><span class="who">Supreme Court</span><span>New electronic filing rules via MiCOURT take effect statewide</span><span class="date">April 14, 2026</span></div>
+      <div class="news-item"><span class="who">District Court</span><span>Remote hearing procedures extended through end of fiscal year 2026</span><span class="date">April 9, 2026</span></div>
+      <div class="news-item"><span class="who">Supreme Court</span><span>Opinion issued in People v. Harmon: Fourth Amendment search and seizure</span><span class="date">March 28, 2026</span></div>
+      <div class="news-item"><span class="who">District Court</span><span>Genesee County District Court annex reopens following renovations</span><span class="date">March 15, 2026</span></div>
+    </div>
+  </section>
+  <div class="page-end"></div>
 </div>
 
 </body>
