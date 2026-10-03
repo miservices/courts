@@ -6,7 +6,6 @@
 <title>Become a Juror | Michigan Courts</title>
 <link rel="icon" type="image/png" href="/courts/images/favicon.png">
 
-
 <script src="https://migovt.org/courts/shell.js" data-active="jury"></script>
 
 <style>
@@ -161,12 +160,16 @@ dl.recap dd{font-weight:600;overflow-wrap:anywhere}
 
           <fieldset class="field" id="f-public">
             <legend>Do you hold public employment? *</legend>
-            <label class="choice" for="pub-yes"><input type="radio" id="pub-yes" name="pub" value="yes"><span>Yes</span></label>
             <label class="choice" for="pub-no"><input type="radio" id="pub-no" name="pub" value="no"><span>No</span></label>
-            <div class="callout" id="pub-note" role="status">
+            <label class="choice" for="pub-other"><input type="radio" id="pub-other" name="pub" value="other"><span>Yes, in other public employment</span></label>
+            <label class="choice" for="pub-exempt"><input type="radio" id="pub-exempt" name="pub" value="exempt"><span>Yes, with a city fire or police department</span></label>
+            <div class="callout" id="pub-other-note" role="status">
               Under the Voluntary Jury Act, certain people, including anyone who holds public employment, must register themselves. Signing up here is how you do that.
             </div>
-            <div class="error-msg" id="pub-err">Choose yes or no.</div>
+            <div class="callout" id="pub-exempt-note" role="status">
+              <strong>You are exempt.</strong> People who work for a city fire or police department are exempt under the Voluntary Jury Act. You don't need to register and you won't be summoned.
+            </div>
+            <div class="error-msg" id="pub-err">Choose one.</div>
           </fieldset>
 
           <div class="field" id="f-ack">
@@ -193,7 +196,7 @@ dl.recap dd{font-weight:600;overflow-wrap:anywhere}
           <ol>
             <li>Keep your Discord direct messages open. That's where summonses are sent.</li>
             <li>If you are summoned, you have 14 days from the day you receive it to acknowledge it in the juror portal.</li>
-            <li>If you can't appear on the court date, tell the court. They may excuse you for good cause.</li>
+            <li>If you can't appear on the court date, request to be excused in the portal. That counts as a response, so it also acknowledges your summons. The court may excuse you for good cause.</li>
           </ol>
           <a class="btn" href="https://migovt.org/courts/online-services/jury-portal/">Go to the juror portal</a>
           <a class="btn alt" href="https://migovt.org/courts/online-services/juror-information/" style="margin-left:8px">Read juror information</a>
@@ -207,6 +210,7 @@ dl.recap dd{font-weight:600;overflow-wrap:anywhere}
         <li>Your information is added to the court's database and the voluntary juror pool.</li>
         <li>When a case has a jury, jurors are chosen at random from the pool.</li>
         <li>If you are summoned, you are required to appear.</li>
+        <li>City fire and police department employees are exempt.</li>
         <li>You are paid $85.00 for every 5 minutes of service.</li>
       </ul>
       <hr>
@@ -231,8 +235,13 @@ dl.recap dd{font-weight:600;overflow-wrap:anywhere}
   tzSel.insertAdjacentHTML('beforeend', ZONES.map(([v, l]) => `<option value="${v}">${esc(l)}</option>`).join(''));
   try { const guess = Intl.DateTimeFormat().resolvedOptions().timeZone; if (ZONES.some(z => z[0] === guess)) tzSel.value = guess; } catch (e) {}
 
-  document.querySelectorAll('input[name="pub"]').forEach(r => r.addEventListener('change', () =>
-    document.getElementById('pub-note').classList.toggle('show', r.value === 'yes' && r.checked)));
+  function pubChanged() {
+    const v = (document.querySelector('input[name="pub"]:checked') || {}).value;
+    document.getElementById('pub-other-note').classList.toggle('show', v === 'other');
+    document.getElementById('pub-exempt-note').classList.toggle('show', v === 'exempt');
+    document.getElementById('submit-btn').disabled = v === 'exempt';   // exempt: nothing to register
+  }
+  document.querySelectorAll('input[name="pub"]').forEach(r => r.addEventListener('change', pubChanged));
 
   const flag = (id, bad) => document.getElementById(id).classList.toggle('invalid', bad);
   const summary = document.getElementById('summary-err');
@@ -243,7 +252,7 @@ dl.recap dd{font-weight:600;overflow-wrap:anywhere}
     chk('f-discord', 'discord', !document.getElementById('discord').value.trim(), 'Enter your Discord username.');
     chk('f-game', 'game', !document.getElementById('game').value.trim(), 'Enter your in-game username.');
     chk('f-tz', 'tz', !tzSel.value, 'Choose your time zone.');
-    chk('f-public', 'pub-yes', !document.querySelector('input[name="pub"]:checked'), 'Tell us whether you hold public employment.');
+    chk('f-public', 'pub-no', !document.querySelector('input[name="pub"]:checked'), 'Tell us whether you hold public employment.');
     chk('f-ack', 'ack', !document.getElementById('ack').checked, 'Check the box to confirm you understand the summons rules.');
     return errs;
   }
@@ -275,7 +284,7 @@ dl.recap dd{font-weight:600;overflow-wrap:anywhere}
       ['Discord username', document.getElementById('discord').value.trim()],
       ['In-game username', document.getElementById('game').value.trim()],
       ['Time zone', zone],
-      ['Public employment', document.querySelector('input[name="pub"]:checked').value === 'yes' ? 'Yes (registered as required)' : 'No'],
+      ['Public employment', document.querySelector('input[name="pub"]:checked').value === 'other' ? 'Yes (registered as required)' : 'No'],
       ['Registered', new Date().toLocaleString('en-US', { dateStyle: 'long', timeStyle: 'short' })]
     ];
     document.getElementById('recap').innerHTML = rows.map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join('');

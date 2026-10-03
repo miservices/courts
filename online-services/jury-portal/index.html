@@ -77,6 +77,7 @@ main{padding:36px 0 72px}
 .excuse.show{display:block}
 .excuse label{display:block;font-weight:700;color:#10264a;margin-bottom:4px}
 .excuse textarea{width:100%;min-height:110px;font:inherit;border:1px solid #8a97ad;border-radius:4px;padding:10px 12px;resize:vertical}
+.excuse .hint{font-size:14px;color:#5a667a;margin-bottom:6px}
 .excuse .err{display:none;color:#b3261e;font-size:14px;font-weight:600;margin-top:4px}
 .excuse.bad .err{display:block}
 .excuse.bad textarea{border-color:#b3261e}
@@ -175,6 +176,7 @@ table.pay tfoot td{font-weight:700;color:#10264a;border-bottom:0;background:#f4f
 
           <div class="excuse" id="excuse">
             <label for="reason">Why can't you appear?</label>
+            <p class="hint">Sending this request counts as your response, so it also marks your summons acknowledged. You are still required to appear unless the court excuses you.</p>
             <textarea id="reason" aria-describedby="reason-err"></textarea>
             <div class="err" id="reason-err">Tell the court why you can't appear.</div>
             <div class="actions" style="margin-top:12px">
@@ -251,7 +253,7 @@ table.pay tfoot td{font-weight:700;color:#10264a;border-bottom:0;background:#f4f
     history: [ { date: dayOffset(-44), caseName: 'Reed v. Tri-County Contracting', minutes: 25 }, { date: dayOffset(-21), caseName: 'People v. Whitaker', minutes: 40 } ]
   };
 
-  const state = { acknowledged: null, excused: false };
+  const state = { acknowledged: null, ackVia: null, excused: false };
 
   // The court is in Flint (Eastern Time). Convert its 9:00 AM to the juror's own time zone.
   function courtTime(date, hh, mm, tz) {
@@ -283,7 +285,7 @@ table.pay tfoot td{font-weight:700;color:#10264a;border-bottom:0;background:#f4f
     if (state.acknowledged) {
       card.className = 'summons done'; badge.className = 'badge ok'; badge.textContent = 'Acknowledged';
       $('s-deadline').className = 'deadline done';
-      $('s-deadline').innerHTML = `<span class="days">&#10003;</span><span>Acknowledged on ${esc(state.acknowledged)}</span>`;
+      $('s-deadline').innerHTML = `<span class="days">&#10003;</span><span>Acknowledged on ${esc(state.acknowledged)}${state.ackVia === 'excuse' ? ' (your excuse request counts as a response)' : ''}</span>`;
       $('ack-btn').hidden = true; $('s-warn').hidden = true;
     } else {
       card.className = 'summons urgent'; badge.className = 'badge act'; badge.textContent = 'Action needed';
@@ -291,7 +293,7 @@ table.pay tfoot td{font-weight:700;color:#10264a;border-bottom:0;background:#f4f
       $('s-deadline').innerHTML = `<span class="days">${Math.max(left, 0)}</span><span>${left === 1 ? 'day' : 'days'} left to acknowledge</span>`;
       $('ack-btn').hidden = false; $('s-warn').hidden = false;
     }
-    if (state.excused) { badge.className = 'badge wait'; badge.textContent = state.acknowledged ? 'Excuse requested' : 'Excuse requested'; }
+    if (state.excused) { badge.className = 'badge wait'; badge.textContent = 'Excuse requested'; }
   }
 
   function renderPay() {
@@ -322,6 +324,7 @@ table.pay tfoot td{font-weight:700;color:#10264a;border-bottom:0;background:#f4f
 
   $('ack-btn').addEventListener('click', () => {
     state.acknowledged = new Date().toLocaleString('en-US', { dateStyle: 'long', timeStyle: 'short' });
+    state.ackVia = 'button';
     renderSummons();
     const m = $('ack-msg');
     m.hidden = false; m.textContent = 'Thank you. Your summons is acknowledged. You are still required to appear on the court date unless the court excuses you.';
@@ -340,17 +343,21 @@ table.pay tfoot td{font-weight:700;color:#10264a;border-bottom:0;background:#f4f
     excuse.classList.toggle('bad', !ok);
     if (!ok) { $('reason').focus(); return; }
     state.excused = true;
+    if (!state.acknowledged) {   // a request to be excused counts as a response
+      state.acknowledged = new Date().toLocaleString('en-US', { dateStyle: 'long', timeStyle: 'short' });
+      state.ackVia = 'excuse';
+    }
     toggleExcuse(false);
     $('excuse-btn').hidden = true;
     const m = $('excuse-msg');
     m.hidden = false;
-    m.textContent = 'Your request was sent to the court. The court may excuse you for good cause. Until the court tells you otherwise, you are still required to appear' + (state.acknowledged ? '.' : ' and to acknowledge your summons.');
+    m.textContent = 'Your request was sent to the court. It counts as your response, so your summons is now marked acknowledged. The court may excuse you for good cause. Until the court tells you otherwise, you are still required to appear.';
     renderSummons();
   });
 
   function showDash(on) { $('gate').hidden = on; $('dash').hidden = !on; window.scrollTo({ top: 0 }); }
   $('signin').addEventListener('click', () => { renderProfile(); renderSummons(); renderPay(); showDash(true); });
-  $('signout').addEventListener('click', () => { state.acknowledged = null; state.excused = false; $('ack-msg').hidden = true; $('excuse-msg').hidden = true; $('excuse-btn').hidden = false; $('reason').value = ''; showDash(false); });
+  $('signout').addEventListener('click', () => { state.acknowledged = null; state.ackVia = null; state.excused = false; $('ack-msg').hidden = true; $('excuse-msg').hidden = true; $('excuse-btn').hidden = false; $('reason').value = ''; showDash(false); });
 </script>
 </body>
 </html>
