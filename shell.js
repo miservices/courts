@@ -104,11 +104,26 @@
     .mc-shell-dropdown-menu a:last-child { border-bottom: none; }
     .mc-shell-dropdown-menu a:hover { background: var(--navy-light); border-left-color: var(--accent); color: var(--navy); }
 
+    /* Mega menus */
+    .mc-shell-dropdown-menu a small {
+      display: block; font-size: 12.5px; font-weight: 400; color: var(--muted); margin-top: 2px; line-height: 1.4;
+    }
+    .mc-shell-dropdown-menu.mega { padding: 6px 0; }
+    .mc-shell-dropdown:hover .mc-shell-dropdown-menu.mega,
+    .mc-shell-dropdown:focus-within .mc-shell-dropdown-menu.mega { display: grid; gap: 0; }
+    .mc-shell-col { border-right: 1px solid #edf1f6; padding: 4px 0; }
+    .mc-shell-col:last-child { border-right: 0; }
+    .mc-shell-col h2 {
+      font-family: var(--font-ui); font-size: 13px; font-weight: 700; color: var(--navy);
+      padding: 10px 18px 8px; border-bottom: 2px solid var(--navy-light); margin-bottom: 2px;
+    }
+    .mc-shell-dropdown-menu.mega a { border-bottom: 0; }
+
     /* Footer */
     .mc-shell-footer { background: #091628; color: #9fb3d1; font-family: var(--font-ui); font-size: 14px; line-height: 1.6; border-top: 4px solid var(--accent); }
     .mc-shell-footer-main {
       max-width: 1180px; margin: 0 auto; padding: 44px 40px 36px;
-      display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr; gap: 40px;
+      display: grid; grid-template-columns: 1.4fr 1fr 1fr 1fr 1fr; gap: 32px;
     }
     .mc-shell-footer-brand { display: flex; gap: 14px; align-items: flex-start; }
     .mc-shell-footer-brand .mc-shell-seal { width: 44px; height: 44px; }
@@ -137,32 +152,59 @@
       .mc-shell-header-right { display: none; }
       .mc-shell-logo h1 { font-size: 23px; }
       .mc-shell-nav { padding: 0 8px; }
+      .mc-shell-dropdown-menu.mega { min-width: 0; width: 92vw; }
+      .mc-shell-dropdown:hover .mc-shell-dropdown-menu.mega { grid-template-columns: 1fr !important; }
     }
   `;
 
   const BASE = '/courts/';
 
+  /* ── SITE MAP: edit paths/labels here; header and footer both read from this ── */
+  const L = (label, path, desc) => ({ label, href: BASE + path, desc });
+
   const NAV_ITEMS = [
     { id: 'home', label: 'Home', href: BASE },
-    { id: 'directory', label: 'Directory', children: [
-        { label: 'Supreme Court',              href: BASE + 'supreme-court/' },
-        { label: 'Genesee Co. District Court', href: BASE + 'genesee-co-district/' },
+    { id: 'directory', label: 'Courts', groups: [
+      { links: [
+        L('Supreme Court',              'supreme-court/',      'Final appeals and the state constitution'),
+        L('Genesee Co. District Court', 'genesee-co-district/', 'Trial court for Flint and Genesee County'),
+      ]},
     ]},
-    { id: 'services', label: 'Online Services', children: [
-        { label: 'Online Portal (MiCOURT)', href: BASE + 'micourt/' },
-        { label: 'Search Cases',            href: BASE + 'case-search/' },
-        { label: 'Pay Fines & Fees',        href: BASE + 'online-services/pay-fees/' },
-        { label: 'Docket Calendar',         href: BASE + 'online-services/docket/' },
-        { label: 'Jury Duty Portal',        href: BASE + 'online-services/jury-portal/' },
-        { label: 'Request Court Records',   href: BASE + 'online-services/request-records/' },
+    { id: 'services', label: 'Online Services', groups: [
+      { title: 'Online Portal', links: [
+        L('Online Portal',   'micourt/',      'Sign in to file, pay, and manage cases'),
+        L('Search Cases',    'case-search/',  'Look up cases by name or number'),
+        L('Docket Calendar', 'online-services/docket/', 'Upcoming hearings and court dates'),
+      ]},
+      { title: 'Payments & Records', links: [
+        L('Pay Fines & Fees',      'online-services/pay-fees/',        'Traffic fines, court costs, other fees'),
+        L('Request Court Records', 'online-services/request-records/', 'FOIA and public records requests'),
+      ]},
+      { title: 'Jury Service', links: [
+        L('Jury Duty Portal', 'online-services/jury-portal/', 'Respond to a summons or check your status'),
+      ]},
     ]},
-    { id: 'forms', label: 'Forms & Filing', children: [
-        { label: 'Filing Information', href: BASE + 'forms-and-filing/information/' },
-        { label: 'Court Forms',        href: BASE + 'forms-and-filing/forms/' },
+    { id: 'rules', label: 'Rules', groups: [
+      { title: 'Court Rules', links: [
+        L('All Rules',                'rules/',              'Browse every rule set'),
+        L('Michigan Court Rules',     'rules/court-rules/',  'Procedure for all Michigan courts'),
+        L('Michigan Rules of Evidence', 'rules/evidence/',   'What can be admitted at trial'),
+      ]},
+      { title: 'Rule Changes', links: [
+        L('Proposed Rules', 'rules/proposals/', 'Proposed amendments to court rules'),
+      ]},
+    ]},
+    { id: 'forms', label: 'Forms & Filing', groups: [
+      { links: [
+        L('Filing Information', 'forms-and-filing/information/', 'How, where, and when to file'),
+        L('Court Forms',        'forms-and-filing/forms/',       'Standard forms for filing'),
+      ]},
     ]},
     { id: 'selfhelp', label: 'Self Help', href: BASE + 'self-help/' },
     { id: 'careers',  label: 'Careers',   href: BASE + 'careers/' },
   ];
+
+  const flat = id => NAV_ITEMS.find(i => i.id === id).groups.flatMap(g => g.links);
 
   const SEAL = `
     <svg class="mc-shell-seal" viewBox="0 0 52 52" aria-hidden="true">
@@ -174,19 +216,30 @@
       <path d="M19 38h14" stroke="#10264a" stroke-width="2.4" stroke-linecap="round"/>
     </svg>`;
 
+  function linkHtml(l) {
+    return `<a href="${l.href}">${l.label}${l.desc ? `<small>${l.desc}</small>` : ''}</a>`;
+  }
+
   function buildNav(activeId) {
     let items = '';
     NAV_ITEMS.forEach(item => {
       const cls = item.id === activeId ? 'active' : '';
-      if (item.children) {
-        const links = item.children.map(c => `<a href="${c.href}">${c.label}</a>`).join('');
-        items += `<div class="mc-shell-dropdown"><a href="#" class="${cls}">${item.label}</a><div class="mc-shell-dropdown-menu">${links}</div></div>`;
+      if (item.groups) {
+        let menu;
+        if (item.groups.length > 1) {
+          const cols = item.groups.map(g =>
+            `<div class="mc-shell-col"><h2>${g.title}</h2>${g.links.map(linkHtml).join('')}</div>`).join('');
+          menu = `<div class="mc-shell-dropdown-menu mega" style="grid-template-columns:repeat(${item.groups.length},minmax(200px,1fr))">${cols}</div>`;
+        } else {
+          menu = `<div class="mc-shell-dropdown-menu">${item.groups[0].links.map(linkHtml).join('')}</div>`;
+        }
+        items += `<div class="mc-shell-dropdown"><a href="#" class="${cls}" aria-haspopup="true">${item.label}</a>${menu}</div>`;
       } else {
         items += `<a href="${item.href}" class="${cls}">${item.label}</a>`;
       }
     });
     return `<nav class="mc-shell-nav" aria-label="Main">${items}
-      <div class="mc-shell-nav-right"><a href="${BASE}micourt/" class="mc-shell-nav-btn">Sign in to MiCOURT</a></div></nav>`;
+      <div class="mc-shell-nav-right"><a href="${BASE}micourt/" class="mc-shell-nav-btn">Sign in to Online Portal</a></div></nav>`;
   }
 
   function buildHeader(activeId) {
@@ -212,15 +265,15 @@
   }
 
   function buildFooter() {
-    const find = id => NAV_ITEMS.find(i => i.id === id).children;
     return `<footer class="mc-shell-footer">
       <div class="mc-shell-footer-main">
         <div class="mc-shell-footer-brand">${SEAL}
           <div><strong>Michigan Courts</strong><span>State Court Administrative Office<br>P.O. Box 30048, Lansing, MI 48909</span></div>
         </div>
-        ${footerCol('Courts', find('directory'))}
-        ${footerCol('Online services', find('services').slice(0, 4))}
-        ${footerCol('Help', [...find('forms'), { label: 'Self Help', href: BASE + 'self-help/' }, { label: 'Careers', href: BASE + 'careers/' }])}
+        ${footerCol('Courts', flat('directory'))}
+        ${footerCol('Online services', flat('services'))}
+        ${footerCol('Rules', flat('rules'))}
+        ${footerCol('Help', [...flat('forms'), { label: 'Self Help', href: BASE + 'self-help/' }, { label: 'Careers', href: BASE + 'careers/' }])}
       </div>
       <div class="mc-shell-footer-base"><div>
         <span>&copy; ${new Date().getFullYear()} Michigan Courts</span>
