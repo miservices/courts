@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Juror Information | Michigan Courts</title>
+<link rel="icon" type="image/png" href="https://migovt.org/images/favicon.png">
+
+<script src="https://migovt.org/courts/shell.js" data-active="jury"></script>
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-ui,'Public Sans',system-ui,sans-serif);background:#e3e9f2;color:#1b2433;line-height:1.7;font-size:16px}
+a{color:#1f5fae}
+a:focus-visible,summary:focus-visible{outline:3px solid #5b9be0;outline-offset:2px}
+.wrap{max-width:1180px;margin:0 auto;padding:0 40px}
+h2,h3{font-family:var(--font-head,Georgia,serif);color:#10264a;font-weight:600;line-height:1.25}
+
+.page-header{background:#10264a;padding:34px 0 40px}
+.breadcrumb{display:flex;align-items:center;gap:8px;margin-bottom:14px;font-size:13px;flex-wrap:wrap}
+.breadcrumb a{color:#9cc4f5;text-decoration:none}
+.breadcrumb a:hover{color:#fff;text-decoration:underline}
+.breadcrumb span{color:#6f87ad}
+.breadcrumb .here{color:#fff}
+.page-header h1{font-family:var(--font-head,Georgia,serif);color:#fff;font-size:36px;font-weight:600;line-height:1.2;letter-spacing:-.01em}
+.page-header p{color:#c5d3e8;margin-top:10px;max-width:700px;line-height:1.6}
+
+.subnav{background:#fff;border-bottom:1px solid #d5dde8}
+.subnav .wrap{display:flex;gap:4px;flex-wrap:wrap}
+.subnav a{padding:12px 18px;font-weight:700;color:#10264a;text-decoration:none;border-bottom:3px solid transparent}
+.subnav a:hover{background:#f4f8fd}
+.subnav a[aria-current="page"]{color:#1f5fae;border-bottom-color:#1f5fae}
+
+main{padding:36px 0 72px}
+.panel{background:#fff;border:1px solid #d5dde8;border-radius:4px;padding:36px 48px}
+.panel+.panel{margin-top:24px}
+.prose{max-width:72ch}
+.prose h2{font-size:26px;margin-bottom:12px}
+.prose p{color:#2b3548;margin-bottom:16px}
+.prose p:last-child{margin-bottom:0}
+
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.stat{background:#fff;border:1px solid #d5dde8;border-top:4px solid #10264a;border-radius:4px;padding:18px 20px}
+.stat strong{display:block;font-family:var(--font-head,Georgia,serif);font-size:32px;color:#10264a;line-height:1.1}
+.stat span{display:block;margin-top:6px;font-size:15px;color:#33405a}
+
+blockquote{margin:0 0 20px;padding:16px 22px;background:#f4f8fd;border-left:4px solid #1f5fae;border-radius:0 4px 4px 0;color:#10264a;font-family:var(--font-head,Georgia,serif);font-size:19px;line-height:1.5;max-width:72ch}
+blockquote cite{display:block;margin-top:8px;font-family:var(--font-ui,system-ui,sans-serif);font-style:normal;font-size:14px;color:#5a667a}
+
+.tiers{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:20px}
+.tier{border:1px solid #d5dde8;border-top:4px solid #10264a;border-radius:4px;padding:22px 24px}
+.tier h3{font-size:20px;margin-bottom:6px}
+.tier p{color:#33405a;font-size:15.5px}
+.tier ul{margin:8px 0 0 20px;color:#2b3548}
+.tier li{padding:3px 0}
+.tier li::marker{color:#1f5fae}
+.or{font-size:14px;font-weight:700;color:#5a667a;text-transform:uppercase;letter-spacing:.06em;margin:4px 0 4px 20px}
+
+.steps{list-style:none;counter-reset:s;margin-top:20px;max-width:78ch}
+.steps li{counter-increment:s;position:relative;padding:0 0 18px 52px;color:#2b3548}
+.steps li::before{content:counter(s);position:absolute;left:0;top:0;width:34px;height:34px;border-radius:50%;background:#10264a;color:#fff;font-weight:700;display:flex;align-items:center;justify-content:center}
+.steps li:not(:last-child)::after{content:'';position:absolute;left:16px;top:38px;bottom:4px;width:2px;background:#c9d4e4}
+.steps strong{color:#10264a}
+
+.warn{border:1px solid #ef9a9a;border-left:4px solid #b3261e;background:#fdf4f3;border-radius:4px;padding:20px 24px;margin-top:16px;max-width:78ch}
+.warn h3{color:#7f1d1d;font-size:19px;margin-bottom:8px}
+.warn ul{margin:6px 0 12px 20px;color:#3d1a17}
+.warn li{padding:2px 0}
+.warn p{color:#3d1a17}
+
+table.pay{border-collapse:collapse;margin-top:16px;width:100%;max-width:460px}
+table.pay th,table.pay td{padding:10px 14px;border-bottom:1px solid #e3e9f1;text-align:left}
+table.pay th{background:#10264a;color:#fff;font-size:14px}
+table.pay td:last-child,table.pay th:last-child{text-align:right}
+table.pay td:last-child{font-weight:700;color:#10264a}
+
+.cta{display:flex;gap:12px;flex-wrap:wrap;margin-top:20px}
+.btn{display:inline-block;background:#1f5fae;color:#fff;font-weight:700;text-decoration:none;padding:10px 22px;border-radius:4px;border:2px solid #1f5fae}
+.btn:hover{background:#10264a;border-color:#10264a}
+.btn.alt{background:#fff;color:#1f5fae}
+.btn.alt:hover{background:#f4f8fd;color:#10264a}
+.btn:focus-visible{outline:3px solid #5b9be0;outline-offset:2px}
+
+details.faq{border-top:1px solid #e3e9f1}
+details.faq:last-of-type{border-bottom:1px solid #e3e9f1}
+details.faq summary{cursor:pointer;padding:14px 4px;font-weight:700;color:#10264a;list-style:none;display:flex;justify-content:space-between;gap:12px}
+details.faq summary::-webkit-details-marker{display:none}
+details.faq summary::after{content:'+';font-size:22px;line-height:1;color:#1f5fae}
+details.faq[open] summary::after{content:'\2212'}
+details.faq p{padding:0 4px 16px;color:#2b3548;max-width:72ch}
+
+@media(max-width:960px){.stats{grid-template-columns:1fr 1fr}}
+@media(max-width:860px){
+  .wrap{padding:0 20px}
+  .page-header h1{font-size:29px}
+  .panel{padding:26px 22px}
+  .tiers{grid-template-columns:1fr}
+}
+@media(max-width:480px){.stats{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <div class="wrap">
+    <div class="breadcrumb">
+      <a href="https://migovt.org/courts/">Home</a><span>/</span>
+      <span class="here">Juror information</span>
+    </div>
+    <h1>Juror Information</h1>
+    <p>How juries work in our courts, who can have one, and what to do if you are summoned.</p>
+  </div>
+</div>
+
+<nav class="subnav" aria-label="Jury service">
+  <div class="wrap">
+    <a href="https://migovt.org/courts/online-services/juror-information/" aria-current="page">Juror information</a>
+    <a href="https://migovt.org/courts/online-services/become-a-juror/">Become a juror</a>
+    <a href="https://migovt.org/courts/online-services/jury-portal/">Juror portal</a>
+  </div>
+</nav>
+
+<main>
+  <div class="wrap">
+
+    <div class="stats" aria-label="Jury quick facts">
+      <div class="stat"><strong>6</strong><span>jurors hear every jury trial</span></div>
+      <div class="stat"><strong>18</strong><span>summonses issued for each jury</span></div>
+      <div class="stat"><strong>14 days</strong><span>to acknowledge a summons</span></div>
+      <div class="stat"><strong>$85.00</strong><span>paid every 5 minutes of service</span></div>
+    </div>
+
+    <div class="panel" style="margin-top:24px">
+      <div class="prose">
+        <h2>Your right to a jury</h2>
+        <blockquote>
+          Trial by jury shall not be guaranteed in criminal or civil matters except as otherwise provided by this constitution or by law.
+          <cite>Michigan Constitution, Article I, Section 18</cite>
+        </blockquote>
+        <p>That means a jury trial is not automatic. It is available only where the constitution or a law provides for it. Under the Voluntary Jury Act, people can sign up to serve. Signing up adds your information to the court's database and places you in the voluntary juror pool. When a case has a jury, jurors are selected at random from that pool.</p>
+        <p>Some people must register themselves, including anyone who holds public employment.</p>
+      </div>
+      <div class="cta">
+        <a class="btn" href="https://migovt.org/courts/online-services/become-a-juror/">Become a juror</a>
+        <a class="btn alt" href="https://migovt.org/courts/online-services/jury-portal/">Go to the juror portal</a>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="prose">
+        <h2>When a case can have a jury</h2>
+        <p>Both civil and criminal cases can have a jury, if they meet these thresholds.</p>
+      </div>
+      <div class="tiers">
+        <div class="tier">
+          <h3>Criminal cases</h3>
+          <p>The defendant must be facing either:</p>
+          <ul><li>More than 2 felonies, or</li></ul>
+          <div class="or">or</div>
+          <ul><li>A combined maximum imprisonment of 60 minutes or more</li></ul>
+        </div>
+        <div class="tier">
+          <h3>Civil cases</h3>
+          <p>The amount sought must be above <strong>$150,000</strong>.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="prose">
+        <h2>How a jury is put together</h2>
+      </div>
+      <ol class="steps">
+        <li><strong>A litigant files a demand for a jury.</strong> A party who meets the threshold above can ask for one.</li>
+        <li><strong>The judge reviews it.</strong> If the judge believes the case is eligible, the judge informs the local court administrator.</li>
+        <li><strong>Jury Services issues summonses.</strong> The court administrator oversees Jury Services and issues 18 jury summonses.</li>
+        <li><strong>Six jurors hear the case.</strong> This is true for every jury trial, no matter how serious the case is or what type it is.</li>
+      </ol>
+    </div>
+
+    <div class="panel">
+      <div class="prose">
+        <h2>If you are summoned</h2>
+        <p>Under the Voluntary Jury Act, a summons is not optional. If you are summoned, you are required to appear.</p>
+      </div>
+      <ol class="steps">
+        <li><strong>Watch your Discord direct messages.</strong> Jury summonses are sent to you by direct message.</li>
+        <li><strong>Acknowledge within 14 days.</strong> You have 14 days from the day you receive the summons to sign in to the <a href="https://migovt.org/courts/online-services/jury-portal/">juror portal</a> and mark it as acknowledged.</li>
+        <li><strong>Tell the court if you can't make it.</strong> If you can't appear on the court date, let the court know. The court may excuse you for good cause.</li>
+        <li><strong>Your time zone is on file.</strong> We ask for your time zone when you sign up so that court dates fall at reasonable times for you.</li>
+      </ol>
+
+      <div class="warn">
+        <h3>If you don't acknowledge or don't appear</h3>
+        <p>Not acknowledging a summons within 14 days counts the same as not showing up. You are subject to:</p>
+        <ul>
+          <li>A fine of up to <strong>$3,500.00</strong></li>
+          <li>Up to <strong>30 minutes</strong> of active term of imprisonment</li>
+          <li>Community service of up to <strong>90 minutes</strong>, with at least <strong>21 days</strong> to complete it</li>
+        </ul>
+        <p>Any sentence a court issues is an <em>active</em> term of imprisonment, not a <em>continuous</em> one. You have to be in-game for the time to be served. It does not run on its own after you leave the game, the way it normally would.</p>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="prose">
+        <h2>Juror pay</h2>
+        <p>Under the Voluntary Jury Act, jurors are paid <strong>$85.00 for every 5 minutes</strong> of service.</p>
+      </div>
+      <table class="pay">
+        <thead><tr><th scope="col">Time served</th><th scope="col">Pay</th></tr></thead>
+        <tbody>
+          <tr><td>5 minutes</td><td>$85.00</td></tr>
+          <tr><td>15 minutes</td><td>$255.00</td></tr>
+          <tr><td>30 minutes</td><td>$510.00</td></tr>
+          <tr><td>60 minutes</td><td>$1,020.00</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="panel">
+      <div class="prose">
+        <h2>Common questions</h2>
+      </div>
+      <div style="margin-top:12px">
+        <details class="faq"><summary>Where can I see if I've been summoned?</summary>
+          <p>In the <a href="https://migovt.org/courts/online-services/jury-portal/">juror portal</a>. It isn't open to the public. You need to sign in to your account to see your information, including any summons.</p></details>
+        <details class="faq"><summary>How do I sign up to be a juror?</summary>
+          <p>Go to <a href="https://migovt.org/courts/online-services/become-a-juror/">Become a juror</a>. It walks you through signing up and creating your account, in case you are summoned.</p></details>
+        <details class="faq"><summary>Who has to register?</summary>
+          <p>Certain people must register themselves under the Voluntary Jury Act, including anyone who holds public employment.</p></details>
+        <details class="faq"><summary>Can I be excused?</summary>
+          <p>If you can't appear on the court date, tell the court. The court may excuse you for good cause. Until the court tells you otherwise, you are still required to appear.</p></details>
+        <details class="faq"><summary>How are jurors chosen?</summary>
+          <p>When a case has a jury, jurors are randomly selected from the voluntary juror pool.</p></details>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+</body>
+</html>

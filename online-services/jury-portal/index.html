@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Juror Portal | Michigan Courts</title>
+<link rel="icon" type="image/png" href="https://migovt.org/images/favicon.png">
+
+<script src="https://migovt.org/courts/shell.js" data-active="jury"></script>
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-ui,'Public Sans',system-ui,sans-serif);background:#e3e9f2;color:#1b2433;line-height:1.7;font-size:16px}
+a{color:#1f5fae}
+a:focus-visible,button:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid #5b9be0;outline-offset:2px}
+.wrap{max-width:1180px;margin:0 auto;padding:0 40px}
+h2,h3{font-family:var(--font-head,Georgia,serif);color:#10264a;font-weight:600;line-height:1.25}
+
+.page-header{background:#10264a;padding:34px 0 40px}
+.breadcrumb{display:flex;align-items:center;gap:8px;margin-bottom:14px;font-size:13px;flex-wrap:wrap}
+.breadcrumb a{color:#9cc4f5;text-decoration:none}
+.breadcrumb a:hover{color:#fff;text-decoration:underline}
+.breadcrumb span{color:#6f87ad}
+.breadcrumb .here{color:#fff}
+.page-header h1{font-family:var(--font-head,Georgia,serif);color:#fff;font-size:36px;font-weight:600;line-height:1.2;letter-spacing:-.01em}
+.page-header p{color:#c5d3e8;margin-top:10px;max-width:700px;line-height:1.6}
+
+.subnav{background:#fff;border-bottom:1px solid #d5dde8}
+.subnav .wrap{display:flex;gap:4px;flex-wrap:wrap}
+.subnav a{padding:12px 18px;font-weight:700;color:#10264a;text-decoration:none;border-bottom:3px solid transparent}
+.subnav a:hover{background:#f4f8fd}
+.subnav a[aria-current="page"]{color:#1f5fae;border-bottom-color:#1f5fae}
+
+main{padding:36px 0 72px}
+.panel{background:#fff;border:1px solid #d5dde8;border-radius:4px;padding:32px 40px}
+.panel+.panel,.grid2+.panel,.panel+.grid2{margin-top:24px}
+.panel>h2,.panel-head h2{font-size:24px}
+.lead{color:#2b3548;max-width:62ch;margin:6px 0 20px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start}
+
+.btn{display:inline-block;background:#1f5fae;color:#fff;font:inherit;font-weight:700;text-decoration:none;padding:10px 22px;border:2px solid #1f5fae;border-radius:4px;cursor:pointer}
+.btn:hover{background:#10264a;border-color:#10264a}
+.btn.alt{background:#fff;color:#1f5fae}
+.btn.alt:hover{background:#f4f8fd;color:#10264a}
+.btn:disabled{background:#6f87ad;border-color:#6f87ad;cursor:default}
+
+/* Gate */
+.gate{max-width:560px;margin:0 auto;text-align:center}
+.gate .lock{width:54px;height:54px;border-radius:50%;background:#e1ecf8;color:#164a86;display:flex;align-items:center;justify-content:center;margin:0 auto 14px}
+.gate h2{margin-bottom:6px}
+.gate p{color:#2b3548;margin-bottom:18px}
+.gate .small{font-size:15px;color:#5a667a;margin:16px 0 0}
+
+/* Dashboard */
+.welcome{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:24px}
+.welcome h2{font-size:26px}
+.welcome p{color:#5a667a;font-size:15px}
+.badge{display:inline-block;font-size:13px;font-weight:700;padding:2px 12px;border-radius:12px;white-space:nowrap}
+.badge.act{background:#fce8e8;color:#9b1c1c;border:1px solid #ef9a9a}
+.badge.ok{background:#e8f5e9;color:#256029;border:1px solid #a5d6a7}
+.badge.wait{background:#fff8e1;color:#7a4a00;border:1px solid #ffcc80}
+.badge.none{background:#eef0f4;color:#4a5568;border:1px solid #cfd6e2}
+.panel-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+
+.summons{border:1px solid #d5dde8;border-top:4px solid #10264a;border-radius:4px;padding:22px 24px}
+.summons.urgent{border-top-color:#b3261e}
+.summons.done{border-top-color:#256029}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px 20px;margin:14px 0;padding:14px 16px;background:#eef3f9;border-radius:4px}
+.facts dt{font-size:13px;color:#5a667a}
+.facts dd{font-weight:600;color:#10264a}
+.deadline{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:6px 0 14px;font-weight:700}
+.deadline .days{font-family:var(--font-head,Georgia,serif);font-size:30px;color:#9b1c1c;line-height:1}
+.deadline.done .days{color:#256029}
+.actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:6px}
+.note-warn{margin-top:16px;font-size:14.5px;color:#4a2b27;background:#fdf4f3;border-left:4px solid #b3261e;padding:10px 14px;border-radius:0 4px 4px 0;max-width:72ch}
+.excuse{display:none;margin-top:18px;padding-top:18px;border-top:1px solid #e3e9f1}
+.excuse.show{display:block}
+.excuse label{display:block;font-weight:700;color:#10264a;margin-bottom:4px}
+.excuse textarea{width:100%;min-height:110px;font:inherit;border:1px solid #8a97ad;border-radius:4px;padding:10px 12px;resize:vertical}
+.excuse .err{display:none;color:#b3261e;font-size:14px;font-weight:600;margin-top:4px}
+.excuse.bad .err{display:block}
+.excuse.bad textarea{border-color:#b3261e}
+.msg{margin-top:14px;padding:12px 16px;border-radius:4px;border:1px solid #a5d6a7;border-left:4px solid #256029;background:#e8f5e9;color:#1d4a21}
+
+dl.profile div{display:grid;grid-template-columns:170px 1fr;gap:12px;padding:10px 0;border-bottom:1px solid #e3e9f1}
+dl.profile div:last-child{border-bottom:0}
+dl.profile dt{color:#5a667a;font-size:15px}
+dl.profile dd{font-weight:600}
+dl.profile select{font:inherit;border:1px solid #8a97ad;border-radius:4px;padding:6px 10px;max-width:100%}
+
+table.pay{border-collapse:collapse;width:100%;margin-top:6px}
+table.pay th,table.pay td{padding:10px 12px;border-bottom:1px solid #e3e9f1;text-align:left;font-size:15px}
+table.pay th{background:#10264a;color:#fff;font-size:14px}
+table.pay td.n,table.pay th.n{text-align:right}
+table.pay tfoot td{font-weight:700;color:#10264a;border-bottom:0;background:#f4f8fd}
+.rate{font-size:15px;color:#33405a;margin-bottom:10px}
+
+.help ul{margin-left:20px;color:#2b3548}
+.help li{padding:3px 0}
+.help li::marker{color:#1f5fae}
+[hidden]{display:none!important}
+
+@media(max-width:960px){.grid2{grid-template-columns:1fr}}
+@media(max-width:860px){
+  .wrap{padding:0 20px}
+  .page-header h1{font-size:29px}
+  .panel{padding:24px 20px}
+  dl.profile div{grid-template-columns:1fr;gap:2px}
+}
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <div class="wrap">
+    <div class="breadcrumb">
+      <a href="https://migovt.org/courts/">Home</a><span>/</span>
+      <span class="here">Juror portal</span>
+    </div>
+    <h1>Juror Portal</h1>
+    <p>Sign in to see your summons, acknowledge it, and manage your juror information. The portal is private and not open to the public.</p>
+  </div>
+</div>
+
+<nav class="subnav" aria-label="Jury service">
+  <div class="wrap">
+    <a href="https://migovt.org/courts/online-services/juror-information/">Juror information</a>
+    <a href="https://migovt.org/courts/online-services/become-a-juror/">Become a juror</a>
+    <a href="https://migovt.org/courts/online-services/jury-portal/" aria-current="page">Juror portal</a>
+  </div>
+</nav>
+
+<main>
+  <div class="wrap">
+
+    <!-- Sign-in gate -->
+    <div class="panel" id="gate">
+      <div class="gate">
+        <div class="lock" aria-hidden="true">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+        </div>
+        <h2>Sign in to view your jury information</h2>
+        <p>You need to sign in to see whether you have been summoned and to manage your juror account.</p>
+        <button type="button" class="btn" id="signin">Sign in</button>
+        <p class="small">Not a juror yet? <a href="https://migovt.org/courts/online-services/become-a-juror/">Become a juror</a> to create your account.</p>
+      </div>
+    </div>
+
+    <!-- Dashboard -->
+    <div id="dash" hidden>
+      <div class="welcome">
+        <div>
+          <h2>Welcome, <span id="who"></span></h2>
+          <p>Juror ID <span id="jid"></span></p>
+        </div>
+        <button type="button" class="btn alt" id="signout">Sign out</button>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Your summons</h2>
+          <span class="badge act" id="s-badge">Action needed</span>
+        </div>
+
+        <div class="summons urgent" id="s-card">
+          <h3 id="s-case"></h3>
+          <p id="s-sub" style="color:#5a667a"></p>
+          <dl class="facts" id="s-facts"></dl>
+          <div class="deadline" id="s-deadline"></div>
+          <div class="actions">
+            <button type="button" class="btn" id="ack-btn">Acknowledge summons</button>
+            <button type="button" class="btn alt" id="excuse-btn" aria-expanded="false" aria-controls="excuse">Request to be excused</button>
+          </div>
+          <div class="msg" id="ack-msg" hidden></div>
+
+          <div class="excuse" id="excuse">
+            <label for="reason">Why can't you appear?</label>
+            <textarea id="reason" aria-describedby="reason-err"></textarea>
+            <div class="err" id="reason-err">Tell the court why you can't appear.</div>
+            <div class="actions" style="margin-top:12px">
+              <button type="button" class="btn" id="excuse-send">Send request</button>
+              <button type="button" class="btn alt" id="excuse-cancel">Cancel</button>
+            </div>
+          </div>
+          <div class="msg" id="excuse-msg" hidden></div>
+
+          <p class="note-warn" id="s-warn">Not acknowledging a summons within 14 days counts as not showing up. You are subject to a fine of up to $3,500.00, up to 30 minutes of active term of imprisonment, and community service of up to 90 minutes.</p>
+        </div>
+      </div>
+
+      <div class="grid2">
+        <div class="panel">
+          <h2>Your juror profile</h2>
+          <dl class="profile" style="margin-top:12px">
+            <div><dt>Discord</dt><dd id="p-discord"></dd></div>
+            <div><dt>In-game username</dt><dd id="p-game"></dd></div>
+            <div><dt><label for="p-tz">Time zone</label></dt><dd><select id="p-tz"></select><div id="tz-msg" style="font-weight:400;color:#256029;font-size:14px;margin-top:4px" role="status"></div></dd></div>
+            <div><dt>Registered</dt><dd id="p-reg"></dd></div>
+            <div><dt>Pool status</dt><dd>Active in the voluntary juror pool</dd></div>
+            <div><dt>Public employment</dt><dd>No</dd></div>
+          </dl>
+        </div>
+
+        <div class="panel">
+          <h2>Juror pay</h2>
+          <p class="rate">You are paid $85.00 for every 5 minutes of service.</p>
+          <table class="pay">
+            <thead><tr><th scope="col">Date</th><th scope="col">Case</th><th scope="col" class="n">Minutes</th><th scope="col" class="n">Pay</th></tr></thead>
+            <tbody id="pay-body"></tbody>
+            <tfoot id="pay-foot"></tfoot>
+          </table>
+        </div>
+      </div>
+
+      <div class="panel help">
+        <h2>Need help?</h2>
+        <ul style="margin-top:10px">
+          <li>Read <a href="https://migovt.org/courts/online-services/juror-information/">juror information</a> for how juries work, penalties, and pay.</li>
+          <li>Check <a href="https://migovt.org/courts/online-services/docket/">the docket</a> for upcoming hearings.</li>
+          <li>Court staff can't give legal advice. For help without a lawyer, start with <a href="https://migovt.org/courts/self-help/">Self Help</a>.</li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<script>
+  // Demo only: sign-in is simulated, nothing is sent anywhere, and the data below is sample data.
+  // Replace signIn() and DATA with your real account system and juror records.
+  const ZONES = [
+    ['America/New_York', 'Eastern Time (ET)'], ['America/Chicago', 'Central Time (CT)'], ['America/Denver', 'Mountain Time (MT)'],
+    ['America/Phoenix', 'Arizona (no daylight saving)'], ['America/Los_Angeles', 'Pacific Time (PT)'], ['America/Anchorage', 'Alaska Time'],
+    ['Pacific/Honolulu', 'Hawaii Time'], ['America/Halifax', 'Atlantic Time'], ['America/Mexico_City', 'Mexico City'],
+    ['America/Sao_Paulo', 'Brasília'], ['Europe/London', 'United Kingdom'], ['Europe/Paris', 'Central European Time'],
+    ['Europe/Moscow', 'Moscow'], ['Asia/Dubai', 'Gulf Standard Time'], ['Asia/Kolkata', 'India'],
+    ['Asia/Singapore', 'Singapore'], ['Asia/Tokyo', 'Japan'], ['Australia/Sydney', 'Sydney'], ['Pacific/Auckland', 'New Zealand']
+  ];
+  const RATE = 85, BLOCK = 5;
+  const money = n => n.toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+  const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  const $ = id => document.getElementById(id);
+
+  const dayOffset = n => { const d = new Date(); d.setHours(12, 0, 0, 0); d.setDate(d.getDate() + n); return d; };
+  const bizDays = n => { const d = new Date(); d.setHours(12, 0, 0, 0); while (n > 0) { d.setDate(d.getDate() + 1); if (d.getDay() % 6) n--; } return d; };
+
+  const DATA = {
+    discord: 'sample_juror', game: 'SampleJuror2026', tz: 'America/New_York', jid: 'JR-2026-48213',
+    registered: dayOffset(-60),
+    summons: { received: dayOffset(-3), caseNo: '26-D-0310', caseName: 'People v. Santiago', kind: 'Jury Trial', court: 'Genesee County District Court', room: 'Courtroom 2', judge: 'Hon. Brennan', hearing: bizDays(5), hh: 9, mm: 0 },
+    history: [ { date: dayOffset(-44), caseName: 'Reed v. Tri-County Contracting', minutes: 25 }, { date: dayOffset(-21), caseName: 'People v. Whitaker', minutes: 40 } ]
+  };
+
+  const state = { acknowledged: null, excused: false };
+
+  // The court is in Flint (Eastern Time). Convert its 9:00 AM to the juror's own time zone.
+  function courtTime(date, hh, mm, tz) {
+    const y = date.getFullYear(), m = date.getMonth(), d = date.getDate();
+    const guess = Date.UTC(y, m, d, hh, mm);
+    const p = Object.fromEntries(new Intl.DateTimeFormat('en-US', { timeZone: 'America/New_York', hourCycle: 'h23', year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric' })
+      .formatToParts(new Date(guess)).map(x => [x.type, x.value]));
+    const asUtc = Date.UTC(+p.year, +p.month - 1, +p.day, +p.hour, +p.minute);
+    const instant = new Date(guess - (asUtc - guess));
+    return instant.toLocaleString('en-US', { timeZone: tz, weekday: 'long', month: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit', timeZoneName: 'short' });
+  }
+  const fmtDate = d => d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+
+  function renderSummons() {
+    const s = DATA.summons;
+    const due = new Date(s.received); due.setDate(due.getDate() + 14);
+    const left = Math.ceil((due - new Date()) / 864e5);
+    const card = $('s-card'), badge = $('s-badge');
+    $('s-case').textContent = s.caseName;
+    $('s-sub').textContent = `Case ${s.caseNo} · ${s.kind}`;
+    $('s-facts').innerHTML = [
+      ['Court date', courtTime(s.hearing, s.hh, s.mm, DATA.tz)],
+      ['Location', `${s.room}, ${s.court}`],
+      ['Judge', s.judge],
+      ['Summons received', fmtDate(s.received)],
+      ['Acknowledge by', fmtDate(due)]
+    ].map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join('');
+
+    if (state.acknowledged) {
+      card.className = 'summons done'; badge.className = 'badge ok'; badge.textContent = 'Acknowledged';
+      $('s-deadline').className = 'deadline done';
+      $('s-deadline').innerHTML = `<span class="days">&#10003;</span><span>Acknowledged on ${esc(state.acknowledged)}</span>`;
+      $('ack-btn').hidden = true; $('s-warn').hidden = true;
+    } else {
+      card.className = 'summons urgent'; badge.className = 'badge act'; badge.textContent = 'Action needed';
+      $('s-deadline').className = 'deadline';
+      $('s-deadline').innerHTML = `<span class="days">${Math.max(left, 0)}</span><span>${left === 1 ? 'day' : 'days'} left to acknowledge</span>`;
+      $('ack-btn').hidden = false; $('s-warn').hidden = false;
+    }
+    if (state.excused) { badge.className = 'badge wait'; badge.textContent = state.acknowledged ? 'Excuse requested' : 'Excuse requested'; }
+  }
+
+  function renderPay() {
+    let total = 0;
+    $('pay-body').innerHTML = DATA.history.map(h => {
+      const pay = Math.floor(h.minutes / BLOCK) * RATE; total += pay;
+      return `<tr><td>${fmtDate(h.date)}</td><td>${esc(h.caseName)}</td><td class="n">${h.minutes}</td><td class="n">${money(pay)}</td></tr>`;
+    }).join('');
+    $('pay-foot').innerHTML = `<tr><td colspan="3">Total earned</td><td class="n">${money(total)}</td></tr>`;
+  }
+
+  function renderProfile() {
+    $('p-discord').textContent = DATA.discord;
+    $('p-game').textContent = DATA.game;
+    $('p-reg').textContent = fmtDate(DATA.registered);
+    $('jid').textContent = DATA.jid;
+    $('who').textContent = DATA.game;
+    const sel = $('p-tz');
+    sel.innerHTML = ZONES.map(([v, l]) => `<option value="${v}"${v === DATA.tz ? ' selected' : ''}>${esc(l)}</option>`).join('');
+  }
+
+  $('p-tz').addEventListener('change', e => {
+    DATA.tz = e.target.value;       // demo: kept in memory only
+    renderSummons();
+    $('tz-msg').textContent = 'Time zone updated.';
+    setTimeout(() => $('tz-msg').textContent = '', 2500);
+  });
+
+  $('ack-btn').addEventListener('click', () => {
+    state.acknowledged = new Date().toLocaleString('en-US', { dateStyle: 'long', timeStyle: 'short' });
+    renderSummons();
+    const m = $('ack-msg');
+    m.hidden = false; m.textContent = 'Thank you. Your summons is acknowledged. You are still required to appear on the court date unless the court excuses you.';
+  });
+
+  const excuse = $('excuse');
+  function toggleExcuse(show) {
+    excuse.classList.toggle('show', show);
+    $('excuse-btn').setAttribute('aria-expanded', show);
+    if (show) $('reason').focus();
+  }
+  $('excuse-btn').addEventListener('click', () => toggleExcuse(!excuse.classList.contains('show')));
+  $('excuse-cancel').addEventListener('click', () => { excuse.classList.remove('bad'); toggleExcuse(false); });
+  $('excuse-send').addEventListener('click', () => {
+    const ok = $('reason').value.trim().length > 0;
+    excuse.classList.toggle('bad', !ok);
+    if (!ok) { $('reason').focus(); return; }
+    state.excused = true;
+    toggleExcuse(false);
+    $('excuse-btn').hidden = true;
+    const m = $('excuse-msg');
+    m.hidden = false;
+    m.textContent = 'Your request was sent to the court. The court may excuse you for good cause. Until the court tells you otherwise, you are still required to appear' + (state.acknowledged ? '.' : ' and to acknowledge your summons.');
+    renderSummons();
+  });
+
+  function showDash(on) { $('gate').hidden = on; $('dash').hidden = !on; window.scrollTo({ top: 0 }); }
+  $('signin').addEventListener('click', () => { renderProfile(); renderSummons(); renderPay(); showDash(true); });
+  $('signout').addEventListener('click', () => { state.acknowledged = null; state.excused = false; $('ack-msg').hidden = true; $('excuse-msg').hidden = true; $('excuse-btn').hidden = false; $('reason').value = ''; showDash(false); });
+</script>
+</body>
+</html>
