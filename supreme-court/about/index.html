@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>About the Supreme Court | Michigan Courts</title>
+<link rel="icon" type="image/png" href="/courts/images/favicon.png">
+
+<script src="/courts/shell.js" data-active="directory"></script>
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body{font-family:var(--font-ui,'Public Sans',system-ui,sans-serif);background:#e3e9f2;color:#1b2433;line-height:1.7;font-size:16px}
+a{color:#1f5fae}
+a:focus-visible{outline:3px solid #5b9be0;outline-offset:2px}
+.wrap{max-width:1180px;margin:0 auto;padding:0 40px}
+
+.page-header{background:#10264a;padding:34px 0 40px}
+.breadcrumb{display:flex;align-items:center;gap:8px;margin-bottom:14px;font-size:13px;flex-wrap:wrap}
+.breadcrumb a{color:#9cc4f5;text-decoration:none}
+.breadcrumb a:hover{color:#fff;text-decoration:underline}
+.breadcrumb span{color:#6f87ad}
+.breadcrumb .here{color:#fff}
+.page-header h1{font-family:var(--font-head,Georgia,serif);color:#fff;font-size:36px;font-weight:600;line-height:1.2;letter-spacing:-.01em}
+.page-header p{color:#c5d3e8;margin-top:10px;max-width:720px;line-height:1.6}
+
+.layout{max-width:1180px;margin:0 auto;padding:36px 40px 72px;display:grid;grid-template-columns:230px minmax(0,1fr);gap:40px;align-items:start}
+.sidebar{position:sticky;top:calc(var(--mc-sticky-top,0px) + 20px);transition:top .25s ease}
+.sidebar h2{font-size:14px;font-weight:700;color:#10264a;margin-bottom:10px;font-family:var(--font-ui,sans-serif)}
+.sidebar ul{list-style:none;border-left:2px solid #c3cfe0}
+.sidebar a{display:block;padding:7px 14px;margin-left:-2px;border-left:2px solid transparent;font-size:14.5px;line-height:1.35;color:#33405a;text-decoration:none}
+.sidebar a:hover{color:#10264a;background:#d6e0ee}
+.sidebar a.current{color:#1f5fae;font-weight:600;border-left-color:#1f5fae}
+
+.article{background:#fff;border:1px solid #d5dde8;border-radius:4px;padding:12px 48px 24px}
+.sec{padding:36px 0;border-bottom:1px solid #e3e9f1;scroll-margin-top:16px}
+.sec:last-child{border-bottom:0}
+.sec h2{font-family:var(--font-head,Georgia,serif);color:#10264a;font-size:28px;font-weight:600;line-height:1.25;margin-bottom:16px}
+.sec h3{font-family:var(--font-head,Georgia,serif);color:#10264a;font-size:20px;font-weight:600;margin:24px 0 8px}
+.sec p,.sec ul,.sec ol{max-width:70ch}
+.sec p{color:#2b3548;margin-bottom:16px}
+.sec p:last-child{margin-bottom:0}
+.sec strong{color:#10264a;font-weight:600}
+.sec ul,.sec ol{margin:0 0 16px 22px;color:#2b3548}
+.sec li{padding:3px 0 3px 4px}
+.sec li::marker{color:#1f5fae}
+
+.glance{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border:1px solid #d5dde8;border-radius:4px;margin:20px 0 4px;background:#eef3f9}
+.glance div{padding:14px 18px;border-right:1px solid #d5dde8}
+.glance div:last-child{border-right:0}
+.glance dt{font-size:13px;color:#5a667a}
+.glance dd{font-weight:700;color:#10264a;line-height:1.35}
+
+.callout{display:flex;gap:12px;padding:14px 18px;border-radius:4px;margin:20px 0;border-left:4px solid #1f5fae;background:#eaf2fd;color:#17335f;max-width:70ch}
+.callout svg{width:20px;height:20px;flex-shrink:0;margin-top:3px}
+.callout p{margin:0!important;font-size:15px;line-height:1.6;color:inherit!important}
+.callout strong{color:inherit!important}
+.callout.warn{background:#fff6df;border-color:#b7791f;color:#5c3d08}
+
+.steps{list-style:none;margin-left:0!important;counter-reset:s;max-width:70ch}
+.steps li{counter-increment:s;display:grid;grid-template-columns:40px 1fr;gap:14px;padding:12px 0;border-bottom:1px solid #e3e9f1}
+.steps li:last-child{border-bottom:0}
+.steps li::before{content:counter(s);width:32px;height:32px;border-radius:50%;background:#10264a;color:#fff;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:2px}
+.steps strong{display:block}
+.steps span{font-size:15.5px}
+
+table{width:100%;border-collapse:collapse;margin:8px 0 20px;font-size:15px}
+th{text-align:left;background:#eef3f9;color:#10264a;font-size:14px;font-weight:700;padding:10px 14px;border:1px solid #d5dde8}
+td{padding:10px 14px;border:1px solid #d5dde8;vertical-align:top}
+td:first-child{font-weight:600;color:#10264a;white-space:nowrap}
+.table-scroll{overflow-x:auto}
+
+.links{display:grid;grid-template-columns:1fr 1fr;gap:12px;max-width:none}
+.links a{display:block;border:1px solid #d5dde8;border-left:4px solid #1f5fae;border-radius:4px;padding:12px 16px;text-decoration:none;color:inherit}
+.links a:hover{background:#f4f8fd;border-color:#10264a}
+.links strong{display:block;color:#1f5fae}
+.links span{font-size:14px;color:#5a667a;line-height:1.5;display:block}
+
+@media(max-width:900px){
+  .wrap,.layout{padding-left:20px;padding-right:20px}
+  .layout{grid-template-columns:1fr;gap:20px;padding-top:24px}
+  .sidebar{position:static;background:#fff;border:1px solid #d5dde8;border-radius:4px;padding:16px 16px 8px}
+  .article{padding:4px 22px 16px}
+  .page-header h1{font-size:29px}
+  .sec h2{font-size:24px}
+  .glance{grid-template-columns:1fr 1fr}
+  .glance div:nth-child(2){border-right:0}
+  .glance div:nth-child(-n+2){border-bottom:1px solid #d5dde8}
+  .links{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <div class="wrap">
+    <div class="breadcrumb">
+      <a href="/courts/">Home</a><span>/</span>
+      <a href="/courts/supreme-court/">Supreme Court</a><span>/</span>
+      <span class="here">About</span>
+    </div>
+    <h1>About the Michigan Supreme Court</h1>
+    <p>The state's court of last resort and its only appellate court. It must hear mandatory appeals and chooses which other cases to take.</p>
+  </div>
+</div>
+
+<div class="layout">
+  <nav class="sidebar" aria-label="On this page">
+    <h2>On this page</h2>
+    <ul>
+      <li><a href="#overview">Overview</a></li>
+      <li><a href="#appeal-types">Two kinds of appeals</a></li>
+      <li><a href="#mandatory">Mandatory appeals</a></li>
+      <li><a href="#who-what">Who can appeal, and what</a></li>
+      <li><a href="#review">How the Court reviews a case</a></li>
+      <li><a href="#process">How an appeal works</a></li>
+      <li><a href="#leave">Applications for leave</a></li>
+      <li><a href="#outcomes">Possible outcomes</a></li>
+      <li><a href="#costs">Costs and requirements</a></li>
+      <li><a href="#limits">What the Court doesn't do</a></li>
+      <li><a href="#more">More information</a></li>
+    </ul>
+  </nav>
+
+  <article class="article">
+
+    <section class="sec" id="overview">
+      <h2>Overview</h2>
+      <p>The Michigan Supreme Court is the final authority on Michigan law. It interprets the state constitution and state statutes, and its opinions bind every other court in Michigan, including the Genesee County District Court.</p>
+      <p>Seven justices sit on the Court in Lansing. Justices are elected statewide in the annual general election and serve one-year terms. Cases are decided by the justices together, and the Court explains its decisions in written opinions that become part of Michigan law.</p>
+      <dl class="glance">
+        <div><dt>Justices</dt><dd>7</dd></div>
+        <div><dt>Seat of the Court</dt><dd>Lansing</dd></div>
+        <div><dt>Terms</dt><dd>1 year, elected statewide</dd></div>
+        <div><dt>Jurisdiction</dt><dd>Appeals and applications for leave</dd></div>
+      </dl>
+    </section>
+
+    <section class="sec" id="appeal-types">
+      <h2>Two kinds of appeals</h2>
+      <p>Michigan has a two-level court system. Cases start in the District Court, and the Supreme Court is the <strong>only appellate court</strong>. There is no intermediate court of appeals in between. A case can reach the Supreme Court in two ways.</p>
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th></th><th>Mandatory appeal</th><th>Application for leave to appeal</th></tr></thead>
+          <tbody>
+            <tr><td>What it's for</td><td>Final decisions of the District Court that you have a right to appeal</td><td>Decisions you don't have a right to appeal, such as rulings made before a case ends</td></tr>
+            <tr><td>How you start</td><td>File a Claim of Appeal</td><td>File an Application for Leave to Appeal</td></tr>
+            <tr><td>Must the Court take it?</td><td><strong>Yes.</strong> It must hear every properly filed appeal.</td><td><strong>No.</strong> The Court decides whether to take it.</td></tr>
+            <tr><td>First step</td><td>Briefs and argument</td><td>The Court decides whether to grant the application</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>The sections below explain <a href="#mandatory">mandatory appeals</a> first, then <a href="#leave">applications for leave to appeal</a>.</p>
+    </section>
+
+    <section class="sec" id="mandatory">
+      <h2>Mandatory appeals</h2>
+      <p>Because the Supreme Court is the only appellate court, it takes <strong>mandatory appeals</strong>, also called appeals of right. When a party properly files an appeal from a final decision of the District Court, the Court must hear it. It does not get to pick which of these appeals to accept, and a party doesn't have to ask permission first.</p>
+      <div class="callout">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="10" cy="10" r="7.5"/><path d="M10 9v4.5M10 6.5h.01"/></svg>
+        <p><strong>In short:</strong> if you have a right to appeal and you file correctly and on time, the Supreme Court will review your case.</p>
+      </div>
+      <p>Every properly filed mandatory appeal moves through the same process of briefs, argument, and decision, whether the case is a criminal conviction, a civil judgment, or an administrative order.</p>
+      <h3>What "mandatory" does and doesn't mean</h3>
+      <ul>
+        <li><strong>The Court must review the case.</strong> A properly filed appeal can't be turned away because the Court finds the issue unimportant.</li>
+        <li><strong>The Court does not have to agree with you.</strong> Review is guaranteed. Winning is not. Most appeals result in the lower court's decision being upheld in whole or in part.</li>
+        <li><strong>The appeal must be properly filed.</strong> A missed deadline, a missing fee, or an appeal from something that isn't a final decision can be rejected before the justices ever look at the merits.</li>
+      </ul>
+    </section>
+
+    <section class="sec" id="who-what">
+      <h2>Who can appeal, and what</h2>
+      <h3>Who can appeal</h3>
+      <p>Any party who is unhappy with a final decision can appeal. The person who files the appeal is the <strong>appellant</strong>. The other side is the <strong>appellee</strong>. That can include:</p>
+      <ul>
+        <li>A defendant convicted in a criminal case;</li>
+        <li>A plaintiff or defendant in a civil case who lost all or part of a judgment, including a damages award;</li>
+        <li>A person or agency on either side of an administrative case, such as a license revocation.</li>
+      </ul>
+      <p>The State of Michigan, usually represented by the Attorney General's office or the county prosecutor, can also be a party to an appeal.</p>
+      <h3>What can be appealed</h3>
+      <p>You appeal from a <strong>final decision</strong> of the Genesee County District Court, meaning a judgment, sentence, or final order that ends the case in that court. Typical examples are a guilty verdict and sentence, a civil judgment after a bench trial, or a final administrative order.</p>
+      <p>Rulings made along the way, such as a decision to admit evidence or deny a motion, usually can't be appealed on their own. They are raised in the appeal from the final decision. That is why an appeal can challenge several issues at once, like whether evidence was admitted properly <em>and</em> whether the damages award was supported by the record. If you need the Supreme Court to look at a ruling before the case ends, you can <a href="#leave">apply for leave to appeal</a>.</p>
+    </section>
+
+    <section class="sec" id="review">
+      <h2>How the Court reviews a case</h2>
+      <p>An appeal is not a second trial. The Supreme Court works from the <strong>record</strong> of what happened in the District Court: the filings, exhibits, and transcripts. It does not hear new witnesses or accept new evidence.</p>
+      <p>The justices ask whether the lower court made a legal error that affected the outcome. How closely they look at a decision depends on the kind of issue, which is called the <strong>standard of review</strong>.</p>
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th>Standard</th><th>Applies to</th><th>What the appellant must show</th></tr></thead>
+          <tbody>
+            <tr><td>De novo</td><td>Pure questions of law, such as what a statute or the constitution means</td><td>That the lower court got the law wrong. The Court decides the question fresh, giving the trial judge no deference.</td></tr>
+            <tr><td>Clear error</td><td>Findings of fact, such as what happened or the amount of damages</td><td>That the finding was clearly mistaken, not just one the justices might have decided differently.</td></tr>
+            <tr><td>Abuse of discretion</td><td>Judgment calls, such as whether to admit a piece of evidence</td><td>That the judge's choice fell outside the range of reasonable decisions.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>The standard matters a great deal. An argument about what a law means has a much better chance than an argument that a judge should have weighed the evidence differently.</p>
+    </section>
+
+    <section class="sec" id="process">
+      <h2>How an appeal works</h2>
+      <ol class="steps">
+        <li><div><strong>Claim of Appeal</strong><span>The appellant starts the case by filing a Claim of Appeal through the Online Portal and paying the filing fee. The deadline is set by the court rules and a late filing can end the right to appeal.</span></div></li>
+        <li><div><strong>The record</strong><span>The record from the District Court, including transcripts and exhibits, is sent to the Supreme Court so the justices can review what happened below.</span></div></li>
+        <li><div><strong>Briefs</strong><span>The appellant files an opening brief, the appellee files a response, and the appellant may file a short reply. Opening and response briefs are limited to 50 pages each and the reply to 15.</span></div></li>
+        <li><div><strong>Oral argument</strong><span>The Court schedules argument. Each side usually gets 15 minutes, and the justices interrupt with questions, mostly about the legal issues in the briefs.</span></div></li>
+        <li><div><strong>Conference</strong><span>After argument, the justices meet in private to discuss and vote on the case. One justice in the majority is assigned to write the opinion.</span></div></li>
+        <li><div><strong>Opinion</strong><span>The Court releases its written opinion and the case closes. The decision is published and becomes binding law for every Michigan court.</span></div></li>
+      </ol>
+      <p>The full filing rules, including format and signature requirements, are on the <a href="/courts/forms-and-filing/information/">filing information</a> page. Hearing dates are on the <a href="/courts/supreme-court/oral-arguments/">schedule of oral arguments</a>.</p>
+    </section>
+
+    <section class="sec" id="leave">
+      <h2>Applications for leave to appeal</h2>
+      <p>Not every decision can be appealed as of right. When you don't have that right, you can still ask the Supreme Court to hear your case by filing an <strong>application for leave to appeal</strong>. "Leave" means permission. Unlike a mandatory appeal, the Court <strong>chooses</strong> whether to take the case.</p>
+      <h3>When you would apply</h3>
+      <ul>
+        <li>You want review of a ruling made <strong>before</strong> the case has ended, such as a decision on a motion or on evidence.</li>
+        <li>The decision you're challenging isn't one that the court rules allow you to appeal as of right.</li>
+      </ul>
+      <h3>How the Court decides</h3>
+      <p>The justices read the application and any response from the other side, then decide whether the case deserves a full review. They are looking for cases that raise something beyond the parties' own dispute, such as:</p>
+      <ul>
+        <li>An important question about what Michigan law means;</li>
+        <li>An issue likely to come up in other cases;</li>
+        <li>A clear legal error that would seriously harm someone if left uncorrected.</li>
+      </ul>
+      <div class="callout warn">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M10 3l8 14H2z"/><path d="M10 8v4"/><circle cx="10" cy="14.5" r="0.6" fill="currentColor"/></svg>
+        <p><strong>Most applications are not granted.</strong> The Court can't take every case it is asked to. Explain why your case matters to the law, not only why the result felt unfair.</p>
+      </div>
+      <h3>How an application works</h3>
+      <ol class="steps">
+        <li><div><strong>File the application</strong><span>File your Application for Leave to Appeal through the Online Portal, explaining the decision you are challenging and why the Court should take the case. The deadline is set by the court rules.</span></div></li>
+        <li><div><strong>The other side may respond</strong><span>The opposing party can file a response arguing the Court should not take the case.</span></div></li>
+        <li><div><strong>The Court decides</strong><span>The justices review the application and decide what to do with it.</span></div></li>
+      </ol>
+      <h3>What the Court can do</h3>
+      <ul>
+        <li><strong>Grant leave.</strong> The Court agrees to hear the case. From there it proceeds like a mandatory appeal, with briefs, oral argument, and an opinion.</li>
+        <li><strong>Deny leave.</strong> The Court decides not to take the case, and the lower court's decision stands. A denial is not a ruling that the lower court was right. It only means the Court chose not to review it.</li>
+        <li><strong>Take other action.</strong> For example, the Court may send the case back to the District Court with instructions.</li>
+      </ul>
+    </section>
+
+    <section class="sec" id="outcomes">
+      <h2>Possible outcomes</h2>
+      <ul>
+        <li><strong>Affirmed.</strong> The Court agrees with the District Court and the decision stands.</li>
+        <li><strong>Reversed.</strong> The Court finds an error that changes the result, and the District Court's decision is overturned.</li>
+        <li><strong>Vacated.</strong> The decision is set aside, often because it has to be redone.</li>
+        <li><strong>Remanded.</strong> The case is sent back to the District Court with instructions, for example to recalculate damages.</li>
+        <li><strong>Affirmed in part and reversed in part.</strong> Some issues are upheld and others are overturned. This is common in cases with more than one claim or issue.</li>
+      </ul>
+      <p>Because the Supreme Court is the last stop, its decision on an appeal is final. There is no further appeal in the Michigan courts.</p>
+    </section>
+
+    <section class="sec" id="costs">
+      <h2>Costs and requirements</h2>
+      <ul>
+        <li><strong>Filing fee:</strong> the appeal filing fee is $375. If you can't afford it, you can ask for a fee waiver with Form MC 20.</li>
+        <li><strong>Applications for leave:</strong> an application for leave to appeal also requires a filing fee. Check the current fees on the <a href="/courts/forms-and-filing/information/#fees">filing information</a> page, and use Form MC 20 if you need a waiver.</li>
+        <li><strong>Bond:</strong> an appellate bond is usually not required.</li>
+        <li><strong>Lawyers:</strong> you can represent yourself, but appeals are technical. Criminal defendants who can't afford a lawyer may be entitled to appointed appellate counsel, such as the public defender's appellate division.</li>
+        <li><strong>Format:</strong> briefs and filings must follow the court's formatting, page limit, and signature rules, and are filed through the Online Portal.</li>
+      </ul>
+      <div class="callout warn">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M10 3l8 14H2z"/><path d="M10 8v4"/><circle cx="10" cy="14.5" r="0.6" fill="currentColor"/></svg>
+        <p><strong>Watch your deadline.</strong> The time to file starts when the District Court's final decision is entered. Check the <a href="/courts/rules/">rules</a> as soon as you decide to appeal.</p>
+      </div>
+    </section>
+
+    <section class="sec" id="limits">
+      <h2>What the Court doesn't do</h2>
+      <ul>
+        <li>It doesn't retry cases, hear witnesses, or look at new evidence.</li>
+        <li>It doesn't have to take an application for leave to appeal, and it can't take every case it is asked to.</li>
+        <li>It doesn't decide cases that haven't first been decided in the District Court.</li>
+        <li>It doesn't give legal advice or opinions on hypothetical questions.</li>
+        <li>It doesn't reverse a decision just because the justices might have ruled differently. It looks for legal error.</li>
+      </ul>
+    </section>
+
+    <section class="sec" id="more">
+      <h2>More information</h2>
+      <div class="links">
+        <a href="/courts/supreme-court/justices/"><strong>Justices</strong><span>The seven justices of the Court.</span></a>
+        <a href="/courts/supreme-court/clerk/"><strong>Clerk's Office</strong><span>Filings, records, and case processing.</span></a>
+        <a href="/courts/supreme-court/oral-arguments/"><strong>Schedule &amp; oral arguments</strong><span>Argument calendar and recordings.</span></a>
+        <a href="/courts/supreme-court/case-search/"><strong>Supreme Court case search</strong><span>Appeals, opinions, and orders.</span></a>
+        <a href="/courts/supreme-court/reporter-of-decisions/"><strong>Reporter of Decisions</strong><span>Published opinions of the Court.</span></a>
+        <a href="/courts/forms-and-filing/forms/"><strong>Court forms</strong><span>Including the fee waiver form, MC 20.</span></a>
+      </div>
+    </section>
+
+  </article>
+</div>
+
+<script>
+  (function () {
+    const links = [...document.querySelectorAll('.sidebar a')];
+    const secs = links.map(a => document.querySelector(a.getAttribute('href')));
+    function update() {
+      let idx = 0;
+      secs.forEach((s, i) => { if (s.getBoundingClientRect().top <= 140) idx = i; });
+      links.forEach((a, i) => a.classList.toggle('current', i === idx));
+    }
+    addEventListener('scroll', update, { passive: true });
+    update();
+  })();
+</script>
+</body>
+</html>
