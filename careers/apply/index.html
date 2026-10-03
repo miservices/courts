@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Apply | Michigan Courts</title>
+<link rel="icon" type="image/png" href="https://migovt.org/images/favicon.png">
+
+<script src="https://migovt.org/courts/shell.js" data-active="careers"></script>
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-ui,'Public Sans',system-ui,sans-serif);background:#e3e9f2;color:#1b2433;line-height:1.7;font-size:16px}
+a{color:#1f5fae}
+a:focus-visible,button:focus-visible{outline:3px solid #5b9be0;outline-offset:2px}
+.wrap{max-width:1180px;margin:0 auto;padding:0 40px}
+h2,h3{font-family:var(--font-head,Georgia,serif);color:#10264a;font-weight:600;line-height:1.25}
+
+.page-header{background:#10264a;padding:34px 0 40px}
+.breadcrumb{display:flex;align-items:center;gap:8px;margin-bottom:14px;font-size:13px;flex-wrap:wrap}
+.breadcrumb a{color:#9cc4f5;text-decoration:none}
+.breadcrumb a:hover{color:#fff;text-decoration:underline}
+.breadcrumb span{color:#6f87ad}
+.breadcrumb .here{color:#fff}
+.page-header h1{font-family:var(--font-head,Georgia,serif);color:#fff;font-size:36px;font-weight:600;line-height:1.2;letter-spacing:-.01em}
+.page-header p{color:#c5d3e8;margin-top:10px;max-width:700px;line-height:1.6}
+
+main{padding:36px 0 72px}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:24px;align-items:start}
+.panel{background:#fff;border:1px solid #d5dde8;border-radius:4px;padding:32px 40px}
+.panel+.panel{margin-top:24px}
+.panel>h2{font-size:24px;margin-bottom:4px}
+.lead{color:#2b3548;margin-bottom:20px;max-width:66ch}
+
+.field{margin-bottom:22px}
+label,legend{display:block;font-weight:700;color:#10264a;margin-bottom:4px}
+.hint{font-size:14px;color:#5a667a;margin-bottom:6px}
+.opt{font-weight:400;color:#5a667a}
+input[type=text],input[type=email],input[type=tel],select,textarea{width:100%;font:inherit;color:#1b2433;background:#fff;border:1px solid #8a97ad;border-radius:4px;padding:10px 12px}
+textarea{min-height:220px;resize:vertical;line-height:1.6}
+input:focus,select:focus,textarea:focus{outline:3px solid #5b9be0;outline-offset:1px;border-color:#1f5fae}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.file{border:1px dashed #8a97ad;border-radius:4px;padding:14px 16px;background:#f4f8fd}
+.file input{font:inherit;max-width:100%}
+.wc{font-size:14px;color:#5a667a;margin-top:4px}
+.wc.bad{color:#b3261e;font-weight:600}
+.check{display:flex;gap:10px;align-items:flex-start;font-weight:400;color:#1b2433;margin:0}
+.check input{margin-top:6px;width:18px;height:18px;accent-color:#1f5fae;flex-shrink:0}
+.callout{border:1px solid #d5dde8;border-left:4px solid #1f5fae;background:#f4f8fd;border-radius:4px;padding:14px 18px;margin-bottom:22px;display:none}
+.callout.show{display:block}
+.chosen{display:none;margin-bottom:22px;padding:12px 18px;background:#e8f5e9;border:1px solid #a5d6a7;border-left:4px solid #256029;border-radius:4px;color:#1d4a21}
+.chosen.show{display:block}
+.chosen a{color:#1d4a21;font-weight:700}
+.error-msg{display:none;color:#b3261e;font-size:14px;font-weight:600;margin-top:6px}
+.field.invalid .error-msg{display:block}
+.field.invalid input,.field.invalid select,.field.invalid textarea,.field.invalid .file{border-color:#b3261e}
+.summary-err{display:none;border:1px solid #ef9a9a;border-left:4px solid #b3261e;background:#fdf1f0;color:#6b1a15;border-radius:4px;padding:14px 18px;margin-bottom:24px}
+.summary-err.show{display:block}
+.summary-err ul{margin:6px 0 0 20px}
+.summary-err a{color:#6b1a15;font-weight:700}
+.btn{display:inline-block;background:#1f5fae;color:#fff;font:inherit;font-weight:700;text-decoration:none;padding:11px 24px;border:0;border-radius:4px;cursor:pointer}
+.btn:hover{background:#10264a}
+.btn:disabled{background:#6f87ad;cursor:wait}
+.cancel{font-weight:700;text-decoration:none;margin-left:16px}
+
+.side{background:#fff;border:1px solid #d5dde8;border-radius:4px;padding:22px 24px;position:sticky;top:calc(var(--mc-sticky-top,0px) + 20px)}
+.side h2{font-size:20px;margin-bottom:10px}
+.side ol{margin-left:20px;color:#2b3548;font-size:15px}
+.side li{padding:3px 0}
+.side li::marker{color:#1f5fae;font-weight:700}
+.side hr{border:0;border-top:1px solid #e3e9f1;margin:18px 0}
+.side p{font-size:14.5px;color:#5a667a}
+
+.confirm{display:none}
+.confirm.show{display:block}
+.confirm-banner{border:1px solid #a5d6a7;border-left:4px solid #256029;background:#e8f5e9;border-radius:4px;padding:18px 22px;margin-bottom:24px}
+.confirm-banner h2{font-size:24px;color:#1d4a21;margin-bottom:4px}
+.confirm-banner p{color:#1d4a21}
+.ref{font-weight:700;font-size:18px;letter-spacing:.03em}
+dl.recap{border:1px solid #d5dde8;border-radius:4px;margin-bottom:24px}
+dl.recap div{display:grid;grid-template-columns:180px 1fr;gap:16px;padding:12px 18px}
+dl.recap div+div{border-top:1px solid #e3e9f2}
+dl.recap dt{color:#5a667a;font-size:15px}
+dl.recap dd{font-weight:600;overflow-wrap:anywhere}
+.next h3{font-size:19px;margin-bottom:6px}
+.next p{color:#2b3548;max-width:62ch;margin-bottom:20px}
+
+@media(max-width:960px){
+  .layout{grid-template-columns:1fr}
+  .side{position:static;order:-1}
+}
+@media(max-width:860px){
+  .wrap{padding:0 20px}
+  .page-header h1{font-size:29px}
+  .panel{padding:24px 20px}
+  .row{grid-template-columns:1fr}
+  dl.recap div{grid-template-columns:1fr;gap:2px}
+}
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <div class="wrap">
+    <div class="breadcrumb">
+      <a href="https://migovt.org/courts/">Home</a><span>/</span>
+      <a href="https://migovt.org/courts/careers/">Careers</a><span>/</span>
+      <span class="here">Apply</span>
+    </div>
+    <h1>Apply for a position</h1>
+    <p>Tell us a little about yourself and send your resume and a short cover letter. Judges and magistrates apply on their own pages.</p>
+  </div>
+</div>
+
+<main>
+  <div class="wrap layout">
+
+    <div>
+      <div id="form-area" class="panel">
+        <h2>Your application</h2>
+        <p class="lead">Fields marked with an asterisk (*) are required.</p>
+
+        <div class="callout" id="judge-callout">
+          <strong>Judges and magistrates apply separately.</strong>
+          <span id="judge-links"></span>
+        </div>
+
+        <div class="chosen" id="chosen" aria-live="polite"></div>
+
+        <div class="summary-err" id="summary-err" role="alert" tabindex="-1"></div>
+
+        <form id="app-form" novalidate>
+          <div class="field" id="f-position">
+            <label for="position">Position *</label>
+            <select id="position" name="position" aria-describedby="position-err">
+              <option value="">Select a position</option>
+            </select>
+            <div class="error-msg" id="position-err">Choose the position you're applying for.</div>
+          </div>
+
+          <div class="row">
+            <div class="field" id="f-name">
+              <label for="name">Full name *</label>
+              <input type="text" id="name" name="name" autocomplete="name" aria-describedby="name-err">
+              <div class="error-msg" id="name-err">Enter your full name.</div>
+            </div>
+            <div class="field" id="f-email">
+              <label for="email">Email *</label>
+              <input type="email" id="email" name="email" autocomplete="email" aria-describedby="email-err">
+              <div class="error-msg" id="email-err">Enter a valid email address.</div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="field" id="f-phone">
+              <label for="phone">Phone <span class="opt">(optional)</span></label>
+              <input type="tel" id="phone" name="phone" autocomplete="tel">
+            </div>
+            <div class="field" id="f-city">
+              <label for="city">City <span class="opt">(optional)</span></label>
+              <input type="text" id="city" name="city" autocomplete="address-level2">
+            </div>
+          </div>
+
+          <div class="field" id="f-resume">
+            <label for="resume">Resume *</label>
+            <p class="hint" id="resume-hint">PDF or Word document, up to 10 MB.</p>
+            <div class="file">
+              <input type="file" id="resume" name="resume" accept=".pdf,.doc,.docx,application/pdf" aria-describedby="resume-hint resume-err">
+            </div>
+            <div class="error-msg" id="resume-err">Attach your resume as a PDF or Word file under 10 MB.</div>
+          </div>
+
+          <div class="field" id="f-cover">
+            <label for="cover">Cover letter *</label>
+            <p class="hint" id="cover-hint">Tell us why you want this role and what you'd bring to it. Keep it to 400 words or fewer.</p>
+            <textarea id="cover" name="cover" aria-describedby="cover-hint wc-cover cover-err"></textarea>
+            <div class="wc" id="wc-cover">0 words</div>
+            <div class="error-msg" id="cover-err">Write a cover letter of 400 words or fewer.</div>
+          </div>
+
+          <div class="field" id="f-source">
+            <label for="source">How did you hear about this position? <span class="opt">(optional)</span></label>
+            <select id="source" name="source">
+              <option value="">Select one</option>
+              <option>Michigan Courts website</option>
+              <option>State Bar of Michigan</option>
+              <option>Referral</option>
+              <option>Social media</option>
+              <option>Other</option>
+            </select>
+          </div>
+
+          <div class="field" id="f-cert">
+            <label class="check" for="cert">
+              <input type="checkbox" id="cert" name="cert">
+              <span>I certify that the information in this application is true. I understand that an offer may depend on a background check for roles that require one.</span>
+            </label>
+            <div class="error-msg" id="cert-err">Check the box to certify your application.</div>
+          </div>
+
+          <button class="btn" type="submit" id="submit-btn">Submit application</button>
+          <a class="cancel" href="https://migovt.org/courts/careers/">Cancel</a>
+        </form>
+      </div>
+
+      <div class="panel confirm" id="confirm" aria-live="polite">
+        <div class="confirm-banner" id="confirm-banner" tabindex="-1">
+          <h2>Application submitted</h2>
+          <p>Your reference number is <span class="ref" id="ref"></span>. Keep it for your records.</p>
+        </div>
+        <dl class="recap" id="recap"></dl>
+        <div class="next">
+          <h3>What happens next</h3>
+          <p>Court staff will review your application. If you're selected, we'll contact you by email to schedule an interview.</p>
+          <a class="btn" href="https://migovt.org/courts/careers/">Back to careers</a>
+        </div>
+      </div>
+    </div>
+
+    <aside class="side">
+      <h2>How it works</h2>
+      <ol>
+        <li>Choose the position and enter your details.</li>
+        <li>Attach your resume and write a short cover letter.</li>
+        <li>Submit and receive a reference number.</li>
+        <li>Selected candidates are contacted to schedule interviews.</li>
+      </ol>
+      <hr>
+      <p>Michigan Courts is an equal opportunity employer. All qualified applicants are considered without regard to race, color, religion, sex, national origin, age, disability, or veteran status.</p>
+    </aside>
+
+  </div>
+</main>
+
+<script>
+  // Demo only: this form does not send data anywhere.
+  const POSITIONS = [
+    ['Michigan Supreme Court', [['sc-clerk', 'Supreme Court Clerk'], ['sc-reporter', 'Supreme Court Reporter of Decisions'], ['sc-marshal', 'Supreme Court Marshal']]],
+    ['State Bar of Michigan', [['sbm-director', 'Director'], ['sbm-deputy', 'Deputy Director']]],
+    ['State Court Administrative Office', [['scao-administrator', 'State Court Administrator'], ['scao-deputy', 'Deputy State Court Administrator']]],
+    ['Judicial Tenure Commission', [['jtc-commissioner', 'Commissioner'], ['jtc-grievance-administrator', 'Grievance Administrator']]],
+    ['Attorney Grievance Commission', [['agc-commissioner', 'Commissioner'], ['agc-grievance-administrator', 'Grievance Administrator']]],
+    ['Attorney Discipline Board', [['adb-member', 'Member']]],
+    ['Genesee County District Court', [['dc-county-clerk', 'County Clerk'], ['dc-court-administrator', 'Court Administrator'], ['dc-probation-officer', 'Probation Officer'], ['dc-pretrial-officer', 'Pretrial Services Officer']]]
+  ];
+
+  const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  const words = t => (t.trim().match(/\S+/g) || []).length;
+
+  const sel = document.getElementById('position');
+  sel.insertAdjacentHTML('beforeend', POSITIONS.map(([org, list]) =>
+    `<optgroup label="${esc(org)}">${list.map(([id, t]) => `<option value="${id}">${esc(t)} (${esc(org)})</option>`).join('')}</optgroup>`).join(''));
+
+  // Preselect from ?position=...; send judge/magistrate applicants to their own pages
+  const wanted = new URLSearchParams(location.search).get('position');
+  function showChosen() {
+    const box = document.getElementById('chosen');
+    const o = sel.options[sel.selectedIndex];
+    if (sel.value && o) {
+      box.innerHTML = `<strong>You're applying for:</strong> ${esc(o.textContent)}. <a href="https://migovt.org/courts/careers/#${encodeURIComponent(sel.value)}">View the posting</a>. You can change the position below.`;
+      box.classList.add('show');
+    } else { box.classList.remove('show'); }
+  }
+  if (wanted && sel.querySelector(`option[value="${CSS.escape(wanted)}"]`)) sel.value = wanted;
+  showChosen();
+  sel.addEventListener('change', showChosen);
+  if (wanted === 'dc-judge' || wanted === 'dc-magistrate') {
+    document.getElementById('judge-callout').classList.add('show');
+    document.getElementById('judge-links').innerHTML =
+      ' <a href="https://migovt.org/courts/careers/apply/judge/">Start the judge application</a> or <a href="https://migovt.org/courts/careers/apply/magistrate/">start the magistrate application</a>.';
+  }
+
+  const cover = document.getElementById('cover');
+  cover.addEventListener('input', () => {
+    const n = words(cover.value), el = document.getElementById('wc-cover');
+    el.textContent = n + (n === 1 ? ' word' : ' words') + ' (400 maximum)';
+    el.classList.toggle('bad', n > 400);
+  });
+
+  const flag = (id, bad) => document.getElementById(id).classList.toggle('invalid', bad);
+  const form = document.getElementById('app-form');
+  const summary = document.getElementById('summary-err');
+
+  function validate() {
+    const errs = [];
+    const chk = (field, input, bad, msg) => { flag(field, bad); if (bad) errs.push([input, msg]); };
+    const file = document.getElementById('resume').files[0];
+    chk('f-position', 'position', !sel.value, "Choose the position you're applying for.");
+    chk('f-name', 'name', !document.getElementById('name').value.trim(), 'Enter your full name.');
+    chk('f-email', 'email', !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(document.getElementById('email').value.trim()), 'Enter a valid email address.');
+    const fileBad = !file || !/\.(pdf|docx?)$/i.test(file.name) || file.size > 10 * 1024 * 1024;
+    chk('f-resume', 'resume', fileBad, 'Attach your resume as a PDF or Word file under 10 MB.');
+    const n = words(cover.value);
+    chk('f-cover', 'cover', n === 0 || n > 400, n > 400 ? `Shorten your cover letter to 400 words or fewer. You have ${n}.` : 'Write a cover letter.');
+    chk('f-cert', 'cert', !document.getElementById('cert').checked, 'Check the box to certify your application.');
+    return errs;
+  }
+
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    const errs = validate();
+    if (errs.length) {
+      summary.innerHTML = `<strong>Fix ${errs.length === 1 ? 'this issue' : 'these issues'} to submit:</strong><ul>` +
+        errs.map(([id, msg]) => `<li><a href="#${id}">${esc(msg)}</a></li>`).join('') + '</ul>';
+      summary.classList.add('show');
+      summary.querySelectorAll('a').forEach(a => a.addEventListener('click', ev => {
+        ev.preventDefault();
+        document.getElementById(a.getAttribute('href').slice(1)).focus();
+      }));
+      summary.focus();
+      return;
+    }
+    summary.classList.remove('show');
+    const btn = document.getElementById('submit-btn');
+    btn.disabled = true; btn.textContent = 'Submitting…';
+    // Simulated delay. Nothing is sent.
+    setTimeout(showConfirmation, 1200);
+  });
+
+  function showConfirmation() {
+    const ref = 'APP-' + new Date().getFullYear() + '-' + String(Math.floor(10000 + Math.random() * 90000));
+    document.getElementById('ref').textContent = ref;
+    const pos = sel.options[sel.selectedIndex];
+    const rows = [
+      ['Position', pos.textContent],
+      ['Name', document.getElementById('name').value.trim()],
+      ['Email', document.getElementById('email').value.trim()],
+      ['Resume', document.getElementById('resume').files[0].name],
+      ['Cover letter', words(cover.value) + ' words'],
+      ['Submitted', new Date().toLocaleString('en-US', { dateStyle: 'long', timeStyle: 'short' })]
+    ];
+    document.getElementById('recap').innerHTML = rows.map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join('');
+    document.getElementById('form-area').style.display = 'none';
+    document.getElementById('confirm').classList.add('show');
+    window.scrollTo({ top: 0 });
+    document.getElementById('confirm-banner').focus();
+  }
+</script>
+</body>
+</html>

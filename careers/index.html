@@ -67,6 +67,12 @@ main{padding:36px 0 72px}
 .facts dd{font-weight:600;color:#10264a}
 .apply{display:inline-block;margin-top:20px;background:#10264a;color:#fff;font-weight:700;padding:10px 20px;border-radius:4px;text-decoration:none}
 .apply:hover{background:#17335f}
+.actions{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-top:20px}
+.actions .apply{margin-top:0}
+.share{display:inline-flex;align-items:center;gap:8px;font:inherit;font-weight:700;color:#1f5fae;background:#fff;border:2px solid #1f5fae;border-radius:4px;padding:8px 16px;cursor:pointer}
+.share:hover{background:#f4f8fd}
+.share.copied{background:#1f5fae;color:#fff}
+.share svg{width:16px;height:16px}
 .apply-note{display:block;margin-top:6px;font-size:14px;color:#5a667a}
 .empty{background:#fff;border:1px solid #d5dde8;border-radius:4px;padding:32px;text-align:center;color:#5a667a}
 
@@ -143,7 +149,8 @@ main{padding:36px 0 72px}
     { key: 'district', name: 'Genesee County District Court',        cls: 'district' }
   ];
 
-  const BASE = 'https://migovt.org/apply/';
+  const BASE = 'https://migovt.org/courts/careers/apply/';
+  const PAGE = 'https://migovt.org/courts/careers/';
 
   const JOBS = [
     /* ── Supreme Court ── */
@@ -260,6 +267,18 @@ main{padding:36px 0 72px}
       summary: 'Lead the Court Services Division and keep day-to-day court operations running.',
       duties: ['Oversee the Court Services Division', 'Lead Probation and Pretrial Services, which supervises people on probation and prepares reports for judges', 'Lead Jury Services, which summons and manages jurors', 'Supervise clerks and other court staff', 'Manage the court’s schedules, budget, and daily operations', 'Carry out court policies set by the judges'],
       quals: ['Experience in court administration or public administration', 'Strong leadership and budget skills', 'Knowledge of probation, pretrial, and jury operations', 'Excellent communication skills']
+    },
+    {
+      id: 'dc-probation-officer', org: 'district', title: 'Probation Officer', dept: 'Probation and Pretrial Services', loc: 'Flint', schedule: 'Moderate',
+      summary: 'Supervise people sentenced to probation and report their progress to the court.',
+      duties: ['Meet regularly with assigned probationers and monitor their compliance', 'Prepare pre-sentence and progress reports for judges', 'Connect probationers with treatment and community services', 'Report violations and testify at violation hearings when needed'],
+      quals: ["Bachelor's degree in criminal justice, social work, or a related field", 'Experience in case management or counseling preferred', 'Valid driver’s license', 'Ability to pass a background check']
+    },
+    {
+      id: 'dc-pretrial-officer', org: 'district', title: 'Pretrial Services Officer', dept: 'Probation and Pretrial Services', loc: 'Flint', schedule: 'Moderate',
+      summary: 'Help judges and magistrates decide on release by gathering information about people awaiting trial.',
+      duties: ['Interview defendants and verify background information before hearings', 'Prepare release recommendations for judges and magistrates', 'Supervise people released before trial and track their court appearances', 'Report violations of release conditions to the court'],
+      quals: ["Bachelor's degree in criminal justice, social work, or a related field", 'Strong interviewing and report-writing skills', 'Sound judgment and the ability to work with people in difficult situations', 'Ability to pass a background check']
     }
   ];
 
@@ -295,7 +314,13 @@ main{padding:36px 0 72px}
           <ul>${j.duties.map(d => `<li>${d}</li>`).join('')}</ul>
           <h4>What you'll need</h4>
           <ul>${j.quals.map(q => `<li>${q}</li>`).join('')}</ul>
-          <a class="apply" href="${apply.url}">${apply.label}</a>
+          <div class="actions">
+            <a class="apply" href="${apply.url}">${apply.label}</a>
+            <button type="button" class="share" data-id="${j.id}">
+              <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M8 12a3 3 0 0 0 4 0l3-3a3 3 0 0 0-4-4l-1.5 1.5"/><path d="M12 8a3 3 0 0 0-4 0l-3 3a3 3 0 0 0 4 4l1.5-1.5"/></svg>
+              <span>Copy link</span>
+            </button>
+          </div>
           ${apply.hint ? `<span class="apply-note">${apply.hint}</span>` : ''}
         </div>
       </details>`;
@@ -323,10 +348,43 @@ main{padding:36px 0 72px}
     render(b.dataset.f);
   });
 
-  render('all');
-  if (location.hash) {
-    try { const el = document.querySelector(location.hash); if (el && el.tagName === 'DETAILS') { el.open = true; el.scrollIntoView(); } } catch (e) {}
+  async function copyText(text) {
+    try { await navigator.clipboard.writeText(text); return true; } catch (e) {}
+    const ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    let ok = false;
+    try { ok = document.execCommand('copy'); } catch (e) {}
+    ta.remove();
+    return ok;
   }
+
+  document.getElementById('jobs').addEventListener('click', async e => {
+    const b = e.target.closest('.share');
+    if (!b) return;
+    const ok = await copyText(PAGE + '#' + b.dataset.id);
+    const label = b.querySelector('span');
+    label.textContent = ok ? 'Link copied' : 'Copy failed';
+    b.classList.toggle('copied', ok);
+    setTimeout(() => { label.textContent = 'Copy link'; b.classList.remove('copied'); }, 1800);
+  });
+
+  function openFromHash() {
+    if (!location.hash) return;
+    try {
+      let el = document.querySelector(location.hash);
+      if (!el) { // job hidden by a filter: show everything and try again
+        filters.querySelectorAll('.chip').forEach((c, i) => c.setAttribute('aria-pressed', i === 0));
+        render('all');
+        el = document.querySelector(location.hash);
+      }
+      if (el && el.tagName === 'DETAILS') { el.open = true; el.scrollIntoView(); }
+    } catch (e) {}
+  }
+  window.addEventListener('hashchange', openFromHash);
+
+  render('all');
+  openFromHash();
 </script>
 </body>
 </html>
