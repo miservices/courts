@@ -103,6 +103,12 @@ main{padding:36px 0 72px}
 .search-result-id{color:#1f5fae;font-weight:700;margin-right:10px}
 .search-result-title{font-family:var(--font-head,Georgia,serif);font-weight:600;color:#10264a;font-size:17px}
 
+
+.search-result-item .blk{display:block}
+mark{background:#fff0a8;color:inherit;padding:0 1px;border-radius:2px}
+.search-snippet{font-size:15px;color:#33405a;margin-top:4px}
+.more-btn{display:block;margin:16px auto 0;background:#1f5fae;color:#fff;font-weight:700;border:0;border-radius:4px;padding:10px 22px;cursor:pointer}
+.more-btn:hover{background:#10264a}
 .empty-state{margin-top:20px;border:1px dashed #8a97ad;border-radius:4px;padding:32px;text-align:center;color:#5a667a}
 .loading-state{padding:40px;text-align:center;color:#5a667a}
 
@@ -300,7 +306,7 @@ main{padding:36px 0 72px}
       var rule = {
         citation: citation, chapter: chapter, subNum: subNum, ruleNumInt: ruleNumInt,
         title: title.trim(), text: text, amendments: amendments,
-        id: id, search: (citation+' '+title+' '+text).toLowerCase()
+        id: id, c: citation, t: norm(title), s: norm(citation+' '+title+' '+text)
       };
       RULES.push(rule);
       RULES_BY_ID[id] = rule;
@@ -386,6 +392,7 @@ main{padding:36px 0 72px}
   var main = document.getElementById('main');
   var crumbBar = document.getElementById('crumbBar');
   var lastNonSearchHash = '#/';
+  var searchInput = document.getElementById('ruleSearch');
 
   function renderChapters(){
     var cards = CHAPTERS.map(function(ch){
@@ -470,33 +477,127 @@ main{padding:36px 0 72px}
       '<span class="sep">/</span><span class="current">MCR '+escapeHtml(rule.citation)+'</span>';
   }
 
+  /* ══════════════════════ SEARCH ══════════════════════ */
+  var READY = false;
+  var SEARCH_STEP = 50;
+  var searchLimit = SEARCH_STEP;
+
+  function norm(s){
+    return String(s==null?'':s).toLowerCase()
+      .replace(/[\u2018\u2019]/g,"'").replace(/[\u201C\u201D]/g,'"')
+      .replace(/\u00A7/g,' ').replace(/\s+/g,' ').trim();
+  }
+
+  // Splits a query into terms. "quoted phrases" stay together. A leading "MCR" is ignored.
+  function parseQuery(q){
+    var terms=[], re=/"([^"]+)"|(\S+)/g, m, str=norm(q);
+    while((m=re.exec(str))){
+      var t=(m[1]||m[2]||'').replace(/"/g,'').trim();
+      if(t) terms.push(t);
+    }
+    var filtered = terms.filter(function(t){ return t!=='mcr' && t!=='mcr.' && t!=='rule' && t!=='rules'; });
+    return filtered.length ? filtered : terms;
+  }
+
+  function searchRules(q){
+    var terms = parseQuery(q);
+    if(!terms.length) return {terms:terms, results:[]};
+    var out=[];
+    RULES.forEach(function(r){
+      var score=0, ok=true;
+      for(var i=0;i<terms.length;i++){
+        var t=terms[i];
+        var cit=t.replace(/\(.*$/,'');          // "2.119(a)" -> "2.119"
+        var s=0;
+        if(/^\d+(\.\d*)?$/.test(cit)){
+          if(r.c===cit) s=200;
+          else if(r.c.indexOf(cit)===0) s=100;
+        }
+        if(r.t.indexOf(t)!==-1) s+=30;
+        if(r.s.indexOf(t)!==-1) s+=5;
+        if(s===0){ ok=false; break; }
+        score+=s;
+      }
+      if(ok) out.push({rule:r, score:score});
+    });
+    out.sort(function(a,b){
+      if(b.score!==a.score) return b.score-a.score;
+      if(a.rule.chapter!==b.rule.chapter) return parseInt(a.rule.chapter,10)-parseInt(b.rule.chapter,10);
+      return a.rule.ruleNumInt-b.rule.ruleNumInt;
+    });
+    return {terms:terms, results:out};
+  }
+
+  function escRe(s){ return s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'); }
+
+  function highlight(escaped, terms){
+    var parts = terms.map(function(t){ return escRe(escapeHtml(t)); }).filter(Boolean);
+    if(!parts.length) return escaped;
+    return escaped.replace(new RegExp('('+parts.join('|')+')','gi'), '<mark>$1</mark>');
+  }
+
+  function snippet(rule, terms){
+    var txt = String(rule.text||'').replace(/\s+/g,' ').trim();
+    var low = txt.toLowerCase(), idx=-1;
+    for(var i=0;i<terms.length;i++){
+      var k = low.indexOf(terms[i]);
+      if(k!==-1 && (idx===-1 || k<idx)) idx=k;
+    }
+    if(idx===-1) return '';
+    var start = Math.max(0, idx-60);
+    var piece = txt.slice(start, start+170);
+    return (start>0?'…':'') + piece + (start+170<txt.length?'…':'');
+  }
+
   function renderSearch(query){
-    var q = query.toLowerCase();
-    var matches = RULES.filter(function(r){ return r.search.indexOf(q) !== -1; });
-    var listHtml = matches.length ?
-      matches.map(function(r){
+    var res = searchRules(query);
+    var total = res.results.length;
+    var shown = res.results.slice(0, searchLimit);
+    var listHtml = total ?
+      shown.map(function(x){
+        var r=x.rule;
         var ch = getChapter(r.chapter);
         var sub = getSub(r.chapter, r.subNum);
+        var snip = snippet(r, res.terms);
         return '<button class="search-result-item" type="button" onclick="RulesApp.go(\'#/rule/'+r.id+'\')">'+
-          '<div class="search-result-path">Ch. '+r.chapter+': '+escapeHtml(ch?ch.label:'')+' / '+r.chapter+'.'+r.subNum+': '+escapeHtml(sub?sub.label:'')+'</div>'+
-          '<div><span class="search-result-id">MCR '+escapeHtml(r.citation)+'</span><span class="search-result-title">'+escapeHtml(r.title)+'</span></div>'+
+          '<span class="blk search-result-path">Ch. '+r.chapter+': '+escapeHtml(ch?ch.label:'')+' / '+r.chapter+'.'+r.subNum+': '+escapeHtml(sub?sub.label:'')+'</span>'+
+          '<span class="blk"><span class="search-result-id">MCR '+highlight(escapeHtml(r.citation),res.terms)+'</span><span class="search-result-title">'+highlight(escapeHtml(r.title),res.terms)+'</span></span>'+
+          (snip?'<span class="blk search-snippet">'+highlight(escapeHtml(snip),res.terms)+'</span>':'')+
         '</button>';
-      }).join('') :
-      '<div class="empty-state">No rules match your search.</div>';
+      }).join('') +
+      (total>shown.length ? '<button class="more-btn" type="button" onclick="RulesApp.more()">Show '+Math.min(SEARCH_STEP,total-shown.length)+' more results</button>' : '') :
+      '<div class="empty-state">No rules match “'+escapeHtml(query)+'”. Try fewer words, or search by rule number like 2.119.</div>';
     main.innerHTML = ''+
       '<div class="panel">'+
         '<div class="level-intro"><h2 class="level-title">Search results</h2></div>'+
         listHtml+
       '</div>';
-    document.getElementById('searchCount').textContent = matches.length + (matches.length===1?' rule found':' rules found');
+    document.getElementById('searchCount').textContent =
+      total===0 ? '0 rules found' :
+      (total>shown.length ? 'Showing '+shown.length+' of '+total+' rules' : total+(total===1?' rule found':' rules found'));
     crumbBar.innerHTML = ''+
-      '<button type="button" onclick="RulesApp.go(\'#/\')">Michigan Court Rules</button>'+
+      '<button type="button" onclick="RulesApp.clearSearch()">Michigan Court Rules</button>'+
       '<span class="sep">/</span><span class="current">Search results</span>';
   }
 
   function route(){
     var hash = window.location.hash || '#/';
     var parts = hash.replace(/^#\/?/,'').split('/').filter(Boolean);
+
+    if(parts[0]==='search'){
+      var q='';
+      try { q = decodeURIComponent(parts.slice(1).join('/')); } catch(e){ q = parts.slice(1).join('/'); }
+      if(searchInput.value.trim()!==q) searchInput.value = q;
+      if(!q.trim()){ window.location.hash = '#/'; return; }
+      renderSearch(q);
+      return;
+    }
+
+    // Any non-search view: reset the search box
+    searchInput.value = '';
+    document.getElementById('searchCount').textContent = '';
+    searchLimit = SEARCH_STEP;
+
     if(parts.length===0){ renderChapters(); lastNonSearchHash = '#/'; return; }
     if(parts[0]==='ch' && parts[1] && parts[2]==='sub' && parts[3]){
       renderSubchapter(parts[1], parts[3]); lastNonSearchHash = hash; return;
@@ -511,23 +612,50 @@ main{padding:36px 0 72px}
   }
 
   /* ══════════════════════ INTERACTIONS ══════════════════════ */
-  var searchInput = document.getElementById('ruleSearch');
-  searchInput.addEventListener('input', function(){
+  var searchTimer = null;
+
+  function setHash(h, push){
+    var url = window.location.pathname + window.location.search + h;
+    if(push) history.pushState(null,'',url); else history.replaceState(null,'',url);
+  }
+
+  function applySearch(){
     var q = searchInput.value.trim();
+    var inSearch = /^#\/search/.test(window.location.hash);
     if(!q){
-      document.getElementById('searchCount').textContent = '';
-      window.location.hash = lastNonSearchHash;
-      route();
+      if(inSearch){ setHash(lastNonSearchHash, false); }
+      if(READY) route();
       return;
     }
-    renderSearch(q);
+    searchLimit = SEARCH_STEP;
+    setHash('#/search/'+encodeURIComponent(q), !inSearch);   // one history entry per search session
+    if(READY) renderSearch(q);
+    else main.innerHTML = '<div class="panel"><div class="loading-state">Loading rules…</div></div>';
+  }
+
+  searchInput.addEventListener('input', function(){
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(applySearch, 150);
+  });
+  searchInput.addEventListener('keydown', function(e){
+    if(e.key==='Escape' && searchInput.value){
+      searchInput.value='';
+      clearTimeout(searchTimer);
+      applySearch();
+    }
   });
 
   window.RulesApp = {
     go: function(hash){
-      searchInput.value = '';
-      document.getElementById('searchCount').textContent = '';
       if(window.location.hash === hash){ route(); } else { window.location.hash = hash; }
+    },
+    clearSearch: function(){
+      searchInput.value='';
+      this.go(lastNonSearchHash);
+    },
+    more: function(){
+      searchLimit += SEARCH_STEP;
+      renderSearch(searchInput.value.trim());
     },
     copyLink: function(id, btn){
       var url = window.location.origin + window.location.pathname + '#/rule/' + id;
@@ -549,9 +677,7 @@ main{padding:36px 0 72px}
     }
   };
 
-  window.addEventListener('hashchange', function(){
-    if(!searchInput.value.trim()) route();
-  });
+  window.addEventListener('hashchange', function(){ if(READY) route(); });
 
   /* ══════════════════════ INIT ══════════════════════ */
   fetch(CSV_URL)
@@ -562,6 +688,7 @@ main{padding:36px 0 72px}
     .then(function(text){
       buildRules(text);
       computeStats();
+      READY = true;
       route();
     })
     .catch(function(err){
