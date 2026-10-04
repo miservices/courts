@@ -27,7 +27,7 @@
 <div class="auth-loading-overlay" id="auth-overlay" role="status"><div class="alo-title">Online Portal</div><div class="spin"></div><div>Verifying your session…</div></div>
 
 <script type="module">
-import { boot, db, app, $, esc, has, ATTY, STAFF, CASE_CODES, DISTRICT_COURT, reserveCaseNumber, colFor } from '/courts/online-services/portal/dashboard/assets/js/portal-shell.js';
+import { boot, db, app, $, esc, has, ATTY, STAFF, CASE_CODES, DISTRICT_COURT, SUPREME_COURT, reserveCaseNumber, colFor } from '/courts/online-services/portal/dashboard/assets/js/portal-shell.js';
 import { collection, getDocs, addDoc, query, where, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 
 const { account, role } = await boot({ id: 'filings', title: 'My filings', subtitle: 'File a new case, add to an existing one, and track what you have submitted.' });
@@ -52,7 +52,7 @@ const money = n => '$' + Number(n || 0).toFixed(2);
 const fmt = v => v ? new Date(v).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—';
 
 /* ── State ──────────────────────────────────────────────────────────── */
-const blank = () => ({ step: 0, view: 'new', counsel: false, type: '', court: '', ctype: '', kase: null, parties: [], files: [], links: [], email: account.email || '', notes: '', cert: false, rep: '', q: '', err: '', busy: false, done: null });
+const blank = () => ({ step: 0, view: 'new', counsel: false, type: '', court: '', ctype: '', kase: null, lower: null, lq: '', parties: [], files: [], links: [], email: account.email || '', notes: '', cert: false, rep: '', q: '', err: '', busy: false, done: null });
 let S = blank(), cases = [], mine = [];
 const root = $('page-body');
 const isCounsel = has(ATTY, role);
@@ -95,8 +95,25 @@ function partyCard(p, i) {
     ${p.kind === 'Person' ? F('Michigan PIN', inp(`parties.${i}.pin`, p.pin, 'Michigan PIN'), p.self && p.pin ? 'Filled in from your account.' : 'Appears on the case record.') : ''}${rep}</div>`;
 }
 
+const lowerFrom = c => c && ({ court: c.court, caseNumber: c.caseId, caseFirestoreId: c._id, caption: caption(c), caseType: c.civilSubtype || c.administrativeSubtype || c.appellateSubtype || c.caseType || null,
+  judge: c.judge || null, dateFiled: c.dates?.filed || null, status: c.status || null });
+const lowerList = () => {
+  const q = S.lq.toLowerCase().trim();
+  if (!cases.length) return '<div class="loading-inline"><span class="spin-sm"></span>Loading cases…</div>';
+  if (q.length < 2) return '<p style="color:var(--muted)">Start typing to search district court cases.</p>';
+  const r = cases.filter(c => c.court === DISTRICT_COURT && !c.sealed && (c.caseId + ' ' + JSON.stringify(c.parties || {})).toLowerCase().includes(q)).slice(0, 8);
+  return r.length ? r.map(c => `<div class="opt" role="radio" aria-checked="false" tabindex="0" data-a="lower:${esc(c._id)}"><input type="radio" tabindex="-1"><div><b>${esc(caption(c))}</b><small>${esc(c.caseId)} · ${esc(c.civilSubtype || c.caseType || '')}${c.judge ? ' · ' + esc(c.judge) : ''}</small></div></div>`).join('')
+    : '<div class="empty"><strong>No matching cases</strong><p>Check the case number or try a party’s last name.</p></div>';
+};
+const lowerCard = () => {
+  if (S.court !== SUPREME_COURT) return '';
+  const req = /^Appeal/.test(S.ctype), L = S.lower;
+  return `<section class="card"><header><h3>Lower court case${req ? '' : ' <small style="display:inline;font-weight:400">optional</small>'}</h3></header>` + (L
+    ? `<div class="sub"><header><span>${esc(L.caption)}</span><button class="btn outline sm" type="button" data-a="clearlower">Change</button></header><dl class="details" style="margin:0">${[['Lower court', L.court], ['Case number', L.caseNumber], ['Case type', L.caseType || '—'], ['Judge', L.judge || '—']].map(([k, v]) => `<div><dt>${k}</dt><dd>${esc(v)}</dd></div>`).join('')}</dl></div>`
+    : F('Search district court cases', inp('lq', S.lq, 'Case number or party name', 'search'), req ? 'Required for appeals. This links your appeal to the case being appealed.' : 'Link the case this matter came from, if there is one.') + `<div id="ll">${lowerList()}</div>`) + '</section>';
+};
 function stepCase() {
-  if (S.type === 'new') return `<section class="card"><header><h3>Parties</h3></header>${S.parties.map(partyCard).join('')}<button class="btn outline" type="button" data-a="addparty">Add another party</button></section>`;
+  if (S.type === 'new') return lowerCard() + `<section class="card"><header><h3>Parties</h3></header>${S.parties.map(partyCard).join('')}<button class="btn outline" type="button" data-a="addparty">Add another party</button></section>`;
   const list = linked();
   return `<section class="card"><header><h3>Choose the case</h3></header>${F('Search your cases', inp('q', S.q, 'Case number or party name', 'search'))}
     <div id="cl">${caseList(list)}</div></section>
@@ -123,7 +140,7 @@ const notice = () => `<div class="sub"><b>${S.type === 'new' ? 'A case number is
 function stepReview() {
   const d = docs(), total = d.reduce((t, x) => t + fee(x.type, courtOf()), 0);
   const rows = S.type === 'new'
-    ? [['Court', S.court], ['Case type', S.ctype], ...S.parties.map((p, i) => [`Party ${i + 1} (${p.role})`, p.name + (p.kind === 'Person' && p.pin ? ' · PIN ' + p.pin : '') + (p.mine ? ' — your client' : '')])]
+    ? [['Court', S.court], ['Case type', S.ctype], ...(S.lower ? [['Lower court case', `${S.lower.caption} · ${S.lower.caseNumber}`]] : []), ...S.parties.map((p, i) => [`Party ${i + 1} (${p.role})`, p.name + (p.kind === 'Person' && p.pin ? ' · PIN ' + p.pin : '') + (p.mine ? ' — your client' : '')])]
     : [['Case', caption(S.kase) + ' · ' + S.kase.caseId], ['Court', S.kase.court], ...(S.counsel ? [['You represent', S.rep]] : [])];
   return `<section class="card"><header><h3>Review your filing</h3></header>
     <dl class="details">${rows.map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join('')}
@@ -172,6 +189,7 @@ function check() {
   if (S.step === 1) {
     if (S.type === 'existing') { if (!S.kase) return 'Select a case.'; if (S.counsel && !S.rep.trim()) return 'Enter the party you represent.'; }
     else {
+      if (S.court === SUPREME_COURT && /^Appeal/.test(S.ctype) && !S.lower) return 'Select the lower court case you are appealing.';
       if (S.parties.some(p => !p.name.trim() || (p.kind === 'Person' && !p.pin.trim()))) return 'Complete the name (and PIN for individuals) for every party.';
       if (S.counsel && !S.parties.some(p => p.mine)) return 'Mark the party you represent.';
     }
@@ -207,7 +225,7 @@ async function submit() {
       filedBy: account.name, filedByUid: account.uid, isFilingAsCounsel: S.counsel, counselRepresents: S.counsel ? (S.type === 'new' ? mineP?.name : S.rep.trim()) : null,
       barNumber: S.counsel ? account.barNumber || null : null, dateFiled: now, status: 'Pending', accepted: false, urgent: false };
     if (S.type === 'existing') { obj.caseId = S.kase.caseId; obj.caseFirestoreId = S.kase._id; }
-    if (S.type === 'new') obj.reservedCaseId = await reserveCaseNumber(court, S.ctype);
+    if (S.type === 'new') { obj.reservedCaseId = await reserveCaseNumber(court, S.ctype); if (S.lower && court === SUPREME_COURT) obj.lowerCourt = S.lower; }
     else {
       const ref = doc(db, colFor(S.kase.court), S.kase._id), snap = await getDoc(ref), prev = snap.exists() ? snap.data().events || [] : [];
       let n = prev.reduce((m, e) => Math.max(m, e.eventNumber || 0), 0) + 1;
@@ -225,13 +243,13 @@ async function submit() {
 /* ── Events ─────────────────────────────────────────────────────────── */
 const set = (p, v) => { const a = p.split('.'); let o = S; a.slice(0, -1).forEach(k => o = o[k]); o[a.at(-1)] = v; };
 const initParties = () => { const r = ROLES[S.ctype]; S.parties = [mkParty(r[0], 0), mkParty(r[1], 1)]; };
-root.addEventListener('input', e => { const k = e.target.dataset.k; if (!k || e.target.type === 'checkbox') return; set(k, e.target.value); if (k === 'q') $('cl').innerHTML = caseList(linked()); });
+root.addEventListener('input', e => { const k = e.target.dataset.k; if (!k || e.target.type === 'checkbox') return; set(k, e.target.value); if (k === 'q') $('cl').innerHTML = caseList(linked()); if (k === 'lq') $('ll').innerHTML = lowerList(); });
 root.addEventListener('change', e => {
   const t = e.target;
   if (t.id === 'fi') { addFiles(t.files); return; }
   const k = t.dataset.k; if (!k) return;
   set(k, t.type === 'checkbox' ? t.checked : t.value);
-  if (k === 'court') { S.ctype = ''; S.parties = []; }
+  if (k === 'court') { S.ctype = ''; S.parties = []; S.lower = null; S.lq = ''; }
   if (k === 'ctype') initParties();
   if (k === 'counsel') S.parties.forEach(p => p.mine = false);
   if (t.dataset.r !== undefined) render();
@@ -248,6 +266,8 @@ const act = a => {
   const [n, v] = a.split(':');
   if (n === 'type') { S.type = v; S.kase = null; S.files = []; S.links = []; }
   else if (n === 'case') S.kase = cases.find(c => c._id === v);
+  else if (n === 'lower') S.lower = lowerFrom(cases.find(c => c._id === v));
+  else if (n === 'clearlower') { S.lower = null; S.lq = ''; }
   else if (n === 'addparty') S.parties.push(mkParty('Third Party', 2));
   else if (n === 'rmparty') S.parties.splice(+v, 1);
   else if (n === 'rmfile') S.files.splice(+v, 1);
