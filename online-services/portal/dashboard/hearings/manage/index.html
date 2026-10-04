@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Manage Hearings | Online Portal</title>
+<link rel="icon" type="image/png" href="/courts/images/favicon.png">
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=Source+Serif+4:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/courts/online-services/portal/dashboard/assets/css/dashboard.css?v=5">
+<style>
+.m{color:var(--muted);font-weight:400}
+.tools{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px;align-items:center}.tools .in{flex:1;min-width:200px;width:auto}.tools select.in{flex:0 0 auto;min-width:0}
+.chk{display:flex;gap:8px;align-items:center;font-weight:600;color:var(--navy);white-space:nowrap}.chk input{width:18px;height:18px}
+.chips{display:flex;gap:6px;flex-wrap:wrap}.chips button,.seg button{font:inherit;font-weight:600;font-size:14px;padding:6px 14px;border-radius:16px;border:1px solid var(--line);background:#fff;color:var(--navy);cursor:pointer}
+.chips button.on,.seg button.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+.bar{display:flex;gap:12px;flex-wrap:wrap;align-items:center;justify-content:space-between;margin-bottom:14px}.seg{display:flex;gap:6px}
+.day{margin-bottom:16px;padding:0;overflow:hidden}
+.day-h{display:flex;justify-content:space-between;align-items:baseline;padding:12px 22px;background:#f4f7fb;border-bottom:1px solid #e3e9f1}.day-h h3{font-size:17px}.day-h span{color:var(--muted);font-size:14px}
+.hr{display:grid;grid-template-columns:104px minmax(0,1fr) auto;gap:16px;padding:14px 22px;border:0;border-top:1px solid #e3e9f1;width:100%;text-align:left;font:inherit;color:inherit;background:#fff;cursor:pointer;align-items:start}
+.hr:first-of-type{border-top:0}.hr:hover{background:#f6f9fd}.hr.cx{opacity:.7}
+.hr .t{font-weight:700;color:var(--navy);white-space:nowrap}.hr .t small{display:block;color:var(--muted);font-weight:500}
+.hr .c b{display:block}.hr .c small{display:block;color:var(--muted)}
+.hr .p{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+@media(max-width:700px){.hr{grid-template-columns:1fr}.hr .p{justify-content:flex-start}}
+.cal-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px}.cal-bar h3{font-size:22px}
+.cal{width:100%;border-collapse:separate;border-spacing:0;table-layout:fixed;background:#fff;border:1px solid var(--line);border-radius:4px;overflow:hidden;margin-bottom:16px}
+.cal th{background:var(--navy);color:#fff;font-size:14px;font-weight:600;padding:8px 4px}
+.cal td{border-top:1px solid #e3e9f1;border-left:1px solid #e3e9f1;height:110px;padding:0;vertical-align:top}.cal td:first-child{border-left:0}
+.cell{display:block;width:100%;height:100%;min-height:110px;padding:6px 8px;text-align:left;background:none;border:0;font:inherit;color:inherit}
+button.cell{cursor:pointer}button.cell:hover{background:#f4f8fd}button.cell.sel{background:#e1ecf8;box-shadow:inset 0 0 0 3px var(--blue)}
+td.out .cell{background:#f7f9fc;color:#9aa6b8}td.wk .cell{background:#fafbfd}
+.num{display:inline-block;min-width:26px;height:26px;line-height:26px;text-align:center;font-weight:700;border-radius:13px;color:var(--navy)}
+td.today .num{background:var(--blue);color:#fff}td.out .num{color:#9aa6b8}
+.ev{display:block;font-size:12.5px;line-height:1.3;margin-top:3px;padding:2px 6px;border-radius:3px;border-left:3px solid #1f5fae;background:#e1ecf8;color:#17335f;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.ev.need{border-color:#b3261e;background:#fdf1f0;color:#7a1b13}.ev.past{border-color:#9aa8bd;background:#eef1f6;color:#4a5568}.ev.cx{border-color:#9aa8bd;background:#eef1f6;color:#4a5568;text-decoration:line-through}.ev.clash{border-color:#b7791f;background:#fdf6e7;color:#6e4a10}
+.more-ev{display:block;font-size:12.5px;color:var(--muted);font-weight:600;margin-top:3px}.cnt{display:none}
+@media(max-width:860px){.cal td{height:64px}.cell{min-height:64px;padding:4px;text-align:center}.ev,.more-ev{display:none}.cnt{display:inline-block;margin-top:2px;min-width:22px;font-size:12px;font-weight:700;color:#fff;background:var(--navy);border-radius:11px;padding:0 6px}}
+.kv{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px 22px;margin-bottom:6px}.kv dt{font-size:13px;color:var(--muted)}.kv dd{font-weight:600;overflow-wrap:anywhere}
+.al{border-left:4px solid #b7791f;background:#fdf6e7;color:#6e4a10;border-radius:4px;padding:10px 14px;margin-bottom:12px}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:16px}@media(max-width:700px){.cols{grid-template-columns:1fr}}
+dialog{border:0;padding:0;border-radius:6px;width:min(680px,calc(100vw - 24px));max-height:calc(100vh - 48px);box-shadow:0 24px 60px rgba(9,22,40,.35);color:var(--text);font:inherit;overflow:hidden;margin:auto}
+dialog[open]{display:flex;flex-direction:column}dialog.wide{width:min(780px,calc(100vw - 24px))}dialog::backdrop{background:rgba(9,22,40,.55)}
+dialog>header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:16px 22px;border-bottom:1px solid var(--line);background:#f4f7fb}
+dialog>header h3{font-size:19px}dialog>header p{color:var(--muted);margin-top:2px}
+.x{font:inherit;font-size:22px;line-height:1;width:36px;height:36px;border:1px solid var(--line);border-radius:4px;background:#fff;cursor:pointer;color:var(--navy);flex-shrink:0}.x:hover{background:#eef3f9}
+#dlg-b{padding:20px 22px 6px;overflow:auto}#dlg-e{padding:0 22px 14px}#dlg-e .alert{margin:0}
+dialog>footer{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:10px;padding:14px 22px;border-top:1px solid var(--line);background:#f4f7fb}
+.quote{background:#f4f7fb;border-radius:4px;padding:10px 14px;margin-bottom:16px;color:var(--navy)}
+</style>
+</head>
+<body>
+<aside class="sidebar" id="sidebar-root" aria-label="Portal navigation"></aside>
+<div class="scrim" id="scrim" hidden></div>
+<div class="main">
+  <header class="topbar">
+    <div class="topbar-left">
+      <button class="menu-btn" id="menu-btn" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="sidebar-root"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+      <div><span class="topbar-eyebrow">Online Portal</span><span class="topbar-page-title" id="topbar-title">Manage Hearings</span></div>
+    </div>
+    <div class="topbar-right"><span class="topbar-date" id="topbar-date"></span><div class="notif-wrap" id="notif-root"></div></div>
+  </header>
+  <main class="page-body">
+    <div class="page-head"><div><h2 id="page-title">Manage Hearings</h2><p id="page-subtitle"></p></div><div id="page-action"></div></div>
+    <div id="page-body"><div class="loading-inline"><span class="spin-sm"></span>Loading hearings…</div></div>
+  </main>
+</div>
+<dialog id="dlg" aria-labelledby="dlg-t">
+  <header><div><h3 id="dlg-t"></h3><p id="dlg-w"></p></div><button class="x" type="button" aria-label="Close" data-close>×</button></header>
+  <div id="dlg-b"></div><div id="dlg-e"></div><footer id="dlg-f"></footer>
+</dialog>
+<div class="auth-loading-overlay" id="auth-overlay" role="status"><div class="alo-title">Online Portal</div><div class="spin"></div><div>Verifying your session…</div></div>
+
+<script type="module">
+import { boot, db, $, esc, has, STAFF, scopeOf, colFor, DISTRICT_COURT, SUPREME_COURT } from '/courts/online-services/portal/dashboard/assets/js/portal-shell.js';
+import { collection, getDocs, doc, runTransaction } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+
+const { account, role } = await boot({ id: 'mhearings', title: 'Manage Hearings', subtitle: 'Schedule, reschedule, and record the outcome of hearings.' });
+const root = $('page-body'), BASE = 'https://migovt.org/courts/online-services/portal/dashboard/';
+if (!has(STAFF, role)) { root.innerHTML = '<section class="card"><div class="empty"><strong>Court staff only</strong><p>Manage Hearings is limited to clerks, judicial officers, and court staff.</p></div></section>'; }
+else await main();
+
+async function main() {
+/* ── Constants and helpers ──────────────────────────────────────────── */
+const JUDICIAL = ['Magistrate', 'Judge', 'Chief Judge', 'Justice', 'Chief Justice'], isJudicial = has(JUDICIAL, role), scope = scopeOf(role);
+const ROOM = { 'Chief Judge': '1', Judge: '2', Magistrate: '3' }, MSC_PLACE = 'Michigan Supreme Court, Lansing';
+const ATTEND = [['in-person', 'In person only'], ['hybrid', 'In person or by video'], ['video', 'Video only']], ATT = Object.fromEntries(ATTEND);
+const DTYPES = ['Motion Hearing', 'Status Conference', 'Pretrial Conference', 'Arraignment', 'Sentencing Hearing', 'Trial', 'Show Cause Hearing', 'Probation Violation Hearing', 'Small Claims Hearing', 'Traffic Hearing', 'Preliminary Examination', 'Jury Trial', 'Bench Trial'], MTYPES = ['Oral Argument', 'Motion Hearing', 'Conference'];
+const MINS = { Arraignment: 15, 'Pretrial Conference': 20, 'Small Claims Hearing': 30, 'Motion Hearing': 30, 'Preliminary Examination': 60, 'Traffic Hearing': 15, 'Jury Trial': 480, 'Bench Trial': 240, 'Sentencing Hearing': 30, 'Oral Argument': 15 };
+const hv = v => v !== undefined && v !== null && String(v).trim() !== '';
+const parse = s => { const d = new Date(s); return isNaN(d) ? null : d; };
+const p2 = n => String(n).padStart(2, '0');
+const dayKey = d => `${d.getFullYear()}-${p2(d.getMonth() + 1)}-${p2(d.getDate())}`;
+const fmtDay = k => new Date(k + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+const fmtLong = d => d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+const fmtDate = d => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+const fmtTime = d => d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+const fmtDT = d => `${fmtDate(d)} at ${fmtTime(d)}`;
+const inDT = d => d ? `${d.getFullYear()}-${p2(d.getMonth() + 1)}-${p2(d.getDate())}T${p2(d.getHours())}:${p2(d.getMinutes())}` : '';
+const now = () => new Date().toISOString();
+const nameKey = n => { const t = String(n || '').toLowerCase().replace(/^hon\.?\s+/, '').replace(/[.,]/g, '').trim().split(/\s+/); return t.length ? t[0] + ' ' + t[t.length - 1] : ''; };
+const roomLabel = v => /^\d+$/.test(String(v || '')) ? 'Courtroom ' + v : v || '';
+const sideOf = r => /defendant|respondent|appellee/i.test(r || '') ? 1 : /plaintiff|petitioner|prosecut|appellant|applicant|complainant|claimant/i.test(r || '') ? 0 : null;
+function plist(c) { if (Array.isArray(c.parties)) return c.parties.filter(x => x && x.name); const o = []; Object.values(c.parties || {}).forEach(v => Array.isArray(v) ? v.forEach(x => x && o.push(x)) : v && typeof v === 'object' && o.push(v)); return o.filter(x => x.name); }
+function caption(c) {
+  if (hv(c.caseTitleOverride)) return c.caseTitleOverride;
+  const l = plist(c), t = String(c.caseType || '').toLowerCase(), a = l.find(x => sideOf(x.role) === 0), b = l.find(x => sideOf(x.role) === 1);
+  if (t === 'criminal' || t === 'traffic') return a && b ? `${a.name} v. ${b.name}` : `State of Michigan v. ${b?.name || 'Unknown'}`;
+  if (a && b) return `${a.name} v. ${b.name}`; if (a) return `Ex parte ${a.name}`; if (b) return `In re ${b.name}`;
+  return c.administrativeSubtype || c.caseId || 'Case';
+}
+const isMsc = c => c.court === SUPREME_COURT;
+const stateOf = x => x.h.result === 'Cancelled' ? 'cancelled' : hv(x.h.result) ? 'held' : x.when < new Date() ? 'needs' : 'upcoming';
+const PILL = { upcoming: ['live', 'Upcoming'], held: ['done', 'Held'], cancelled: ['plain', 'Cancelled'], needs: ['bad', 'Needs result'] };
+class UserError extends Error {}
+const bad = m => { throw new UserError(m); };
+const errText = e => e instanceof UserError ? e.message : e?.code === 'permission-denied' ? 'Your account is not allowed to change this record. The Firestore security rules must let court staff update cases and caseManagement. (permission-denied)' : `We could not save this change. Check your connection and try again.${e?.code ? ' (' + e.code + ')' : ''}`;
+
+/* ── Data ───────────────────────────────────────────────────────────── */
+let cases = [], judges = [], all = [], conflicts = new Map(), view = 'list', note = '', noteKind = 'ok';
+const F = { q: '', officer: '', type: '', status: 'upcoming', when: '', attend: '', court: '', mine: isJudicial };
+let ym = { y: new Date().getFullYear(), m: new Date().getMonth() }, sel = null;
+async function loadAll() {
+  const safe = p => p.catch(() => ({ docs: [] }));
+  const [cs, ac] = await Promise.all([Promise.all(scope.map(ct => safe(getDocs(collection(db, colFor(ct)))))), safe(getDocs(collection(db, 'accounts')))]);
+  cases = cs.flatMap(s => s.docs.map(d => ({ ...d.data(), _id: d.id })));
+  judges = ac.docs.map(d => ({ uid: d.id, name: d.data().name || 'Unnamed', role: d.data().role })).filter(j => has(JUDICIAL, j.role));
+  rebuild();
+}
+const hMins = h => parseInt(h.minutes, 10) || MINS[h.type] || 30;
+function rebuild() {
+  all = []; cases.forEach(c => (c.hearings || []).forEach((h, i) => { const when = parse(h.date); if (when) all.push({ key: `${c._id}~${i}`, c, h, when, mins: hMins(h), mode: ATT[h.attendance] ? h.attendance : 'in-person' }); }));
+  all.sort((a, b) => a.when - b.when);
+  conflicts = new Map(); const live = all.filter(x => !hv(x.h.result));
+  for (let i = 0; i < live.length; i++) for (let j = i + 1; j < live.length; j++) { const a = live[i], b = live[j]; if (b.when >= new Date(a.when.getTime() + a.mins * 6e4)) break;
+    const why = a.h.officer && a.h.officer === b.h.officer ? `${a.h.officer} is in two hearings at once` : a.mode !== 'video' && b.mode !== 'video' && a.h.courtroom && a.h.courtroom === b.h.courtroom && !isMsc(a.c) ? `${a.h.courtroom} is double-booked` : '';
+    if (why) { [[a, b], [b, a]].forEach(([p, q]) => conflicts.set(p.key, [...(conflicts.get(p.key) || []), `${why} with ${q.h.type} in ${q.c.caseId} at ${fmtTime(q.when)}`])); } }
+}
+const hearingConflicts = (o, c, selfKey) => { const s0 = new Date(o.date).getTime(), e0 = s0 + hMins(o) * 6e4, out = [];
+  all.forEach(x => { if (x.key === selfKey || hv(x.h.result)) return; const xs = x.when.getTime(), xe = xs + x.mins * 6e4; if (xe <= s0 || xs >= e0) return;
+    if (o.officer && x.h.officer === o.officer) out.push(`${o.officer} already has ${x.h.type} in ${x.c.caseId} at ${fmtTime(x.when)}`);
+    else if (!isMsc(c) && o.attendance !== 'video' && x.mode !== 'video' && o.courtroom && x.h.courtroom === o.courtroom) out.push(`${o.courtroom} is booked for ${x.h.type} in ${x.c.caseId} at ${fmtTime(x.when)}`); });
+  return out; };
+
+/* ── Saving ─────────────────────────────────────────────────────────── */
+// Every change re-reads the case first, so edits made at the same time elsewhere are never overwritten.
+async function mutate(c, fn, audit) {
+  const r = doc(db, colFor(c.court), c._id);
+  const next = await runTransaction(db, async tx => { const s = await tx.get(r); if (!s.exists()) bad('This case no longer exists.'); const d = s.data(), p = fn(d) || {}; p.dates = { ...(p.dates || d.dates || {}), lastUpdated: now() }; tx.update(r, p); return { ...d, ...p }; });
+  Object.assign(c, next); if (audit) await addAudit(c, audit);
+}
+async function hearingMutate(c, old, fn, audit, evFn) {
+  await mutate(c, d => { const arr = [...(d.hearings || [])]; let k = -1;
+    if (old) { k = arr.findIndex(x => JSON.stringify(x) === JSON.stringify(old)); if (k < 0) bad('Someone else changed this hearing while you were editing it. Reload and try again.'); }
+    const res = fn(old ? arr[k] : null); if (old) arr[k] = res; else arr.push(res); const p = { hearings: arr }, ev = evFn && evFn(res);
+    if (ev) p.events = [...(d.events || []), { eventNumber: (d.events || []).reduce((m, x) => Math.max(m, x.eventNumber || 0), 0) + 1, sealed: false, ...ev }]; return p; }, audit);
+  rebuild();
+}
+async function cmUpdate(c, field, fn) {
+  const r = doc(db, 'caseManagement', c._id);
+  await runTransaction(db, async tx => { const s = await tx.get(r), next = fn([...((s.exists() && s.data()[field]) || [])]);
+    if (s.exists()) tx.update(r, { [field]: next }); else tx.set(r, { tasks: [], notifications: [], internalNotes: [], auditLog: [], caseFirestoreId: c._id, [field]: next }); });
+}
+const addAudit = async (c, action) => { try { await cmUpdate(c, 'auditLog', a => [...a, { action, by: account.name, byUid: account.uid, byRole: role, at: now() }]); } catch (e) { console.warn('Audit entry not saved', e); } };
+// Notices go out automatically whenever a hearing is set, moved or cancelled. A notice that fails to save never undoes the change.
+const notify = async (c, n) => { try { await cmUpdate(c, 'notifications', a => [...a, { num: a.reduce((m, x) => Math.max(m, x.num || 0), 0) + 1, at: now(), read: false, ...n }]); await addAudit(c, `Auto-issued notice: ${n.title} — ${n.text}`); } catch (e) { console.warn('Notice not saved', e); } };
+const how = (o, c) => o.attendance === 'video' ? 'This hearing is held by videoconference.' : o.attendance === 'hybrid' ? `You may attend in person (${o.courtroom || 'courtroom to be announced'}) or by video.` : `Attend in person: ${o.courtroom || 'courtroom to be announced'}.`;
+
+/* ── Rendering ──────────────────────────────────────────────────────── */
+const setHead = (sub, action = '') => { $('page-subtitle').textContent = sub; $('page-action').innerHTML = action; };
+const btn = (a, label, cls = 'outline sm') => `<button class="btn ${cls}" type="button" data-a="${a}">${label}</button>`;
+const mineFilter = x => { const me = nameKey(account.name); return x.c.judgeUid === account.uid || nameKey(x.h.officer) === me || (!x.h.officer && nameKey(x.c.judge) === me); };
+const matches = x => { const st = stateOf(x), q = F.q.toLowerCase().trim(), n = new Date(), lim = F.when === 'today' ? 1 : F.when ? Number(F.when) : 0;
+  const end = new Date(); end.setHours(0, 0, 0, 0); end.setDate(end.getDate() + (lim || 0));
+  return (F.status === 'all' || (F.status === 'past' ? st === 'held' || st === 'needs' : st === F.status)) && (!F.officer || x.h.officer === F.officer) && (!F.type || x.h.type === F.type) && (!F.attend || x.mode === F.attend) && (!F.court || x.c.court === F.court)
+    && (!F.mine || mineFilter(x)) && (!lim || (st === 'upcoming' && x.when < end)) && (!q || [caption(x.c), x.c.caseId, x.h.type, x.h.officer, x.h.courtroom].join(' ').toLowerCase().includes(q)); };
+function row(x) {
+  const st = stateOf(x), cf = conflicts.get(x.key), where = x.mode === 'video' ? 'Videoconference' : roomLabel(x.h.courtroom || x.c.courtroomNumber), end = new Date(x.when.getTime() + x.mins * 6e4);
+  return `<button type="button" class="hr${st === 'cancelled' ? ' cx' : ''}" data-a="open:${esc(x.key)}"><div class="t">${esc(fmtTime(x.when))}<small>to ${esc(fmtTime(end))}</small></div>
+    <div class="c"><b>${esc(caption(x.c))}</b><small>${esc(x.c.caseId)} · ${esc(x.h.type || 'Hearing')} · ${esc(where)}</small><small>${esc(x.h.officer || x.c.judge || 'No judicial officer')}${scope.length > 1 ? ' · ' + esc(x.c.court) : ''}</small></div>
+    <div class="p">${cf ? '<span class="pill warn">Conflict</span>' : ''}<span class="pill plain">${esc(isMsc(x.c) ? 'Livestream' : ATT[x.mode])}</span><span class="pill ${PILL[st][0]}">${PILL[st][1]}</span></div></button>`;
+}
+const dayCard = (k, l) => `<section class="card day"><div class="day-h"><h3>${esc(fmtDay(k))}${k === dayKey(new Date()) ? ' <span class="pill live">Today</span>' : ''}</h3><span>${l.length} hearing${l.length === 1 ? '' : 's'}</span></div>${l.map(row).join('')}</section>`;
+function listHtml(l) {
+  if (!l.length) return `<section class="card"><div class="empty"><strong>No hearings found</strong><p>${F.q || F.officer || F.type || F.attend ? 'Try a different search or clear a filter.' : F.status === 'upcoming' ? 'Nothing is scheduled. Use Schedule a hearing to add one.' : 'Nothing to show for this view.'}</p></div></section>`;
+  const g = {}; l.forEach(x => (g[dayKey(x.when)] = g[dayKey(x.when)] || []).push(x)); const keys = Object.keys(g).sort(); if (F.status === 'past') keys.reverse();
+  return keys.map(k => dayCard(k, g[k])).join('');
+}
+function calHtml(l) {
+  const by = {}; l.forEach(x => (by[dayKey(x.when)] = by[dayKey(x.when)] || []).push(x));
+  const first = new Date(ym.y, ym.m, 1), last = new Date(ym.y, ym.m + 1, 0), mk = `${ym.y}-${p2(ym.m + 1)}`, t = dayKey(new Date());
+  if (!sel || !sel.startsWith(mk) || !by[sel]) { const ds = Object.keys(by).filter(d => d.startsWith(mk)).sort(); sel = by[t] && t.startsWith(mk) ? t : ds.find(d => d >= t) || ds[0] || null; }
+  const d = new Date(first); d.setDate(1 - first.getDay()); let rows = '';
+  while (d <= last || d.getDay() !== 0) { let r = ''; for (let i = 0; i < 7; i++) {
+    const k = dayKey(d), it = by[k] || [], cls = [d.getMonth() !== ym.m ? 'out' : '', d.getDay() % 6 === 0 ? 'wk' : '', k === t ? 'today' : ''].join(' ').trim();
+    const inner = `<span class="num">${d.getDate()}</span>` + (it.length ? it.slice(0, 3).map(x => { const st = stateOf(x); return `<span class="ev ${conflicts.has(x.key) ? 'clash' : st === 'needs' ? 'need' : st === 'cancelled' ? 'cx' : st === 'held' ? 'past' : ''}">${esc(fmtTime(x.when).replace(':00', ''))} ${esc(caption(x.c))}</span>`; }).join('') + (it.length > 3 ? `<span class="more-ev">+${it.length - 3} more</span>` : '') + `<span class="cnt">${it.length}</span>` : '');
+    r += `<td class="${cls}">${it.length ? `<button type="button" class="cell${k === sel ? ' sel' : ''}" data-a="day:${k}" aria-label="${esc(fmtDay(k))}, ${it.length} hearing${it.length === 1 ? '' : 's'}">${inner}</button>` : `<div class="cell">${inner}</div>`}</td>`; d.setDate(d.getDate() + 1); }
+    rows += `<tr>${r}</tr>`; }
+  return `<div class="cal-bar"><h3>${esc(first.toLocaleDateString('en-US', { month: 'long', year: 'numeric' }))}</h3><div class="chips"><button type="button" data-a="shift:-1">‹ Previous</button><button type="button" data-a="today">Today</button><button type="button" data-a="shift:1">Next ›</button></div></div>
+    <table class="cal"><thead><tr>${['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(x => `<th scope="col">${x}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table>${sel && by[sel] ? dayCard(sel, by[sel]) : '<section class="card"><div class="empty"><strong>No hearings this month</strong></div></section>'}`;
+}
+function draw() {
+  setHead(isMsc({ court: scope[0] }) && scope.length === 1 ? 'Schedule oral arguments, record the outcome, and keep parties notified.' : 'Schedule, reschedule, and record the outcome of hearings.', btn('new', 'Schedule a hearing', ''));
+  const t = dayKey(new Date()), live = all.filter(x => stateOf(x) === 'upcoming'), wk = live.filter(x => x.when - new Date() <= 7 * 864e5), needs = all.filter(x => stateOf(x) === 'needs');
+  const stat = (l, v, al) => `<div class="stat ${al ? 'alert-stat' : ''}"><span>${l}</span><b>${v}</b></div>`;
+  const officers = [...new Set(all.map(x => x.h.officer).filter(Boolean))].sort(), types = [...new Set(all.map(x => x.h.type).filter(Boolean))].sort();
+  const opt = (v, cur, l) => `<option value="${esc(v)}"${v === cur ? ' selected' : ''}>${esc(l ?? v)}</option>`;
+  root.innerHTML = `<div id="msg">${note ? `<div class="${noteKind === 'ok' ? 'ok-bar' : 'alert'}" role="status" style="margin-bottom:16px">${esc(note)}</div>` : ''}</div>
+    <div class="stats">${stat('Today', live.filter(x => dayKey(x.when) === t).length)}${stat('Next 7 days', wk.length)}${stat('Need a result', needs.length, needs.length > 0)}${stat('Conflicts', new Set([...conflicts.keys()]).size, conflicts.size > 0)}</div>
+    <div class="tools"><input class="in" id="f-q" type="search" placeholder="Search by case, party, judge, or courtroom" aria-label="Search hearings" value="${esc(F.q)}">
+      <select class="in" id="f-status" aria-label="Status">${[['upcoming', 'Upcoming'], ['needs', 'Needs a result'], ['past', 'Past'], ['cancelled', 'Cancelled'], ['all', 'All']].map(([v, l]) => opt(v, F.status, l)).join('')}</select>
+      <select class="in" id="f-when" aria-label="When"><option value="">Any date</option>${[['today', 'Today'], ['7', 'Next 7 days'], ['30', 'Next 30 days']].map(([v, l]) => opt(v, F.when, l)).join('')}</select></div>
+    <div class="tools"><select class="in" id="f-officer" aria-label="Judicial officer"><option value="">Every judicial officer</option>${officers.map(o => opt(o, F.officer)).join('')}</select>
+      <select class="in" id="f-type" aria-label="Hearing type"><option value="">All types</option>${types.map(o => opt(o, F.type)).join('')}</select>
+      <select class="in" id="f-attend" aria-label="Attendance"><option value="">Any attendance</option>${ATTEND.map(([v, l]) => opt(v, F.attend, l)).join('')}</select>
+      ${scope.length > 1 ? `<select class="in" id="f-court" aria-label="Court"><option value="">Both courts</option>${scope.map(o => opt(o, F.court)).join('')}</select>` : ''}
+      ${isJudicial ? `<label class="chk"><input type="checkbox" id="f-mine" ${F.mine ? 'checked' : ''}>My docket</label>` : ''}</div>
+    <div class="bar"><span class="m" id="count"></span><div class="seg"><button type="button" class="${view === 'list' ? 'on' : ''}" data-a="view:list">List</button><button type="button" class="${view === 'cal' ? 'on' : ''}" data-a="view:cal">Calendar</button></div></div>
+    <div id="hv"></div>`;
+  drawBody();
+}
+function drawBody() { const l = all.filter(matches); $('count').textContent = `${l.length} hearing${l.length === 1 ? '' : 's'}`; $('hv').innerHTML = view === 'list' ? listHtml(l) : calHtml(l); }
+const flash = (t, kind = 'ok') => { note = t; noteKind = kind; draw(); window.scrollTo({ top: 0, behavior: 'smooth' }); };
+
+/* ── Dialogs ────────────────────────────────────────────────────────── */
+const dlg = $('dlg'); let dlgOk = null, dlgChange = null;
+function modal({ title, sub = '', body, ok = 'Save', okCls = '', wide = false, onOk, onChange, extra = '' }) {
+  dlgChange = onChange || null; $('dlg-t').textContent = title; $('dlg-w').textContent = sub; $('dlg-b').innerHTML = body; $('dlg-e').innerHTML = ''; dlg.classList.toggle('wide', wide); dlgOk = onOk;
+  $('dlg-f').innerHTML = `${extra}<button class="btn outline" type="button" data-close>${onOk ? 'Cancel' : 'Close'}</button>${onOk ? `<button class="btn ${okCls}" type="button" id="dlg-ok">${ok}</button>` : ''}`;
+  if (!dlg.open) dlg.showModal(); if (onOk) dlg.querySelector('#dlg-b input:not([type=hidden]):not([readonly]),#dlg-b select')?.focus();
+}
+async function runOk() {
+  const b = $('dlg-ok'), label = b.textContent; b.disabled = true; b.textContent = 'Saving…'; $('dlg-e').innerHTML = '';
+  try { await dlgOk(); dlg.close(); draw(); } catch (e) { if (!(e instanceof UserError)) console.error(e); $('dlg-e').innerHTML = `<div class="alert" role="alert">${esc(errText(e))}</div>`; b.disabled = false; b.textContent = label; }
+}
+const ask = (title, text, ok, cls = '') => new Promise(res => { let yes = false; modal({ title, body: `<p>${text}</p>`, ok, okCls: cls, onOk: async () => { yes = true; res(true); } }); dlg.addEventListener('close', () => { if (!yes) res(false); }, { once: true }); });
+dlg.addEventListener('click', e => { if (e.target === dlg || e.target.closest('[data-close]')) dlg.close(); else if (e.target.closest('#dlg-ok')) runOk(); else { const el = e.target.closest('[data-a]'); if (el) act(el.dataset.a); } });
+dlg.addEventListener('change', e => dlgChange?.(e));
+const val = id => ($(id)?.value || '').trim();
+const fld = (label, id, v = '', o = {}) => `<label class="f"><span>${label}</span><input id="${id}" type="${o.type || 'text'}" value="${esc(v)}"${o.ph ? ` placeholder="${esc(o.ph)}"` : ''}${o.list ? ` list="${o.list}"` : ''}>${o.hint ? `<small>${o.hint}</small>` : ''}</label>`;
+const area = (label, id, v = '', ph = '') => `<label class="f"><span>${label}</span><textarea id="${id}" placeholder="${esc(ph)}">${esc(v)}</textarea></label>`;
+const selF = (label, id, opts, v) => `<label class="f"><span>${label}</span><select id="${id}">${opts.map(x => { const [ov, ol] = Array.isArray(x) ? x : [x, x]; return `<option value="${esc(ov)}"${ov === v ? ' selected' : ''}>${esc(ol)}</option>`; }).join('')}</select></label>`;
+const dlist = (id, l) => `<datalist id="${id}">${l.map(x => `<option value="${esc(x)}">`).join('')}</datalist>`;
+const g2 = (...c) => `<div class="cols">${c.join('')}</div>`;
+const caseLabel = c => `${c.caseId} — ${caption(c)}`;
+
+/* Hearing form: used to schedule, reschedule and edit */
+function officerOpts(c) {
+  const p = judges.filter(j => has(isMsc(c) ? ['Justice', 'Chief Justice'] : ['Magistrate', 'Judge', 'Chief Judge'], j.role));
+  return [['', `Judge of record (${c.judge || 'unassigned'})`], ...(isMsc(c) ? [['Full Court', 'Full Court']] : []), ...p.map(j => [j.name, `${j.name} — ${j.role}`])];
+}
+const roomFor = (c, off) => isMsc(c) ? MSC_PLACE : (() => { const j = judges.find(x => x.name === (off || c.judge)); return ROOM[j?.role] ? 'Courtroom ' + ROOM[j.role] : roomLabel(c.courtroomNumber); })();
+function hearingModal(c0, x) {
+  let c = c0; const h = x ? x.h : {}, isNew = !x, att0 = h.attendance || (c && isMsc(c) ? 'hybrid' : 'in-person');
+  const draw_ = () => {   // fields that depend on the chosen case are refreshed when the case changes
+    const msc = isMsc(c);
+    $('hm-off').innerHTML = officerOpts(c).map(([v, l]) => `<option value="${esc(v)}">${esc(l)}</option>`).join(''); $('hm-off').value = h.officer && officerOpts(c).some(o => o[0] === h.officer) ? h.officer : '';
+    $('hm-room').value = $('hm-att').value === 'video' ? 'Videoconference' : h.courtroom || roomFor(c, val('hm-off')); $('hm-attw').hidden = msc; $('hm-vid').hidden = !msc && val('hm-att') === 'in-person';
+    $('hm-urll').textContent = msc ? 'Livestream link' : 'Video link'; $('hm-minl').textContent = msc ? 'Minutes per side' : 'Length (minutes)'; $('hm-types').innerHTML = (msc ? MTYPES : DTYPES).map(t => `<option value="${esc(t)}">`).join('');
+  };
+  modal({ title: isNew ? 'Schedule a hearing' : 'Reschedule hearing', sub: x ? `${caption(c)} · ${c.caseId}` : '', wide: true, ok: isNew ? 'Schedule hearing' : 'Save changes',
+    onChange: e => { const id = e.target.id;
+      if (id === 'hm-case') { const m = cases.find(k => caseLabel(k) === e.target.value || k.caseId === e.target.value.trim()); if (m) { c = m; draw_(); } }
+      if (id === 'hm-att') { const v = e.target.value; $('hm-vid').hidden = v === 'in-person'; if (v === 'video') $('hm-room').value = 'Videoconference'; else if ($('hm-room').value === 'Videoconference') $('hm-room').value = roomFor(c, val('hm-off')); }
+      if (id === 'hm-off' && val('hm-att') !== 'video') $('hm-room').value = roomFor(c, e.target.value); },
+    body: (isNew ? fld('Case', 'hm-case', '', { ph: 'Start typing a case number or name', list: 'hm-cases', hint: 'Choose the case this hearing is for.' }) + dlist('hm-cases', cases.filter(k => !/closed|disposed/i.test(k.status || '')).map(caseLabel)) : '')
+      + g2(`<label class="f"><span>Hearing type</span><input id="hm-type" value="${esc(h.type || '')}" list="hm-types" placeholder="e.g. Motion Hearing"></label><datalist id="hm-types"></datalist>`, fld('Date and time', 'hm-date', inDT(parse(h.date)), { type: 'datetime-local' }))
+      + g2(`<label class="f"><span>Presiding officer</span><select id="hm-off"></select></label>`, fld('Location', 'hm-room', '', { hint: 'Follows the judge\'s courtroom: Chief Judge 1, Judge 2, Magistrate 3.' }))
+      + g2(`<div id="hm-attw">${selF('How parties attend', 'hm-att', ATTEND, att0)}</div>`, `<label class="f"><span id="hm-minl">Length (minutes)</span><input id="hm-min" type="number" value="${esc(h.minutes || '')}" placeholder="${MINS[h.type] || 30}"></label>`)
+      + `<div id="hm-vid"><label class="f"><span id="hm-urll">Video link</span><input id="hm-url" value="${esc(h.videoUrl || '')}" placeholder="https://…"><small>Parties see this on their hearing. Leave blank to tell them to contact the clerk.</small></label></div>`
+      + fld('Requested by', 'hm-req', h.requestedBy || '', { ph: 'e.g. Defense Counsel, Court, Plaintiff' }) + area('Notes', 'hm-notes', h.notes || '')
+      + `<label class="opt"><input type="checkbox" id="hm-over"><div><b>Schedule even if it conflicts</b><small>Only needed when the judicial officer or courtroom is already booked at this time.</small></div></label>`,
+    onOk: async () => {
+      if (isNew) { const m = cases.find(k => caseLabel(k) === val('hm-case') || k.caseId === val('hm-case')); if (!m) bad('Choose a case from the list.'); c = m; }
+      const type = val('hm-type'), d = parse(val('hm-date')); if (!type || !d) bad('Enter a hearing type and a date and time.');
+      const msc = isMsc(c), officer = val('hm-off') || c.judge || null, attendance = msc ? 'hybrid' : val('hm-att') || 'in-person', courtroom = !msc && attendance === 'video' ? 'Videoconference' : val('hm-room') || null;
+      const o = { type, date: d.toISOString(), officer, courtroom, attendance, videoUrl: attendance === 'in-person' ? null : val('hm-url') || null, minutes: parseInt(val('hm-min'), 10) || null, requestedBy: val('hm-req') || null, notes: val('hm-notes') || null, result: null };
+      const clash = hearingConflicts(o, c, x?.key); if (clash.length && !$('hm-over').checked) bad('Scheduling conflict: ' + clash.join('; ') + '. Check “Schedule even if it conflicts” to continue.');
+      await hearingMutate(c, x ? x.h : null, old => ({ ...(old || {}), ...o }), isNew ? `Scheduled hearing: ${type} on ${fmtDate(d)}` : `Rescheduled hearing: ${type} to ${fmtDate(d)}`,
+        () => ({ type: 'event', date: now(), description: isNew ? `Hearing scheduled: ${type} on ${fmtDT(d)}` : `Hearing rescheduled: ${type} — now ${fmtDT(d)}`, judge: officer }));
+      await notify(c, { type: 'Notice of Hearing', title: 'Notice of Hearing', text: `${type} scheduled for ${fmtDT(d)} before ${officer || 'the assigned judicial officer'}. ${how(o, c)}` });
+      note = `Hearing ${isNew ? 'scheduled' : 'updated'} for ${fmtDT(d)}. The parties were notified automatically.`; noteKind = 'ok';
+    } });
+  if (c) draw_(); else { $('hm-off').innerHTML = '<option value="">Choose a case first</option>'; $('hm-types').innerHTML = DTYPES.map(t => `<option value="${esc(t)}">`).join(''); $('hm-room').value = ''; $('hm-vid').hidden = att0 === 'in-person'; }
+}
+function resultModal(x) {
+  const msc = isMsc(x.c);
+  modal({ title: 'Record hearing result', sub: `${caption(x.c)} · ${x.h.type}`, ok: 'Save result', okCls: 'good',
+    body: `<div class="quote">${esc(x.h.type)} — ${esc(fmtDT(x.when))}</div>` + fld('Result', 'rs-res', '', { ph: msc ? 'Argued, or Submitted without argument' : 'e.g. Motion granted, Adjourned', list: 'rs-list' }) + dlist('rs-list', msc ? ['Argued', 'Submitted without argument'] : ['Motion granted', 'Motion denied', 'Adjourned', 'Held — order to follow', 'Defendant failed to appear'])
+      + (msc ? fld('Recording link (optional)', 'rs-rec', '', { ph: 'https://…', hint: 'Shown on the public oral arguments page.' }) : '') + area('Additional notes for the docket', 'rs-notes') + `<p class="m">Recorded by ${esc(account.name)} (${esc(role)}).</p>`,
+    onOk: async () => { const result = val('rs-res'); if (!result) bad('Enter a result.'); const n = val('rs-notes');
+      await hearingMutate(x.c, x.h, h => ({ ...h, result, ...(msc && val('rs-rec') ? { recordingUrl: val('rs-rec') } : {}) }), `Recorded hearing result: ${x.h.type} — ${result}`, () => ({ type: 'event', date: now(), description: `Hearing held: ${x.h.type} — Result: ${result}${n ? `. ${n}` : ''}`, judge: x.h.officer || x.c.judge || null }));
+      note = 'Result recorded and added to the docket.'; noteKind = 'ok'; } });
+}
+function continueModal(x) {
+  modal({ title: 'Continue hearing', sub: `${caption(x.c)} · ${x.h.type}`, ok: 'Continue hearing', body: `<div class="quote">Currently ${esc(fmtDT(x.when))}</div>` + fld('New date and time', 'ct-date', inDT(x.when), { type: 'datetime-local' }),
+    onOk: async () => { const d = parse(val('ct-date')); if (!d) bad('Choose the new date and time.');
+      await hearingMutate(x.c, x.h, h => ({ ...h, date: d.toISOString(), result: null, notes: (h.notes ? h.notes + ' — ' : '') + 'Continued from ' + fmtDate(x.when) }), `Continued hearing: ${x.h.type} to ${fmtDate(d)}`, () => ({ type: 'event', date: now(), description: `Hearing continued: ${x.h.type} — new date ${fmtDT(d)}`, judge: x.h.officer || x.c.judge || null }));
+      await notify(x.c, { type: 'Notice of Hearing', title: 'Notice of Hearing (Continued)', text: `${x.h.type} originally set for ${fmtDT(x.when)} has been continued to ${fmtDT(d)}.` }); note = 'Hearing continued. The parties were notified automatically.'; noteKind = 'ok'; } });
+}
+function detail(x) {
+  const h = x.h, st = stateOf(x), cf = conflicts.get(x.key), msc = isMsc(x.c), where = x.mode === 'video' ? 'Videoconference' : roomLabel(h.courtroom || x.c.courtroomNumber) || 'To be announced', live = st === 'upcoming' || st === 'needs';
+  modal({ title: caption(x.c), sub: `${fmtLong(x.when)} at ${fmtTime(x.when)}`,
+    body: `${cf ? `<div class="al"><b>Scheduling conflict.</b> ${cf.map(esc).join('; ')}.</div>` : ''}<dl class="kv"><div><dt>Case number</dt><dd>${esc(x.c.caseId)}</dd></div><div><dt>Hearing type</dt><dd>${esc(h.type || 'Hearing')}</dd></div><div><dt>Status</dt><dd>${PILL[st][1]}</dd></div>
+      <div><dt>Judicial officer</dt><dd>${esc(h.officer || x.c.judge || 'Not assigned')}</dd></div><div><dt>Location</dt><dd>${esc(where)}</dd></div><div><dt>${msc ? 'Viewing' : 'Attendance'}</dt><dd>${esc(msc ? 'In person and livestream' : ATT[x.mode])}</dd></div>
+      <div><dt>${msc ? 'Minutes per side' : 'Expected length'}</dt><dd>${x.mins >= 60 && !msc ? x.mins / 60 + ' hr' : x.mins + ' min'}</dd></div><div><dt>Requested by</dt><dd>${esc(h.requestedBy || '—')}</dd></div><div><dt>Court</dt><dd>${esc(x.c.court)}</dd></div></dl>
+      ${h.videoUrl ? `<p><a href="${esc(h.videoUrl)}" target="_blank" rel="noopener">${msc ? 'Livestream' : 'Video'} link ↗</a></p>` : x.mode !== 'in-person' && live ? '<p class="m">No video link is set yet. Reschedule or edit the hearing to add one.</p>' : ''}
+      ${h.recordingUrl ? `<p><a href="${esc(h.recordingUrl)}" target="_blank" rel="noopener">Recording ↗</a></p>` : ''}${hv(h.result) ? `<p><b>Result:</b> ${esc(h.result)}</p>` : ''}${hv(h.notes) ? `<p class="m">${esc(h.notes)}</p>` : ''}`,
+    extra: `<a class="btn outline" href="${BASE}cases/manage/#${encodeURIComponent(x.c._id)}">Open case</a>${live ? '' : ''}${st !== 'cancelled' && !hv(h.result) ? `<button class="btn outline" type="button" data-a="ics:${esc(x.key)}">Add to calendar</button>` : ''}`
+      + (st !== 'cancelled' ? `<button class="btn outline" type="button" data-a="edit:${esc(x.key)}">Reschedule or edit</button>` : '') + (live ? `<button class="btn outline" type="button" data-a="cont:${esc(x.key)}">Continue</button><button class="btn danger" type="button" data-a="cx:${esc(x.key)}">Cancel hearing</button>` : '')
+      + (!hv(h.result) ? `<button class="btn good" type="button" data-a="res:${esc(x.key)}">✓ Record result</button>` : '') });
+}
+function ics(x) {
+  const f = d => `${d.getFullYear()}${p2(d.getMonth() + 1)}${p2(d.getDate())}T${p2(d.getHours())}${p2(d.getMinutes())}00`, t = s => String(s || '').replace(/[\\;,]/g, m => '\\' + m).replace(/\n/g, '\\n'), e = new Date(x.when.getTime() + (isMsc(x.c) ? x.mins * 2 + 10 : x.mins) * 6e4);
+  const body = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Michigan Courts//Online Portal//EN', 'BEGIN:VEVENT', `UID:${x.key}@migovt.org`, `DTSTAMP:${new Date().toISOString().replace(/[-:]/g, '').slice(0, 15)}Z`, `DTSTART:${f(x.when)}`, `DTEND:${f(e)}`,
+    `SUMMARY:${t(`${x.h.type}: ${caption(x.c)}`)}`, `LOCATION:${t(x.mode === 'video' ? 'Videoconference' : [roomLabel(x.h.courtroom || x.c.courtroomNumber), x.c.court].filter(Boolean).join(', '))}`, `DESCRIPTION:${t(`Case ${x.c.caseId}. ${x.h.officer || ''}`)}`, 'END:VEVENT', 'END:VCALENDAR'].join('\r\n');
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([body], { type: 'text/calendar' })); a.download = `hearing-${x.c.caseId.replace(/\W+/g, '-')}.ics`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 3000);
+}
+
+/* ── Actions ────────────────────────────────────────────────────────── */
+const byKey = k => all.find(x => x.key === k);
+async function act(a) {
+  const [n, ...r] = a.split(':'), v = r.join(':');
+  try {
+    if (n === 'view') { view = v; draw(); } else if (n === 'day') { sel = v; drawBody(); } else if (n === 'today') { const d = new Date(); ym = { y: d.getFullYear(), m: d.getMonth() }; sel = null; drawBody(); }
+    else if (n === 'shift') { const d = new Date(ym.y, ym.m + Number(v), 1); ym = { y: d.getFullYear(), m: d.getMonth() }; sel = null; drawBody(); }
+    else if (n === 'new') hearingModal(null, null); else if (n === 'open') detail(byKey(v)); else if (n === 'edit') hearingModal(byKey(v).c, byKey(v));
+    else if (n === 'res') resultModal(byKey(v)); else if (n === 'cont') continueModal(byKey(v)); else if (n === 'ics') ics(byKey(v));
+    else if (n === 'cx') { const x = byKey(v); if (await ask('Cancel hearing', `Cancel the ${esc(x.h.type)} on ${esc(fmtDT(x.when))}? The parties will be notified automatically.`, 'Cancel hearing', 'danger')) {
+      await hearingMutate(x.c, x.h, h => ({ ...h, result: 'Cancelled' }), `Cancelled hearing: ${x.h.type} on ${fmtDate(x.when)}`, () => ({ type: 'event', date: now(), description: `Hearing cancelled: ${x.h.type} (was set for ${fmtDT(x.when)})` }));
+      await notify(x.c, { type: 'Notice of Hearing', title: 'Notice of Hearing Cancelled', text: `The ${x.h.type} set for ${fmtDT(x.when)} has been cancelled.` }); flash('Hearing cancelled. The parties were notified automatically.'); } }
+  } catch (e) { console.error(e); flash(errText(e), 'bad'); }
+}
+document.addEventListener('click', e => { if (dlg.contains(e.target)) return; const el = e.target.closest('[data-a]'); if (el) act(el.dataset.a); });
+const setF = (k, v) => { F[k] = v; drawBody(); };
+document.addEventListener('input', e => { if (e.target.id === 'f-q') setF('q', e.target.value); });
+document.addEventListener('change', e => { const m = { 'f-status': 'status', 'f-when': 'when', 'f-officer': 'officer', 'f-type': 'type', 'f-attend': 'attend', 'f-court': 'court' }[e.target.id]; if (m) setF(m, e.target.value); else if (e.target.id === 'f-mine') setF('mine', e.target.checked); });
+
+try { await loadAll(); } catch (e) { console.error(e); }
+draw();
+}
+</script>
+</body>
+</html>

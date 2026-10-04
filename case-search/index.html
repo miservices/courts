@@ -906,7 +906,9 @@ function buildHearings(c){
           <div class="item"><div class="k">Officer / court</div>${val((h.officer || h.court) ? `${h.officer || h.court}${h.courtroom ? ' · ' + h.courtroom : ''}` : null)}</div>
           <div class="item"><div class="k">Requested by</div>${val(h.requestedBy)}</div>
           <div class="item"><div class="k">Result</div>${val(h.result)}</div>
+          <div class="item"><div class="k">How to attend</div>${val(({'in-person':'In person only',hybrid:'In person or by video',video:'Video only'})[h.attendance] || null)}</div>
         </div>
+        ${isUp(x) && hasVal(h.videoUrl) && h.result !== 'Cancelled' ? `<div class="hnotes"><a href="${esc(safeUrl(h.videoUrl))}" target="_blank" rel="noopener">Join by video</a></div>` : ''}
         ${hasVal(h.notes) ? `<div class="hnotes">${esc(h.notes)}</div>` : ''}
       </div></div>`;
   };

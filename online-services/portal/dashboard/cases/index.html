@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Cases | Online Portal</title>
+<link rel="icon" type="image/png" href="/courts/images/favicon.png">
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=Source+Serif+4:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/courts/online-services/portal/dashboard/assets/css/dashboard.css?v=5">
+<style>
+.m{color:var(--muted);font-weight:400}
+.tools{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px;align-items:center}.tools .in{flex:1;min-width:220px;width:auto}.tools select.in{flex:0 0 auto;min-width:0}
+.rowlink{text-decoration:none;color:var(--navy);font-weight:600}.rowlink:hover{text-decoration:underline}
+tr[data-open]{cursor:pointer}
+.more{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:4px;color:var(--muted)}
+.ch{padding:24px 28px}.pills{display:flex;gap:8px;flex-wrap:wrap}
+.ch-title{font-size:27px;margin:10px 0 2px}.ch-num{color:var(--muted)}.ch-num b{color:var(--text);font-variant-numeric:tabular-nums}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:16px 28px;margin-top:20px;padding-top:18px;border-top:1px solid var(--line)}
+.facts dt{font-size:13px;color:var(--muted)}.facts dd{font-weight:600;overflow-wrap:anywhere}
+.al{border-left:4px solid;border-radius:4px;padding:11px 16px;margin-bottom:8px}
+.al.hi{border-color:#b3261e;background:#fdf1f0;color:#7a1b13}.al.med{border-color:#b7791f;background:#fdf6e7;color:#6e4a10}.al.low{border-color:var(--blue);background:#eaf2fc;color:#17335f}
+.al a{color:inherit;font-weight:600}.alerts{margin-bottom:16px}
+.dgrid{display:grid;grid-template-columns:minmax(0,1fr) 290px;gap:20px;align-items:start}
+.dside{position:sticky;top:88px}.dside .btn{display:block;width:100%;text-align:center;margin-bottom:8px}.dside hr{border:0;border-top:1px solid var(--line);margin:14px 0}
+@media(max-width:1000px){.dgrid{grid-template-columns:1fr}.dside{position:static}}
+.bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px}.bar .in{flex:1;min-width:200px;width:auto}
+.chips{display:flex;gap:6px;flex-wrap:wrap}.chips button{font:inherit;font-weight:600;font-size:14px;padding:6px 14px;border-radius:16px;border:1px solid var(--line);background:#fff;color:var(--navy);cursor:pointer}
+.chips button.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+.ent{display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:14px;padding:15px 22px;border-top:1px solid #e3e9f1}.ent:first-child{border-top:0}
+.en{color:var(--muted);font-variant-numeric:tabular-nums;font-weight:600;padding-top:2px}
+.em{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:4px;color:var(--muted);font-size:14px}
+.edsc{font-weight:600}.struck .edsc{text-decoration:line-through;color:var(--muted)}.ecm{color:var(--muted);font-size:14.5px;margin-top:2px}
+.ea{display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap;justify-content:flex-end}
+@media(max-width:700px){.ent{grid-template-columns:1fr}.ea{justify-content:flex-start}}
+.hrow{display:grid;grid-template-columns:64px minmax(0,1fr);gap:16px;padding:16px 22px;border-top:1px solid #e3e9f1}.hrow:first-child{border-top:0}
+.hdate{text-align:center;border:1px solid var(--line);border-radius:4px;background:#f8fafd;padding:6px 0;align-self:start}
+.hdate small{font-size:12px;text-transform:uppercase;letter-spacing:.05em}.hdate b{display:block;font-family:var(--font-head);font-size:24px;line-height:1.1;color:var(--navy)}
+.hdate span{display:block;font-size:12px;color:var(--muted)}
+.hh{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap}
+.grp{font-family:var(--font-head);color:var(--navy);font-size:17px;padding:14px 22px 6px;background:#f4f7fb;border-top:1px solid #e3e9f1}.grp:first-child{border-top:0}
+.kv{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px 22px;margin-top:12px}.kv dt{font-size:13px;color:var(--muted)}.kv dd{font-weight:600;overflow-wrap:anywhere}
+.item{border:1px solid var(--line);border-radius:4px;padding:16px 18px;margin-bottom:12px;background:#fff}
+.item.mine{border-left:4px solid var(--blue)}
+.ih{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap}.ih h4{font-family:var(--font-head);font-size:18px;color:var(--navy)}
+.fin3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:18px}.fin3 div{background:#f4f7fb;border-radius:4px;padding:12px 16px}.fin3 span{display:block;font-size:13px;color:var(--muted)}.fin3 b{font-family:var(--font-head);font-size:22px;color:var(--navy)}
+.quote{background:#f4f7fb;border-radius:4px;padding:10px 14px;margin-bottom:16px;color:var(--navy)}
+.sealed{color:var(--muted);font-style:italic}
+</style>
+</head>
+<body>
+<aside class="sidebar" id="sidebar-root" aria-label="Portal navigation"></aside>
+<div class="scrim" id="scrim" hidden></div>
+<div class="main">
+  <header class="topbar">
+    <div class="topbar-left">
+      <button class="menu-btn" id="menu-btn" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="sidebar-root"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+      <div><span class="topbar-eyebrow">Online Portal</span><span class="topbar-page-title" id="topbar-title">My cases</span></div>
+    </div>
+    <div class="topbar-right"><span class="topbar-date" id="topbar-date"></span><div class="notif-wrap" id="notif-root"></div></div>
+  </header>
+  <main class="page-body">
+    <div class="page-head"><div><h2 id="page-title">My cases</h2><p id="page-subtitle"></p></div><div id="page-action"></div></div>
+    <div id="page-body"><div class="loading-inline"><span class="spin-sm"></span>Loading your cases…</div></div>
+  </main>
+</div>
+<div class="auth-loading-overlay" id="auth-overlay" role="status"><div class="alo-title">Online Portal</div><div class="spin"></div><div>Verifying your session…</div></div>
+
+<script type="module">
+import { boot, db, $, esc, has, SELF, STAFF, colFor, DISTRICT_COURT, SUPREME_COURT } from '/courts/online-services/portal/dashboard/assets/js/portal-shell.js';
+import { collection, getDocs, getDoc, doc, query, where } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+
+const { account, role } = await boot({ id: 'cases', title: 'My cases', subtitle: 'Cases where you are a party or an attorney of record.' });
+const root = $('page-body'), BASE = 'https://migovt.org/courts/online-services/portal/dashboard/';
+if (!has(SELF, role)) {
+  $('page-subtitle').textContent = '';
+  root.innerHTML = `<section class="card"><div class="empty"><strong>This page is for litigants and attorneys</strong><p>Court staff manage cases in Case Management.</p><a class="btn" href="${BASE}cases/manage/">Open Case Management</a></div></section>`;
+} else await main();
+
+async function main() {
+/* ── Formatting ─────────────────────────────────────────────────────── */
+const hv = v => v !== undefined && v !== null && String(v).trim() !== '';
+const parse = s => { const d = new Date(s); return isNaN(d) ? null : d; };
+const dateOnly = d => d.getUTCHours() === 0 && d.getUTCMinutes() === 0 && d.getUTCSeconds() === 0 && d.getUTCMilliseconds() === 0;   // older records stored dates at UTC midnight
+const fmtDate = s => { if (!hv(s)) return ''; const d = parse(s); return d ? d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', ...(dateOnly(d) ? { timeZone: 'UTC' } : {}) }) : String(s); };
+const fmtDT = s => { const d = hv(s) && parse(s); return d ? d.toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' }) : ''; };
+const fmtTime = s => { const d = hv(s) && parse(s); return d ? d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : ''; };
+const money = n => '$' + Number(n || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const ago = s => { if (!s) return ''; const m = Math.floor((Date.now() - new Date(s)) / 6e4); return m < 1 ? 'just now' : m < 60 ? m + 'm ago' : m < 1440 ? Math.floor(m / 60) + 'h ago' : Math.floor(m / 1440) + 'd ago'; };
+const norm = s => String(s || '').toLowerCase().replace(/\s+/g, ' ').trim();
+const empty = (t, p) => `<div class="empty"><strong>${esc(t)}</strong>${p ? `<p>${esc(p)}</p>` : ''}</div>`;
+const kv = rows => `<dl class="kv">${rows.filter(r => hv(r[1])).map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join('')}</dl>`;
+const btn = (a, label, cls = 'outline sm') => `<button class="btn ${cls}" type="button" data-a="${a}">${label}</button>`;
+const stPill = s => { const t = String(s || '').toLowerCase(); return `<span class="pill ${/closed|disposed/.test(t) ? 'plain' : /pending|deferred/.test(t) ? 'warn' : t === 'mediation' ? 'mid' : 'live'}">${esc(s || 'No status')}</span>`; };
+const closedOf = c => /closed|disposed/i.test(c.status || '');
+const hashFor = id => '#' + encodeURIComponent(id);
+const ATT = { 'in-person': 'In person only', hybrid: 'In person or video', video: 'Video only' };
+const roomLabel = v => /^\d+$/.test(String(v || '')) ? 'Courtroom ' + v : v || '';
+
+/* ── Case helpers ───────────────────────────────────────────────────── */
+const sideOf = r => /defendant|respondent|appellee/i.test(r || '') ? 1 : /plaintiff|petitioner|prosecut|appellant|applicant|complainant|claimant/i.test(r || '') ? 0 : null;
+function plist(c) {
+  if (Array.isArray(c.parties)) return c.parties.filter(x => x && x.name);
+  const out = []; Object.values(c.parties || {}).forEach(v => Array.isArray(v) ? v.forEach(x => x && out.push(x)) : v && typeof v === 'object' && out.push(v));   // older records kept named slots
+  return out.filter(x => x.name);
+}
+const counselOf = p => { const a = [...(p.attorneys || [])]; if (p.attorney?.name && !a.some(x => x.name === p.attorney.name)) a.unshift(p.attorney); return a.filter(x => x && x.name); };
+const subOf = c => c.appellateSubtype || c.civilSubtype || c.administrativeSubtype || c.offenseType || '';
+const judgeName = c => c.judge || (Array.isArray(c.judges) ? c.judges.join(', ') : '') || '';
+const isCrim = c => c.caseType === 'Criminal' || c.caseType === 'Traffic';
+function caption(c) {
+  if (hv(c.caseTitleOverride)) return c.caseTitleOverride;
+  const l = plist(c), t = String(c.caseType || '').toLowerCase(), a = l.find(x => sideOf(x.role) === 0), b = l.find(x => sideOf(x.role) === 1);
+  if (t === 'criminal' || t === 'traffic') return a && b ? `${a.name} v. ${b.name}` : `State of Michigan v. ${b?.name || 'Unknown'}`;
+  if (a && b) return `${a.name} v. ${b.name}`; if (a) return `Ex parte ${a.name}`; if (b) return `In re ${b.name}`;
+  return c.administrativeSubtype || c.caseId || 'Case record';
+}
+const isServed = p => p.served === true || (p.served === undefined && hv(p.serviceDate));
+const balanceOf = c => { const o = c.financialOrders || [], owed = o.reduce((s, x) => s + (x.amount || 0), 0), paid = o.reduce((s, x) => s + (x.payments || []).reduce((t, p) => t + (p.amount || 0), 0), 0); return { owed, paid, bal: Math.max(0, owed - paid) }; };
+const nextHearing = c => (c.hearings || []).filter(h => !hv(h.result) && parse(h.date) >= new Date()).sort((a, b) => new Date(a.date) - new Date(b.date))[0];
+
+/* How this person is connected to a case: as a party, as an attorney for a party, or as the person who filed it. */
+function link(c) {
+  const me = norm(account.name), bar = String(account.barNumber || '').trim(), l = plist(c);
+  const asParty = l.filter(p => norm(p.name) === me);
+  const clients = l.filter(p => counselOf(p).some(a => norm(a.name) === me || (bar && String(a.barNumber || '').trim() === bar)));
+  const filer = (c.relatedUserIds || []).includes(account.uid);
+  if (!asParty.length && !clients.length && !filer) return null;
+  const label = asParty.length ? asParty.map(p => p.role).join(', ') : clients.length ? 'Attorney for ' + clients.map(p => p.name).join(' and ') : 'Filer';
+  return { asParty, clients, filer, label, names: [...asParty, ...clients].map(p => norm(p.name)) };
+}
+
+/* ── State ──────────────────────────────────────────────────────────── */
+let cases = [], mine = [], subs = [], cur = null, tab = 'overview', dFilter = 'all', dQ = '';
+const LS = { q: '', status: 'active', shown: 25 };
+
+async function loadAll() {
+  const safe = p => p.catch(() => ({ docs: [] }));
+  const [d, m, f] = await Promise.all([safe(getDocs(collection(db, 'cases'))), safe(getDocs(collection(db, 'mscCases'))), safe(getDocs(query(collection(db, 'pendingFilings'), where('filedByUid', '==', account.uid))))]);
+  cases = [...d.docs, ...m.docs].map(x => ({ ...x.data(), _id: x.id }));
+  mine = cases.map(c => ({ c, lk: link(c) })).filter(x => x.lk);
+  subs = f.docs.map(x => ({ ...x.data(), _id: x.id }));
+}
+const setHead = (sub, action = '') => { $('page-subtitle').textContent = sub; $('page-action').innerHTML = action; };
+const idFromHash = () => { try { return decodeURIComponent(location.hash.slice(1)).replace(/^case-/, ''); } catch { return ''; } };
+const route = () => { const id = idFromHash(); if (id) showCase(id); else showList(); };
+window.addEventListener('hashchange', route);
+const returnedFor = c => subs.filter(f => /returned/i.test(f.status || '') && (f.caseFirestoreId === c._id || f.linkedCaseFirestoreId === c._id));
+
+/* ── List ───────────────────────────────────────────────────────────── */
+function attention(c, lk) { const n = new Date(), nh = nextHearing(c), soon = nh && (parse(nh.date) - n) / 864e5 <= 7; return !closedOf(c) && (soon || balanceOf(c).bal > 0 && lk.asParty.length > 0 || returnedFor(c).length > 0); }
+function showList() {
+  cur = null; setHead('Cases where you are a party or an attorney of record.');
+  const active = mine.filter(x => !closedOf(x.c)), in30 = Date.now() + 30 * 864e5;
+  const hearings = active.reduce((n, x) => n + (x.c.hearings || []).filter(h => !hv(h.result) && parse(h.date) >= new Date() && parse(h.date) <= in30).length, 0);
+  const due = mine.filter(x => x.lk.asParty.length).reduce((s, x) => s + balanceOf(x.c).bal, 0), att = mine.filter(x => attention(x.c, x.lk)).length;
+  const stat = (l, v, al) => `<div class="stat ${al ? 'alert-stat' : ''}"><span>${l}</span><b>${v}</b></div>`;
+  if (!mine.length) { root.innerHTML = `<section class="card">${empty('No cases linked to your account', 'Cases appear here when you are listed as a party or attorney of record. A new case appears after the clerk accepts your filing. You can look up any public case with case search.')}<div class="acts" style="justify-content:center;margin-top:8px"><a class="btn" href="${BASE}file/">File a case</a><a class="btn outline" href="https://migovt.org/courts/case-search/">Search cases</a></div></section>`; return; }
+  root.innerHTML = `<div class="stats">${stat('Active cases', active.length)}${stat('Hearings, next 30 days', hearings)}${stat('Balance due', money(due), due > 0)}${stat('Need your attention', att, att > 0)}</div>
+    <div class="tools"><input class="in" id="ls-q" type="search" placeholder="Search by case number, party, or judge" aria-label="Search your cases" value="${esc(LS.q)}">
+      <select class="in" id="ls-status" aria-label="Status">${[['active', 'Active cases'], ['closed', 'Closed cases'], ['all', 'All cases']].map(([v, l]) => `<option value="${v}"${v === LS.status ? ' selected' : ''}>${l}</option>`).join('')}</select></div>
+    <section class="card flush"><div id="ls-res"></div></section><div class="more" id="ls-more"></div>`;
+  drawResults();
+}
+function drawResults() {
+  const q = LS.q.toLowerCase().trim();
+  const l = mine.filter(({ c }) => (LS.status === 'all' || (LS.status === 'closed') === closedOf(c)) && (!q || [caption(c), c.caseId, judgeName(c), plist(c).map(p => p.name).join(' ')].join(' ').toLowerCase().includes(q)))
+    .sort((a, b) => new Date(b.c.dates?.lastUpdated || b.c.dates?.filed || 0) - new Date(a.c.dates?.lastUpdated || a.c.dates?.filed || 0));
+  const shown = l.slice(0, LS.shown);
+  $('ls-res').innerHTML = shown.length ? `<div class="table-scroll"><table><thead><tr><th>Case</th><th>Your role</th><th>Status</th><th>Next hearing</th><th>Balance</th><th>Updated</th></tr></thead><tbody>${shown.map(({ c, lk }) => { const nh = nextHearing(c), b = balanceOf(c).bal;
+      return `<tr data-open="${esc(c._id)}"><td><a class="rowlink" href="${hashFor(c._id)}">${esc(caption(c))}</a><small>${esc(c.caseId)} · ${esc(c.court)}</small></td><td>${esc(lk.label)}</td><td>${stPill(c.status)}${attention(c, lk) ? ' <span class="pill warn">Needs attention</span>' : ''}</td>
+      <td class="nw">${nh ? esc(fmtDate(nh.date)) + `<small>${esc(fmtTime(nh.date))}</small>` : '<span class="m">None</span>'}</td><td class="nw">${lk.asParty.length && b > 0 ? money(b) : '<span class="m">—</span>'}</td><td class="nw">${esc(fmtDate(c.dates?.lastUpdated || c.dates?.filed))}</td></tr>`; }).join('')}</tbody></table></div>`
+    : empty('No cases found', q ? 'Try a different search.' : LS.status === 'active' ? 'You have no active cases.' : 'Nothing to show.');
+  $('ls-more').innerHTML = l.length ? `<span>Showing ${shown.length} of ${l.length}</span>${l.length > shown.length ? btn('more', 'Show more') : ''}` : '';
+}
+
+/* ── Case ───────────────────────────────────────────────────────────── */
+async function showCase(id) {
+  setHead('Loading…'); root.innerHTML = '<div class="loading-inline"><span class="spin-sm"></span>Loading case…</div>';
+  let x = mine.find(m => m.c._id === id || m.c.caseId === id);
+  if (!x) { setHead('', '<a class="btn outline" href="#">All my cases</a>'); root.innerHTML = `<section class="card">${empty('Case not found', 'This case is not linked to your account. You can look up public cases with case search.')}<div class="acts" style="justify-content:center;margin-top:8px"><a class="btn outline" href="https://migovt.org/courts/case-search/">Search cases</a></div></section>`; return; }
+  const fresh = await getDoc(doc(db, colFor(x.c.court), x.c._id)).catch(() => null);   // always show the latest record
+  cur = fresh?.exists() ? { ...fresh.data(), _id: fresh.id } : x.c; cur._lk = link(cur) || x.lk;
+  tab = 'overview'; dFilter = 'all'; dQ = ''; window.scrollTo(0, 0); draw();
+}
+function alerts() {
+  const out = [], n = new Date(), lk = cur._lk;
+  (cur.hearings || []).forEach(h => { const d = parse(h.date); if (!d || hv(h.result)) return; const diff = (d - n) / 864e5; if (diff >= 0 && diff <= 7) out.push(['hi', `<b>Hearing coming up:</b> ${esc(h.type || 'Hearing')} on ${esc(fmtDate(h.date))} at ${esc(fmtTime(h.date))}${h.courtroom ? ', ' + esc(roomLabel(h.courtroom)) : ''}.`]); });
+  const b = balanceOf(cur); if (b.bal > 0 && lk.asParty.length) out.push(['med', `You may owe <b>${money(b.bal)}</b> on this case. <a href="${BASE}financials/">View My financials</a>.`]);
+  lk.asParty.filter(p => sideOf(p.role) === 1 && isServed(p) && !hv(p.answerDate) && !isCrim(cur) && !closedOf(cur)).forEach(p => out.push(['med', `You were served${hv(p.serviceDate) ? ' on ' + esc(fmtDate(p.serviceDate)) : ''}. Check your summons for the deadline to respond.`]));
+  returnedFor(cur).forEach(f => out.push(['hi', `A filing was <b>returned by the clerk</b>: ${esc(f.documentType || 'document')}. <a href="${BASE}file/">Open My filings</a> to correct and refile it.`]));
+  if (cur.sealed) out.push(['low', 'This case is sealed. It is hidden from public case search, and only the parties and the court can see it.']);
+  if (!cur.judge && !closedOf(cur)) out.push(['low', 'A judge has not been assigned yet.']);
+  return out;
+}
+function draw() {
+  if (!cur) return;
+  setHead(`Case No. ${cur.caseId}`, '<a class="btn outline" href="#">All my cases</a>');
+  const crim = isCrim(cur), nh = nextHearing(cur), b = balanceOf(cur), lk = cur._lk, myFilings = subs.filter(f => f.caseFirestoreId === cur._id || f.linkedCaseFirestoreId === cur._id);
+  const pubEvents = (cur.events || []).length, hasRes = !crim && ((cur.judgments || []).length + (cur.adr || []).length);
+  const tabs = [['overview', 'Overview'], ['docket', 'Docket', pubEvents], ['parties', 'Parties', plist(cur).length], ['hearings', 'Hearings', (cur.hearings || []).length],
+    ...(crim ? [['criminal', 'Charges and outcomes', (cur.charges || []).length + (cur.bonds || []).length + (cur.sentencing || []).length]] : hasRes ? [['judgments', 'Judgments and ADR', hasRes]] : []),
+    ...((cur.financialOrders || []).length ? [['financials', 'Financials', cur.financialOrders.length]] : []), ['filings', 'My filings', myFilings.length]];
+  const body = { overview: overviewTab, docket: docketTab, parties: partiesTab, hearings: hearingsTab, criminal: criminalTab, judgments: judgmentsTab, financials: financialsTab, filings: () => filingsTab(myFilings) }[tab]();
+  const al = alerts(), sub = subOf(cur);
+  root.innerHTML = `<section class="card ch"><div class="pills"><span class="pill plain">${esc(cur.caseType || 'Case')}${sub ? ' · ' + esc(sub) : ''}</span>${stPill(cur.status)}<span class="pill live">${esc(lk.label)}</span></div>
+      <h3 class="ch-title">${esc(caption(cur))}</h3><p class="ch-num">Case No. <b>${esc(cur.caseId)}</b> · ${esc(cur.court)}</p>
+      <dl class="facts"><div><dt>Judge</dt><dd>${hv(judgeName(cur)) ? esc(judgeName(cur)) : '<span class="m">Not assigned yet</span>'}</dd></div><div><dt>Courtroom</dt><dd>${hv(cur.courtroomNumber) ? esc(roomLabel(cur.courtroomNumber)) : '<span class="m">—</span>'}</dd></div>
+        <div><dt>Date filed</dt><dd>${esc(fmtDate(cur.dates?.filed) || '—')}</dd></div><div><dt>Next hearing</dt><dd>${nh ? esc(fmtDate(nh.date)) + ' · ' + esc(fmtTime(nh.date)) : '<span class="m">None scheduled</span>'}</dd></div>
+        ${b.owed && lk.asParty.length ? `<div><dt>Balance</dt><dd>${money(b.bal)}</dd></div>` : ''}</dl></section>
+    ${al.length ? `<div class="alerts">${al.map(a => `<div class="al ${a[0]}">${a[1]}</div>`).join('')}</div>` : ''}
+    <div class="tabs" role="tablist">${tabs.map(t => `<button type="button" role="tab" aria-selected="${t[0] === tab}" class="${t[0] === tab ? 'on' : ''}" data-a="tab:${t[0]}">${t[1]}${t[2] ? `<i>${t[2]}</i>` : ''}</button>`).join('')}</div>
+    <div class="dgrid"><div>${body}</div><aside class="dside"><section class="card"><header><h3>What you can do</h3></header>
+      ${closedOf(cur) ? '' : `<a class="btn" href="${BASE}file/">File a document</a>`}<a class="btn outline" href="${BASE}hearings/">My hearings</a>${b.owed && lk.asParty.length ? `<a class="btn outline" href="${BASE}financials/">Pay or review fees</a>` : ''}<hr>
+      <small class="m">Filings in this case are entered on the docket automatically. New cases appear after the clerk accepts them. Questions about your case go to the clerk's office.</small></section></aside></div>`;
+}
+
+/* Overview */
+function overviewTab() {
+  const c = cur, lc = c.lowerCourt, orders = (c.events || []).filter(e => e.type === 'order' && !e.sealed).sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 3), nh = nextHearing(c);
+  return `${nh ? `<section class="card"><header><h3>Next hearing</h3>${btn(`ics:${(c.hearings || []).indexOf(nh)}`, 'Add to calendar')}</header>${kv([['Type', nh.type], ['Date', fmtDate(nh.date)], ['Time', fmtTime(nh.date)], ['Where', nh.attendance === 'video' ? 'Videoconference' : [roomLabel(nh.courtroom || c.courtroomNumber), c.court].filter(Boolean).join(' · ')], ['How to attend', ATT[nh.attendance || 'in-person']], ['Judicial officer', nh.officer || judgeName(c)]])}${nh.videoUrl ? `<p><a class="btn" href="${esc(nh.videoUrl)}" target="_blank" rel="noopener">Join by video ↗</a></p>` : ''}</section>` : ''}
+    <section class="card"><header><h3>Case details</h3></header>${hv(c.docketSummary) ? `<div class="quote">${esc(c.docketSummary)}</div>` : ''}
+      <dl class="details">${[['Case number', c.caseId], ['Court', c.court], ['Case type', c.caseType], ['Sub-type', subOf(c)], ['Status', c.status], ['Judge', judgeName(c)], ['Date filed', fmtDate(c.dates?.filed)], ['Date closed', fmtDate(c.dates?.closed)], ['Last updated', fmtDate(c.dates?.lastUpdated)]].filter(r => hv(r[1])).map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join('')}</dl></section>
+    ${lc ? `<section class="card"><header><h3>Lower court case</h3></header>${kv([['Court', lc.court], ['Case number', lc.caseNumber], ['Caption', lc.caption], ['Judge', lc.judge], ['Filed', fmtDate(lc.dateFiled)]])}</section>` : ''}
+    <section class="card"><header><h3>Recent orders</h3>${orders.length ? btn('tab:docket', 'Full docket') : ''}</header>${orders.length ? orders.map(e => `<div class="note"><b>${esc(e.description)}</b><small>${esc(fmtDate(e.date))}${e.judge ? ' · ' + esc(e.judge) : ''}</small>${e.documentLink ? `<a href="${esc(e.documentLink)}" target="_blank" rel="noopener">Open document ↗</a>` : ''}</div>`).join('') : '<p class="m">No orders have been entered yet.</p>'}</section>`;
+}
+
+/* Docket */
+function docketRows() {
+  const q = dQ.toLowerCase().trim(), kind = e => (e.type || 'event').toLowerCase(), label = { filing: 'Filing', order: 'Order', appearance: 'Appearance' };
+  const l = [...(cur.events || [])].filter(e => (dFilter === 'all' || (dFilter === 'other' ? !['filing', 'order'].includes(kind(e)) : kind(e) === dFilter)) && (!q || e.sealed ? !q : [e.description, e.comment, e.filedBy, e.confirmationNumber, e.judge].join(' ').toLowerCase().includes(q)))
+    .sort((a, b) => (new Date(b.date || 0) - new Date(a.date || 0)) || (b.eventNumber || 0) - (a.eventNumber || 0));
+  return l.length ? l.map(e => e.sealed ? `<div class="ent"><span class="en">${esc(e.eventNumber ?? '—')}</span><div><div class="em"><span>${esc(fmtDT(e.date))}</span><span class="pill bad">Sealed</span></div><div class="sealed">This docket entry is sealed.</div></div><div></div></div>`
+      : `<div class="ent${e.struck ? ' struck' : ''}"><span class="en">${esc(e.eventNumber ?? '—')}</span><div><div class="em"><span>${esc(fmtDT(e.date))}</span><span class="pill ${kind(e) === 'filing' ? 'live' : kind(e) === 'order' ? 'mid' : 'plain'}">${label[kind(e)] || 'Event'}</span>${e.struck ? '<span class="pill plain">Struck</span>' : ''}${e.confirmationNumber ? `<span>${esc(e.confirmationNumber)}</span>` : ''}</div>
+        <div class="edsc">${esc(e.description)}</div>${hv(e.comment) ? `<div class="ecm">${esc(e.comment)}</div>` : ''}${hv(e.filedBy) && kind(e) === 'filing' ? `<div class="ecm">Filed by ${esc(e.filedBy)}</div>` : ''}${hv(e.judge) && kind(e) === 'order' ? `<div class="ecm">${esc(e.judge)}</div>` : ''}</div>
+        <div class="ea">${e.documentLink ? `<a class="btn outline sm" href="${esc(e.documentLink)}" target="_blank" rel="noopener">Open document ↗</a>` : ''}</div></div>`).join('')
+    : empty('No docket entries', dQ || dFilter !== 'all' ? 'Nothing matches this filter.' : 'Nothing has been entered on this case yet.');
+}
+function docketTab() {
+  return `<div class="bar"><div class="chips">${[['all', 'All'], ['filing', 'Filings'], ['order', 'Orders'], ['other', 'Events']].map(x => `<button type="button" class="${dFilter === x[0] ? 'on' : ''}" data-a="dfilter:${x[0]}">${x[1]}</button>`).join('')}</div>
+    <input class="in" id="dk-q" type="search" placeholder="Search the docket" aria-label="Search the docket" value="${esc(dQ)}"></div><section class="card flush"><div id="dk-list">${docketRows()}</div></section>`;
+}
+
+/* Parties */
+function partiesTab() {
+  const l = plist(cur), me = cur._lk.names;
+  return l.length ? l.map(p => { const cs = counselOf(p), isMe = me.includes(norm(p.name));
+    return `<div class="item${isMe ? ' mine' : ''}"><div class="ih"><div><h4>${esc(p.name)}</h4>${Array.isArray(p.aliases) && p.aliases.length ? `<small>a/k/a ${p.aliases.map(esc).join(', ')}</small>` : ''}</div><div class="acts"><span class="pill live">${esc(p.role || 'Party')}</span>${isMe ? '<span class="pill mid">You</span>' : ''}</div></div>
+      ${kv([['Representation', cs.length ? '' : 'Self-represented'], ...cs.map((a, k) => [k === 0 ? 'Attorney' : 'Co-counsel', a.name + (a.barNumber ? ` (Bar No. ${a.barNumber})` : '')]),
+        ...(sideOf(p.role) === 1 ? [['Service', isServed(p) ? 'Served' + (hv(p.serviceDate) ? ' ' + fmtDate(p.serviceDate) : '') : 'Not yet served']] : []), ['Answer filed', fmtDate(p.answerDate)], ['Response filed', fmtDate(p.responseDate)], ...(p.additionalFields || []).filter(f => hv(f.label)).map(f => [f.label, f.value])])}</div>`; }).join('')
+    : `<section class="card">${empty('No parties on record')}</section>`;
+}
+
+/* Hearings */
+function hearingsTab() {
+  const all = (cur.hearings || []).map((h, i) => ({ ...h, _i: i })), n = new Date(), up = all.filter(h => !hv(h.result) && parse(h.date) >= n).sort((a, b) => new Date(a.date) - new Date(b.date)), past = all.filter(h => !up.includes(h)).sort((a, b) => new Date(b.date) - new Date(a.date));
+  const row = h => { const d = parse(h.date), res = hv(h.result), cancelled = h.result === 'Cancelled';
+    return `<div class="hrow"><div class="hdate"><small>${d ? d.toLocaleDateString('en-US', { month: 'short' }) : '—'}</small><b>${d ? d.getDate() : '—'}</b><span>${d ? d.getFullYear() : ''}</span></div><div><div class="hh"><div><b>${esc(h.type)}</b><small>${esc(fmtTime(h.date))} · ${esc(h.officer || cur.judge || '—')}${h.courtroom ? ' · ' + esc(roomLabel(h.courtroom)) : ''}</small></div>
+      <div class="acts"><span class="pill plain">${esc(ATT[h.attendance || 'in-person'])}</span><span class="pill ${cancelled ? 'plain' : res ? 'done' : d && d < n ? 'warn' : 'live'}">${cancelled ? 'Cancelled' : res ? 'Held' : d && d < n ? 'Awaiting result' : 'Upcoming'}</span></div></div>
+      ${h.videoUrl && !res && !cancelled && d >= n ? `<p class="mt"><a class="btn sm" href="${esc(h.videoUrl)}" target="_blank" rel="noopener">Join by video ↗</a></p>` : (h.attendance && h.attendance !== 'in-person' && !res && !cancelled && d >= n ? '<small>Contact the clerk\'s office for the video link.</small>' : '')}
+      ${res && !cancelled ? `<p class="mt"><b>Result:</b> ${esc(h.result)}</p>` : ''}${hv(h.notes) ? `<small>${esc(h.notes)}</small>` : ''}${!res && !cancelled && d >= n ? `<div class="acts mt">${btn(`ics:${h._i}`, 'Add to calendar')}</div>` : ''}</div></div>`; };
+  return all.length ? `<section class="card flush">${up.length ? `<div class="grp">Upcoming</div>${up.map(row).join('')}` : ''}${past.length ? `<div class="grp">Past and completed</div>${past.map(row).join('')}` : ''}</section>` : `<section class="card">${empty('No hearings scheduled', 'You will receive a notice when the court sets a hearing.')}</section>`;
+}
+
+/* Charges, bonds and outcomes (criminal and traffic) */
+function criminalTab() {
+  const ch = cur.charges || [], bo = cur.bonds || [], se = cur.sentencing || [], sec = (t, n, body, none) => `<section class="card"><header><h3>${t}</h3></header>${n ? body : `<p class="m">${none}</p>`}</section>`;
+  return sec('Charges', ch.length, ch.map(x => `<div class="item"><div class="ih"><div>${hv(x.count) ? `<small>Count ${esc(x.count)}</small>` : ''}<h4>${esc(x.chargeName || x.title)}</h4>${hv(x.statute) ? `<small>${esc(x.statute)}</small>` : ''}</div>${hv(x.classification) ? `<span class="pill ${x.classification === 'Felony' ? 'bad' : 'plain'}">${esc(x.classification)}</span>` : ''}</div>${kv([['Disposition', x.disposition || 'Pending'], ['Arraignment', fmtDate(x.arraignmentDate)], ['Disposition date', fmtDate(x.dispositionDate)]])}</div>`).join(''), 'No charges on record.')
+    + sec('Bonds', bo.length, bo.map(x => `<div class="item"><div class="ih"><div><h4>${x.amount != null ? money(x.amount) : 'N/A'}</h4><small>${esc(x.type || 'Bond')}</small></div></div>${kv([['Order date', fmtDate(x.orderDate)], ['Judge', x.judge], ['Date posted', fmtDate(x.postedDate)], ['Closed or released', fmtDate(x.closedDate)]])}
+      ${(x.conditions || []).length ? `<p class="mt"><b>Conditions</b></p><ul style="margin-left:20px">${x.conditions.map(c => `<li>${esc(c)}</li>`).join('')}</ul>` : ''}</div>`).join(''), 'No bonds on record.')
+    + sec('Outcomes and sentencing', se.length, se.map(s => `<div class="item"><div class="ih"><div><h4>${esc(s.chargeRef || s.charge || 'Charge')}</h4><small>${esc(fmtDate(s.outcomeDate || s.sentenceDate))}</small></div><span class="pill ${!s.outcome || ['Guilty', 'Responsible', 'Responsible with explanation', 'Diversion'].includes(s.outcome) ? 'bad' : 'done'}">${esc(s.outcome || 'Sentenced')}</span></div>
+      ${kv([['Probation term', s.probationTerm], ['Incarceration term', s.incarcerationTerm], ['Facility', s.facility], ['Probation officer', s.probation?.officer], ['License status', s.license?.status], ['Days suspended', s.license?.daysSuspended]])}
+      ${(s.probation?.conditions || []).length ? `<p class="mt"><b>Probation conditions</b></p><ul style="margin-left:20px">${s.probation.conditions.map(c => `<li>${esc(c)}</li>`).join('')}</ul>` : ''}${hv(s.notes) ? `<p class="mt m">${esc(s.notes)}</p>` : ''}</div>`).join(''), 'No outcomes recorded yet.');
+}
+
+/* Judgments, rulings and ADR */
+function judgmentsTab() {
+  const j = [...(cur.judgments || [])].sort((a, b) => new Date(b.judgmentDate || 0) - new Date(a.judgmentDate || 0)), a = [...(cur.adr || [])];
+  const sub = subOf(cur) === 'Special Proceedings' ? 'Rulings on petitions' : 'Judgments and orders';
+  return (j.length ? `<section class="card"><header><h3>${sub}</h3></header>${j.map(x => `<div class="item"><div class="ih"><div><h4>${esc(x.outcome)}</h4>${hv(x.matter) ? `<small>${esc(x.matter)}</small>` : ''}</div>${x.amount > 0 ? `<b style="font-family:var(--font-head);font-size:20px">${money(x.amount)}</b>` : ''}</div>
+      ${kv([['Entered', fmtDate(x.judgmentDate)], ['Effective', fmtDate(x.effectiveDate)], ['In favor of', x.inFavorOf], ['Against', x.against], ['Compliance review', fmtDate(x.reviewDate)], ['Appeal deadline', fmtDate(x.appealDeadline)]])}
+      ${hv(x.relief) ? `<p class="mt"><b>Relief or terms:</b> ${esc(x.relief)}</p>` : ''}${(x.conditions || []).length ? `<p class="mt"><b>Conditions</b></p><ul style="margin-left:20px">${x.conditions.map(c => `<li>${esc(c)}</li>`).join('')}</ul>` : ''}</div>`).join('')}</section>` : '')
+    + (a.length ? `<section class="card"><header><h3>Mediation and ADR</h3></header>${a.map(x => `<div class="item"><div class="ih"><div><h4>${esc(x.type)}</h4>${hv(x.provider) ? `<small>${esc(x.provider)}</small>` : ''}</div><span class="pill ${/settled|award/i.test(x.result || '') ? 'done' : /impasse|not appear/i.test(x.result || '') ? 'bad' : 'live'}">${esc(x.result || 'Pending')}</span></div>
+      ${kv([['Referred', fmtDate(x.referredDate)], ['Session', fmtDT(x.sessionDate)], ['Amount', x.amount != null && x.amount !== '' ? money(x.amount) : ''], ['Response due', fmtDate(x.responseDeadline)]])}${hv(x.terms) ? `<p class="mt"><b>Terms or award:</b> ${esc(x.terms)}</p>` : ''}</div>`).join('')}</section>` : '');
+}
+
+/* Financials */
+function financialsTab() {
+  const o = cur.financialOrders || [], b = balanceOf(cur), me = cur._lk.names;
+  return `<section class="card"><div class="fin3"><div><span>Total assessed</span><b>${money(b.owed)}</b></div><div><span>Total paid</span><b>${money(b.paid)}</b></div><div><span>Balance</span><b style="color:${b.bal > 0 ? '#b3261e' : '#154d2e'}">${money(b.bal)}</b></div></div>
+    ${o.map(x => { const paid = (x.payments || []).reduce((s, p) => s + (p.amount || 0), 0), full = x.amount && paid >= x.amount, yours = me.includes(norm(x.payor || x.owedBy));
+      return `<div class="item${yours ? ' mine' : ''}"><div class="ih"><div><h4>${esc(x.type)}</h4>${hv(x.description) ? `<small>${esc(x.description)}</small>` : ''}</div><div style="text-align:right"><b style="font-family:var(--font-head);font-size:20px">${x.amount != null ? money(x.amount) : 'N/A'}</b><br><span class="pill ${full ? 'done' : paid > 0 ? 'warn' : 'bad'}">${full ? 'Paid' : paid > 0 ? 'Partial' : 'Unpaid'}</span></div></div>
+        ${kv([['Owed by', x.payor || x.owedBy], ['Assessed', fmtDate(x.assessmentDate)], ['Due', fmtDate(x.dueDate)], ['Paid so far', paid ? money(paid) : '']])}${(x.payments || []).length ? `<div class="mt">${x.payments.map(p => `<small>${esc(fmtDate(p.date))}: ${money(p.amount)} (${esc(p.method || '—')})</small>`).join('')}</div>` : ''}</div>`; }).join('')}
+    <a class="btn" href="${BASE}financials/">Go to My financials</a></section>`;
+}
+
+/* My filings in this case */
+function filingsTab(l) {
+  l = [...l].sort((a, b) => new Date(b.dateFiled || 0) - new Date(a.dateFiled || 0));
+  return `<section class="card flush">${!l.length ? empty('You have not filed anything in this case through the portal', 'Documents you file appear here, with the status of each.') : `<div class="table-scroll"><table><thead><tr><th>Filing</th><th>Filed</th><th>Status</th></tr></thead><tbody>${l.map(f => `<tr><td><b>${esc((f.documents || []).map(d => d.documentType).filter(Boolean).join(', ') || f.documentType || 'Document')}</b><small>${esc(f.confirmationNumber || '—')}</small></td>
+    <td class="nw">${esc(fmtDate(f.dateFiled))}<small>${ago(f.dateFiled)}</small></td><td><span class="pill ${f.status === 'Accepted' ? 'done' : f.status === 'Rejected' ? 'bad' : f.status === 'Returned' ? 'mid' : 'warn'}">${esc(f.status || 'Pending')}</span></td></tr>`).join('')}</tbody></table></div>`}</section>`;
+}
+
+/* ── Calendar file ──────────────────────────────────────────────────── */
+function ics(i) {
+  const h = (cur.hearings || [])[i], d = h && parse(h.date); if (!d) return;
+  const f = x => `${x.getFullYear()}${String(x.getMonth() + 1).padStart(2, '0')}${String(x.getDate()).padStart(2, '0')}T${String(x.getHours()).padStart(2, '0')}${String(x.getMinutes()).padStart(2, '0')}00`, e = new Date(d.getTime() + 36e5), t = s => String(s || '').replace(/[\\;,]/g, m => '\\' + m).replace(/\n/g, '\\n');
+  const body = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Michigan Courts//Online Portal//EN', 'BEGIN:VEVENT', `UID:${cur._id}-${i}@migovt.org`, `DTSTAMP:${new Date().toISOString().replace(/[-:]/g, '').slice(0, 15)}Z`, `DTSTART:${f(d)}`, `DTEND:${f(e)}`,
+    `SUMMARY:${t(`${h.type || 'Hearing'} — ${caption(cur)}`)}`, `LOCATION:${t([roomLabel(h.courtroom || cur.courtroomNumber), cur.court].filter(Boolean).join(', '))}`, `DESCRIPTION:${t(`Case No. ${cur.caseId}. Arrive early for security screening.`)}`, 'END:VEVENT', 'END:VCALENDAR'].join('\r\n');
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([body], { type: 'text/calendar' })); a.download = `hearing-${cur.caseId.replace(/\W+/g, '-')}.ics`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+}
+
+/* ── Events ─────────────────────────────────────────────────────────── */
+const A = { more: () => { LS.shown += 25; drawResults(); }, tab: t => { tab = t; draw(); }, dfilter: f => { dFilter = f; draw(); }, ics: i => ics(parseInt(i, 10)) };
+document.addEventListener('click', e => {
+  const row = e.target.closest('tr[data-open]'); if (row && !e.target.closest('a,button')) { location.hash = hashFor(row.dataset.open); return; }
+  const el = e.target.closest('[data-a]'); if (!el) return; const [n, ...v] = el.dataset.a.split(':'); if (A[n]) A[n](...v);
+});
+document.addEventListener('input', e => { if (e.target.id === 'ls-q') { LS.q = e.target.value; LS.shown = 25; drawResults(); } else if (e.target.id === 'dk-q') { dQ = e.target.value; $('dk-list').innerHTML = docketRows(); } });
+document.addEventListener('change', e => { if (e.target.id === 'ls-status') { LS.status = e.target.value; LS.shown = 25; drawResults(); } });
+
+try { await loadAll(); } catch (err) { console.error(err); root.innerHTML = '<div class="alert" role="alert"><strong>We could not load your cases.</strong><p>Refresh the page to try again.</p></div>'; throw err; }
+route();
+}
+</script>
+</body>
+</html>

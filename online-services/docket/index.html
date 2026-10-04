@@ -220,7 +220,7 @@ td.out .num{color:#9aa6b8}
       </div>
     </div>
 
-    <div id="list-view"></div>
+    <div id="list-view"><div class="empty">Loading hearings…</div></div>
 
     <div id="cal-view" hidden>
       <div class="cal-bar">
@@ -265,74 +265,56 @@ td.out .num{color:#9aa6b8}
   <div class="dlg-body" id="dlg-body"></div>
 </dialog>
 
-<script>
-  /* Sample hearings. Dates are set as business days from today so the list always looks current.
-     Replace RAW with your real data (a Google Sheet CSV works well, like the proposals page). */
-  // [business days from today, 24h time, case no., case name, type, category, courtroom, judge/magistrate, attendance]
-  // attendance: 'in-person' (courthouse only), 'hybrid' (courthouse or video), 'video' (videoconference only)
-  const RAW = [
-    [0, '08:30', '26-D-0412', 'People v. Calloway',               'Arraignment',            'criminal', 'Courtroom 1', 'Magistrate Chen', 'in-person'],
-    [0, '09:00', '26-D-0388', 'People v. Reyes',                  'Pretrial Conference',    'criminal', 'Courtroom 2', 'Hon. Brennan', 'in-person'],
-    [0, '10:00', '26-S-0951', 'Hollis v. Marlow Properties',      'Small Claims Hearing',   'civil',    'Courtroom 3', 'Hon. Okafor', 'in-person'],
-    [0, '13:30', '26-D-0405', 'People v. Tran',                   'Motion Hearing',         'criminal', 'Courtroom 1', 'Hon. Alvarez', 'in-person'],
-    [1, '08:30', '26-D-0419', 'People v. Whitaker',               'Arraignment',            'criminal', 'Courtroom 1', 'Magistrate Delgado', 'in-person'],
-    [1, '09:00', '26-C-1204', 'Greene Credit Union v. Patel',     'Pretrial Conference',    'civil',    'Courtroom 3', 'Hon. Okafor', 'hybrid'],
-    [1, '10:30', '26-D-0371', 'People v. Mbeki',                  'Preliminary Examination','criminal', 'Courtroom 2', 'Hon. Whitfield', 'in-person'],
-    [1, '14:00', '26-T-3318', 'People v. Lindqvist',              'Traffic Hearing',        'civil',    'Courtroom 4', 'Magistrate Chen', 'in-person'],
-    [2, '09:00', '26-D-0342', 'People v. Ostrowski',              'Jury Trial',             'criminal', 'Courtroom 2', 'Hon. Brennan', 'in-person'],
-    [2, '09:30', '26-C-1177', 'Fairview Apartments v. Santos',    'Motion Hearing',         'civil',    'Courtroom 3', 'Hon. Okafor', 'hybrid'],
-    [2, '11:00', '26-D-0427', 'People v. Abernathy',              'Sentencing',             'criminal', 'Courtroom 1', 'Hon. Alvarez', 'in-person'],
-    [3, '09:00', '26-S-0977', 'Nguyen v. Brightway Auto',         'Small Claims Hearing',   'civil',    'Courtroom 3', 'Hon. Whitfield', 'in-person'],
-    [3, '10:00', '26-D-0396', 'People v. Delacroix',              'Bench Trial',            'criminal', 'Courtroom 2', 'Hon. Brennan', 'in-person'],
-    [3, '13:00', '26-D-0433', 'People v. Kowalczyk',              'Arraignment',            'criminal', 'Courtroom 1', 'Magistrate Delgado', 'in-person'],
-    [4, '08:45', '26-T-3342', 'People v. Fontaine',               'Traffic Hearing',        'civil',    'Courtroom 4', 'Magistrate Chen', 'in-person'],
-    [4, '09:30', '26-C-1190', 'Reed v. Tri-County Contracting',   'Bench Trial',            'civil',    'Courtroom 3', 'Hon. Okafor', 'in-person'],
-    [4, '10:30', '26-D-0358', 'People v. Haddad',                 'Pretrial Conference',    'criminal', 'Courtroom 1', 'Hon. Alvarez', 'hybrid'],
-    [5, '08:30', '26-D-0441', 'People v. Bishop',                 'Arraignment',            'criminal', 'Courtroom 1', 'Magistrate Delgado', 'in-person'],
-    [5, '09:30', '26-D-0365', 'People v. Chaudhry',               'Motion Hearing',         'criminal', 'Courtroom 2', 'Hon. Whitfield', 'in-person'],
-    [5, '13:30', '26-S-0990', 'Iverson v. Lakeshore Movers',      'Small Claims Hearing',   'civil',    'Courtroom 3', 'Hon. Okafor', 'in-person'],
-    [6, '09:00', '26-D-0310', 'People v. Santiago',               'Jury Trial',             'criminal', 'Courtroom 2', 'Hon. Brennan', 'in-person'],
-    [6, '10:00', '26-C-1215', 'Harmon v. Northgate Property Mgmt','Pretrial Conference',    'civil',    'Courtroom 3', 'Hon. Whitfield', 'hybrid'],
-    [7, '08:30', '26-D-0450', 'People v. Lowry',                  'Arraignment',            'criminal', 'Courtroom 1', 'Magistrate Chen', 'in-person'],
-    [7, '10:00', '26-D-0399', 'People v. Papadakis',              'Sentencing',             'criminal', 'Courtroom 1', 'Hon. Alvarez', 'in-person'],
-    [7, '14:00', '26-T-3365', 'People v. Armstrong',              'Traffic Hearing',        'civil',    'Courtroom 4', 'Magistrate Delgado', 'in-person'],
-    [8, '09:30', '26-C-1233', 'Pacheco v. Summit Lending',        'Motion Hearing',         'civil',    'Courtroom 3', 'Hon. Okafor', 'in-person'],
-    [8, '11:00', '26-D-0412B','People v. Calloway',               'Preliminary Examination','criminal', 'Courtroom 2', 'Hon. Whitfield', 'in-person'],
-    [9, '09:00', '26-D-0384', 'People v. Johansson',              'Bench Trial',            'criminal', 'Courtroom 2', 'Hon. Brennan', 'in-person'],
-    [10,'09:00', '26-D-0455', 'People v. Voss',                   'Arraignment',            'criminal', 'Courtroom 1', 'Magistrate Chen', 'in-person'],
-    [10,'13:00', '26-C-1241', 'Alder v. Wexford Rentals',         'Small Claims Hearing',   'civil',    'Courtroom 3', 'Hon. Okafor', 'in-person'],
-    [1, '11:00', '26-D-0437', 'People v. Brandt',                'Arraignment',          'criminal', 'Videoconference', 'Magistrate Delgado', 'video'],
-    [2, '08:30', '26-D-0440', 'People v. Eaves',                 'Arraignment',          'criminal', 'Videoconference', 'Magistrate Chen', 'video'],
-    [3, '11:00', '26-C-1226', 'Westbrook Capital v. Nolan',      'Pretrial Conference',  'civil',    'Videoconference', 'Hon. Whitfield', 'video'],
-    [5, '10:30', '26-D-0446', 'People v. Gutierrez',             'Pretrial Conference',  'criminal', 'Videoconference', 'Hon. Alvarez', 'video'],
-    [6, '14:00', '26-C-1238', 'Okoye v. Summit Property Group',  'Motion Hearing',       'civil',    'Videoconference', 'Hon. Okafor', 'video'],
-    [8, '08:30', '26-D-0458', 'People v. Lindgren',              'Arraignment',          'criminal', 'Videoconference', 'Magistrate Chen', 'video'],
-    [9, '10:00', '26-S-1003', 'Mahoney v. Valley Plumbing',      'Small Claims Hearing', 'civil',    'Videoconference', 'Hon. Whitfield', 'video']
-  
-  ];
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
+import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+const db = getFirestore(initializeApp({
+  apiKey: "AIzaSyA8sUFIq81cs6uQvqduardpGJ4R2DxO8NQ",
+  authDomain: "micourt-dada6.firebaseapp.com",
+  projectId: "micourt-dada6",
+  storageBucket: "micourt-dada6.firebasestorage.app",
+  messagingSenderId: "1013564619997",
+  appId: "1:1013564619997:web:8f259dab457915758f6f34"
+}));
 
-  function addBusinessDays(n) {
-    const d = new Date(); d.setHours(0, 0, 0, 0);
-    while (d.getDay() === 0 || d.getDay() === 6) d.setDate(d.getDate() + 1);
-    let left = n;
-    while (left > 0) { d.setDate(d.getDate() + 1); if (d.getDay() !== 0 && d.getDay() !== 6) left--; }
-    return d;
-  }
+  /* Real hearings, read from the court's case records. Sealed cases never appear. Cancelled and completed hearings are left off the upcoming list. */
   const iso = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
-
-  // Approximate length by hearing type, used only to set the end time in the downloaded calendar file
+  const hhmm = d => String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+  const hasVal = v => v !== undefined && v !== null && String(v).trim() !== '';
+  const slug = s => String(s).replace(/[^A-Za-z0-9]+/g, '-').toLowerCase();
+  const people = c => { if (Array.isArray(c.parties)) return c.parties.filter(p => p && p.name); const o = []; Object.values(c.parties || {}).forEach(v => Array.isArray(v) ? v.forEach(x => x && o.push(x)) : v && typeof v === 'object' && o.push(v)); return o.filter(p => p.name); };
+  const side = r => /defendant|respondent|appellee/i.test(r || '') ? 1 : /plaintiff|petitioner|prosecut|appellant|applicant|complainant|claimant/i.test(r || '') ? 0 : null;
+  function captionOf(c) {
+    if (hasVal(c.caseTitleOverride)) return c.caseTitleOverride;
+    const l = people(c), t = String(c.caseType || '').toLowerCase(), a = l.find(x => side(x.role) === 0), b = l.find(x => side(x.role) === 1);
+    if (t === 'criminal' || t === 'traffic') return 'People v. ' + (b ? b.name : 'Unknown');
+    if (a && b) return a.name + ' v. ' + b.name; if (a) return 'Ex parte ' + a.name; if (b) return 'In re ' + b.name;
+    return c.administrativeSubtype || c.caseId || 'Case';
+  }
   const TYPE_INFO = {
     'Arraignment': { mins: 15 }, 'Pretrial Conference': { mins: 20 }, 'Small Claims Hearing': { mins: 30 },
     'Motion Hearing': { mins: 30 }, 'Preliminary Examination': { mins: 60 }, 'Traffic Hearing': { mins: 15 },
-    'Jury Trial': { mins: 480 }, 'Bench Trial': { mins: 240 }, 'Sentencing': { mins: 30 }
+    'Jury Trial': { mins: 480 }, 'Bench Trial': { mins: 240 }, 'Sentencing': { mins: 30 }, 'Sentencing Hearing': { mins: 30 }
   };
-
-  const HEARINGS = RAW.map(([n, time, no, name, type, cat, room, officer, mode]) => {
-    const date = iso(addBusinessDays(n));
-    return { id: (no + '-' + date + '-' + time).replace(/[^A-Za-z0-9]+/g, '-').toLowerCase(), date, time, no, name, type, cat, room, officer, mode,
-             info: TYPE_INFO[type] || { mins: 30 } };
-  }).sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time));
-  // To show a join button for a remote hearing, add joinUrl: 'https://...' to that hearing's data.
+  let loadErr = false;
+  async function loadHearings() {
+    const snap = await getDocs(collection(db, 'cases')), out = [];
+    snap.forEach(s => {
+      const c = s.data(), t = String(c.caseType || '').toLowerCase();
+      if (c.sealed === true || /supreme/i.test(c.court || '') || t === 'appellate' || t === 'appeal') return;
+      (c.hearings || []).forEach((h, i) => {
+        const d = new Date(h.date); if (isNaN(d) || hasVal(h.result)) return;
+        const mode = ['in-person', 'hybrid', 'video'].includes(h.attendance) ? h.attendance : 'in-person', date = iso(d), time = hhmm(d);
+        out.push({ id: slug(c.caseId + '-' + date + '-' + time + '-' + i), date, time, no: c.caseId, name: captionOf(c), type: h.type || 'Hearing', cat: t === 'criminal' ? 'criminal' : 'civil', ctype: c.caseType, sub: c.civilSubtype || '',
+          room: mode === 'video' ? 'Videoconference' : (h.courtroom || 'Courtroom to be announced'), officer: h.officer || c.judge || 'To be assigned', mode, joinUrl: /^https?:\/\//i.test(h.videoUrl || '') ? h.videoUrl : '',
+          info: { mins: parseInt(h.minutes, 10) || (TYPE_INFO[h.type] || { mins: 30 }).mins } });
+      });
+    });
+    return out.sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time));
+  }
+  let HEARINGS = [];
+  try { HEARINGS = await loadHearings(); } catch (err) { console.error(err); loadErr = true; }
+  const EMPTY_MSG = () => loadErr ? 'We could not load the docket right now. Please try again in a few minutes.' : null;
 
   const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   const fmtDay = s => new Date(s + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
@@ -428,7 +410,7 @@ td.out .num{color:#9aa6b8}
     const list = filtered(true);
     document.getElementById('count').textContent = list.length + (list.length === 1 ? ' hearing' : ' hearings');
     if (!list.length) {
-      document.getElementById('list-view').innerHTML = '<div class="empty">No hearings match your search. Try fewer words or a wider date range.</div>';
+      document.getElementById('list-view').innerHTML = '<div class="empty">' + (EMPTY_MSG() || 'No hearings match your search. Try fewer words or a wider date range.') + '</div>';
       return;
     }
     const days = {};
@@ -477,7 +459,7 @@ td.out .num{color:#9aa6b8}
 
     document.getElementById('day-detail').innerHTML = sel && byDay[sel]
       ? dayHtml(sel, byDay[sel])
-      : '<div class="empty">No hearings this month match your search.</div>';
+      : '<div class="empty">' + (EMPTY_MSG() || 'No hearings this month match your search.') + '</div>';
   }
 
   function render() {
@@ -518,7 +500,7 @@ td.out .num{color:#9aa6b8}
   /* ---------- Hearing details ---------- */
   const dlg = document.getElementById('dlg');
   const CANON = 'https://migovt.org/courts/online-services/docket/';
-  const caseType = h => /traffic/i.test(h.type) ? 'Traffic' : /small claims/i.test(h.type) ? 'Small claims' : h.cat === 'criminal' ? 'Criminal' : 'Civil';
+  const caseType = h => h.ctype === 'Traffic' ? 'Traffic' : h.sub === 'Small Claims' ? 'Small claims' : h.cat === 'criminal' ? 'Criminal' : 'Civil';
   const fmtLong = s => new Date(s + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
 
   function detailHtml(h) {
@@ -563,7 +545,7 @@ td.out .num{color:#9aa6b8}
       <div class="dlg-actions">
         <button type="button" class="btn" data-act="ics">Add to calendar</button>
         <button type="button" class="btn alt" data-act="copy"><span>Copy link</span></button>
-        <a class="btn alt" href="https://migovt.org/courts/case-search/">Search this case</a>
+        <a class="btn alt" href="https://migovt.org/courts/case-search/?q=${encodeURIComponent(h.no)}">Search this case</a>
       </div>
       <p class="fine">Hearing dates and times can change. Contact the clerk of the court to confirm before you attend, or to ask about interpreters and accommodations. Use the <a href="https://migovt.org/courts/genesee-co-district/directory/">District Court directory</a>.</p>`;
   }

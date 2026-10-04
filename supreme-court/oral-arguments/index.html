@@ -236,7 +236,7 @@ body.lock{overflow:hidden}
       </div>
     </div>
 
-    <div id="list-view"></div>
+    <div id="list-view"><div class="empty">Loading the calendar…</div></div>
 
     <div id="cal-view" hidden>
       <div class="cal-bar">
@@ -280,47 +280,52 @@ body.lock{overflow:hidden}
   <div class="dlg-body" id="dlg-body"></div>
 </dialog>
 
-<script>
-  /* Sample calendar. Dates are set as business days from today (negative = past) so it always looks current.
-     Replace RAW with your real data (a Google Sheet CSV works well, like the proposals page). */
-  // [business days from today, 24h time, docket no., case name, category, minutes per side, outcome for past: 'argued' | 'submitted']
-  const RAW = [
-    [-22, '09:30', '170988', 'People v. Fairchild',                'criminal', 15, 'argued'],
-    [-22, '10:45', '171012', 'Sutter v. Valley Mutual Insurance',    'civil',    20, 'argued'],
-    [-15, '09:30', '171066', 'People v. Okonkwo',                    'criminal', 15, 'argued'],
-    [-15, '13:00', '171090', 'Brightwater Holdings v. Alvarado',     'civil',    20, 'argued'],
-    [-9,  '09:30', '171121', 'Whitcomb v. City of Flint',            'civil',    15, 'submitted'],
-    [-9,  '10:45', '171133', 'People v. Lindqvist',                  'criminal', 15, 'argued'],
-    [-4,  '09:30', '171170', 'Harmon v. Northgate Property Mgmt',    'civil',    20, 'argued'],
-    [3,   '09:00', '171204', 'People v. Vandermeer',                 'criminal', 15],
-    [3,   '10:15', '171388', 'Kessler v. Department of Treasury',    'civil',    20],
-    [3,   '13:00', '171402', 'People v. Abernathy',                  'criminal', 15],
-    [4,   '09:00', '171421', 'In re Estate of Marchetti',            'civil',    30],
-    [4,   '10:30', '171436', 'Pacheco v. Summit Lending',            'civil',    20],
-    [10,  '09:00', '171467', 'Doyle v. Genesee County Board',        'civil',    20],
-    [10,  '10:15', '171479', 'People v. Haddad',                     'criminal', 15],
-    [11,  '09:00', '171498', 'Reed v. Tri-County Contracting',       'civil',    20],
-    [11,  '13:00', '171510', 'People v. Delacroix',                  'criminal', 15]
-  ];
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
+import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+const db = getFirestore(initializeApp({
+  apiKey: "AIzaSyA8sUFIq81cs6uQvqduardpGJ4R2DxO8NQ",
+  authDomain: "micourt-dada6.firebaseapp.com",
+  projectId: "micourt-dada6",
+  storageBucket: "micourt-dada6.firebasestorage.app",
+  messagingSenderId: "1013564619997",
+  appId: "1:1013564619997:web:8f259dab457915758f6f34"
+}));
 
-  function addBusinessDays(n) {
-    const d = new Date(); d.setHours(0, 0, 0, 0);
-    const step = n < 0 ? -1 : 1;
-    while (d.getDay() === 0 || d.getDay() === 6) d.setDate(d.getDate() + (step || 1));
-    let left = Math.abs(n);
-    while (left > 0) { d.setDate(d.getDate() + step); if (d.getDay() !== 0 && d.getDay() !== 6) left--; }
-    return d;
-  }
+  /* Real oral arguments, read from the Supreme Court's case records (mscCases). Sealed cases never appear. Cancelled arguments are left off. */
   const iso = d => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
-  const todayIso = iso(new Date());
-  const now = new Date();
-
-  const CASES = RAW.map(([n, time, no, name, cat, mins, outcome]) => {
-    const date = iso(addBusinessDays(n));
-    const past = date < todayIso;
-    return { id: 'sc-' + no, date, time, no, name, cat, mins, past,
-             status: past ? (outcome === 'submitted' ? 'submitted' : 'argued') : 'scheduled' };
-  }).sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time));
+  const hhmm = d => String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+  const hasVal = v => v !== undefined && v !== null && String(v).trim() !== '';
+  const slug = s => String(s).replace(/[^A-Za-z0-9]+/g, '-').toLowerCase();
+  const people = c => { if (Array.isArray(c.parties)) return c.parties.filter(p => p && p.name); const o = []; Object.values(c.parties || {}).forEach(v => Array.isArray(v) ? v.forEach(x => x && o.push(x)) : v && typeof v === 'object' && o.push(v)); return o.filter(p => p.name); };
+  const side = r => /defendant|respondent|appellee/i.test(r || '') ? 1 : /plaintiff|petitioner|prosecut|appellant|applicant|complainant|claimant/i.test(r || '') ? 0 : null;
+  function captionOf(c) {
+    if (hasVal(c.caseTitleOverride)) return c.caseTitleOverride;
+    const l = people(c), t = String(c.caseType || '').toLowerCase(), a = l.find(x => side(x.role) === 0), b = l.find(x => side(x.role) === 1);
+    if (t === 'criminal' || t === 'traffic') return 'People v. ' + (b ? b.name : 'Unknown');
+    if (a && b) return a.name + ' v. ' + b.name; if (a) return 'Ex parte ' + a.name; if (b) return 'In re ' + b.name;
+    return c.administrativeSubtype || c.caseId || 'Case';
+  }
+  let loadErr = false;
+  const todayIso = iso(new Date()), now = new Date();
+  async function loadArguments() {
+    const snap = await getDocs(collection(db, 'mscCases')), out = [];
+    snap.forEach(s => {
+      const c = s.data(); if (c.sealed === true) return;
+      const lc = c.lowerCourt || {}, crim = /criminal|traffic/i.test(lc.caseType || c.caseType || '');
+      (c.hearings || []).forEach((h, i) => {
+        const d = new Date(h.date); if (isNaN(d) || h.result === 'Cancelled') return;
+        const date = iso(d), past = date < todayIso, submitted = /submitted/i.test(h.result || '');
+        out.push({ id: 'sc-' + slug(c.caseId + '-' + i), date, time: hhmm(d), no: c.caseId, name: captionOf(c), cat: crim ? 'criminal' : 'civil', mins: parseInt(h.minutes, 10) || 15, past,
+          status: past ? (submitted ? 'submitted' : 'argued') : 'scheduled', from: lc.court || '', panel: h.panel || 'Full Court',
+          watchUrl: /^https?:\/\//i.test(h.videoUrl || '') ? h.videoUrl : '', recordingUrl: /^https?:\/\//i.test(h.recordingUrl || '') ? h.recordingUrl : '' });
+      });
+    });
+    return out.sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time));
+  }
+  let CASES = [];
+  try { CASES = await loadArguments(); } catch (err) { console.error(err); loadErr = true; }
+  const EMPTY_MSG = () => loadErr ? 'We could not load the calendar right now. Please try again in a few minutes.' : null;
 
   const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   const fmtDay = s => new Date(s + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
@@ -394,7 +399,7 @@ body.lock{overflow:hidden}
     const list = filtered(true);
     document.getElementById('count').textContent = list.length + (list.length === 1 ? ' argument' : ' arguments');
     if (!list.length) {
-      document.getElementById('list-view').innerHTML = '<div class="empty">No arguments match your search. Try fewer words or switch to "All".</div>';
+      document.getElementById('list-view').innerHTML = '<div class="empty">' + (EMPTY_MSG() || 'No arguments match your search. Try fewer words or switch to "All".') + '</div>';
       return;
     }
     const days = {};
@@ -441,7 +446,7 @@ body.lock{overflow:hidden}
     document.getElementById('cal-body').innerHTML = rows;
     document.getElementById('day-detail').innerHTML = sel && byDay[sel]
       ? dayHtml(sel, byDay[sel])
-      : '<div class="empty">No arguments this month match your search.</div>';
+      : '<div class="empty">' + (EMPTY_MSG() || 'No arguments this month match your search.') + '</div>';
   }
 
   function render() {
@@ -487,14 +492,14 @@ body.lock{overflow:hidden}
       ['Time', fmtTime(c.time) + ' Eastern'],
       ['Docket number', c.no],
       ['Case type', catLabel(c)],
-      ['Appealed from', 'Genesee County District Court'],
+      ...(c.from ? [['Appealed from', c.from]] : []),
       ['Time for each side', c.mins + ' minutes'],
       ['Court', 'Michigan Supreme Court, Lansing'],
-      ['Panel', 'Full Court']
+      ['Panel', c.panel]
     ];
     const watch = c.past
-      ? `<div class="modes"><div class="mode ${c.status === 'argued' ? 'on' : ''}"><div class="mode-top">Recording <span class="badge ${c.status === 'argued' ? 'ok' : 'no'}">${c.status === 'argued' ? 'Available' : 'None'}</span></div>
-           <p>${c.status === 'argued' ? 'A recording of this argument is posted on this page.' : 'This case was submitted without oral argument, so there is no recording.'}</p></div></div>`
+      ? `<div class="modes"><div class="mode ${c.status === 'argued' && c.recordingUrl ? 'on' : ''}"><div class="mode-top">Recording <span class="badge ${c.status === 'argued' && c.recordingUrl ? 'ok' : 'no'}">${c.status !== 'argued' ? 'None' : c.recordingUrl ? 'Available' : 'Pending'}</span></div>
+           <p>${c.status !== 'argued' ? 'This case was submitted without oral argument, so there is no recording.' : c.recordingUrl ? 'A recording of this argument is available.' : 'A recording will be posted here once it is available.'}</p>${c.status === 'argued' && c.recordingUrl ? `<p style="margin-top:8px"><a class="btn" href="${esc(c.recordingUrl)}">Watch recording</a></p>` : ''}</div></div>`
       : `<div class="modes">
            <div class="mode on"><div class="mode-top">In person <span class="badge ok">Open to the public</span></div>
              <p>Michigan Supreme Court, Lansing. Plan extra time to pass through security.</p></div>
@@ -512,7 +517,7 @@ body.lock{overflow:hidden}
       <div class="dlg-actions">
         ${c.past ? '' : '<button type="button" class="btn" data-act="ics">Add to calendar</button>'}
         <button type="button" class="btn alt" data-act="copy"><span>Copy link</span></button>
-        <a class="btn alt" href="https://migovt.org/courts/case-search/">Search this case</a>
+        <a class="btn alt" href="https://migovt.org/courts/case-search/">Search cases</a>
       </div>
       <p class="fine">The argument calendar can change. Contact the <a href="https://migovt.org/courts/supreme-court/clerk/">Clerk's Office</a> to confirm a date or time.</p>`;
   }

@@ -119,6 +119,7 @@ const parse = s => { const d = new Date(s); return isNaN(d) ? null : d; };
 const dateOnly = d => d.getUTCHours() === 0 && d.getUTCMinutes() === 0 && d.getUTCSeconds() === 0 && d.getUTCMilliseconds() === 0;   // older records stored dates at UTC midnight
 const fmtDate = s => { if (!hv(s)) return ''; const d = parse(s); return d ? d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', ...(dateOnly(d) ? { timeZone: 'UTC' } : {}) }) : String(s); };
 const fmtDT = s => { if (!hv(s)) return ''; const d = parse(s); return d ? d.toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' }) : String(s); };
+const fmtTime = s => { const d = hv(s) && parse(s); return d ? d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }) : ''; };
 const money = n => '$' + Number(n || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const ago = s => { if (!s) return '—'; const m = Math.floor((Date.now() - new Date(s)) / 6e4); return m < 1 ? 'just now' : m < 60 ? m + 'm ago' : m < 1440 ? Math.floor(m / 60) + 'h ago' : Math.floor(m / 1440) + 'd ago'; };
 const p2 = n => String(n).padStart(2, '0');
@@ -432,7 +433,8 @@ function hearingsTab() {
   const row = h => { const d = parse(h.date), res = hv(h.result), cancelled = h.result === 'Cancelled', await_ = !res && d && d < n;
     return `<div class="hrow"><div class="hdate"><small>${d ? d.toLocaleDateString('en-US', { month: 'short' }) : '—'}</small><b>${d ? d.getDate() : '—'}</b><span>${d ? d.getFullYear() : ''}</span></div>
       <div><div class="hh"><div><b>${esc(h.type)}</b><small>${d ? esc(d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })) : ''} · ${esc(h.officer || cur.judge || '—')}${h.courtroom ? ' · ' + esc(h.courtroom) : ''}</small>${hv(h.requestedBy) ? `<small>Requested by ${esc(h.requestedBy)}</small>` : ''}</div>
-        <span class="pill ${cancelled ? 'plain' : res ? 'done' : await_ ? 'bad' : 'live'}">${cancelled ? 'Cancelled' : res ? 'Completed' : await_ ? 'Awaiting result' : 'Upcoming'}</span></div>
+        <div class="acts"><span class="pill plain">${esc(ATTEND_LABEL[h.attendance || 'in-person'])}</span><span class="pill ${cancelled ? 'plain' : res ? 'done' : await_ ? 'bad' : 'live'}">${cancelled ? 'Cancelled' : res ? 'Completed' : await_ ? 'Awaiting result' : 'Upcoming'}</span></div></div>
+        ${h.videoUrl && !cancelled ? `<small><a href="${esc(h.videoUrl)}" target="_blank" rel="noopener">Video link ↗</a></small>` : ''}
         ${res && !cancelled ? `<p class="mt"><b>Result:</b> ${esc(h.result)}</p>` : ''}${hv(h.notes) ? `<small>${esc(h.notes)}</small>` : ''}
         <div class="acts mt">${!res ? btn(`hdone:${h._i}`, '✓ Record result', 'good sm') : ''}${btn(`hearing:${h._i}`, 'Reschedule')}${!cancelled ? btn(`hcont:${h._i}`, 'Continue') + btn(`hcancel:${h._i}`, 'Cancel hearing', 'danger sm') : ''}</div></div></div>`; };
   return `<div class="sec-add"><span class="m">${all.length} on record</span>${btn('hearing:-1', 'Schedule a hearing', '')}</div>` + (!all.length ? `<section class="card">${empty('No hearings scheduled')}</section>`
@@ -790,19 +792,42 @@ function entryAddModal() {
 }
 
 /* Hearings */
-const HTYPES = ['Motion Hearing', 'Status Conference', 'Pretrial Conference', 'Arraignment', 'Sentencing Hearing', 'Trial', 'Show Cause Hearing', 'Probation Violation Hearing'];
+const HTYPES = ['Motion Hearing', 'Status Conference', 'Pretrial Conference', 'Arraignment', 'Sentencing Hearing', 'Trial', 'Show Cause Hearing', 'Probation Violation Hearing', 'Small Claims Hearing', 'Traffic Hearing', 'Preliminary Examination', 'Jury Trial', 'Bench Trial', 'Oral Argument'];
+const TYPE_MINS = { Arraignment: 15, 'Pretrial Conference': 20, 'Small Claims Hearing': 30, 'Motion Hearing': 30, 'Preliminary Examination': 60, 'Traffic Hearing': 15, 'Jury Trial': 480, 'Bench Trial': 240, 'Sentencing Hearing': 30, Sentencing: 30, 'Oral Argument': 15 };
+const ATTEND = [['in-person', 'In person only'], ['hybrid', 'In person or by video'], ['video', 'Video only']];
+const ATTEND_LABEL = { 'in-person': 'In person', hybrid: 'In person or video', video: 'Video only' };
+const hMins = h => parseInt(h.minutes, 10) || TYPE_MINS[h.type] || 30;
+// A hearing conflicts when the same judicial officer, or the same courtroom, has another live hearing that overlaps in time.
+function conflicts(h, selfIdx) {
+  const s0 = new Date(h.date).getTime(), e0 = s0 + hMins(h) * 6e4, out = [];
+  cases.map(c => c._id === cur._id ? cur : c).forEach(c => (c.hearings || []).forEach((x, i) => {
+    if (c._id === cur._id && i === selfIdx || hv(x.result)) return; const xs = new Date(x.date).getTime(), xe = xs + hMins(x) * 6e4; if (isNaN(xs) || xe <= s0 || xs >= e0) return;
+    if (h.officer && x.officer === h.officer) out.push(`${h.officer} already has ${x.type} in ${c.caseId} at ${fmtTime(x.date)}`);
+    else if (h.attendance !== 'video' && x.attendance !== 'video' && h.courtroom && x.courtroom === h.courtroom) out.push(`${h.courtroom} is booked for ${x.type} in ${c.caseId} at ${fmtTime(x.date)}`);
+  }));
+  return out;
+}
 function hearingModal(idx, taskIdx) {
-  const h = idx >= 0 ? cur.hearings[idx] : {}, t = taskIdx != null && taskIdx >= 0 ? cm.tasks[taskIdx] : null;
+  const h = idx >= 0 ? cur.hearings[idx] : {}, t = taskIdx != null && taskIdx >= 0 ? cm.tasks[taskIdx] : null, att0 = h.attendance || 'in-person', room0 = roomLabel(cur.courtroomNumber);
+  const roomFor = off => { const j = judges.find(x => x.name === (off || cur.judge)); return roomOf(j) ? 'Courtroom ' + roomOf(j) : room0; };
   modal({ title: idx >= 0 ? 'Reschedule hearing' : 'Schedule a hearing', wide: true, ok: idx >= 0 ? 'Save changes' : 'Schedule hearing',
+    onChange: e => { const id = e.target.id;
+      if (id === 'hm-att') { const v = e.target.value; $('hm-vid').hidden = v === 'in-person'; if (v === 'video') $('hm-room').value = 'Videoconference'; else if ($('hm-room').value === 'Videoconference') $('hm-room').value = roomFor(val('hm-off')); }
+      if (id === 'hm-off' && val('hm-att') !== 'video') $('hm-room').value = roomFor(e.target.value); },
     body: (t ? `<div class="quote">Scheduling in response to: ${esc(t.title)}</div>` : '') + g2(fld('Hearing type', 'hm-type', h.type || (t ? stripSuffix(t.title) : ''), { ph: 'e.g. Motion Hearing', list: 'hm-types' }), fld('Date and time', 'hm-date', inDT(h.date), { type: 'datetime-local' })) + dlist('hm-types', HTYPES)
-      + g2(selF('Presiding officer', 'hm-off', [['', `Judge of record (${cur.judge || 'unassigned'})`], ...judgeOpts()], h.officer || ''), fld('Courtroom', 'hm-room', h.courtroom || roomLabel(cur.courtroomNumber)))
-      + fld('Requested by', 'hm-req', h.requestedBy || (t ? t.filedBy : '') || '', { ph: 'e.g. Defense Counsel, Court, Plaintiff', list: 'hm-parties' }) + dlist('hm-parties', partyNames()) + area('Notes', 'hm-notes', h.notes || ''),
+      + g2(selF('Presiding officer', 'hm-off', [['', `Judge of record (${cur.judge || 'unassigned'})`], ...judgeOpts()], h.officer || ''), fld('Location', 'hm-room', h.courtroom || (att0 === 'video' ? 'Videoconference' : roomFor(h.officer)), { hint: 'Follows the judge\'s courtroom. Videoconference for video-only hearings.' }))
+      + g2(selF('How parties attend', 'hm-att', ATTEND, att0), fld('Length (minutes)', 'hm-min', h.minutes || '', { type: 'number', ph: String(TYPE_MINS[h.type] || 30) }))
+      + `<div id="hm-vid"${att0 === 'in-person' ? ' hidden' : ''}>${fld('Video link', 'hm-url', h.videoUrl || '', { ph: 'https://…', hint: 'Parties see this link on their hearing. Leave blank to tell them to contact the clerk.' })}</div>`
+      + fld('Requested by', 'hm-req', h.requestedBy || (t ? t.filedBy : '') || '', { ph: 'e.g. Defense Counsel, Court, Plaintiff', list: 'hm-parties' }) + dlist('hm-parties', partyNames()) + area('Notes', 'hm-notes', h.notes || '')
+      + `<label class="opt"><input type="checkbox" id="hm-over"><div><b>Schedule even if it conflicts</b><small>Only needed when the judicial officer or courtroom is already booked at this time.</small></div></label>`,
     onOk: async () => {
       const type = val('hm-type'), dv = val('hm-date'); if (!type || !dv) bad('Enter a hearing type and a date and time.');
-      const date = isoDT(dv), officer = val('hm-off') || cur.judge || null, o = { type, date, officer, courtroom: val('hm-room') || null, requestedBy: val('hm-req') || null, notes: val('hm-notes') || null, result: null };
+      const date = isoDT(dv), officer = val('hm-off') || cur.judge || null, attendance = val('hm-att') || 'in-person', courtroom = attendance === 'video' ? 'Videoconference' : val('hm-room') || null;
+      const o = { type, date, officer, courtroom, attendance, videoUrl: attendance === 'in-person' ? null : val('hm-url') || null, minutes: parseInt(val('hm-min'), 10) || null, requestedBy: val('hm-req') || null, notes: val('hm-notes') || null, result: null };
+      const clash = conflicts(o, idx); if (clash.length && !$('hm-over').checked) bad('Scheduling conflict: ' + clash.join('; ') + '. Check “Schedule even if it conflicts” to continue.');
       await listChange('hearings', idx, old => ({ ...(old || {}), ...o }), idx >= 0 ? `Rescheduled hearing: ${type} to ${fmtDate(date)}` : `Scheduled hearing: ${type} on ${fmtDate(date)}`,
-        () => ({ type: 'event', date: now(), description: idx >= 0 ? `Hearing rescheduled: ${type} — now ${fmtDate(date)}` : `Hearing scheduled: ${type} on ${fmtDate(date)}`, judge: officer }));
-      await notify({ type: 'Notice of Hearing', title: 'Notice of Hearing', text: `${type} scheduled for ${fmtDate(date)} before ${officer || 'the assigned judicial officer'}.` });
+        () => ({ type: 'event', date: now(), description: idx >= 0 ? `Hearing rescheduled: ${type} — now ${fmtDT(date)}` : `Hearing scheduled: ${type} on ${fmtDT(date)}`, judge: officer }));
+      await notify({ type: 'Notice of Hearing', title: 'Notice of Hearing', text: `${type} scheduled for ${fmtDT(date)} before ${officer || 'the assigned judicial officer'}. ${attendance === 'video' ? 'This hearing is held by videoconference.' : attendance === 'hybrid' ? 'You may attend in person (' + (courtroom || 'courtroom to be announced') + ') or by video.' : 'Attend in person: ' + (courtroom || 'courtroom to be announced') + '.'}` });
     } });
 }
 function hearingDoneModal(i) {

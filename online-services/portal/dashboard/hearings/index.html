@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Hearings | Online Portal</title>
+<link rel="icon" type="image/png" href="/courts/images/favicon.png">
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=Source+Serif+4:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/courts/online-services/portal/dashboard/assets/css/dashboard.css?v=5">
+<style>
+.m{color:var(--muted);font-weight:400}
+.tools{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px;align-items:center}.tools .in{flex:1;min-width:220px;width:auto}
+.chips{display:flex;gap:6px;flex-wrap:wrap}.chips button,.seg button{font:inherit;font-weight:600;font-size:14px;padding:6px 14px;border-radius:16px;border:1px solid var(--line);background:#fff;color:var(--navy);cursor:pointer}
+.chips button.on,.seg button.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+.seg{display:flex;gap:6px;margin-left:auto}
+.day{margin-bottom:16px;padding:0;overflow:hidden}
+.day-h{display:flex;justify-content:space-between;align-items:baseline;padding:12px 22px;background:#f4f7fb;border-bottom:1px solid #e3e9f1}.day-h h3{font-size:17px}.day-h span{color:var(--muted);font-size:14px}
+.hr{display:grid;grid-template-columns:96px minmax(0,1fr) auto;gap:16px;padding:15px 22px;border-top:1px solid #e3e9f1;width:100%;text-align:left;font:inherit;color:inherit;background:#fff;border-left:0;border-right:0;border-bottom:0;cursor:pointer;align-items:start}
+.hr:first-of-type{border-top:0}.hr:hover{background:#f6f9fd}
+.hr .t{font-weight:700;color:var(--navy);white-space:nowrap}.hr .t small{display:block;color:var(--muted);font-weight:500}
+.hr .c b{display:block}.hr .c small{display:block;color:var(--muted)}
+.hr .p{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+@media(max-width:700px){.hr{grid-template-columns:1fr}.hr .p{justify-content:flex-start}}
+.cal-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px}.cal-bar h3{font-size:22px}
+.cal{width:100%;border-collapse:separate;border-spacing:0;table-layout:fixed;background:#fff;border:1px solid var(--line);border-radius:4px;overflow:hidden;margin-bottom:16px}
+.cal th{background:var(--navy);color:#fff;font-size:14px;font-weight:600;padding:8px 4px}
+.cal td{border-top:1px solid #e3e9f1;border-left:1px solid #e3e9f1;height:104px;padding:0;vertical-align:top}.cal td:first-child{border-left:0}
+.cell{display:block;width:100%;height:100%;min-height:104px;padding:6px 8px;text-align:left;background:none;border:0;font:inherit;color:inherit}
+button.cell{cursor:pointer}button.cell:hover{background:#f4f8fd}button.cell.sel{background:#e1ecf8;box-shadow:inset 0 0 0 3px var(--blue)}
+td.out .cell{background:#f7f9fc;color:#9aa6b8}
+.num{display:inline-block;min-width:26px;height:26px;line-height:26px;text-align:center;font-weight:700;border-radius:13px;color:var(--navy)}
+td.today .num{background:var(--blue);color:#fff}td.out .num{color:#9aa6b8}
+.ev{display:block;font-size:12.5px;line-height:1.3;margin-top:3px;padding:2px 6px;border-radius:3px;border-left:3px solid #1f5fae;background:#e1ecf8;color:#17335f;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.ev.past{border-color:#9aa8bd;background:#eef1f6;color:#4a5568}.ev.cx{border-color:#9aa8bd;background:#eef1f6;color:#4a5568;text-decoration:line-through}
+.more-ev{display:block;font-size:12.5px;color:var(--muted);font-weight:600;margin-top:3px}.cnt{display:none}
+@media(max-width:860px){.cal td{height:64px}.cell{min-height:64px;padding:4px;text-align:center}.ev,.more-ev{display:none}.cnt{display:inline-block;margin-top:2px;min-width:22px;font-size:12px;font-weight:700;color:#fff;background:var(--navy);border-radius:11px;padding:0 6px}}
+.kv{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px 22px;margin-bottom:6px}.kv dt{font-size:13px;color:var(--muted)}.kv dd{font-weight:600;overflow-wrap:anywhere}
+.modes{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:8px 0 14px}@media(max-width:700px){.modes{grid-template-columns:1fr}}
+.mode{border:1px solid var(--line);border-radius:4px;padding:12px 14px}.mode.on{border-color:#a5d6a7;background:#f3faf4}.mode.need{border-color:#ef9a9a;background:#fdf4f3}
+.mode b{display:flex;justify-content:space-between;gap:8px;color:var(--navy);margin-bottom:4px}.mode p{font-size:15px;margin:0}
+dialog{border:0;padding:0;border-radius:6px;width:min(720px,calc(100vw - 24px));max-height:calc(100vh - 48px);box-shadow:0 24px 60px rgba(9,22,40,.35);color:var(--text);font:inherit;overflow:hidden;margin:auto}
+dialog[open]{display:flex;flex-direction:column}dialog::backdrop{background:rgba(9,22,40,.55)}
+dialog>header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:18px 22px;border-bottom:1px solid var(--line);background:#f4f7fb}
+dialog>header h3{font-size:20px}dialog>header p{color:var(--muted);margin-top:2px}
+.x{font:inherit;font-size:22px;line-height:1;width:36px;height:36px;border:1px solid var(--line);border-radius:4px;background:#fff;cursor:pointer;color:var(--navy);flex-shrink:0}.x:hover{background:#eef3f9}
+#dlg-b{padding:20px 22px;overflow:auto}#dlg-b h4{font-family:var(--font-head);color:var(--navy);margin:16px 0 8px}#dlg-b h4:first-child{margin-top:0}
+dialog>footer{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:10px;padding:14px 22px;border-top:1px solid var(--line);background:#f4f7fb}
+</style>
+</head>
+<body>
+<aside class="sidebar" id="sidebar-root" aria-label="Portal navigation"></aside>
+<div class="scrim" id="scrim" hidden></div>
+<div class="main">
+  <header class="topbar">
+    <div class="topbar-left">
+      <button class="menu-btn" id="menu-btn" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="sidebar-root"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+      <div><span class="topbar-eyebrow">Online Portal</span><span class="topbar-page-title" id="topbar-title">My hearings</span></div>
+    </div>
+    <div class="topbar-right"><span class="topbar-date" id="topbar-date"></span><div class="notif-wrap" id="notif-root"></div></div>
+  </header>
+  <main class="page-body">
+    <div class="page-head"><div><h2 id="page-title">My hearings</h2><p id="page-subtitle"></p></div><div id="page-action"></div></div>
+    <div id="page-body"><div class="loading-inline"><span class="spin-sm"></span>Loading your hearings…</div></div>
+  </main>
+</div>
+<dialog id="dlg" aria-labelledby="dlg-t">
+  <header><div><h3 id="dlg-t"></h3><p id="dlg-w"></p></div><button class="x" type="button" aria-label="Close" data-close>×</button></header>
+  <div id="dlg-b"></div><footer id="dlg-f"></footer>
+</dialog>
+<div class="auth-loading-overlay" id="auth-overlay" role="status"><div class="alo-title">Online Portal</div><div class="spin"></div><div>Verifying your session…</div></div>
+
+<script type="module">
+import { boot, db, $, esc, has, SELF, colFor } from '/courts/online-services/portal/dashboard/assets/js/portal-shell.js';
+import { collection, getDocs } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+
+const { account, role } = await boot({ id: 'hearings', title: 'My hearings', subtitle: 'Hearings in the cases where you are a party or an attorney.' });
+const root = $('page-body'), BASE = 'https://migovt.org/courts/online-services/portal/dashboard/';
+if (!has(SELF, role)) {
+  $('page-subtitle').textContent = '';
+  root.innerHTML = `<section class="card"><div class="empty"><strong>This page is for litigants and attorneys</strong><p>Court staff schedule and manage hearings in Manage Hearings.</p><a class="btn" href="${BASE}hearings/manage/">Open Manage Hearings</a></div></section>`;
+} else await main();
+
+async function main() {
+/* ── Helpers ───────────────────────────────────────────────────────── */
+const hv = v => v !== undefined && v !== null && String(v).trim() !== '';
+const parse = s => { const d = new Date(s); return isNaN(d) ? null : d; };
+const norm = s => String(s || '').toLowerCase().replace(/\s+/g, ' ').trim();
+const p2 = n => String(n).padStart(2, '0');
+const dayKey = d => `${d.getFullYear()}-${p2(d.getMonth() + 1)}-${p2(d.getDate())}`;
+const fmtDay = k => new Date(k + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+const fmtLong = d => d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+const fmtTime = d => d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+const roomLabel = v => /^\d+$/.test(String(v || '')) ? 'Courtroom ' + v : v || '';
+const ATT = { 'in-person': 'In person only', hybrid: 'In person or video', video: 'Video only' };
+const MINS = { Arraignment: 15, 'Pretrial Conference': 20, 'Small Claims Hearing': 30, 'Motion Hearing': 30, 'Preliminary Examination': 60, 'Traffic Hearing': 15, 'Jury Trial': 480, 'Bench Trial': 240, 'Sentencing Hearing': 30, 'Oral Argument': 15 };
+const sideOf = r => /defendant|respondent|appellee/i.test(r || '') ? 1 : /plaintiff|petitioner|prosecut|appellant|applicant|complainant|claimant/i.test(r || '') ? 0 : null;
+function plist(c) { if (Array.isArray(c.parties)) return c.parties.filter(x => x && x.name); const o = []; Object.values(c.parties || {}).forEach(v => Array.isArray(v) ? v.forEach(x => x && o.push(x)) : v && typeof v === 'object' && o.push(v)); return o.filter(x => x.name); }
+const counselOf = p => { const a = [...(p.attorneys || [])]; if (p.attorney?.name && !a.some(x => x.name === p.attorney.name)) a.unshift(p.attorney); return a.filter(x => x && x.name); };
+function caption(c) {
+  if (hv(c.caseTitleOverride)) return c.caseTitleOverride;
+  const l = plist(c), t = String(c.caseType || '').toLowerCase(), a = l.find(x => sideOf(x.role) === 0), b = l.find(x => sideOf(x.role) === 1);
+  if (t === 'criminal' || t === 'traffic') return a && b ? `${a.name} v. ${b.name}` : `State of Michigan v. ${b?.name || 'Unknown'}`;
+  if (a && b) return `${a.name} v. ${b.name}`; if (a) return `Ex parte ${a.name}`; if (b) return `In re ${b.name}`;
+  return c.administrativeSubtype || c.caseId || 'Case';
+}
+function link(c) {
+  const me = norm(account.name), bar = String(account.barNumber || '').trim(), l = plist(c);
+  const asParty = l.filter(p => norm(p.name) === me), clients = l.filter(p => counselOf(p).some(a => norm(a.name) === me || (bar && String(a.barNumber || '').trim() === bar)));
+  if (!asParty.length && !clients.length && !(c.relatedUserIds || []).includes(account.uid)) return null;
+  return asParty.length ? asParty.map(p => p.role).join(', ') : clients.length ? 'Attorney for ' + clients.map(p => p.name).join(' and ') : 'Filer';
+}
+const stateOf = h => h.result === 'Cancelled' ? 'cancelled' : hv(h.result) ? 'held' : h.when < new Date() ? 'past' : 'upcoming';
+const PILL = { upcoming: ['live', 'Upcoming'], held: ['done', 'Held'], cancelled: ['plain', 'Cancelled'], past: ['warn', 'Awaiting result'] };
+
+/* ── Load ──────────────────────────────────────────────────────────── */
+let all = [], view = 'list', show = 'upcoming', q = '', ym = { y: new Date().getFullYear(), m: new Date().getMonth() }, sel = null, openKey = null;
+const safe = p => p.catch(() => ({ docs: [] }));
+const [d1, d2] = await Promise.all([safe(getDocs(collection(db, 'cases'))), safe(getDocs(collection(db, 'mscCases')))]);
+[...d1.docs, ...d2.docs].forEach(s => {
+  const c = { ...s.data(), _id: s.id }, lk = link(c); if (!lk) return;
+  (c.hearings || []).forEach((h, i) => { const when = parse(h.date); if (!when) return; all.push({ key: `${c._id}~${i}`, c, h, when, lk, cap: caption(c), mins: parseInt(h.minutes, 10) || MINS[h.type] || 30, mode: ATT[h.attendance] ? h.attendance : 'in-person' }); });
+});
+all.sort((a, b) => a.when - b.when);
+const setHead = sub => { $('page-subtitle').textContent = sub; };
+setHead('Hearings in the cases where you are a party or an attorney.');
+
+/* ── Render ────────────────────────────────────────────────────────── */
+const shown = () => all.filter(x => { const st = stateOf({ ...x.h, when: x.when });
+  return (show === 'all' || (show === 'upcoming' ? st === 'upcoming' : st !== 'upcoming')) && (!q || [x.cap, x.c.caseId, x.h.type, x.h.officer].join(' ').toLowerCase().includes(q)); });
+function row(x) {
+  const st = stateOf({ ...x.h, when: x.when }), where = x.mode === 'video' ? 'Videoconference' : roomLabel(x.h.courtroom || x.c.courtroomNumber);
+  return `<button type="button" class="hr" data-a="open:${esc(x.key)}"><div class="t">${esc(fmtTime(x.when))}<small>${esc(x.when.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }))}</small></div>
+    <div class="c"><b>${esc(x.cap)}</b><small>${esc(x.c.caseId)} · ${esc(x.h.type || 'Hearing')} · ${esc(where)}${x.h.officer ? ' · ' + esc(x.h.officer) : ''}</small><small>${esc(x.lk)}</small></div>
+    <div class="p"><span class="pill plain">${esc(ATT[x.mode])}</span><span class="pill ${PILL[st][0]}">${PILL[st][1]}</span></div></button>`;
+}
+function dayCard(k, l) { return `<section class="card day"><div class="day-h"><h3>${esc(fmtDay(k))}${k === dayKey(new Date()) ? ' <span class="pill live">Today</span>' : ''}</h3><span>${l.length} hearing${l.length === 1 ? '' : 's'}</span></div>${l.map(row).join('')}</section>`; }
+function listHtml() {
+  const l = shown(); if (!l.length) return `<section class="card"><div class="empty"><strong>${show === 'upcoming' ? 'No upcoming hearings' : 'No hearings found'}</strong><p>${q ? 'Try a different search.' : 'When the court sets a hearing in one of your cases, it appears here and you receive a notice.'}</p></div></section>`;
+  const g = {}; l.forEach(x => (g[dayKey(x.when)] = g[dayKey(x.when)] || []).push(x));
+  const keys = Object.keys(g).sort(); if (show === 'past') keys.reverse();
+  return keys.map(k => dayCard(k, g[k])).join('');
+}
+function calHtml() {
+  const l = shown(), by = {}; l.forEach(x => (by[dayKey(x.when)] = by[dayKey(x.when)] || []).push(x));
+  const first = new Date(ym.y, ym.m, 1), last = new Date(ym.y, ym.m + 1, 0), mk = `${ym.y}-${p2(ym.m + 1)}`;
+  if (!sel || !sel.startsWith(mk) || !by[sel]) { const ds = Object.keys(by).filter(d => d.startsWith(mk)).sort(); const t = dayKey(new Date()); sel = by[t] && t.startsWith(mk) ? t : ds[0] || null; }
+  const d = new Date(first); d.setDate(1 - first.getDay()); let rows = '';
+  while (d <= last || d.getDay() !== 0) { let r = ''; for (let i = 0; i < 7; i++) {
+    const k = dayKey(d), it = by[k] || [], out = d.getMonth() !== ym.m, cls = [out ? 'out' : '', k === dayKey(new Date()) ? 'today' : ''].join(' ').trim();
+    const inner = `<span class="num">${d.getDate()}</span>` + (it.length ? it.slice(0, 2).map(x => { const st = stateOf({ ...x.h, when: x.when }); return `<span class="ev ${st === 'cancelled' ? 'cx' : st === 'upcoming' ? '' : 'past'}">${esc(fmtTime(x.when).replace(':00', ''))} ${esc(x.cap)}</span>`; }).join('') + (it.length > 2 ? `<span class="more-ev">+${it.length - 2} more</span>` : '') + `<span class="cnt">${it.length}</span>` : '');
+    r += `<td class="${cls}">${it.length ? `<button type="button" class="cell${k === sel ? ' sel' : ''}" data-a="day:${k}" aria-label="${esc(fmtDay(k))}, ${it.length} hearing${it.length === 1 ? '' : 's'}">${inner}</button>` : `<div class="cell">${inner}</div>`}</td>`; d.setDate(d.getDate() + 1); }
+    rows += `<tr>${r}</tr>`; }
+  return `<div class="cal-bar"><h3>${esc(first.toLocaleDateString('en-US', { month: 'long', year: 'numeric' }))}</h3><div class="chips"><button type="button" data-a="shift:-1">‹ Previous</button><button type="button" data-a="today">Today</button><button type="button" data-a="shift:1">Next ›</button></div></div>
+    <table class="cal"><thead><tr>${['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(x => `<th scope="col">${x}</th>`).join('')}</tr></thead><tbody>${rows}</tbody></table>${sel && by[sel] ? dayCard(sel, by[sel]) : '<section class="card"><div class="empty"><strong>No hearings this month</strong></div></section>'}`;
+}
+function draw() {
+  if (!all.length) { root.innerHTML = `<section class="card"><div class="empty"><strong>No hearings yet</strong><p>Hearings appear here when the court schedules one in a case where you are a party or an attorney of record.</p><a class="btn outline" href="${BASE}cases/">My cases</a></div></section>`; return; }
+  const n = new Date(), up = all.filter(x => stateOf({ ...x.h, when: x.when }) === 'upcoming'), wk = up.filter(x => x.when - n <= 7 * 864e5), mo = up.filter(x => x.when - n <= 30 * 864e5), nx = up[0];
+  const stat = (l, v, al) => `<div class="stat ${al ? 'alert-stat' : ''}"><span>${l}</span><b>${v}</b></div>`;
+  root.innerHTML = `<div class="stats">${stat('Next hearing', nx ? esc(nx.when.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })) : '—')}${stat('Next 7 days', wk.length, wk.length > 0)}${stat('Next 30 days', mo.length)}${stat('All upcoming', up.length)}</div>
+    <div class="tools"><input class="in" id="hq" type="search" placeholder="Search by case, hearing type, or judge" aria-label="Search hearings" value="${esc(q)}">
+      <div class="chips">${[['upcoming', 'Upcoming'], ['past', 'Past'], ['all', 'All']].map(([v, l]) => `<button type="button" class="${show === v ? 'on' : ''}" data-a="show:${v}">${l}</button>`).join('')}</div>
+      <div class="seg"><button type="button" class="${view === 'list' ? 'on' : ''}" data-a="view:list">List</button><button type="button" class="${view === 'cal' ? 'on' : ''}" data-a="view:cal">Calendar</button></div></div>
+    <div id="hv">${view === 'list' ? listHtml() : calHtml()}</div>`;
+}
+
+/* ── Details ───────────────────────────────────────────────────────── */
+const dlg = $('dlg');
+function detail(x) {
+  const h = x.h, st = stateOf({ ...h, when: x.when }), where = x.mode === 'video' ? 'Videoconference' : roomLabel(h.courtroom || x.c.courtroomNumber) || 'Courtroom to be announced', live = st === 'upcoming';
+  const inp = x.mode === 'video' ? `<div class="mode"><b>In person <span class="pill plain">Not available</span></b><p>This hearing is held by videoconference only. You do not go to the courthouse.</p></div>`
+    : x.mode === 'in-person' ? `<div class="mode need"><b>In person <span class="pill bad">Required</span></b><p>You must attend in person: ${esc(where)}, ${esc(x.c.court)}. Plan extra time to pass through security.</p></div>`
+    : `<div class="mode on"><b>In person <span class="pill done">Available</span></b><p>${esc(where)}, ${esc(x.c.court)}. Plan extra time to pass through security.</p></div>`;
+  const vid = x.mode === 'in-person' ? `<div class="mode"><b>Videoconference <span class="pill plain">Not available</span></b><p>This hearing is in person only.</p></div>`
+    : `<div class="mode ${x.mode === 'video' ? 'need' : 'on'}"><b>Videoconference <span class="pill ${x.mode === 'video' ? 'bad' : 'done'}">${x.mode === 'video' ? 'Required' : 'Available'}</span></b><p>${x.mode === 'video' ? 'You must appear by video.' : 'You may appear by video.'} ${h.videoUrl ? '' : 'Contact the clerk\'s office for the video link before the hearing.'}</p>${h.videoUrl && live ? `<p style="margin-top:8px"><a class="btn" href="${esc(h.videoUrl)}" target="_blank" rel="noopener">Join by video ↗</a></p>` : ''}</div>`;
+  $('dlg-t').textContent = x.cap; $('dlg-w').textContent = `${fmtLong(x.when)} at ${fmtTime(x.when)}`;
+  $('dlg-b').innerHTML = `<h4>Hearing details</h4><dl class="kv"><div><dt>Case number</dt><dd>${esc(x.c.caseId)}</dd></div><div><dt>Hearing type</dt><dd>${esc(h.type || 'Hearing')}</dd></div><div><dt>Status</dt><dd>${PILL[st][1]}</dd></div><div><dt>Your role</dt><dd>${esc(x.lk)}</dd></div>
+    <div><dt>Judicial officer</dt><dd>${esc(h.officer || x.c.judge || 'To be assigned')}</dd></div><div><dt>${x.mode === 'video' ? 'Location' : 'Courtroom'}</dt><dd>${esc(where)}</dd></div><div><dt>Court</dt><dd>${esc(x.c.court)}</dd></div><div><dt>Expected length</dt><dd>${x.mins >= 60 ? (x.mins / 60) + ' hr' : x.mins + ' min'}</dd></div></dl>
+    ${hv(h.result) ? `<p><b>Result:</b> ${esc(h.result)}</p>` : ''}${hv(h.notes) ? `<p class="m">${esc(h.notes)}</p>` : ''}
+    ${live ? `<h4>How to attend</h4><div class="modes">${inp}${vid}</div><p class="m">Hearing dates and times can change. Contact the clerk of the court to confirm before you attend, or to ask about interpreters and accommodations.</p>` : ''}`;
+  $('dlg-f').innerHTML = `${live ? `<button class="btn outline" type="button" data-a="ics:${esc(x.key)}">Add to calendar</button>` : ''}<a class="btn outline" href="${BASE}cases/#${encodeURIComponent(x.c._id)}">Open case</a><button class="btn" type="button" data-close>Close</button>`;
+  if (!dlg.open) dlg.showModal();
+}
+function ics(x) {
+  const f = d => `${d.getFullYear()}${p2(d.getMonth() + 1)}${p2(d.getDate())}T${p2(d.getHours())}${p2(d.getMinutes())}00`, t = s => String(s || '').replace(/[\\;,]/g, m => '\\' + m).replace(/\n/g, '\\n'), e = new Date(x.when.getTime() + x.mins * 6e4);
+  const where = x.mode === 'video' ? 'Videoconference' : [roomLabel(x.h.courtroom || x.c.courtroomNumber), x.c.court].filter(Boolean).join(', ');
+  const body = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Michigan Courts//Online Portal//EN', 'BEGIN:VEVENT', `UID:${x.key}@migovt.org`, `DTSTAMP:${new Date().toISOString().replace(/[-:]/g, '').slice(0, 15)}Z`, `DTSTART:${f(x.when)}`, `DTEND:${f(e)}`,
+    `SUMMARY:${t(`${x.h.type || 'Hearing'}: ${x.cap}`)}`, `LOCATION:${t(where)}`, `DESCRIPTION:${t(`Case ${x.c.caseId}. ${x.h.officer || ''} ${x.h.videoUrl ? 'Video: ' + x.h.videoUrl + ' ' : ''}Times can change; confirm with the clerk.`)}`, 'END:VEVENT', 'END:VCALENDAR'].join('\r\n');
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([body], { type: 'text/calendar' })); a.download = `hearing-${x.c.caseId.replace(/\W+/g, '-')}.ics`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 3000);
+}
+
+/* ── Events ────────────────────────────────────────────────────────── */
+const byKey = k => all.find(x => x.key === k);
+const A = { show: v => { show = v; draw(); }, view: v => { view = v; draw(); }, day: k => { sel = k; draw(); }, today: () => { const n = new Date(); ym = { y: n.getFullYear(), m: n.getMonth() }; sel = null; draw(); },
+  shift: n => { const d = new Date(ym.y, ym.m + Number(n), 1); ym = { y: d.getFullYear(), m: d.getMonth() }; sel = null; draw(); }, open: k => detail(byKey(k)), ics: k => ics(byKey(k)) };
+document.addEventListener('click', e => { if (e.target === dlg || e.target.closest('[data-close]')) { dlg.close(); return; } const el = e.target.closest('[data-a]'); if (!el) return; const [n, ...v] = el.dataset.a.split(':'); if (A[n]) A[n](v.join(':')); });
+document.addEventListener('input', e => { if (e.target.id === 'hq') { q = e.target.value.toLowerCase().trim(); $('hv').innerHTML = view === 'list' ? listHtml() : calHtml(); } });
+draw();
+}
+</script>
+</body>
+</html>

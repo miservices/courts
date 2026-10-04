@@ -111,10 +111,12 @@ const scopeOf = role => has(DISTRICT, role) ? [DISTRICT_COURT] : has(SUPREME, ro
 
 async function loadData(account, role) {
   const staff = has(STAFF, role), scope = scopeOf(role).map(norm), me = norm(account.name);
-  const snap = await getDocs(collection(db, 'cases'));
+  const safeGet = col => getDocs(collection(db, col)).catch(() => ({ docs: [] }));
+  const snaps = await Promise.all([safeGet('cases'), safeGet('mscCases')]);
+  const docs = snaps.flatMap(x => x.docs);
   const cases = [], hearings = [], orders = [], filings = [], events = [];
 
-  snap.docs.forEach(d => {
+  docs.forEach(d => {
     const c = d.data(), people = peopleOf(c);
     const p = c.parties || {};
     const a = p.appellant || p.primaryPetitioner || p.primaryPlaintiff;
@@ -127,11 +129,12 @@ async function loadData(account, role) {
       if (!scope.includes(norm(c.court))) return;                      // court-wide view for staff
     } else {
       const party = people.find(x => norm(x.name) === me);
-      const atty = me && people.some(x => norm(x.attorney).includes(me));
+      const counsel = x => [].concat(x.attorney || [], x.attorneys || [], x.counsel || []).map(a => norm(typeof a === 'string' ? a : (a && (a.name || '')) + ' ' + (a && (a.barNumber || ''))));
+      const atty = me && people.some(x => counsel(x).some(t => t.includes(me)));
       if (!party && !atty) return;                                     // personal view: only cases linked to this person
       role_ = party ? party.role : 'Attorney';
       if (party) (c.financialOrders || []).forEach(o => {
-        if (norm(o.owedBy) !== norm(role_)) return;
+        if (norm(o.payor || o.owedBy) !== norm(party.name) && norm(o.payor || o.owedBy) !== norm(role_)) return;
         const paid = (o.payments || []).reduce((t, x) => t + Number(x.amount || 0), 0);
         orders.push({ ...base, type: o.type, balance: /paid/i.test(o.status) ? 0 : Math.max(0, Number(o.amount || 0) - paid) });
         (o.payments || []).forEach(x => events.push({ date: x.date, text: `Payment of $${x.amount} recorded in ${c.caseId}` }));
@@ -141,10 +144,10 @@ async function loadData(account, role) {
     cases.push({ ...base, type: c.caseType, status: c.status, role: role_, judges, mine: judges.some(j => nameKey(j) === nameKey(account.name)),
                  updated: c.dates?.closed || c.dates?.lastUpdated || c.dates?.filed });
     (c.hearings || []).forEach(h => {
-      hearings.push({ ...base, type: h.type, date: h.date, where: [h.courtroom && 'Courtroom ' + h.courtroom, h.officer].filter(Boolean).join(' · ') });
+      hearings.push({ ...base, type: h.type, date: h.date, where: [h.attendance === 'video' ? 'Videoconference' : (/^\d+$/.test(String(h.courtroom || '')) ? 'Courtroom ' + h.courtroom : h.courtroom), h.officer].filter(Boolean).join(' · ') });
       events.push({ date: h.date, text: `${h.type} in ${c.caseId}: ${h.result || 'scheduled'}` });
     });
-    (c.filings || []).forEach(f => {
+    ((c.filings && c.filings.length) ? c.filings : (c.events || []).filter(e => e.type === 'filing' && !e.sealed).map(e => ({ title: e.description, filedBy: e.filedBy, dateFiled: e.date }))).forEach(f => {
       filings.push({ ...base, title: f.title, by: f.filedBy, date: f.dateFiled });
       events.push({ date: f.dateFiled, text: `${f.title} filed in ${c.caseId}` });
     });
