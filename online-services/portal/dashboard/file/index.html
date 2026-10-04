@@ -3,314 +3,238 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Court Forms | Michigan Courts</title>
+<title>My filings | Online Portal</title>
 <link rel="icon" type="image/png" href="/courts/images/favicon.png">
-
-
-<script src="/courts/shell.js" data-active="forms"></script>
-
-<style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:var(--font-ui,'Public Sans',system-ui,sans-serif);background:#e3e9f2;color:#1b2433;line-height:1.5;font-size:15px}
-a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #5b9be0;outline-offset:2px}
-
-/* Page header */
-.page-header{background:#10264a;padding:34px 0 38px}
-.wrap{max-width:1180px;margin:0 auto;padding:0 40px}
-.breadcrumb{display:flex;align-items:center;gap:8px;margin-bottom:14px;font-size:13px;flex-wrap:wrap}
-.breadcrumb a{color:#9cc4f5;text-decoration:none}
-.breadcrumb a:hover{color:#fff;text-decoration:underline}
-.breadcrumb span{color:#6f87ad}
-.breadcrumb .here{color:#fff}
-.page-header h2{font-family:var(--font-head,Georgia,serif);color:#fff;font-size:34px;font-weight:600;line-height:1.2;letter-spacing:-.01em}
-.page-header p{color:#c5d3e8;margin-top:10px;max-width:680px}
-.page-header p strong{color:#fff}
-.page-header p a{color:#9cc4f5;font-weight:600}
-.page-header p a:hover{color:#fff}
-
-/* Notice */
-.notice{background:#fff;border:1px solid #d5dde8;border-left:4px solid #1f5fae;border-radius:4px;padding:20px 24px;margin-bottom:28px}
-.notice h3{font-family:var(--font-head,Georgia,serif);font-size:20px;font-weight:600;color:#10264a;margin-bottom:8px}
-.notice p{margin-top:8px;color:#33405a}
-.notice p:first-of-type{margin-top:0}
-.notice a{color:#1f5fae;font-weight:600}
-.notice a:hover{color:#10264a}
-.notice ul{margin:8px 0 0 20px;color:#33405a}
-.notice li{margin-top:4px}
-.notice .recommend{display:inline-flex;align-items:center;margin-top:14px;font-size:14px;font-weight:600;padding:9px 16px;border-radius:4px;background:#10264a;color:#fff;text-decoration:none;border:2px solid #10264a}
-.notice .recommend:hover{background:#17335f;border-color:#17335f}
-.notice .recommend:focus-visible{outline:3px solid #5b9be0;outline-offset:2px}
-
-/* Toolbar */
-.toolbar{background:#fff;border-bottom:1px solid #d5dde8;box-shadow:0 2px 8px rgba(16,38,74,.08);position:sticky;top:var(--mc-sticky-top,0px);z-index:50;transition:top .25s ease}
-.toolbar .wrap{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding-top:14px;padding-bottom:14px}
-.search-wrap{position:relative;flex:1;min-width:220px;max-width:380px}
-.search-wrap svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:15px;height:15px;color:#5a667a;pointer-events:none}
-.search-wrap input,.filter-select{font:inherit;font-size:14px;color:#1b2433;border:1px solid #8896ab;border-radius:4px;background:#fff}
-.search-wrap input{width:100%;padding:10px 12px 10px 36px}
-.filter-select{padding:10px 12px;cursor:pointer}
-.toolbar-right{margin-left:auto;display:flex;align-items:center;gap:10px}
-.result-count{font-size:13px;color:#5a667a;white-space:nowrap}
-.clear-btn{display:none;font:inherit;font-size:13px;font-weight:600;color:#1f5fae;background:none;border:0;cursor:pointer;padding:4px 8px;border-radius:3px}
-.clear-btn:hover{background:#eef3f9}
-.clear-btn.visible{display:block}
-
-/* List */
-.forms-wrap{padding:32px 0 64px}
-.group{margin-bottom:28px}
-.group h3{font-family:var(--font-head,Georgia,serif);font-size:21px;font-weight:600;color:#10264a;margin-bottom:10px}
-.table-scroll{background:#fff;border:1px solid #d5dde8;border-radius:4px;overflow-x:auto}
-.forms-table{width:100%;border-collapse:collapse}
-.forms-table thead th{background:#17335f;color:#fff;padding:12px 16px;text-align:left;font-size:13px;font-weight:600;white-space:nowrap}
-.forms-table thead th:first-child{width:100px}
-.forms-table thead th:last-child{text-align:right}
-.forms-table tbody tr{border-bottom:1px solid #e3e9f1}
-.forms-table tbody tr:last-child{border-bottom:0}
-.forms-table tbody tr:hover{background:#f4f8fd}
-.forms-table td{padding:14px 16px;vertical-align:top}
-.form-number{font-weight:700;color:#10264a;white-space:nowrap}
-.form-title{font-weight:600;line-height:1.35}
-.form-desc{font-size:13.5px;color:#5a667a;margin-top:3px}
-.badge{display:inline-block;font-size:12.5px;font-weight:600;padding:3px 10px;border-radius:12px;white-space:nowrap;background:#eef3f9;color:#33405a}
-.badge.all{background:#e0ecfa;color:#17335f}
-.badge.district{background:#e2f0e8;color:#1c5a37}
-.badge.supreme{background:#ebe5f7;color:#4a2f8a}
-.form-actions{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
-.btn{display:inline-flex;align-items:center;gap:6px;font-size:13.5px;font-weight:600;padding:7px 14px;border-radius:4px;text-decoration:none;white-space:nowrap}
-.btn svg{width:14px;height:14px;flex-shrink:0}
-.btn-view{background:#10264a;color:#fff;border:2px solid #10264a}
-.btn-view:hover{background:#17335f;border-color:#17335f}
-.btn-copy{background:#fff;color:#10264a;border:2px solid #10264a}
-.btn-copy:hover{background:#eef3f9}
-
-/* States */
-.state-box{display:flex;align-items:center;gap:14px;padding:22px 24px;background:#fff;border:1px solid #d5dde8;border-left:4px solid #1f5fae;border-radius:4px}
-.state-box.error{border-left-color:#b42318;background:#fdf1f0}
-.state-box.error p{color:#7a1b13}
-.spin{width:20px;height:20px;border:3px solid #d5dde8;border-top-color:#10264a;border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
-@keyframes spin{to{transform:rotate(360deg)}}
-@media(prefers-reduced-motion:reduce){.spin{animation-duration:2s}}
-.no-results{background:#fff;border:1px solid #d5dde8;border-radius:4px;text-align:center;padding:40px 20px;color:#5a667a}
-
-@media(max-width:900px){
-  .forms-table th:nth-child(4),.forms-table td:nth-child(4){display:none}
-}
-@media(max-width:768px){
-  .wrap{padding:0 20px}
-  .page-header h2{font-size:28px}
-  .forms-table th:nth-child(3),.forms-table td:nth-child(3){display:none}
-  .form-actions{flex-direction:column;align-items:flex-end}
-}
-</style>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=Source+Serif+4:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/courts/online-services/portal/dashboard/assets/css/dashboard.css?v=5">
 </head>
 <body>
-
-<div class="page-header">
-  <div class="wrap">
-    <div class="breadcrumb">
-      <a href="/courts/">Home</a><span>/</span>
-      <a href="/courts/forms-and-filing/information/">Forms &amp; Filing</a><span>/</span>
-      <span class="here">Court Forms</span>
+<aside class="sidebar" id="sidebar-root" aria-label="Portal navigation"></aside>
+<div class="scrim" id="scrim" hidden></div>
+<div class="main">
+  <header class="topbar">
+    <div class="topbar-left">
+      <button class="menu-btn" id="menu-btn" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="sidebar-root"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+      <div><span class="topbar-eyebrow">Online Portal</span><span class="topbar-page-title" id="topbar-title">My filings</span></div>
     </div>
-    <h2>Court forms</h2>
-    <p>Manual court forms, provided through Google Docs. Choose <strong>View</strong> to open the form, or <strong>Make a copy</strong> to get an editable version. From Google Docs, use <strong>File &gt; Download</strong> to save it as a DOCX, PDF, or Markdown (.md) file, among other formats.</p>
-    <p>For most filers, we do not recommend using these manual forms. Use the <a href="http://migovt.org/courts/online-services/portal/dashboard/document-drafting/">document drafter in the online portal</a> instead. It is easier, free, and comes with reduced filing fees.</p>
-  </div>
+    <div class="topbar-right"><span class="topbar-date" id="topbar-date"></span><div class="notif-wrap" id="notif-root"></div></div>
+  </header>
+  <main class="page-body">
+    <div class="page-head"><div><h2 id="page-title">My filings</h2><p id="page-subtitle"></p></div><div id="page-action"></div></div>
+    <div id="page-body"><div class="loading-inline"><span class="spin-sm"></span>Loading…</div></div>
+  </main>
 </div>
+<div class="auth-loading-overlay" id="auth-overlay" role="status"><div class="alo-title">Online Portal</div><div class="spin"></div><div>Verifying your session…</div></div>
 
-<div class="toolbar" role="search">
-  <div class="wrap">
-    <div class="search-wrap">
-      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="9" cy="9" r="5"/><path d="M15 15l-3-3"/></svg>
-      <input type="search" id="search-input" placeholder="Search by form number or title" aria-label="Search forms" oninput="applyFilters()">
-    </div>
-    <select class="filter-select" id="filter-category" aria-label="Category" onchange="applyFilters()">
-      <option value="">All categories</option>
-    </select>
-    <select class="filter-select" id="filter-court" aria-label="Court" onchange="applyFilters()">
-      <option value="">All courts</option>
-      <option value="All Courts">Both courts</option>
-      <option value="District Court">District Court</option>
-      <option value="Supreme Court">Supreme Court</option>
-    </select>
-    <div class="toolbar-right">
-      <span class="result-count" id="result-count" aria-live="polite"></span>
-      <button class="clear-btn" id="clear-btn" onclick="clearFilters()">Clear filters</button>
-    </div>
-  </div>
-</div>
+<script type="module">
+import { boot, db, app, $, esc, has, ATTY, STAFF } from '/courts/online-services/portal/dashboard/assets/js/portal-shell.js';
+import { collection, getDocs, addDoc, query, where } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 
-<div class="forms-wrap">
-  <div class="wrap">
-    <div class="notice" role="note">
-      <h3>Use the court's document drafter instead</h3>
-      <p>These manual forms are mainly provided so you can download them in the format you need. For most uses, the <a href="http://migovt.org/courts/online-services/portal/dashboard/document-drafting/">document drafter in the online portal</a> is the better choice. You enter your information into the court's built-in drafter, and it is easier, free, and cheaper, with reduced filing fees.</p>
-      <p>The court understands that many people like to print and handwrite their documents. Please be aware of the tradeoffs:</p>
-      <ul>
-        <li>Because you did not use the portal's document drafter, you are subject to higher filing fees.</li>
-        <li>Scanned documents often have larger file sizes, and you may be charged extra depending on how big the file is.</li>
-        <li>Files are capped at a maximum size, and scanned documents often go over it.</li>
-      </ul>
-      <a class="recommend" href="http://migovt.org/courts/online-services/portal/dashboard/document-drafting/">Go to the document drafter</a>
-    </div>
+const { account, role } = await boot({ id: 'filings', title: 'My filings', subtitle: 'File a new case, add to an existing one, and track what you have submitted.' });
 
-    <div id="forms-container">
-      <div class="state-box"><div class="spin"></div><p>Loading forms…</p></div>
-    </div>
-  </div>
-</div>
+/* ── Court data ─────────────────────────────────────────────────────── */
+const FW = 'Fee Waiver Request (MC 20)';
+const COURTS = {
+  'Genesee Co. District Court': ['Small Claims', 'General Civil', 'Civil Infraction', 'Expungement', 'Administrative', 'Special Proceeding', ...(has(STAFF, role) || role === 'Prosecuting Attorney' ? ['Criminal'] : [])],
+  'Michigan Supreme Court': ['Appellate', 'Administrative Appeal', 'Original Action', 'Extraordinary Writ']
+};
+const ROLES = { 'Small Claims': ['Plaintiff', 'Defendant'], 'General Civil': ['Plaintiff', 'Defendant'], 'Civil Infraction': ['Defendant', 'Prosecuting Authority'], Expungement: ['Petitioner', 'Respondent'], Criminal: ['Prosecution', 'Defendant'],
+  Administrative: ['Petitioner', 'Respondent'], 'Special Proceeding': ['Petitioner', 'Respondent'], Appellate: ['Appellant', 'Appellee'], 'Administrative Appeal': ['Petitioner', 'Respondent'], 'Original Action': ['Plaintiff', 'Defendant'], 'Extraordinary Writ': ['Petitioner', 'Respondent'] };
+const INIT = { 'Small Claims': ['Complaint (DC 84)', FW], 'General Civil': ['Complaint', 'Summons (MC 01)', FW], 'Civil Infraction': ['Appeal of Civil Infraction (DC 102)', FW], Expungement: ['Application to Set Aside a Conviction or Arrest (MC 227)', FW],
+  Criminal: ['Criminal Complaint / Information'], Administrative: ['Petition'], 'Special Proceeding': ['Petition', 'Application for Writ of Garnishment', 'Application for Writ of Habeas Corpus', 'Petition for Order of Contempt'],
+  Appellate: ['Application for Leave to Appeal', 'Notice of Appeal (as of right)'], 'Administrative Appeal': ['Petition for Review'], 'Original Action': ['Complaint'],
+  'Extraordinary Writ': ['Petition for Writ of Mandamus', 'Petition for Writ of Prohibition', 'Petition for Superintending Control', 'Petition for Quo Warranto'] };
+const COMMON = ['Motion', 'Emergency Motion', 'Response / Answer', 'Brief', 'Reply Brief', 'Affidavit / Declaration', 'Proposed Order', 'Stipulation', FW, 'Notice of Appeal', 'Proof of Service', 'Notice', 'Other'];
+const EXTRA = ['Third Party', 'Intervenor', 'Cross-Claimant', 'Cross-Defendant'];
+const fee = (t, court) => /fee waiver/i.test(t) ? 0 : /^Complaint/.test(t) ? (/Original/.test(S.ctype) ? 150 : /DC 84/.test(t) ? 30 : 75) : /Set Aside/.test(t) ? 40 : /Appeal of Civil/.test(t) ? 20 : /Criminal Complaint/.test(t) ? 0
+  : /Notice of Appeal \(|Leave to Appeal|Petition for (Writ|Superintending|Quo)/.test(t) ? 100 : /Petition for Review/.test(t) ? 50 : court === 'Michigan Supreme Court' ? 50 : 25;
+const money = n => '$' + Number(n || 0).toFixed(2);
+const fmt = v => v ? new Date(v).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—';
 
-<script>
-  const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQnHhVqcjdBGTNLl3_VmFuLQ77GQ-02-6UIW55zl5EV2sUrfxjaRrBDR-LAaFGEklpJ4d5XXJaFA75R/pub?gid=0&single=true&output=csv';
-  let allForms = [];
+/* ── State ──────────────────────────────────────────────────────────── */
+const blank = () => ({ step: 0, view: 'new', counsel: false, type: '', court: '', ctype: '', kase: null, parties: [], files: [], links: [], email: account.email || '', notes: '', cert: false, rep: '', q: '', err: '', busy: false, done: null });
+let S = blank(), cases = [], mine = [];
+const root = $('page-body');
+const isCounsel = has(ATTY, role);
+const courtOf = () => S.type === 'new' ? S.court : S.kase?.court;
+const mkParty = (r, i) => ({ role: r, kind: 'Person', name: i === 0 && !S.counsel ? (account.name || '') : '', pin: '', mine: false });
 
-  function parseCSV(text) {
-    const rows = [];
-    let col = '', row = [], inQ = false;
-    for (let i = 0; i < text.length; i++) {
-      const ch = text[i], nx = text[i+1];
-      if (inQ) {
-        if (ch === '"' && nx === '"') { col += '"'; i++; }
-        else if (ch === '"') { inQ = false; }
-        else { col += ch; }
-      } else {
-        if (ch === '"') { inQ = true; }
-        else if (ch === ',') { row.push(col.trim()); col = ''; }
-        else if (ch === '\n' || (ch === '\r' && nx === '\n')) {
-          row.push(col.trim()); col = '';
-          if (row.some(c => c !== '')) rows.push(row);
-          row = [];
-          if (ch === '\r') i++;
-        } else { col += ch; }
-      }
-    }
-    if (col || row.length) { row.push(col.trim()); if (row.some(c => c !== '')) rows.push(row); }
-    return rows;
+getDocs(collection(db, 'cases')).then(s => { cases = s.docs.map(d => ({ ...d.data(), _id: d.id })); if (S.step === 1) render(); }).catch(() => {});
+const loadMine = () => getDocs(query(collection(db, 'pendingFilings'), where('filedByUid', '==', account.uid)))
+  .then(s => { mine = s.docs.map(d => ({ ...d.data(), _id: d.id })).sort((a, b) => new Date(b.dateFiled) - new Date(a.dateFiled)); if (S.view === 'history') render(); }).catch(() => {});
+loadMine();
+
+const linked = () => {
+  const n = String(account.name || '').toLowerCase(), q = S.q.toLowerCase().trim();
+  return cases.filter(c => (n && JSON.stringify(c.parties || {}).toLowerCase().includes(n)) || (c.relatedUserIds || []).includes(account.uid))
+    .filter(c => !q || (c.caseId + ' ' + JSON.stringify(c.parties || {})).toLowerCase().includes(q));
+};
+const caption = c => { const p = Array.isArray(c.parties) ? c.parties : []; const a = p[0]?.name, b = p[1]?.name; return a && b ? `${a} v. ${b}` : c.caseId; };
+
+/* ── Views ──────────────────────────────────────────────────────────── */
+const F = (label, inner, hint) => `<label class="f"><span>${label}</span>${inner}${hint ? `<small>${hint}</small>` : ''}</label>`;
+const inp = (k, v, ph = '', t = 'text') => `<input type="${t}" data-k="${k}" value="${esc(v)}" placeholder="${esc(ph)}">`;
+const sel = (k, v, opts, ph, r) => `<select data-k="${k}" ${r ? 'data-r' : ''}>${ph ? `<option value="">${ph}</option>` : ''}${opts.map(o => `<option${o === v ? ' selected' : ''}>${esc(o)}</option>`).join('')}</select>`;
+const opt = (on, a, title, sub) => `<div class="opt${on ? ' on' : ''}" role="radio" aria-checked="${on}" tabindex="0" data-a="${a}"><input type="radio" tabindex="-1" ${on ? 'checked' : ''}><div><b>${title}</b><small>${sub}</small></div></div>`;
+
+function stepType() {
+  return (isCounsel ? `<section class="card"><header><h3>Attorney filing</h3></header><label class="opt${S.counsel ? ' on' : ''}"><input type="checkbox" data-k="counsel" data-r ${S.counsel ? 'checked' : ''}><div><b>I am filing as counsel of record</b><small>${account.barNumber ? `Bar No. ${esc(account.barNumber)} will be attached to this filing.` : 'Your bar number will be attached to this filing.'}</small></div></label></section>` : '') +
+    `<section class="card"><header><h3>What are you filing?</h3></header>
+      ${opt(S.type === 'new', 'type:new', 'Start a new case', 'File a complaint, petition, or other document that opens a new matter.')}
+      ${opt(S.type === 'existing', 'type:existing', 'File in an existing case', 'Submit a motion, response, brief, or other document in a case already on the docket.')}
+      ${S.type === 'new' ? `<div class="cols mt">${F('Court', sel('court', S.court, Object.keys(COURTS), 'Select a court', 1))}${S.court ? F('Case type', sel('ctype', S.ctype, COURTS[S.court], 'Select a case type', 1)) : ''}</div>` : ''}
+    </section>`;
+}
+
+function partyCard(p, i) {
+  const rep = S.counsel ? `<label class="opt${p.mine ? ' on' : ''}"><input type="checkbox" data-k="parties.${i}.mine" data-r ${p.mine ? 'checked' : ''}><div><b>I represent this party</b></div></label>` : '';
+  return `<div class="sub"><header><span>Party ${i + 1}${i < 2 ? ' · ' + esc(p.role) : ''}</span>${i >= 2 ? `<button class="btn outline sm" type="button" data-a="rmparty:${i}">Remove</button>` : ''}</header>
+    ${i >= 2 ? F('Role', sel(`parties.${i}.role`, p.role, [...ROLES[S.ctype], ...EXTRA])) : ''}
+    <div class="cols">${F('Party type', sel(`parties.${i}.kind`, p.kind, ['Person', 'Business or organization', 'Government'], '', 1))}
+      ${F(p.kind === 'Person' ? 'Full name' : 'Name', inp(`parties.${i}.name`, p.name))}</div>
+    ${p.kind === 'Person' ? F('Michigan PIN', inp(`parties.${i}.pin`, p.pin, 'Your Michigan PIN'), 'Used by the clerk to verify identity. It is never shown on the public record.') : ''}${rep}</div>`;
+}
+
+function stepCase() {
+  if (S.type === 'new') return `<section class="card"><header><h3>Parties</h3></header>${S.parties.map(partyCard).join('')}<button class="btn outline" type="button" data-a="addparty">Add another party</button></section>`;
+  const list = linked();
+  return `<section class="card"><header><h3>Choose the case</h3></header>${F('Search your cases', inp('q', S.q, 'Case number or party name', 'search'))}
+    <div id="cl">${caseList(list)}</div></section>
+    ${S.counsel ? `<section class="card"><header><h3>Your representation</h3></header>${F('Party you represent', inp('rep', S.rep, 'Name of your client'), 'Recorded with your bar number.')}</section>` : ''}`;
+}
+const caseList = list => !cases.length ? '<div class="loading-inline"><span class="spin-sm"></span>Loading your cases…</div>' : list.length ? list.map(c =>
+  `<div class="opt${S.kase?._id === c._id ? ' on' : ''}" role="radio" aria-checked="${S.kase?._id === c._id}" tabindex="0" data-a="case:${esc(c._id)}"><input type="radio" tabindex="-1" ${S.kase?._id === c._id ? 'checked' : ''}><div><b>${esc(caption(c))}</b><small>${esc(c.caseId)} · ${esc(c.court)} · ${esc(c.caseType || '')}</small></div><span class="pill live" style="margin-left:auto">${esc(c.status || '')}</span></div>`).join('')
+  : '<div class="empty"><strong>No matching cases</strong><p>Only cases linked to your account are listed. To open a new matter, go back and choose “Start a new case”.</p></div>';
+
+const docOpts = () => S.type === 'new' ? INIT[S.ctype] || [] : COMMON;
+function stepDocs() {
+  const o = docOpts();
+  return `<section class="card"><header><h3>Documents</h3></header>
+    <p class="mt" style="margin:0 0 14px;color:var(--muted)">Upload PDFs of 5 MB or less (MCR 2.119). Documents with photographs or scanned images go in through Google Drive instead.</p>
+    ${F('Add PDF files', '<input type="file" id="fi" accept="application/pdf,.pdf" multiple>')}
+    ${S.files.map((f, i) => `<div class="sub"><header><span>${esc(f.file.name)} <small style="display:inline">· ${(f.file.size / 1048576).toFixed(2)} MB</small></span><button class="btn outline sm" type="button" data-a="rmfile:${i}">Remove</button></header>${F('Document type', sel(`files.${i}.type`, f.type, o, 'Select a type', 1))}</div>`).join('')}
+    ${S.links.map((l, i) => `<div class="sub"><header><span>Google Drive document ${i + 1}</span><button class="btn outline sm" type="button" data-a="rmlink:${i}">Remove</button></header><div class="cols">${F('Document type', sel(`links.${i}.type`, l.type, o, 'Select a type', 1))}${F('Share link', inp(`links.${i}.url`, l.url, 'https://drive.google.com/…', 'url'), 'Set sharing to “Anyone with the link can view”.')}</div></div>`).join('')}
+    <button class="btn outline" type="button" data-a="addlink">Add a Google Drive link</button></section>`;
+}
+
+const docs = () => [...S.files.map(f => ({ name: f.file.name, type: f.type })), ...S.links.map(l => ({ name: 'Google Drive document', type: l.type }))];
+function stepReview() {
+  const d = docs(), total = d.reduce((t, x) => t + fee(x.type, courtOf()), 0);
+  const rows = S.type === 'new'
+    ? [['Court', S.court], ['Case type', S.ctype], ...S.parties.map((p, i) => [`Party ${i + 1} (${p.role})`, p.name + (p.mine ? ' — your client' : '')])]
+    : [['Case', caption(S.kase) + ' · ' + S.kase.caseId], ['Court', S.kase.court], ...(S.counsel ? [['You represent', S.rep]] : [])];
+  return `<section class="card"><header><h3>Review your filing</h3></header>
+    <dl class="details">${rows.map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join('')}
+      ${d.map(x => `<div><dt>${esc(x.type)}</dt><dd>${esc(x.name)} · ${fee(x.type, courtOf()) ? money(fee(x.type, courtOf())) : 'No fee'}</dd></div>`).join('')}
+      <div><dt>Estimated fees</dt><dd>${money(total)} — due in person within 14 days, not at filing</dd></div></dl>
+    ${F('Confirmation email', inp('email', S.email, 'you@example.com', 'email'), 'We send updates here when the clerk accepts, returns, or rejects your filing.')}
+    ${F('Notes to the clerk (optional)', `<textarea data-k="notes">${esc(S.notes)}</textarea>`)}
+    <label class="opt${S.cert ? ' on' : ''}"><input type="checkbox" data-k="cert" data-r ${S.cert ? 'checked' : ''}><div><b>This filing is accurate and complete</b><small>I certify the information and documents are true to the best of my knowledge. Once submitted, a filing cannot be edited.</small></div></label></section>`;
+}
+
+const pillFor = s => `<span class="pill ${s === 'Accepted' ? 'done' : s === 'Rejected' ? 'bad' : s === 'Returned' ? 'mid' : 'warn'}">${esc(s || 'Pending')}</span>`;
+function history() {
+  if (!mine.length) return `<section class="card">${'<div class="empty"><strong>No filings yet</strong><p>Filings you submit appear here with their review status.</p></div>'}</section>`;
+  return `<section class="card flush"><div class="table-scroll"><table><thead><tr><th>Confirmation</th><th>Filing</th><th>Filed</th><th>Status</th></tr></thead><tbody>${mine.map(f =>
+    `<tr><td class="nw"><b>${esc(f.confirmationNumber)}</b></td><td>${esc(f.filingType === 'new' ? `New ${f.caseType}` : f.caseId)}<small>${esc((f.documents || []).map(d => d.documentType).join(', '))}</small>${f.returnReason || f.rejectionReason ? `<small><b>Clerk:</b> ${esc(f.returnReason || f.rejectionReason)}</small>` : ''}${f.linkedCaseId && f.filingType === 'new' ? `<small>Case number ${esc(f.linkedCaseId)}</small>` : ''}</td><td class="nw">${fmt(f.dateFiled)}</td><td>${pillFor(f.status)}</td></tr>`).join('')}</tbody></table></div></section>`;
+}
+
+function render() {
+  $('page-action').innerHTML = `<div class="acts"><button class="btn${S.view === 'new' ? '' : ' outline'}" data-a="view:new">New filing</button><button class="btn${S.view === 'history' ? '' : ' outline'}" data-a="view:history">My submissions (${mine.length})</button></div>`;
+  if (S.view === 'history') { root.innerHTML = history(); return; }
+  if (S.done) {
+    root.innerHTML = `<section class="card" style="text-align:center;padding:40px 24px"><h3 style="font-size:24px">Filing submitted</h3><p style="color:var(--muted);margin:8px 0 18px">The clerk’s office will review it. You will be emailed at ${esc(S.done.email)}.</p>
+      <p style="margin-bottom:6px;color:var(--muted)">Confirmation number</p><p style="font-family:var(--font-head);font-size:28px;color:var(--navy);margin-bottom:22px">${esc(S.done.conf)}</p>
+      <div class="acts" style="justify-content:center"><button class="btn" data-a="again">File another document</button><button class="btn outline" data-a="view:history">View my submissions</button></div></section>`;
+    return;
   }
+  const names = ['Filing type', 'Case', 'Documents', 'Review'];
+  const body = [stepType, stepCase, stepDocs, stepReview][S.step]();
+  root.innerHTML = `<div class="steps">${names.map((n, i) => `<div class="${i === S.step ? 'on' : i < S.step ? 'done' : ''}">${i < S.step ? '✓ ' : ''}${n}</div>`).join('')}</div>
+    ${S.err ? `<div class="alert" role="alert" style="margin-bottom:16px"><strong>${esc(S.err)}</strong></div>` : ''}${body}
+    <div class="nav">${S.step ? '<button class="btn outline" data-a="back">Back</button>' : '<span></span>'}
+      <button class="btn" data-a="${S.step === 3 ? 'submit' : 'next'}" ${S.busy ? 'disabled' : ''}>${S.step === 3 ? (S.busy ? 'Submitting…' : 'Submit filing') : 'Continue'}</button></div>`;
+}
 
-  function csvToObjects(text) {
-    const rows = parseCSV(text);
-    if (rows.length < 2) return [];
-    const headers = rows[0].map(h => h.toLowerCase().replace(/\s+/g, '_'));
-    return rows.slice(1).map(row => {
-      const obj = {};
-      headers.forEach((h, i) => { obj[h] = row[i] || ''; });
-      return obj;
-    });
-  }
-
-  function esc(str) {
-    return String(str ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-  }
-
-  function courtBadge(court) {
-    const c = (court || '').toLowerCase();
-    const cls = c.includes('district') ? 'district' : c.includes('supreme') ? 'supreme' : 'all';
-    return `<span class="badge ${cls}">${esc(court)}</span>`;
-  }
-
-  function renderGroup(label, forms) {
-    const rows = forms.map(f => {
-      const viewBtn = f.form_url
-        ? `<a href="${esc(f.form_url)}" class="btn btn-view" target="_blank" rel="noopener">
-             <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 4h8l4 4v8H4V4z"/><path d="M12 4v4h4"/><path d="M7 11h6M7 14h4"/></svg>View</a>` : '';
-      const copyBtn = f.copy_url
-        ? `<a href="${esc(f.copy_url)}" class="btn btn-copy" target="_blank" rel="noopener">
-             <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="7" y="7" width="10" height="10" rx="1"/><path d="M3 13V3h10"/></svg>Make a copy</a>` : '';
-      return `
-        <tr>
-          <td><span class="form-number">${esc(f.form_number)}</span></td>
-          <td><div class="form-title">${esc(f.title)}</div>${f.description ? `<div class="form-desc">${esc(f.description)}</div>` : ''}</td>
-          <td><span class="badge">${esc(f.category)}</span></td>
-          <td>${courtBadge(f.court)}</td>
-          <td><div class="form-actions">${viewBtn}${copyBtn}</div></td>
-        </tr>`;
-    }).join('');
-
-    return `
-      <section class="group">
-        <h3>${esc(label)}</h3>
-        <div class="table-scroll">
-          <table class="forms-table">
-            <thead><tr>
-              <th>Form no.</th><th>Title and description</th><th>Category</th><th>Court</th>
-              <th style="text-align:right">Actions</th>
-            </tr></thead>
-            <tbody>${rows}</tbody>
-          </table>
-        </div>
-      </section>`;
-  }
-
-  function applyFilters() {
-    const q      = document.getElementById('search-input').value.trim().toLowerCase();
-    const catF   = document.getElementById('filter-category').value.toLowerCase();
-    const courtF = document.getElementById('filter-court').value.toLowerCase();
-    document.getElementById('clear-btn').classList.toggle('visible', !!(q || catF || courtF));
-
-    const filtered = allForms.filter(f => {
-      const matchQ = !q ||
-        (f.form_number || '').toLowerCase().includes(q) ||
-        (f.title || '').toLowerCase().includes(q) ||
-        (f.description || '').toLowerCase().includes(q);
-      return matchQ &&
-        (!catF   || (f.category || '').toLowerCase() === catF) &&
-        (!courtF || (f.court || '').toLowerCase() === courtF);
-    });
-
-    document.getElementById('result-count').textContent =
-      filtered.length === allForms.length ? `${allForms.length} forms` : `${filtered.length} of ${allForms.length} forms`;
-    renderForms(filtered);
-  }
-
-  function clearFilters() {
-    document.getElementById('search-input').value = '';
-    document.getElementById('filter-category').value = '';
-    document.getElementById('filter-court').value = '';
-    applyFilters();
-  }
-
-  function renderForms(forms) {
-    const container = document.getElementById('forms-container');
-    if (!forms.length) {
-      container.innerHTML = '<div class="no-results">No forms match your search or filters. Try a different form number or clear the filters.</div>';
-      return;
-    }
-    const order = [], groups = {};
-    forms.forEach(f => {
-      const cat = f.category || 'Uncategorized';
-      if (!groups[cat]) { groups[cat] = []; order.push(cat); }
-      groups[cat].push(f);
-    });
-    container.innerHTML = order.map(cat => renderGroup(cat, groups[cat])).join('');
-  }
-
-  function buildCategoryFilter(forms) {
-    const cats = [...new Set(forms.map(f => f.category).filter(Boolean))].sort();
-    const sel = document.getElementById('filter-category');
-    cats.forEach(c => {
-      const opt = document.createElement('option');
-      opt.value = c.toLowerCase();
-      opt.textContent = c;
-      sel.appendChild(opt);
-    });
-  }
-
-  async function load() {
-    try {
-      const res = await fetch(CSV_URL);
-      if (!res.ok) throw new Error('The forms list could not be retrieved');
-      allForms = csvToObjects(await res.text());
-      buildCategoryFilter(allForms);
-      document.getElementById('result-count').textContent = `${allForms.length} forms`;
-      renderForms(allForms);
-    } catch (err) {
-      document.getElementById('forms-container').innerHTML =
-        `<div class="state-box error" role="alert"><p>Could not load forms: ${esc(err.message)}. Refresh the page to try again.</p></div>`;
+/* ── Validation + submit ────────────────────────────────────────────── */
+function check() {
+  if (S.step === 0) { if (!S.type) return 'Choose whether this is a new case or an existing one.'; if (S.type === 'new' && (!S.court || !S.ctype)) return 'Select a court and case type.'; }
+  if (S.step === 1) {
+    if (S.type === 'existing') { if (!S.kase) return 'Select a case.'; if (S.counsel && !S.rep.trim()) return 'Enter the party you represent.'; }
+    else {
+      if (S.parties.some(p => !p.name.trim() || (p.kind === 'Person' && !p.pin.trim()))) return 'Complete the name (and PIN for individuals) for every party.';
+      if (S.counsel && !S.parties.some(p => p.mine)) return 'Mark the party you represent.';
     }
   }
+  if (S.step === 2) {
+    if (!S.files.length && !S.links.length) return 'Add at least one PDF or Google Drive link.';
+    if (S.files.some(f => !f.type) || S.links.some(l => !l.type)) return 'Choose a document type for every document.';
+    if (S.links.some(l => !/^https?:\/\//.test(l.url.trim()))) return 'Every Google Drive entry needs a valid link.';
+  }
+  if (S.step === 3) { if (!/^\S+@\S+\.\S+$/.test(S.email.trim())) return 'Enter a valid email address.'; if (!S.cert) return 'Certify that the filing is accurate and complete.'; }
+  return '';
+}
 
-  load();
+async function submit() {
+  S.busy = true; render();
+  try {
+    const conf = `MCR-${new Date().getFullYear()}-${Math.floor(100000 + Math.random() * 900000)}`, now = new Date().toISOString(), court = courtOf();
+    const documents = [];
+    let st = null;
+    if (S.files.length) st = await import('https://www.gstatic.com/firebasejs/11.0.0/firebase-storage.js');
+    for (const f of S.files) {
+      const d = { type: 'pdf', name: f.file.name, size: f.file.size, documentType: f.type, fee: fee(f.type, court), fileUrl: null };
+      const path = `filingUploads/${conf}/${Date.now()}-${f.file.name}`, r = st.ref(st.getStorage(app), path);
+      await st.uploadBytes(r, f.file, { contentType: 'application/pdf' }); d.fileUrl = await st.getDownloadURL(r); d.storagePath = path; documents.push(d);
+    }
+    S.links.forEach(l => documents.push({ type: 'gdrive', name: 'Google Drive Document', link: l.url.trim(), documentType: l.type, fee: fee(l.type, court) }));
+    const mineP = S.parties.find(p => p.mine);
+    const filerRole = S.counsel ? 'Attorney for ' + (S.type === 'new' ? mineP?.name : S.rep.trim()) : S.type === 'new' ? S.parties[0].role : 'Party of Record';
+    const obj = { confirmationNumber: conf, filingType: S.type, court, caseType: S.type === 'new' ? S.ctype : S.kase.caseType || '', documentType: documents[0].documentType,
+      parties: S.type === 'new' ? S.parties.map(p => ({ role: p.role, name: p.name.trim(), selfRepresented: !p.mine, ...(p.mine ? { attorney: { name: account.name, barNumber: account.barNumber || null } } : {}) })) : [],
+      partyIntake: S.type === 'new' ? S.parties.map(p => ({ role: p.role, kind: p.kind, name: p.name.trim(), pin: p.pin || null })) : [],
+      documents, totalFee: documents.reduce((t, d) => t + d.fee, 0), notesToClerk: S.notes.trim() || null, confirmationEmail: S.email.trim(), filerRole,
+      filedBy: account.name, filedByUid: account.uid, isFilingAsCounsel: S.counsel, counselRepresents: S.counsel ? (S.type === 'new' ? mineP?.name : S.rep.trim()) : null,
+      barNumber: S.counsel ? account.barNumber || null : null, dateFiled: now, status: 'Pending', accepted: false, urgent: false };
+    if (S.type === 'existing') { obj.caseId = S.kase.caseId; obj.caseFirestoreId = S.kase._id; }
+    await addDoc(collection(db, 'pendingFilings'), obj);
+    S.done = { conf, email: S.email.trim() }; S.busy = false; S.err = ''; loadMine(); render();
+  } catch (e) { console.error(e); S.busy = false; S.err = 'We could not submit your filing. Check your connection and try again.'; render(); }
+}
+
+/* ── Events ─────────────────────────────────────────────────────────── */
+const set = (p, v) => { const a = p.split('.'); let o = S; a.slice(0, -1).forEach(k => o = o[k]); o[a.at(-1)] = v; };
+const initParties = () => { const r = ROLES[S.ctype]; S.parties = [mkParty(r[0], 0), mkParty(r[1], 1)]; };
+root.addEventListener('input', e => { const k = e.target.dataset.k; if (!k || e.target.type === 'checkbox') return; set(k, e.target.value); if (k === 'q') $('cl').innerHTML = caseList(linked()); });
+root.addEventListener('change', e => {
+  const t = e.target;
+  if (t.id === 'fi') { [...t.files].forEach(f => { if (!/pdf$/i.test(f.name) && f.type !== 'application/pdf') S.err = f.name + ' is not a PDF.'; else if (f.size > 5242880) S.err = f.name + ' is over 5 MB.'; else if (!S.files.some(x => x.file.name === f.name)) S.files.push({ file: f, type: '' }); }); render(); return; }
+  const k = t.dataset.k; if (!k) return;
+  set(k, t.type === 'checkbox' ? t.checked : t.value);
+  if (k === 'court') { S.ctype = ''; S.parties = []; }
+  if (k === 'ctype') initParties();
+  if (k === 'counsel') S.parties.forEach(p => p.mine = false);
+  if (t.dataset.r !== undefined) render();
+});
+const act = a => {
+  const [n, v] = a.split(':');
+  if (n === 'type') { S.type = v; S.kase = null; S.files = []; S.links = []; }
+  else if (n === 'case') S.kase = cases.find(c => c._id === v);
+  else if (n === 'addparty') S.parties.push(mkParty('Third Party', 2));
+  else if (n === 'rmparty') S.parties.splice(+v, 1);
+  else if (n === 'rmfile') S.files.splice(+v, 1);
+  else if (n === 'rmlink') S.links.splice(+v, 1);
+  else if (n === 'addlink') S.links.push({ url: '', type: '' });
+  else if (n === 'view') { S.view = v; if (v === 'new' && S.done) S = blank(); }
+  else if (n === 'again') { S = blank(); }
+  else if (n === 'back') { S.step--; S.err = ''; }
+  else if (n === 'next') { S.err = check(); if (!S.err) { S.step++; if (S.step === 1 && S.type === 'new' && !S.parties.length) initParties(); } }
+  else if (n === 'submit') { S.err = check(); if (S.err) { render(); return; } submit(); return; }
+  render(); if (n === 'next' || n === 'back') window.scrollTo({ top: 0 });
+};
+document.addEventListener('click', e => { const el = e.target.closest('[data-a]'); if (el) act(el.dataset.a); });
+document.addEventListener('keydown', e => { if ((e.key === 'Enter' || e.key === ' ') && e.target.matches?.('.opt[data-a]')) { e.preventDefault(); act(e.target.dataset.a); } });
+render();
 </script>
 </body>
 </html>

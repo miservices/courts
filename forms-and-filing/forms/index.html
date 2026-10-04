@@ -25,6 +25,21 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible{ou
 .page-header h2{font-family:var(--font-head,Georgia,serif);color:#fff;font-size:34px;font-weight:600;line-height:1.2;letter-spacing:-.01em}
 .page-header p{color:#c5d3e8;margin-top:10px;max-width:680px}
 .page-header p strong{color:#fff}
+.page-header p a{color:#9cc4f5;font-weight:600}
+.page-header p a:hover{color:#fff}
+
+/* Notice */
+.notice{background:#fff;border:1px solid #d5dde8;border-left:4px solid #1f5fae;border-radius:4px;padding:20px 24px;margin-bottom:28px}
+.notice h3{font-family:var(--font-head,Georgia,serif);font-size:20px;font-weight:600;color:#10264a;margin-bottom:8px}
+.notice p{margin-top:8px;color:#33405a}
+.notice p:first-of-type{margin-top:0}
+.notice a{color:#1f5fae;font-weight:600}
+.notice a:hover{color:#10264a}
+.notice ul{margin:8px 0 0 20px;color:#33405a}
+.notice li{margin-top:4px}
+.notice .recommend{display:inline-flex;align-items:center;margin-top:14px;font-size:14px;font-weight:600;padding:9px 16px;border-radius:4px;background:#10264a;color:#fff;text-decoration:none;border:2px solid #10264a}
+.notice .recommend:hover{background:#17335f;border-color:#17335f}
+.notice .recommend:focus-visible{outline:3px solid #5b9be0;outline-offset:2px}
 
 /* Toolbar */
 .toolbar{background:#fff;border-bottom:1px solid #d5dde8;box-shadow:0 2px 8px rgba(16,38,74,.08);position:sticky;top:var(--mc-sticky-top,0px);z-index:50;transition:top .25s ease}
@@ -98,7 +113,8 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible{ou
       <span class="here">Court Forms</span>
     </div>
     <h2>Court forms</h2>
-    <p>Standard forms for filing in Michigan courts. Choose <strong>View</strong> to open the PDF, or <strong>Make a copy</strong> to get an editable version you can fill out and save.</p>
+    <p>Manual court forms, provided through Google Docs. Choose <strong>View</strong> to open the form, or <strong>Make a copy</strong> to get an editable version. From Google Docs, use <strong>File &gt; Download</strong> to save it as a DOCX, PDF, or Markdown (.md) file, among other formats.</p>
+    <p>For most filers, we do not recommend using these manual forms. Use the <a href="http://migovt.org/courts/online-services/portal/dashboard/document-drafting/">document drafter in the online portal</a> instead. It is easier, free, and comes with reduced filing fees.</p>
   </div>
 </div>
 
@@ -126,6 +142,18 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible{ou
 
 <div class="forms-wrap">
   <div class="wrap">
+    <div class="notice" role="note">
+      <h3>Use the court's document drafter instead</h3>
+      <p>These manual forms are mainly provided so you can download them in the format you need. For most uses, the <a href="http://migovt.org/courts/online-services/portal/dashboard/document-drafting/">document drafter in the online portal</a> is the better choice. You enter your information into the court's built-in drafter, and it is easier, free, and cheaper, with reduced filing fees.</p>
+      <p>The court understands that many people like to print and handwrite their documents. Please be aware of the tradeoffs:</p>
+      <ul>
+        <li>Because you did not use the portal's document drafter, you are subject to higher filing fees.</li>
+        <li>Scanned documents often have larger file sizes, and you may be charged extra depending on how big the file is.</li>
+        <li>Files are capped at a maximum size, and scanned documents often go over it.</li>
+      </ul>
+      <a class="recommend" href="http://migovt.org/courts/online-services/portal/dashboard/document-drafting/">Go to the document drafter</a>
+    </div>
+
     <div id="forms-container">
       <div class="state-box"><div class="spin"></div><p>Loading forms…</p></div>
     </div>
