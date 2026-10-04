@@ -27,137 +27,206 @@
 <div class="auth-loading-overlay" id="auth-overlay" role="status"><div class="alo-title">Online Portal</div><div class="spin"></div><div>Verifying your session…</div></div>
 
 <script type="module">
-import { boot, db, app, $, esc, has, ATTY, STAFF, CASE_CODES, DISTRICT_COURT, SUPREME_COURT, reserveCaseNumber, colFor } from '/courts/online-services/portal/dashboard/assets/js/portal-shell.js';
-import { collection, getDocs, addDoc, query, where, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+import { boot, db, app, $, esc, has, ATTY, STAFF, CASE_CODES, DISTRICT_COURT, SUPREME_COURT, reserveCaseNumber, reserveFilingNumber, colFor } from '/courts/online-services/portal/dashboard/assets/js/portal-shell.js';
+import { FORMS } from '/courts/online-services/portal/dashboard/assets/js/scao-forms.js';
+import { collection, getDocs, addDoc, query, where, doc, getDoc, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 
-const { account, role } = await boot({ id: 'filings', title: 'My filings', subtitle: 'File a new case, add to an existing one, and track what you have submitted.' });
+const { account, role } = await boot({ id: 'filings', title: 'My filings', subtitle: 'File a new case, add to an existing one, enter an appearance, and track what you have submitted.' });
+const isAtty = has(ATTY, role), isPros = has(['Prosecuting Attorney'], role);
 
 /* ── Court data ─────────────────────────────────────────────────────── */
-const FW = 'Fee Waiver Request (MC 20)';
 const COURTS = {
-  'Genesee Co. District Court': ['Small Claims', 'Civil Infraction', 'General Civil', 'Administrative Appeal', 'General Appeal', 'Special Proceedings', ...(has(STAFF, role) || role === 'Prosecuting Attorney' ? ['General Criminal'] : [])],
-  'Michigan Supreme Court': ['Appeal (by right)', 'Appeal (by application)', ...(has(['Magistrate', 'Judge', 'Chief Judge'], role) ? ['Certified Question'] : []), ...(has(['Legal Services User'], role) ? ['Disciplinary Proceeding'] : []), 'Original Jurisdiction']
+  [DISTRICT_COURT]: ['Small Claims', 'Civil Infraction', 'General Civil', 'Administrative Appeal', 'General Appeal', 'Special Proceedings', ...(has(STAFF, role) || isPros ? ['General Criminal'] : [])],
+  [SUPREME_COURT]: ['Appeal (by right)', 'Appeal (by application)', ...(has(['Magistrate', 'Judge', 'Chief Judge'], role) ? ['Certified Question'] : []), ...(has(['Legal Services User'], role) ? ['Disciplinary Proceeding'] : []), 'Original Jurisdiction']
 };
-const ROLES = { 'Small Claims': ['Plaintiff', 'Defendant'], 'General Civil': ['Plaintiff', 'Defendant'], 'Civil Infraction': ['Defendant', 'Prosecuting Authority'], 'General Criminal': ['Prosecution', 'Defendant'], 'Special Proceedings': ['Petitioner', 'Respondent'], 'General Appeal': ['Appellant', 'Appellee'], 'Administrative Appeal': ['Petitioner', 'Respondent'],
-  'Appeal (by right)': ['Appellant', 'Appellee'], 'Appeal (by application)': ['Appellant', 'Appellee'], 'Certified Question': ['Petitioner', 'Respondent'], 'Disciplinary Proceeding': ['Petitioner', 'Respondent'], 'Original Jurisdiction': ['Petitioner', 'Respondent'] };
-const INIT = { 'Small Claims': ['Complaint (DC 84)', FW], 'General Civil': ['Complaint', 'Summons (MC 01)', FW], 'Civil Infraction': ['Appeal of Civil Infraction (DC 102)', FW], 'General Criminal': ['Criminal Complaint / Information'], 'Administrative Appeal': ['Petition for Review'], 'General Appeal': ['Application for Leave to Appeal', 'Notice of Appeal (as of right)'],
-  'Special Proceedings': ['Application to Set Aside a Conviction or Arrest (MC 227)', 'Application for Writ of Habeas Corpus', 'Application for Writ of Garnishment', 'Petition for Order of Contempt', 'Petition', FW],
+const PR = ['Plaintiff', 'Defendant'], PT = ['Petitioner', 'Respondent'], AP = ['Appellant', 'Appellee'];
+const ROLES = { 'Small Claims': PR, 'General Civil': PR, 'Civil Infraction': ['Defendant', 'Prosecuting Authority'], 'General Criminal': ['Prosecution', 'Defendant'], 'Special Proceedings': PT, 'General Appeal': AP, 'Administrative Appeal': PT,
+  'Appeal (by right)': AP, 'Appeal (by application)': AP, 'Certified Question': PT, 'Disciplinary Proceeding': PT, 'Original Jurisdiction': PT };
+// What can be filed to OPEN a case. 'MC ##' entries come from scao-forms.js. A criminal case can only be opened with the Criminal Complaint Packet (MC 200).
+const INIT = { 'Small Claims': ['MC 84', 'MC 97A', 'MC 97B', 'MC 20'], 'General Civil': ['Complaint', 'MC 01A', 'MC 01B', 'MC 01C', 'MC 97A', 'MC 97B', 'MC 20'], 'Civil Infraction': ['Appeal of Civil Infraction', 'MC 20'], 'General Criminal': ['MC 200'],
+  'Administrative Appeal': ['Petition for Review'], 'General Appeal': ['Application for Leave to Appeal', 'Notice of Appeal (as of right)'],
+  'Special Proceedings': ['Application to Set Aside a Conviction or Arrest (MC 227)', 'Application for Writ of Habeas Corpus', 'Application for Writ of Garnishment', 'Petition for Order of Contempt', 'Petition', 'MC 452', 'MC 97A', 'MC 20'],
   'Appeal (by right)': ['Notice of Appeal (as of right)'], 'Appeal (by application)': ['Application for Leave to Appeal'], 'Certified Question': ['Certified Question'], 'Disciplinary Proceeding': ['Formal Complaint'],
   'Original Jurisdiction': ['Complaint', 'Petition for Writ of Mandamus', 'Petition for Writ of Prohibition', 'Petition for Superintending Control', 'Petition for Quo Warranto'] };
-const COMMON = ['Motion', 'Emergency Motion', 'Response / Answer', 'Brief', 'Reply Brief', 'Affidavit / Declaration', 'Proposed Order', 'Stipulation', FW, 'Notice of Appeal', 'Proof of Service', 'Notice', 'Other'];
-const EXTRA = ['Third Party', 'Intervenor', 'Cross-Claimant', 'Cross-Defendant'];
-const fee = (t, court) => /fee waiver/i.test(t) ? 0 : /^Complaint/.test(t) ? (/Original/.test(S.ctype) ? 150 : /DC 84/.test(t) ? 30 : 75) : /Set Aside/.test(t) ? 40 : /Appeal of Civil/.test(t) ? 20 : /Criminal Complaint/.test(t) ? 0
-  : /Notice of Appeal \(|Leave to Appeal|Petition for (Writ|Superintending|Quo)/.test(t) ? 100 : /Petition for Review/.test(t) ? 50 : court === 'Michigan Supreme Court' ? 50 : 25;
+// What can be filed in an EXISTING case besides the SCAO forms in scao-forms.js. Edit freely.
+const DOCS = {
+  'Motions': ['Motion (General)', 'Emergency Motion', 'Motion to Dismiss', 'Motion for Summary Disposition', 'Motion for Default Judgment', 'Motion to Set Aside Default', 'Motion for Reconsideration', 'Motion for Relief from Judgment', 'Motion to Amend', 'Motion to Adjourn or Continue',
+    'Motion for Extension of Time', 'Motion to Compel', 'Motion in Limine', 'Motion to Suppress', 'Motion to Quash', 'Motion for New Trial', 'Motion for Protective Order', 'Motion for Stay', 'Motion to Intervene', 'Motion to Withdraw as Counsel',
+    'Motion to Substitute Counsel', 'Motion for Substituted Service', 'Motion to Seal', 'Motion for Sanctions', 'Motion to Enforce', 'Motion for Costs and Attorney Fees', 'Motion for Bond Modification', 'Motion for Oral Argument'],
+  'Responses & briefs': ['Response / Answer', 'Brief', 'Response Brief', 'Reply Brief', 'Supplemental Brief', 'Amicus Curiae Brief', 'Objection', 'Sentencing Memorandum'],
+  'Pleadings': ['Answer to Complaint', 'Affirmative Defenses', 'Counterclaim', 'Cross-Claim', 'Third-Party Complaint', 'Amended Complaint', 'Amended Petition'],
+  'Orders, stipulations & judgments': ['Proposed Order', 'Stipulated Order', 'Stipulation', 'Consent Judgment', 'Proposed Judgment', 'Stipulation to Dismiss', 'Notice of Dismissal'],
+  'Notices': ['Notice (General)', 'Notice of Hearing', 'Notice of Withdrawal', 'Notice of Substitution of Counsel', 'Notice of Change of Address'],
+  'Service & evidence': ['Proof of Service', 'Affidavit of Service', 'Affidavit / Declaration', 'Exhibit(s)', 'Witness List', 'Transcript'],
+  'Fees & costs': ['Bill of Costs'],
+  'Discovery': ['Discovery Request', 'Discovery Response'],
+  'Appeals': ['Notice of Appeal (as of right)', 'Application for Leave to Appeal', 'Petition for Review'],
+  'Criminal': ['Waiver of Rights', 'Bond Document'],
+  'Other': ['Other']
+};
+const FL = f => `${f.title} (${f.number})`, byNum = n => FORMS.find(f => f.number === n), formOf = v => FORMS.find(f => FL(f) === v);
+const fOpt = (f, g) => ({ v: FL(f), g, d: f.description });
+const docOpts = () => {
+  if (S.type === 'new') return (INIT[S.ctype] || []).map(x => /^MC \d/.test(x) ? fOpt(byNum(x), 'Initiating documents') : { v: x, g: 'Initiating documents' });
+  if (S.type === 'appearance') return [fOpt(byNum('MC 02'), 'Appearance')];
+  const crim = /criminal/i.test(S.kase?.caseType || ''), skip = ['MC 02', 'MC 84', 'MC 200', 'MC 452'];   // these open a case or have their own flow
+  const order = crim ? ['Criminal', 'General', 'Civil', 'Personal Protection Proceedings'] : ['Civil', 'General', 'Criminal', 'Personal Protection Proceedings'];
+  const forms = S.kase?.court === DISTRICT_COURT ? order.flatMap(c => FORMS.filter(f => f.category === c && !skip.includes(f.number)).map(f => fOpt(f, 'SCAO forms · ' + c))) : [];
+  return [...forms, ...Object.entries(DOCS).flatMap(([g, l]) => l.map(v => ({ v, g })))];
+};
+const fee = (t, court) => /fee waiver|Appearance|Litigant Identification|Summons|Extreme Risk/i.test(t) ? 0 : t === 'Complaint' ? (S.ctype === 'Original Jurisdiction' ? 150 : 75) : /Small Claims Complaint/.test(t) ? 30 : /Set Aside/.test(t) ? 40 : /Appeal of Civil/.test(t) ? 20 : /Criminal Complaint|Formal Complaint/.test(t) ? 0
+  : /Notice of Appeal \(|Leave to Appeal|Petition for (Writ|Superintending|Quo)/.test(t) ? 100 : /Petition for Review/.test(t) ? 50 : court === SUPREME_COURT ? 50 : 25;
 const money = n => '$' + Number(n || 0).toFixed(2);
 const fmt = v => v ? new Date(v).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—';
 
+/* ── Case helpers ───────────────────────────────────────────────────── */
+const lc = s => String(s || '').trim().toLowerCase();
+const partiesOf = c => (Array.isArray(c.parties) ? c.parties : Object.values(c.parties || {}).flat()).filter(p => p && typeof p === 'object' && p.name);
+const counselOf = p => [p.attorney, ...(p.attorneys || [])].filter(a => a && a.name);
+const attyOn = p => counselOf(p).some(a => lc(a.name) === lc(account.name));
+const isMine = c => (c.relatedUserIds || []).includes(account.uid) || partiesOf(c).some(p => lc(p.name) === lc(account.name) || attyOn(p));
+const caption = c => { const p = partiesOf(c); return p[0] && p[1] ? `${p[0].name} v. ${p[1].name}` : c.caseId; };
+const byQ = (c, q) => (c.caseId + ' ' + partiesOf(c).map(p => p.name).join(' ')).toLowerCase().includes(q);
+// How the signed-in user stands in an existing case: counsel of record for some parties, or a party themselves.
+const standing = c => { const ps = partiesOf(c), rep = ps.filter(attyOn), own = ps.find(p => lc(p.name) === lc(account.name));
+  return rep.length ? { counsel: true, text: 'Attorney for ' + rep.map(p => p.name).join(' and '), reps: rep.map(p => p.name).join(', ') } : { counsel: false, text: own ? own.role : 'Party of Record', reps: null }; };
+
 /* ── State ──────────────────────────────────────────────────────────── */
-const blank = () => ({ step: 0, view: 'new', counsel: false, type: '', court: '', ctype: '', kase: null, lower: null, lq: '', parties: [], files: [], links: [], email: account.email || '', notes: '', cert: false, rep: '', q: '', err: '', busy: false, done: null });
+const blank = () => ({ step: 0, view: 'new', counsel: false, type: '', court: '', ctype: '', kase: null, repIds: [], lower: null, lq: '', touched: false, prefilled: false, parties: [], files: [], links: [],
+  email: account.email || '', notes: '', cert: false, q: '', err: '', busy: false, done: null });
 let S = blank(), cases = [], mine = [];
 const root = $('page-body');
-const isCounsel = has(ATTY, role);
 const courtOf = () => S.type === 'new' ? S.court : S.kase?.court;
-const mkParty = (r, i) => ({ role: r, kind: 'Person', name: i === 0 && !S.counsel ? (account.name || '') : '', pin: i === 0 && !S.counsel ? (account.mipassPin || '') : '', self: i === 0 && !S.counsel, mine: false });
+const lockCounsel = () => isPros && S.ctype === 'General Criminal';
+const mkParty = (r, i) => { const own = i === 0 && !S.counsel; return { role: r, kind: 'Person', name: own ? account.name || '' : '', pin: own ? account.mipassPin || '' : '', self: own, mine: false }; };
 
 Promise.all([getDocs(collection(db, 'cases')), getDocs(collection(db, 'mscCases')).catch(() => ({ docs: [] }))]).then(r => { cases = r.flatMap(s => s.docs.map(d => ({ ...d.data(), _id: d.id }))); if (S.step === 1) render(); }).catch(() => {});
 const loadMine = () => getDocs(query(collection(db, 'pendingFilings'), where('filedByUid', '==', account.uid)))
   .then(s => { mine = s.docs.map(d => ({ ...d.data(), _id: d.id })).sort((a, b) => new Date(b.dateFiled) - new Date(a.dateFiled)); renderAction(); if (S.view === 'history') render(); }).catch(() => {});
 loadMine();
 
-const linked = () => {
-  const n = String(account.name || '').toLowerCase(), q = S.q.toLowerCase().trim();
-  return cases.filter(c => (n && JSON.stringify(c.parties || {}).toLowerCase().includes(n)) || (c.relatedUserIds || []).includes(account.uid))
-    .filter(c => !q || (c.caseId + ' ' + JSON.stringify(c.parties || {})).toLowerCase().includes(q));
-};
-const caption = c => { const p = Array.isArray(c.parties) ? c.parties : []; const a = p[0]?.name, b = p[1]?.name; return a && b ? `${a} v. ${b}` : c.caseId; };
-
-/* ── Views ──────────────────────────────────────────────────────────── */
+/* ── Form helpers ───────────────────────────────────────────────────── */
 const F = (label, inner, hint) => `<label class="f"><span>${label}</span>${inner}${hint ? `<small>${hint}</small>` : ''}</label>`;
-const inp = (k, v, ph = '', t = 'text') => `<input type="${t}" data-k="${k}" value="${esc(v)}" placeholder="${esc(ph)}">`;
-const sel = (k, v, opts, ph, r) => `<select data-k="${k}" ${r ? 'data-r' : ''}>${ph ? `<option value="">${ph}</option>` : ''}${opts.map(o => { const [ov, ol] = Array.isArray(o) ? o : [o, o]; return `<option value="${esc(ov)}"${ov === v ? ' selected' : ''}>${esc(ol)}</option>`; }).join('')}</select>`;
+const inp = (k, v, ph = '', t = 'text', ro) => `<input type="${t}" data-k="${k}" value="${esc(v)}" placeholder="${esc(ph)}" ${ro ? 'readonly' : ''}>`;
+const sel = (k, v, opts, ph, r, dis) => `<select data-k="${k}" ${r ? 'data-r' : ''} ${dis ? 'disabled' : ''}>${ph ? `<option value="">${ph}</option>` : ''}${opts.map(o => { const [ov, ol] = Array.isArray(o) ? o : [o, o]; return `<option value="${esc(ov)}"${ov === v ? ' selected' : ''}>${esc(ol)}</option>`; }).join('')}</select>`;
 const opt = (on, a, title, sub) => `<div class="opt${on ? ' on' : ''}" role="radio" aria-checked="${on}" tabindex="0" data-a="${a}"><input type="radio" tabindex="-1" ${on ? 'checked' : ''}><div><b>${title}</b><small>${sub}</small></div></div>`;
+const cb = (key, val) => { const fm = formOf(val); return `<div class="f"><span>Document type</span><div class="cb"><input class="cbi" data-cb="${key}" role="combobox" aria-label="Document type" aria-expanded="false" autocomplete="off" value="${esc(val)}" placeholder="Search by name or form number…"><div class="cbl" role="listbox" hidden></div></div>${fm ? `<small><a href="${esc(fm.formUrl)}" target="_blank" rel="noopener">View blank form</a> · <a href="${esc(fm.copyUrl)}" target="_blank" rel="noopener">Make a copy</a></small>` : ''}</div>`; };
+const loading = '<div class="loading-inline"><span class="spin-sm"></span>Loading cases…</div>';
+const none = '<div class="empty"><strong>No matching cases</strong><p>Check the case number or try a party’s last name.</p></div>';
+const caseOpt = (c, a, on) => `<div class="opt${on ? ' on' : ''}" role="radio" aria-checked="${!!on}" tabindex="0" data-a="${a}:${esc(c._id)}"><input type="radio" tabindex="-1" ${on ? 'checked' : ''}><div><b>${esc(caption(c))}</b><small>${esc(c.caseId)} · ${esc(c.court)} · ${esc(c.civilSubtype || c.caseType || '')}</small></div><span class="pill live" style="margin-left:auto">${esc(c.status || '')}</span></div>`;
 
-function stepType() {
-  return (isCounsel ? `<section class="card"><header><h3>Attorney filing</h3></header><label class="opt${S.counsel ? ' on' : ''}"><input type="checkbox" data-k="counsel" data-r ${S.counsel ? 'checked' : ''}><div><b>I am filing as counsel of record</b><small>${account.barNumber ? `Bar No. ${esc(account.barNumber)} will be attached to this filing.` : 'Your bar number will be attached to this filing.'}</small></div></label></section>` : '') +
-    `<section class="card"><header><h3>What are you filing?</h3></header>
-      ${opt(S.type === 'new', 'type:new', 'Start a new case', 'File a complaint, petition, or other document that opens a new matter.')}
-      ${opt(S.type === 'existing', 'type:existing', 'File in an existing case', 'Submit a motion, response, brief, or other document in a case already on the docket.')}
-      ${S.type === 'new' ? `<div class="cols mt">${F('Court', sel('court', S.court, Object.keys(COURTS), 'Select a court', 1))}${S.court ? F('Case type', sel('ctype', S.ctype, COURTS[S.court].map(n => [n, S.court === DISTRICT_COURT ? `${n} (${CASE_CODES[n]})` : n]), 'Select a case type', 1), S.court === DISTRICT_COURT ? 'Petitions to set aside (expungements) and habeas corpus petitions are filed under Special Proceedings. Don’t know your case code? <a href="https://migovt.org/courts/forms-and-filing/information/#codes" target="_blank" rel="noopener">See the case codes guide</a>.' : '') : ''}</div>` : ''}
-    </section>`;
+/* ── Case lists ─────────────────────────────────────────────────────── */
+function caseList() {
+  if (!cases.length) return loading; const q = lc(S.q);
+  if (S.type === 'existing') { const l = cases.filter(c => isMine(c) && (!q || byQ(c, q))); return l.length ? l.map(c => caseOpt(c, 'case', S.kase?._id === c._id)).join('') : '<div class="empty"><strong>No cases found</strong><p>Only cases where you are a party or attorney are listed. Attorneys can enter an appearance from the first screen.</p></div>'; }
+  if (q.length < 2) return '<p style="color:var(--muted)">Start typing a case number or party name.</p>';
+  const l = cases.filter(c => !c.sealed && byQ(c, q)).slice(0, 8); return l.length ? l.map(c => caseOpt(c, 'case', S.kase?._id === c._id)).join('') : none;
 }
+function lowerList() {
+  if (!cases.length) return loading; const q = lc(S.lq);
+  if (isAtty && q.length < 2) return '<p style="color:var(--muted)">Start typing to search district court cases.</p>';
+  const l = cases.filter(c => c.court === DISTRICT_COURT && !c.sealed && (isAtty || isMine(c)) && (!q || byQ(c, q))).slice(0, 8);
+  return l.length ? l.map(c => `<div class="opt" role="radio" aria-checked="false" tabindex="0" data-a="lower:${esc(c._id)}"><input type="radio" tabindex="-1"><div><b>${esc(caption(c))}</b><small>${esc(c.caseId)} · ${esc(c.civilSubtype || c.caseType || '')}${c.judge ? ' · ' + esc(c.judge) : ''}</small></div></div>`).join('')
+    : `<div class="empty"><strong>No matching cases</strong><p>${isAtty ? 'Check the case number or try a party’s last name.' : 'Only district court cases you are a party to are listed.'}</p></div>`;
+}
+const lowerFrom = c => c && ({ court: c.court, caseNumber: c.caseId, caseFirestoreId: c._id, caption: caption(c), caseType: c.civilSubtype || c.administrativeSubtype || c.appellateSubtype || c.caseType || null, judge: c.judge || null, dateFiled: c.dates?.filed || null, status: c.status || null });
 
+/* ── Parties ────────────────────────────────────────────────────────── */
+const kindOf = n => /^(state|city|county|township|village|people|department|board|commission|office)\b|\bof michigan\b/i.test(n) ? 'Government' : /\b(inc|llc|l\.l\.c|corp|corporation|company|co|ltd|lp|association|bank)\b/i.test(n) ? 'Business or organization' : 'Person';
+function initParties() {
+  const r = ROLES[S.ctype]; if (!r) return;
+  if (lockCounsel()) S.counsel = true;
+  S.touched = false; S.prefilled = false; S.parties = [mkParty(r[0], 0), mkParty(r[1], 1)];
+  // A prosecutor opening a criminal case: party 1 is always the People, a government party they represent.
+  if (lockCounsel()) S.parties[0] = { role: r[0], kind: 'Government', name: 'People of the State of Michigan', pin: '', self: false, locked: true, mine: true };
+  if (S.lower) prefillFromLower();
+}
+// Start the parties from the lower court case. The filer's own side becomes the first role; otherwise the first party's side does
+// (criminal and traffic cases put the defendant side first, since they are usually the one appealing).
+function prefillFromLower() {
+  const c = cases.find(x => x._id === S.lower?.caseFirestoreId), roles = ROLES[S.ctype];
+  if (!c || !roles || S.touched || lockCounsel()) return;
+  const lp = partiesOf(c); if (!lp.length) return;
+  const side = r => /plaintiff|petitioner|prosecut|appellant|applicant|complainant/i.test(r || '') ? 0 : 1, me = lc(account.name);
+  const m = lp.find(p => lc(p.name) === me || lc(p.attorney?.name) === me);
+  const first = m ? side(m.role) : /criminal|traffic/i.test(c.caseType || '') ? 1 : side(lp[0].role);
+  const mk = (p, ri) => { const self = !S.counsel && lc(p.name) === me; return { role: roles[ri], kind: kindOf(p.name), name: p.name, pin: p.pin || (self ? account.mipassPin || '' : ''), self, mine: S.counsel && counselOf(p).some(a => lc(a.name) === me) }; };
+  const a = lp.filter(p => side(p.role) === first).map(p => mk(p, 0)), b = lp.filter(p => side(p.role) !== first).map(p => mk(p, 1));
+  S.parties = [a[0] || mkParty(roles[0], 0), b[0] || mkParty(roles[1], 1), ...a.slice(1), ...b.slice(1)]; S.prefilled = true;
+}
 function partyCard(p, i) {
-  const rep = S.counsel ? `<label class="opt${p.mine ? ' on' : ''}"><input type="checkbox" data-k="parties.${i}.mine" data-r ${p.mine ? 'checked' : ''}><div><b>I represent this party</b></div></label>` : '';
+  const L = p.self || p.locked, kinds = ['Person', 'Business or organization', 'Government'];
+  const rep = S.counsel ? `<label class="opt${p.mine ? ' on' : ''}"><input type="checkbox" data-k="parties.${i}.mine" data-r ${p.mine ? 'checked' : ''} ${p.locked ? 'disabled' : ''}><div><b>I represent this party</b></div></label>` : '';
   return `<div class="sub"><header><span>Party ${i + 1}${i < 2 ? ' · ' + esc(p.role) : ''}</span>${i >= 2 ? `<button class="btn outline sm" type="button" data-a="rmparty:${i}">Remove</button>` : ''}</header>
-    ${i >= 2 ? F('Role', sel(`parties.${i}.role`, p.role, [...ROLES[S.ctype], ...EXTRA])) : ''}
-    <div class="cols">${F('Party type', sel(`parties.${i}.kind`, p.kind, ['Person', 'Business or organization', 'Government'], '', 1))}
-      ${F(p.kind === 'Person' ? 'Full name' : 'Name', inp(`parties.${i}.name`, p.name))}</div>
-    ${p.kind === 'Person' ? F('Michigan PIN', inp(`parties.${i}.pin`, p.pin, 'Michigan PIN'), p.self && p.pin ? 'Filled in from your account.' : 'Appears on the case record.') : ''}${rep}</div>`;
+    ${i >= 2 ? F('Role', sel(`parties.${i}.role`, p.role, [...ROLES[S.ctype], 'Third Party', 'Intervenor', 'Cross-Claimant', 'Cross-Defendant'])) : ''}
+    <div class="cols">${F('Party type', sel(`parties.${i}.kind`, p.kind, kinds, '', 1, L))}${F(p.kind === 'Person' ? 'Full name' : 'Name', inp(`parties.${i}.name`, p.name, '', 'text', L))}</div>
+    ${p.kind === 'Person' ? F('Michigan PIN', inp(`parties.${i}.pin`, p.pin, 'Michigan PIN', 'text', L && !!p.pin), p.self && p.pin ? 'Filled in from your account and cannot be changed.' : 'Appears on the case record.') : ''}
+    ${p.self ? '<small style="margin-bottom:12px">Your name, party type and PIN come from your account.</small>' : ''}${p.locked ? '<small style="margin-bottom:12px">Prosecutors open criminal cases for the People of the State of Michigan.</small>' : ''}${rep}</div>`;
 }
 
-const lowerFrom = c => c && ({ court: c.court, caseNumber: c.caseId, caseFirestoreId: c._id, caption: caption(c), caseType: c.civilSubtype || c.administrativeSubtype || c.appellateSubtype || c.caseType || null,
-  judge: c.judge || null, dateFiled: c.dates?.filed || null, status: c.status || null });
-const lowerList = () => {
-  const q = S.lq.toLowerCase().trim();
-  if (!cases.length) return '<div class="loading-inline"><span class="spin-sm"></span>Loading cases…</div>';
-  if (q.length < 2) return '<p style="color:var(--muted)">Start typing to search district court cases.</p>';
-  const r = cases.filter(c => c.court === DISTRICT_COURT && !c.sealed && (c.caseId + ' ' + JSON.stringify(c.parties || {})).toLowerCase().includes(q)).slice(0, 8);
-  return r.length ? r.map(c => `<div class="opt" role="radio" aria-checked="false" tabindex="0" data-a="lower:${esc(c._id)}"><input type="radio" tabindex="-1"><div><b>${esc(caption(c))}</b><small>${esc(c.caseId)} · ${esc(c.civilSubtype || c.caseType || '')}${c.judge ? ' · ' + esc(c.judge) : ''}</small></div></div>`).join('')
-    : '<div class="empty"><strong>No matching cases</strong><p>Check the case number or try a party’s last name.</p></div>';
-};
+/* ── Steps ──────────────────────────────────────────────────────────── */
+function stepType() {
+  const o = (t, a, b) => opt(S.type === t, 'type:' + t, a, b);
+  return `<section class="card"><header><h3>What are you filing?</h3></header>
+    ${o('new', 'Start a new case', 'File a complaint, petition, or other document that opens a new matter.')}
+    ${o('existing', 'File in an existing case', 'Submit a motion, response, brief, or other document in a case where you are a party or attorney.')}
+    ${isAtty ? o('appearance', 'Enter an appearance in an existing case', 'Appear as counsel of record for a party. You can then file motions and other documents for them.') : ''}
+    ${S.type === 'new' ? `<div class="cols mt">${F('Court', sel('court', S.court, Object.keys(COURTS), 'Select a court', 1))}${S.court ? F('Case type', sel('ctype', S.ctype, COURTS[S.court].map(n => [n, S.court === DISTRICT_COURT ? `${n} (${CASE_CODES[n]})` : n]), 'Select a case type', 1),
+      S.court === DISTRICT_COURT ? 'Petitions to set aside (expungements) and habeas corpus petitions are filed under Special Proceedings. Don’t know your case code? <a href="https://migovt.org/courts/forms-and-filing/information/#codes" target="_blank" rel="noopener">See the case codes guide</a>.' : '') : ''}</div>` : ''}</section>`;
+}
 const lowerCard = () => {
   if (S.court !== SUPREME_COURT) return '';
   const req = /^Appeal/.test(S.ctype), L = S.lower;
   return `<section class="card"><header><h3>Lower court case${req ? '' : ' <small style="display:inline;font-weight:400">optional</small>'}</h3></header>` + (L
     ? `<div class="sub"><header><span>${esc(L.caption)}</span><button class="btn outline sm" type="button" data-a="clearlower">Change</button></header><dl class="details" style="margin:0">${[['Lower court', L.court], ['Case number', L.caseNumber], ['Case type', L.caseType || '—'], ['Judge', L.judge || '—']].map(([k, v]) => `<div><dt>${k}</dt><dd>${esc(v)}</dd></div>`).join('')}</dl></div>`
-    : F('Search district court cases', inp('lq', S.lq, 'Case number or party name', 'search'), req ? 'Required for appeals. This links your appeal to the case being appealed.' : 'Link the case this matter came from, if there is one.') + `<div id="ll">${lowerList()}</div>`) + '</section>';
+    : F('Search district court cases', inp('lq', S.lq, 'Case number or party name', 'search'), (req ? 'Required for appeals. ' : 'Optional. ') + (isAtty ? 'Attorneys can look up any case.' : 'Only cases you are a party to are listed.')) + `<div id="ll">${lowerList()}</div>`) + '</section>';
 };
-function stepCase() {
-  if (S.type === 'new') return lowerCard() + `<section class="card"><header><h3>Parties</h3></header>${S.parties.map(partyCard).join('')}<button class="btn outline" type="button" data-a="addparty">Add another party</button></section>`;
-  const list = linked();
-  return `<section class="card"><header><h3>Choose the case</h3></header>${F('Search your cases', inp('q', S.q, 'Case number or party name', 'search'))}
-    <div id="cl">${caseList(list)}</div></section>
-    ${S.counsel ? `<section class="card"><header><h3>Your representation</h3></header>${F('Party you represent', inp('rep', S.rep, 'Name of your client'), 'Recorded with your bar number.')}</section>` : ''}`;
-}
-const caseList = list => !cases.length ? '<div class="loading-inline"><span class="spin-sm"></span>Loading your cases…</div>' : list.length ? list.map(c =>
-  `<div class="opt${S.kase?._id === c._id ? ' on' : ''}" role="radio" aria-checked="${S.kase?._id === c._id}" tabindex="0" data-a="case:${esc(c._id)}"><input type="radio" tabindex="-1" ${S.kase?._id === c._id ? 'checked' : ''}><div><b>${esc(caption(c))}</b><small>${esc(c.caseId)} · ${esc(c.court)} · ${esc(c.caseType || '')}</small></div><span class="pill live" style="margin-left:auto">${esc(c.status || '')}</span></div>`).join('')
-  : '<div class="empty"><strong>No matching cases</strong><p>Only cases linked to your account are listed. To open a new matter, go back and choose “Start a new case”.</p></div>';
+const attyCard = () => !isAtty ? '' : `<section class="card"><header><h3>Attorney filing</h3></header><label class="opt${S.counsel ? ' on' : ''}"><input type="checkbox" data-k="counsel" data-r ${S.counsel ? 'checked' : ''} ${lockCounsel() ? 'disabled' : ''}>
+  <div><b>I am an attorney filing on behalf of a party</b><small>${account.barNumber ? `Bar No. ${esc(account.barNumber)} will be recorded. ` : ''}Enter every party below, then check each party you represent.</small></div></label></section>`;
 
-const docOpts = () => S.type === 'new' ? INIT[S.ctype] || [] : COMMON;
+function repPanel() {
+  const c = S.kase; if (!c) return '';
+  if (!Array.isArray(c.parties)) return '<div class="alert" role="alert">This case record uses an older format. Ask the clerk to enter your appearance.</div>';
+  return `<section class="card"><header><h3>Who do you represent?</h3></header>${c.parties.map((p, i) => { const have = attyOn(p), on = S.repIds.includes(i) || have, cur = counselOf(p).map(a => a.name);
+    return `<label class="opt${on ? ' on' : ''}"><input type="checkbox" data-a="rep:${i}" ${on ? 'checked' : ''} ${have ? 'disabled' : ''}><div><b>${esc(p.name)}</b><small>${esc(p.role || '')} · ${have ? 'You are already counsel of record' : cur.length ? 'Current counsel: ' + esc(cur.join(', ')) + ' — you will be added alongside' : 'Self-represented'}</small></div></label>`; }).join('')}</section>`;
+}
+function stepCase() {
+  if (S.type === 'new') return lowerCard() + attyCard() + `<section class="card"><header><h3>Parties</h3></header>${S.prefilled ? '<p style="margin:0 0 14px;color:var(--muted)">Names are filled in from the lower court case. Check each role and edit anything that needs changing.</p>' : ''}${S.parties.map(partyCard).join('')}<button class="btn outline" type="button" data-a="addparty">Add another party</button></section>`;
+  const ap = S.type === 'appearance';
+  return `<section class="card"><header><h3>${ap ? 'Find the case' : 'Choose the case'}</h3></header>${F(ap ? 'Search any case' : 'Search your cases', inp('q', S.q, 'Case number or party name', 'search'), ap ? 'Search by case number or a party’s name.' : 'Only cases where you are a party or attorney are listed.')}<div id="cl">${caseList()}</div></section>`
+    + (ap ? repPanel() : S.kase ? `<div class="sub"><b>You are filing as:</b> ${esc(standing(S.kase).text)}</div>` : '');
+}
 function stepDocs() {
-  const o = docOpts();
-  return `<section class="card"><header><h3>Documents</h3></header>
-    <p class="mt" style="margin:0 0 14px;color:var(--muted)">Upload PDFs of 5 MB or less (MCR 2.119). Documents with photographs or scanned images go in through Google Drive instead.</p>
+  const o = S.type === 'appearance';
+  return `<section class="card"><header><h3>Documents${o ? ' <small style="display:inline;font-weight:400">optional</small>' : ''}</h3></header>
+    <p style="margin:0 0 14px;color:var(--muted)">${o ? 'Your appearance is recorded when you submit. You may also attach a signed Appearance (MC 02).' : 'Upload PDFs of 5 MB or less (MCR 2.119). Documents with photographs or scanned images go in through Google Drive instead.'}</p>
     <div class="drop" id="dz"><input class="vh" type="file" id="fi" accept="application/pdf,.pdf" multiple><label for="fi" class="btn">Choose PDF files</label><p class="big">or drag and drop them here</p><p>PDF only · up to 5 MB each</p></div>
-    ${S.files.map((f, i) => `<div class="sub"><header><span>${esc(f.file.name)} <small style="display:inline">· ${(f.file.size / 1048576).toFixed(2)} MB</small></span><button class="btn outline sm" type="button" data-a="rmfile:${i}">Remove</button></header>${F('Document type', sel(`files.${i}.type`, f.type, o, 'Select a type', 1))}</div>`).join('')}
-    ${S.links.map((l, i) => `<div class="sub"><header><span>Google Drive document ${i + 1}</span><button class="btn outline sm" type="button" data-a="rmlink:${i}">Remove</button></header><div class="cols">${F('Document type', sel(`links.${i}.type`, l.type, o, 'Select a type', 1))}${F('Share link', inp(`links.${i}.url`, l.url, 'https://drive.google.com/…', 'url'), 'Set sharing to “Anyone with the link can view”.')}</div></div>`).join('')}
+    ${S.files.map((f, i) => `<div class="sub"><header><span>${esc(f.file.name)} <small style="display:inline">· ${(f.file.size / 1048576).toFixed(2)} MB</small></span><button class="btn outline sm" type="button" data-a="rmfile:${i}">Remove</button></header>${cb(`files.${i}.type`, f.type)}</div>`).join('')}
+    ${S.links.map((l, i) => `<div class="sub"><header><span>Google Drive document ${i + 1}</span><button class="btn outline sm" type="button" data-a="rmlink:${i}">Remove</button></header><div class="cols">${cb(`links.${i}.type`, l.type)}${F('Share link', inp(`links.${i}.url`, l.url, 'https://drive.google.com/…', 'url'), 'Set sharing to “Anyone with the link can view”.')}</div></div>`).join('')}
     <button class="btn outline" type="button" data-a="addlink">Add a Google Drive link</button></section>`;
 }
-
 const docs = () => [...S.files.map(f => ({ name: f.file.name, type: f.type })), ...S.links.map(l => ({ name: 'Google Drive document', type: l.type }))];
-const notice = () => `<div class="sub"><b>${S.type === 'new' ? 'A case number is reserved when you submit.' : 'No clerk review is needed.'}</b><small style="color:var(--text);margin-top:4px">${S.type === 'new'
-  ? 'Your case will not appear in Case Search unless the clerk accepts your filing.' : 'This case is already open, so your documents are added to the docket automatically when you submit.'}</small></div>`;
+const notice = () => `<div class="sub"><b>${S.type === 'new' ? 'A case number is reserved when you submit.' : S.type === 'appearance' ? 'You are added as counsel of record immediately.' : 'No clerk review is needed.'}</b><small style="color:var(--text);margin-top:4px">${S.type === 'new'
+  ? 'Your case will not appear in Case Search unless the clerk accepts your filing.' : S.type === 'appearance' ? 'Your name and bar number are added to each party you represent, alongside any current counsel, and an appearance is entered on the docket.' : 'This case is already open, so your documents are added to the docket automatically when you submit.'}</small></div>`;
 function stepReview() {
   const d = docs(), total = d.reduce((t, x) => t + fee(x.type, courtOf()), 0);
   const rows = S.type === 'new'
     ? [['Court', S.court], ['Case type', S.ctype], ...(S.lower ? [['Lower court case', `${S.lower.caption} · ${S.lower.caseNumber}`]] : []), ...S.parties.map((p, i) => [`Party ${i + 1} (${p.role})`, p.name + (p.kind === 'Person' && p.pin ? ' · PIN ' + p.pin : '') + (p.mine ? ' — your client' : '')])]
-    : [['Case', caption(S.kase) + ' · ' + S.kase.caseId], ['Court', S.kase.court], ...(S.counsel ? [['You represent', S.rep]] : [])];
-  return `<section class="card"><header><h3>Review your filing</h3></header>
+    : [['Case', caption(S.kase) + ' · ' + S.kase.caseId], ['Court', S.kase.court], ['Filing as', S.type === 'appearance' ? 'Attorney for ' + S.repIds.map(i => S.kase.parties[i].name).join(' and ') : standing(S.kase).text]];
+  return `<section class="card"><header><h3>Review your ${S.type === 'appearance' ? 'appearance' : 'filing'}</h3></header>
     <dl class="details">${rows.map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join('')}
       ${d.map(x => `<div><dt>${esc(x.type)}</dt><dd>${esc(x.name)} · ${fee(x.type, courtOf()) ? money(fee(x.type, courtOf())) : 'No fee'}</dd></div>`).join('')}
-      <div><dt>Estimated fees</dt><dd>${money(total)} — due in person within 14 days, not at filing</dd></div></dl>
+      ${d.length ? `<div><dt>Estimated fees</dt><dd>${money(total)} — due in person within 14 days, not at filing</dd></div>` : ''}</dl>
     ${notice()}${F('Confirmation email', inp('email', S.email, 'you@example.com', 'email'), 'We send updates here when the clerk accepts, returns, or rejects your filing.')}
     ${F('Notes to the clerk (optional)', `<textarea data-k="notes">${esc(S.notes)}</textarea>`)}
     <label class="opt${S.cert ? ' on' : ''}"><input type="checkbox" data-k="cert" data-r ${S.cert ? 'checked' : ''}><div><b>This filing is accurate and complete</b><small>I certify the information and documents are true to the best of my knowledge. Once submitted, a filing cannot be edited.</small></div></label></section>`;
 }
-
 const pillFor = s => `<span class="pill ${s === 'Accepted' ? 'done' : s === 'Rejected' ? 'bad' : s === 'Returned' ? 'mid' : 'warn'}">${esc(s || 'Pending')}</span>`;
 function history() {
-  if (!mine.length) return `<section class="card">${'<div class="empty"><strong>No filings yet</strong><p>Filings you submit appear here with their review status.</p></div>'}</section>`;
-  return `<section class="card flush"><div class="table-scroll"><table><thead><tr><th>Confirmation</th><th>Filing</th><th>Filed</th><th>Status</th></tr></thead><tbody>${mine.map(f =>
-    `<tr><td class="nw"><b>${esc(f.confirmationNumber)}</b></td><td>${esc(f.filingType === 'new' ? `New ${f.caseType}` : f.caseId)}<small>${esc((f.documents || []).map(d => d.documentType).join(', '))}</small>${f.returnReason || f.rejectionReason ? `<small><b>Clerk:</b> ${esc(f.returnReason || f.rejectionReason)}</small>` : ''}${f.filingType === 'new' && (f.linkedCaseId || f.reservedCaseId) ? `<small>Case number ${esc(f.linkedCaseId || f.reservedCaseId)}${f.linkedCaseId ? '' : ' (reserved — not a case until the clerk accepts)'}</small>` : ''}</td><td class="nw">${fmt(f.dateFiled)}</td><td>${pillFor(f.status)}</td></tr>`).join('')}</tbody></table></div></section>`;
+  if (!mine.length) return '<section class="card"><div class="empty"><strong>No filings yet</strong><p>Filings you submit appear here with their review status.</p></div></section>';
+  return `<section class="card flush"><div class="table-scroll"><table><thead><tr><th>Filing number</th><th>Filing</th><th>Filed</th><th>Status</th></tr></thead><tbody>${mine.map(f =>
+    `<tr><td class="nw"><b>${esc(f.confirmationNumber)}</b></td><td>${esc(f.filingType === 'new' ? `New ${f.caseType}` : f.filingType === 'appearance' ? `Appearance in ${f.caseId}` : f.caseId)}<small>${esc((f.documents || []).map(d => d.documentType).join(', '))}</small>${f.returnReason || f.rejectionReason ? `<small><b>Clerk:</b> ${esc(f.returnReason || f.rejectionReason)}</small>` : ''}${f.filingType === 'new' && (f.linkedCaseId || f.reservedCaseId) ? `<small>Case number ${esc(f.linkedCaseId || f.reservedCaseId)}${f.linkedCaseId ? '' : ' (reserved — not a case until the clerk accepts)'}</small>` : ''}</td><td class="nw">${fmt(f.dateFiled)}</td><td>${pillFor(f.status)}</td></tr>`).join('')}</tbody></table></div></section>`;
 }
-
 function renderAction() {
   $('page-action').innerHTML = `<div class="acts"><button class="btn${S.view === 'new' ? '' : ' outline'}" data-a="view:new">New filing</button><button class="btn${S.view === 'history' ? '' : ' outline'}" data-a="view:history">My submissions (${mine.length})</button></div>`;
 }
@@ -165,37 +234,38 @@ function render() {
   renderAction();
   if (S.view === 'history') { root.innerHTML = history(); return; }
   if (S.done) {
-    const d = S.done, isNew = d.type === 'new';
-    root.innerHTML = `<section class="card" style="text-align:center;padding:40px 24px"><h3 style="font-size:24px">${isNew ? 'Filing submitted' : 'Filing added to your case'}</h3>
-      ${isNew ? `<p style="color:var(--muted);margin:14px 0 4px">Your reserved case number</p><p style="font-family:var(--font-head);font-size:34px;color:var(--navy)">${esc(d.caseNo)}</p>
+    const d = S.done, ap = d.type === 'appearance', nw = d.type === 'new';
+    root.innerHTML = `<section class="card" style="text-align:center;padding:40px 24px"><h3 style="font-size:24px">${nw ? 'Filing submitted' : ap ? 'Appearance entered' : 'Filing added to your case'}</h3>
+      ${nw ? `<p style="color:var(--muted);margin:14px 0 4px">Your reserved case number</p><p style="font-family:var(--font-head);font-size:34px;color:var(--navy)">${esc(d.caseNo)}</p>
         <p style="max-width:520px;margin:10px auto 18px">This number is yours, but <b>the case will not appear in Case Search unless the clerk accepts your filing.</b> We will email ${esc(d.email)} when it is reviewed.</p>`
       : `<p style="color:var(--muted);margin:14px 0 4px">Case</p><p style="font-family:var(--font-head);font-size:30px;color:var(--navy)">${esc(d.caseNo)}</p>
-        <p style="max-width:520px;margin:10px auto 18px"><b>No clerk review is needed.</b> Your documents were added to the docket automatically.</p>`}
-      <p style="margin-bottom:4px;color:var(--muted)">Confirmation number</p><p style="font-weight:600;margin-bottom:22px">${esc(d.conf)}</p>
+        <p style="max-width:520px;margin:10px auto 18px">${ap ? '<b>You are now counsel of record.</b> You can file motions and other documents in this case.' : '<b>No clerk review is needed.</b> Your documents were added to the docket automatically.'}</p>`}
+      <p style="margin-bottom:4px;color:var(--muted)">Filing number</p><p style="font-weight:600;margin-bottom:22px">${esc(d.conf)}</p>
       <div class="acts" style="justify-content:center"><button class="btn" data-a="again">File another document</button><button class="btn outline" data-a="view:history">View my submissions</button></div></section>`;
     return;
   }
-  const names = ['Filing type', 'Case', 'Documents', 'Review'];
-  const body = [stepType, stepCase, stepDocs, stepReview][S.step]();
+  const names = ['Filing type', 'Case', 'Documents', 'Review'], body = [stepType, stepCase, stepDocs, stepReview][S.step]();
   root.innerHTML = `<div class="steps">${names.map((n, i) => `<div class="${i === S.step ? 'on' : i < S.step ? 'done' : ''}">${i < S.step ? '✓ ' : ''}${n}</div>`).join('')}</div>
     ${S.err ? `<div class="alert" role="alert" style="margin-bottom:16px"><strong>${esc(S.err)}</strong></div>` : ''}${body}
     <div class="nav">${S.step ? '<button class="btn outline" data-a="back">Back</button>' : '<span></span>'}
-      <button class="btn" data-a="${S.step === 3 ? 'submit' : 'next'}" ${S.busy ? 'disabled' : ''}>${S.step === 3 ? (S.busy ? 'Submitting…' : 'Submit filing') : 'Continue'}</button></div>`;
+      <button class="btn" data-a="${S.step === 3 ? 'submit' : 'next'}" ${S.busy ? 'disabled' : ''}>${S.step === 3 ? (S.busy ? 'Submitting…' : S.type === 'appearance' ? 'Enter appearance' : 'Submit filing') : 'Continue'}</button></div>`;
 }
 
-/* ── Validation + submit ────────────────────────────────────────────── */
+/* ── Validation ─────────────────────────────────────────────────────── */
 function check() {
-  if (S.step === 0) { if (!S.type) return 'Choose whether this is a new case or an existing one.'; if (S.type === 'new' && (!S.court || !S.ctype)) return 'Select a court and case type.'; }
+  if (S.step === 0) { if (!S.type) return 'Choose what you are filing.'; if (S.type === 'new' && (!S.court || !S.ctype)) return 'Select a court and case type.'; }
   if (S.step === 1) {
-    if (S.type === 'existing') { if (!S.kase) return 'Select a case.'; if (S.counsel && !S.rep.trim()) return 'Enter the party you represent.'; }
-    else {
+    if (S.type !== 'new') {
+      if (!S.kase) return 'Select a case.';
+      if (S.type === 'appearance' && !S.repIds.length) return 'Check each party you represent.';
+    } else {
       if (S.court === SUPREME_COURT && /^Appeal/.test(S.ctype) && !S.lower) return 'Select the lower court case you are appealing.';
       if (S.parties.some(p => !p.name.trim() || (p.kind === 'Person' && !p.pin.trim()))) return 'Complete the name (and PIN for individuals) for every party.';
-      if (S.counsel && !S.parties.some(p => p.mine)) return 'Mark the party you represent.';
+      if (S.counsel && !S.parties.some(p => p.mine)) return 'Check each party you represent.';
     }
   }
   if (S.step === 2) {
-    if (!S.files.length && !S.links.length) return 'Add at least one PDF or Google Drive link.';
+    if (S.type !== 'appearance' && !S.files.length && !S.links.length) return 'Add at least one PDF or Google Drive link.';
     if (S.files.some(f => !f.type) || S.links.some(l => !l.type)) return 'Choose a document type for every document.';
     if (S.links.some(l => !/^https?:\/\//.test(l.url.trim()))) return 'Every Google Drive entry needs a valid link.';
   }
@@ -203,12 +273,20 @@ function check() {
   return '';
 }
 
+/* ── Submit ─────────────────────────────────────────────────────────── */
 async function submit() {
-  S.busy = true; render();
+  S.busy = true; S.err = ''; render();
   try {
-    const conf = `MCR-${new Date().getFullYear()}-${Math.floor(100000 + Math.random() * 900000)}`, now = new Date().toISOString(), court = courtOf();
-    const documents = [];
-    let st = null;
+    const court = courtOf(), isNew = S.type === 'new', ap = S.type === 'appearance', now = new Date().toISOString();
+    const atty = { name: account.name, barNumber: account.barNumber || null };
+    const caseNo = isNew ? await reserveCaseNumber(court, S.ctype) : S.kase.caseId;
+    const conf = isNew ? `${caseNo}-F-1` : await reserveFilingNumber(court, S.kase._id, caseNo);
+    let counsel, repNames, filerRole;
+    if (isNew) { counsel = S.counsel; repNames = S.parties.filter(p => p.mine).map(p => p.name.trim()).join(', '); filerRole = counsel ? 'Attorney for ' + repNames : S.parties[0].role; }
+    else if (ap) { counsel = true; repNames = S.repIds.map(i => S.kase.parties[i].name).join(', '); filerRole = 'Attorney for ' + repNames; }
+    else { const st = standing(S.kase); counsel = st.counsel; repNames = st.reps; filerRole = st.text; }
+
+    const documents = []; let st = null;
     if (S.files.length) st = await import('https://www.gstatic.com/firebasejs/11.0.0/firebase-storage.js');
     for (const f of S.files) {
       const d = { type: 'pdf', name: f.file.name, size: f.file.size, documentType: f.type, fee: fee(f.type, court), fileUrl: null };
@@ -216,60 +294,79 @@ async function submit() {
       await st.uploadBytes(r, f.file, { contentType: 'application/pdf' }); d.fileUrl = await st.getDownloadURL(r); d.storagePath = path; documents.push(d);
     }
     S.links.forEach(l => documents.push({ type: 'gdrive', name: 'Google Drive Document', link: l.url.trim(), documentType: l.type, fee: fee(l.type, court) }));
-    const mineP = S.parties.find(p => p.mine);
-    const filerRole = S.counsel ? 'Attorney for ' + (S.type === 'new' ? mineP?.name : S.rep.trim()) : S.type === 'new' ? S.parties[0].role : 'Party of Record';
-    const obj = { confirmationNumber: conf, filingType: S.type, court, caseType: S.type === 'new' ? S.ctype : S.kase.caseType || '', documentType: documents[0].documentType,
-      parties: S.type === 'new' ? S.parties.map(p => ({ role: p.role, name: p.name.trim(), ...(p.kind === 'Person' && p.pin.trim() ? { pin: p.pin.trim() } : {}), selfRepresented: !p.mine, ...(p.mine ? { attorney: { name: account.name, barNumber: account.barNumber || null } } : {}) })) : [],
-      partyIntake: S.type === 'new' ? S.parties.map(p => ({ role: p.role, kind: p.kind, name: p.name.trim(), pin: p.pin || null })) : [],
+
+    const obj = { confirmationNumber: conf, filingType: S.type, court, caseType: isNew ? S.ctype : S.kase.caseType || '', documentType: documents[0]?.documentType || 'Appearance (MC 02)',
+      parties: isNew ? S.parties.map(p => ({ role: p.role, name: p.name.trim(), ...(p.kind === 'Person' && p.pin.trim() ? { pin: p.pin.trim() } : {}), selfRepresented: !p.mine, ...(p.mine ? { attorney: atty, attorneys: [atty] } : {}) })) : [],
       documents, totalFee: documents.reduce((t, d) => t + d.fee, 0), notesToClerk: S.notes.trim() || null, confirmationEmail: S.email.trim(), filerRole,
-      filedBy: account.name, filedByUid: account.uid, isFilingAsCounsel: S.counsel, counselRepresents: S.counsel ? (S.type === 'new' ? mineP?.name : S.rep.trim()) : null,
-      barNumber: S.counsel ? account.barNumber || null : null, dateFiled: now, status: 'Pending', accepted: false, urgent: false };
-    if (S.type === 'existing') { obj.caseId = S.kase.caseId; obj.caseFirestoreId = S.kase._id; }
-    if (S.type === 'new') { obj.reservedCaseId = await reserveCaseNumber(court, S.ctype); if (S.lower && court === SUPREME_COURT) obj.lowerCourt = S.lower; }
+      filedBy: account.name, filedByUid: account.uid, isFilingAsCounsel: counsel, counselRepresents: counsel ? repNames : null, barNumber: counsel ? account.barNumber || null : null,
+      dateFiled: now, status: 'Pending', accepted: false, urgent: false };
+    if (isNew) { obj.reservedCaseId = caseNo; if (S.lower && court === SUPREME_COURT) obj.lowerCourt = S.lower; }
     else {
-      const ref = doc(db, colFor(S.kase.court), S.kase._id), snap = await getDoc(ref), prev = snap.exists() ? snap.data().events || [] : [];
-      let n = prev.reduce((m, e) => Math.max(m, e.eventNumber || 0), 0) + 1;
-      const events = [...prev, ...documents.map(d => ({ eventNumber: n++, type: 'filing', date: now, description: /fee waiver/i.test(d.documentType || '') ? `Fee waiver filed: ${d.documentType}` : d.documentType || d.name,
-        comment: S.notes.trim() || null, documentLink: d.fileUrl || d.link || null, sealed: false, filedBy: account.name, role: filerRole, confirmationNumber: conf, docName: d.name }))];
-      await updateDoc(ref, { events, 'dates.lastUpdated': now });
+      obj.caseId = S.kase.caseId; obj.caseFirestoreId = S.kase._id;
+      // Filings in an open case, and appearances, never wait for a clerk: the docket updates right now.
+      const ref = doc(db, colFor(court), S.kase._id), d = (await getDoc(ref)).data(), events = [...(d.events || [])], patch = {};
+      let n = events.reduce((m, e) => Math.max(m, e.eventNumber || 0), 0) + 1;
+      if (ap) {
+        if (!Array.isArray(d.parties)) throw new Error('older case format');
+        const names = [];
+        patch.parties = d.parties.map((p, i) => { if (!S.repIds.includes(i)) return p; names.push(p.name); const cur = counselOf(p);
+          return { ...p, selfRepresented: false, attorney: p.attorney || atty, attorneys: cur.some(a => lc(a.name) === lc(atty.name)) ? cur : [...cur, atty] }; });
+        patch.relatedUserIds = arrayUnion(account.uid);
+        events.push({ eventNumber: n++, type: 'appearance', date: now, description: `Appearance entered by ${account.name}${atty.barNumber ? ' (Bar No. ' + atty.barNumber + ')' : ''} as counsel for ${names.join(' and ')}.`,
+          filedBy: account.name, role: filerRole, confirmationNumber: conf, attorney: atty, counselRepresents: names.join(', ') });
+      }
+      documents.forEach(x => events.push({ eventNumber: n++, type: 'filing', date: now, description: /fee waiver/i.test(x.documentType || '') ? `Fee waiver filed: ${x.documentType}` : x.documentType || x.name,
+        comment: S.notes.trim() || null, documentLink: x.fileUrl || x.link || null, sealed: false, filedBy: account.name, role: filerRole, confirmationNumber: conf, docName: x.name }));
+      await updateDoc(ref, { ...patch, events, 'dates.lastUpdated': now });
       Object.assign(obj, { status: 'Accepted', accepted: true, autoFiled: true, reviewedBy: 'System (Auto-Filed)', reviewedAt: now, linkedCaseId: S.kase.caseId, linkedCaseFirestoreId: S.kase._id,
-        activityLog: [{ text: 'Automatically filed — filings in an existing case do not require clerk review', by: 'System', at: now }] });
+        activityLog: [{ text: ap ? 'Appearance entered automatically' : 'Automatically filed — filings in an existing case do not require clerk review', by: 'System', at: now }] });
     }
     await addDoc(collection(db, 'pendingFilings'), obj);
-    S.done = { conf, email: S.email.trim(), type: S.type, caseNo: S.type === 'new' ? obj.reservedCaseId : S.kase.caseId }; S.busy = false; S.err = ''; loadMine(); render();
+    S.done = { conf, email: S.email.trim(), type: S.type, caseNo }; S.busy = false; loadMine(); render();
   } catch (e) { console.error(e); S.busy = false; S.err = 'We could not submit your filing. Check your connection and try again.'; render(); }
 }
 
 /* ── Events ─────────────────────────────────────────────────────────── */
+const get = p => p.split('.').reduce((o, k) => o?.[k], S);
 const set = (p, v) => { const a = p.split('.'); let o = S; a.slice(0, -1).forEach(k => o = o[k]); o[a.at(-1)] = v; };
-const initParties = () => { const r = ROLES[S.ctype]; S.parties = [mkParty(r[0], 0), mkParty(r[1], 1)]; };
-root.addEventListener('input', e => { const k = e.target.dataset.k; if (!k || e.target.type === 'checkbox') return; set(k, e.target.value); if (k === 'q') $('cl').innerHTML = caseList(linked()); if (k === 'lq') $('ll').innerHTML = lowerList(); });
-root.addEventListener('change', e => {
-  const t = e.target;
-  if (t.id === 'fi') { addFiles(t.files); return; }
-  const k = t.dataset.k; if (!k) return;
-  set(k, t.type === 'checkbox' ? t.checked : t.value);
-  if (k === 'court') { S.ctype = ''; S.parties = []; S.lower = null; S.lq = ''; }
-  if (k === 'ctype') initParties();
-  if (k === 'counsel') S.parties.forEach(p => p.mine = false);
-  if (t.dataset.r !== undefined) render();
-});
 function addFiles(fl) {
   S.err = '';
   [...fl].forEach(f => { if (!/\.pdf$/i.test(f.name) && f.type !== 'application/pdf') S.err = f.name + ' is not a PDF.'; else if (f.size > 5242880) S.err = f.name + ' is over 5 MB.'; else if (!S.files.some(x => x.file.name === f.name)) S.files.push({ file: f, type: '' }); });
   render();
 }
-root.addEventListener('dragover', e => { const z = e.target.closest('#dz'); if (z) { e.preventDefault(); z.classList.add('over'); } });
-root.addEventListener('dragleave', e => e.target.closest('#dz')?.classList.remove('over'));
-root.addEventListener('drop', e => { if (e.target.closest('#dz')) { e.preventDefault(); addFiles(e.dataTransfer.files); } });
+// Searchable document-type picker
+function cbRender(i, q) {
+  const l = i.nextElementSibling, ql = lc(q), o = docOpts().filter(x => !ql || lc(x.v + ' ' + x.g + ' ' + (x.d || '')).includes(ql)); let g = '', h = '';
+  o.forEach(x => { if (x.g !== g) { g = x.g; h += `<div class="cbg">${esc(g)}</div>`; } h += `<div class="cbo" role="option" data-pick="${esc(i.dataset.cb)}" data-v="${esc(x.v)}"><b>${esc(x.v)}</b>${x.d ? `<small>${esc(x.d)}</small>` : ''}</div>`; });
+  l.innerHTML = h || '<div class="cbn">No matching document types</div>'; l.hidden = false; i.setAttribute('aria-expanded', 'true');
+}
+root.addEventListener('focusin', e => { if (e.target.matches?.('.cbi')) { e.target.select(); cbRender(e.target, ''); } });
+root.addEventListener('focusout', e => { const i = e.target; if (i.matches?.('.cbi')) { i.nextElementSibling.hidden = true; i.setAttribute('aria-expanded', 'false'); i.value = get(i.dataset.cb) || ''; } });
+root.addEventListener('mousedown', e => { const o = e.target.closest('.cbo'); if (o) { e.preventDefault(); set(o.dataset.pick, o.dataset.v); render(); } });
+root.addEventListener('keydown', e => { if (!e.target.matches?.('.cbi')) return; if (e.key === 'Escape') e.target.blur(); if (e.key === 'Enter') { e.preventDefault(); const o = e.target.nextElementSibling.querySelector('.cbo'); if (o) { set(o.dataset.pick, o.dataset.v); render(); } } });
+root.addEventListener('input', e => {
+  const t = e.target; if (t.matches?.('.cbi')) { cbRender(t, t.value); return; }
+  const k = t.dataset.k; if (!k || t.type === 'checkbox') return; set(k, t.value); if (k.startsWith('parties.')) S.touched = true;
+  if (k === 'q') $('cl').innerHTML = caseList(); if (k === 'lq') $('ll').innerHTML = lowerList();
+});
+root.addEventListener('change', e => {
+  const t = e.target;
+  if (t.id === 'fi') { addFiles(t.files); return; }
+  const k = t.dataset.k; if (!k) return;
+  set(k, t.type === 'checkbox' ? t.checked : t.value); if (k.startsWith('parties.')) S.touched = true;
+  if (k === 'court') { S.ctype = ''; S.parties = []; S.lower = null; S.lq = ''; }
+  if (k === 'ctype' || k === 'counsel') initParties();
+  if (t.dataset.r !== undefined) render();
+});
 const act = a => {
   const [n, v] = a.split(':');
-  if (n === 'type') { S.type = v; S.kase = null; S.files = []; S.links = []; }
-  else if (n === 'case') S.kase = cases.find(c => c._id === v);
-  else if (n === 'lower') S.lower = lowerFrom(cases.find(c => c._id === v));
+  if (n === 'type') { S.type = v; S.kase = null; S.repIds = []; S.q = ''; S.files = []; S.links = []; S.err = ''; if (v !== 'new') { S.court = ''; S.ctype = ''; S.parties = []; S.counsel = false; S.lower = null; } }
+  else if (n === 'case') { S.kase = cases.find(c => c._id === v); S.repIds = []; }
+  else if (n === 'rep') { const i = +v; S.repIds = S.repIds.includes(i) ? S.repIds.filter(x => x !== i) : [...S.repIds, i]; }
+  else if (n === 'lower') { S.lower = lowerFrom(cases.find(c => c._id === v)); prefillFromLower(); }
   else if (n === 'clearlower') { S.lower = null; S.lq = ''; }
-  else if (n === 'addparty') S.parties.push(mkParty('Third Party', 2));
-  else if (n === 'rmparty') S.parties.splice(+v, 1);
+  else if (n === 'addparty') { S.touched = true; S.parties.push(mkParty(ROLES[S.ctype][1], 2)); }
+  else if (n === 'rmparty') { S.touched = true; S.parties.splice(+v, 1); }
   else if (n === 'rmfile') S.files.splice(+v, 1);
   else if (n === 'rmlink') S.links.splice(+v, 1);
   else if (n === 'addlink') S.links.push({ url: '', type: '' });
@@ -280,8 +377,11 @@ const act = a => {
   else if (n === 'submit') { S.err = check(); if (S.err) { render(); return; } submit(); return; }
   render(); if (n === 'next' || n === 'back') window.scrollTo({ top: 0 });
 };
-document.addEventListener('click', e => { const el = e.target.closest('[data-a]'); if (el) act(el.dataset.a); });
+document.addEventListener('click', e => { const el = e.target.closest('[data-a]'); if (el && !el.matches('input[type=checkbox]:disabled')) act(el.dataset.a); });
 document.addEventListener('keydown', e => { if ((e.key === 'Enter' || e.key === ' ') && e.target.matches?.('.opt[data-a]')) { e.preventDefault(); act(e.target.dataset.a); } });
+root.addEventListener('dragover', e => { const z = e.target.closest('#dz'); if (z) { e.preventDefault(); z.classList.add('over'); } });
+root.addEventListener('dragleave', e => e.target.closest('#dz')?.classList.remove('over'));
+root.addEventListener('drop', e => { if (e.target.closest('#dz')) { e.preventDefault(); addFiles(e.dataTransfer.files); } });
 render();
 </script>
 </body>

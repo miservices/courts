@@ -39,6 +39,17 @@ export async function reserveCaseNumber(court, caseType) {
   return sc ? `MSC ${n}` : `${String(year).slice(-2)}-${n}-${CASE_CODES[caseType] || 'CV'}`;
 }
 
+/* Filing numbers: [CASE-NUMBER]-F-[N]. The first filing of a new case is always F-1; later filings take the next number from the case's counter. */
+export async function reserveFilingNumber(court, docId, caseNo) {
+  const ref = doc(db, colFor(court), docId);
+  const n = await runTransaction(db, async tx => {
+    const s = await tx.get(ref); if (!s.exists()) throw new Error('Case not found');
+    const d = s.data(), v = (d.filingCounter ?? new Set((d.events || []).map(e => e.confirmationNumber).filter(Boolean)).size) + 1;
+    tx.update(ref, { filingCounter: v }); return v;
+  });
+  return `${caseNo}-F-${n}`;
+}
+
 const NAV = [
   [null, [['overview', 'Overview', '', 'all']]],
   ['Workspace', [['cases', 'My cases', 'cases/', SELF], ['hearings', 'My hearings', 'hearings/', SELF], ['drafting', 'Document Drafting', 'document-drafting/', [...SELF, ...STAFF]],
@@ -82,6 +93,11 @@ const CSS = `
 .drop.over{border-color:var(--blue);background:#e8f0fb}.drop p{margin:0;color:var(--muted);font-size:14.5px}.drop .big{font-weight:600;color:var(--navy)}
 .vh{position:absolute;width:1px;height:1px;opacity:0;overflow:hidden}.vh:focus-visible+label{outline:3px solid #5b9be0;outline-offset:2px}
 .fchip{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.f input[readonly],.f select:disabled{background:#eef2f7;color:#4a5568;cursor:not-allowed}
+.cb{position:relative}.cbl{position:absolute;z-index:30;left:0;right:0;top:calc(100% + 4px);max-height:300px;overflow:auto;background:#fff;border:1px solid var(--navy);border-radius:4px;box-shadow:0 10px 24px rgba(16,38,74,.18)}
+.cbg{padding:8px 12px 4px;font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);background:#f4f7fb;position:sticky;top:0}
+.cbo b{display:block}.cbo small{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.cbo{padding:10px 12px;cursor:pointer;border-top:1px solid #eef2f7}.cbo:hover,.cbo.hl{background:#e8f0fb}.cbn{padding:14px 12px;color:var(--muted)}
 .acts{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.mt{margin-top:14px}
 @media(max-width:700px){.cols{grid-template-columns:1fr}.steps{grid-template-columns:1fr 1fr}}`;
 
