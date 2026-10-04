@@ -698,7 +698,9 @@ function renderDetail(c){
   if (crimOrTraffic && c.charges?.length)   sections.push(['charges','Charges', buildCharges(c)]);
   if (crimOrTraffic && c.bonds?.length)     sections.push(['bonds','Bonds', buildBonds(c)]);
   if (c.hearings?.length)                    sections.push(['hearings','Hearings', buildHearings(c)]);
-  if (crimOrTraffic && c.sentencing?.length) sections.push(['sentencing','Sentencing', buildSentencing(c)]);
+  if (crimOrTraffic && c.sentencing?.length) sections.push(['sentencing','Dispositions and sentencing', buildSentencing(c)]);
+  if (!crimOrTraffic && c.judgments?.length) sections.push(['judgments', judgmentsTitle(c), buildJudgments(c)]);
+  if (!crimOrTraffic && c.adr?.length)       sections.push(['adr','Mediation and ADR', buildAdr(c)]);
   if (c.financialOrders?.length)             sections.push(['financials','Financial orders', buildFinancials(c)]);
   if (c.events?.length)                      sections.push(['events','Docket', buildEventsShell(c)]);
 
@@ -797,6 +799,7 @@ function buildDetails(c){
       <div class="item"><div class="k">Sub-type</div>${val(subtype)}</div>
       <div class="item"><div class="k">Status</div>${val(c.status)}</div>
       <div class="item"><div class="k">Judge of record</div>${val(judge)}</div>
+      <div class="item"><div class="k">Courtroom</div>${val(hasVal(c.courtroomNumber) ? (/^\d+$/.test(String(c.courtroomNumber)) ? 'Courtroom ' + c.courtroomNumber : c.courtroomNumber) : null)}</div>
       <div class="item"><div class="k">Date filed</div>${val(fmtDateTime(c.dates?.filed))}</div>
       <div class="item"><div class="k">Date closed</div>${val(fmtDate(c.dates?.closed))}</div>
       <div class="item"><div class="k">Last updated</div>${val(updated)}</div>
@@ -811,8 +814,13 @@ function buildParties(c){
     ${parties.map(p => {
       const role = p.role || 'Party', rl = role.toLowerCase();
       const selfRep = p.selfRepresented === true;
+      const counsel = [...(p.attorney?.name ? [p.attorney] : []), ...(Array.isArray(p.attorneys) ? p.attorneys.filter(a => a && a.name && a.name !== p.attorney?.name) : [])];
       let civil = '';
-      if (isCivil && rl.includes('defendant')) civil = `<div class="item"><div class="k">Service date</div>${val(fmtDate(p.serviceDate))}</div><div class="item"><div class="k">Answer date</div>${val(fmtDate(p.answerDate))}</div>`;
+      if (/defendant|respondent/.test(rl)) {
+        const served = p.served === true || (p.served === undefined && hasVal(p.serviceDate));
+        civil = `<div class="item"><div class="k">Service</div>${val(served ? 'Served' + (hasVal(p.serviceDate) ? ' ' + fmtDate(p.serviceDate) : '') + (hasVal(p.serviceMethod) ? ' · ' + p.serviceMethod : '') : 'Not yet served')}</div>`
+          + (isCivil ? `<div class="item"><div class="k">Answer date</div>${val(fmtDate(p.answerDate))}</div>` : '');
+      }
       else if (isCivil && rl.includes('plaintiff')) civil = `<div class="item"><div class="k">Response date</div>${val(fmtDate(p.responseDate))}</div>`;
       const extra = Array.isArray(p.additionalFields) ? p.additionalFields.filter(f => hasVal(f.label))
         .map(f => `<div class="item"><div class="k">${esc(f.label)}</div>${val(f.value)}</div>`).join('') : '';
@@ -822,9 +830,9 @@ function buildParties(c){
           <div class="pname">${esc(p.name)}</div>
           ${Array.isArray(p.aliases) && p.aliases.length ? `<div class="aka">a/k/a ${p.aliases.map(esc).join(', ')}</div>` : ''}
           <div class="grid" style="margin-top:14px">
-            <div class="item"><div class="k">Date of birth</div>${val(fmtDate(p.dob))}</div>
-            <div class="item"><div class="k">Representation</div>${val(selfRep ? 'Self-represented' : (p.attorney?.name || null))}</div>
-            ${!selfRep ? `<div class="item"><div class="k">Bar number</div>${val(p.attorney?.barNumber,'mono')}</div>` : ''}
+            <div class="item"><div class="k">Date of birth</div>${val(hasVal(p.dob) ? fmtDate(p.dob) : (p.dobUnknown ? 'Unknown' : null))}</div>
+            <div class="item"><div class="k">Representation</div>${val(selfRep ? 'Self-represented' : (counsel.map(a => a.name).join('; ') || null))}</div>
+            ${!selfRep ? `<div class="item"><div class="k">Bar number</div>${val(counsel.map(a => a.barNumber).filter(Boolean).join('; ') || null,'mono')}</div>` : ''}
             ${civil}${extra}
           </div>
         </div></div>`;
@@ -907,15 +915,16 @@ function buildHearings(c){
 }
 
 function buildSentencing(c){
-  return `<div class="panel">${heading('Sentencing', `${c.sentencing.length} record${c.sentencing.length === 1 ? '' : 's'}`)}
+  return `<div class="panel">${heading('Dispositions and sentencing', `${c.sentencing.length} record${c.sentencing.length === 1 ? '' : 's'}`)}
     ${c.sentencing.map(s => {
       const csi = s.communityServiceOrIncarceration || s.communityServiceIncarceration || {};
       const prob = s.probation || {}, lic = s.license || {};
+      const sentenced = !s.outcome || ['Guilty','Responsible','Responsible with explanation','Diversion'].includes(s.outcome);
       const concurrency = csi.concurrency || (hasVal(csi.terms) ? 'Consecutive' : null);
       return `<div class="box">
-        <div class="sent-head"><div class="c">${esc(s.chargeRef || s.charge || 'Charge not specified')}</div>${hasVal(s.sentenceDate) ? `<div class="s">Sentenced ${esc(fmtDate(s.sentenceDate))}</div>` : ''}</div>
+        <div class="sent-head"><div class="c">${esc(s.chargeRef || s.charge || 'Charge not specified')}</div>${hasVal(s.outcome) ? `<span class="tag ${sentenced ? 'amber' : 'green'}">${esc(s.outcome)}</span>` : ''}${hasVal(s.sentenceDate) ? `<div class="s">Sentenced ${esc(fmtDate(s.sentenceDate))}</div>` : (hasVal(s.outcomeDate) ? `<div class="s">${esc(fmtDate(s.outcomeDate))}</div>` : '')}</div>
         <div class="box-body">
-          <div class="sub-title">Overview</div>
+          ${sentenced ? `<div class="sub-title">Overview</div>
           <div class="grid">
             <div class="item"><div class="k">Probation term</div>${val(s.probationTerm)}</div>
             <div class="item"><div class="k">Incarceration term</div>${val(s.incarcerationTerm)}</div>
@@ -936,9 +945,42 @@ function buildSentencing(c){
           ${(hasVal(lic.status) || hasVal(lic.daysSuspended) || hasVal(lic.restrictions)) ? `
             <div class="sub-title">License</div>
             <div class="grid"><div class="item"><div class="k">Status</div>${val(lic.status)}</div><div class="item"><div class="k">Days suspended / revoked</div>${val(lic.daysSuspended)}</div><div class="item"><div class="k">Restrictions</div>${val(lic.restrictions)}</div></div>` : ''}
+          ` : ''}
           ${hasVal(s.notes) ? `<div class="note-box">${esc(s.notes)}</div>` : ''}
         </div></div>`;
     }).join('')}</div>`;
+}
+
+function judgmentsTitle(c){
+  const sub = c.civilSubtype || '';
+  return sub === 'Special Proceedings' ? 'Rulings on petitions' : /^administrative$/i.test(c.caseType || '') ? 'Dispositions' : 'Judgments';
+}
+const kvItem = (k, v, cls) => hasVal(v) ? `<div class="item"><div class="k">${k}</div>${val(v, cls)}</div>` : '';
+function buildJudgments(c){
+  const list = [...c.judgments].sort((a,b) => new Date(b.judgmentDate || 0) - new Date(a.judgmentDate || 0));
+  return `<div class="panel">${heading(judgmentsTitle(c), `${list.length} entr${list.length === 1 ? 'y' : 'ies'}`)}
+    ${list.map(j => `<div class="box">
+      <div class="sent-head"><div class="c">${esc(j.outcome)}</div>${hasVal(j.matter) ? `<div class="s">${esc(j.matter)}</div>` : ''}</div>
+      <div class="box-body"><div class="grid">
+        ${kvItem('Entered', fmtDate(j.judgmentDate))}${kvItem('Effective', fmtDate(j.effectiveDate))}${kvItem('In favor of', j.inFavorOf)}${kvItem('Against', j.against)}
+        ${kvItem('Amount', j.amount > 0 ? fmtMoney(j.amount) : null)}${kvItem('Underlying case', j.relatedCaseNumber, 'mono')}${kvItem('Compliance review', fmtDate(j.reviewDate))}${kvItem('Appeal deadline', fmtDate(j.appealDeadline))}
+      </div>
+      ${hasVal(j.relief) ? `<div class="sub-title">Relief or terms</div><div class="note-box">${esc(j.relief)}</div>` : ''}
+      ${Array.isArray(j.conditions) && j.conditions.length ? `<div class="sub-title">Conditions</div><ul class="clean">${j.conditions.map(x => `<li>${esc(x)}</li>`).join('')}</ul>` : ''}
+      ${hasVal(j.notes) ? `<div class="note-box">${esc(j.notes)}</div>` : ''}</div></div>`).join('')}</div>`;
+}
+function buildAdr(c){
+  const list = [...c.adr].sort((a,b) => new Date(b.sessionDate || b.referredDate || 0) - new Date(a.sessionDate || a.referredDate || 0));
+  const tone = r => /settled|award/i.test(r || '') ? 'green' : /impasse|not appear/i.test(r || '') ? 'red' : 'blue';
+  return `<div class="panel">${heading('Mediation and ADR', `${list.length} referral${list.length === 1 ? '' : 's'}`)}
+    ${list.map(a => `<div class="box">
+      <div class="sent-head"><div class="c">${esc(a.type)}</div><span class="tag ${tone(a.result)}">${esc(a.result || 'Pending')}</span></div>
+      <div class="box-body"><div class="grid">
+        ${kvItem('Mediator, panel or arbitrator', a.provider)}${kvItem('Referred', fmtDate(a.referredDate))}${kvItem('Session', fmtDateTime(a.sessionDate))}
+        ${kvItem(/settle/i.test(a.result || '') ? 'Settlement amount' : 'Award or settlement', a.amount != null && a.amount !== '' ? fmtMoney(a.amount) : null)}${kvItem('Response due', fmtDate(a.responseDeadline))}
+      </div>
+      ${hasVal(a.terms) ? `<div class="sub-title">Terms or award</div><div class="note-box">${esc(a.terms)}</div>` : ''}
+      ${hasVal(a.notes) ? `<div class="note-box">${esc(a.notes)}</div>` : ''}</div></div>`).join('')}</div>`;
 }
 
 function buildFinancials(c){

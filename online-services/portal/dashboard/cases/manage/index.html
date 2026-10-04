@@ -94,7 +94,7 @@ dialog>footer{display:flex;justify-content:flex-end;gap:10px;padding:14px 22px;b
 <div class="auth-loading-overlay" id="auth-overlay" role="status"><div class="alo-title">Online Portal</div><div class="spin"></div><div>Verifying your session…</div></div>
 
 <script type="module">
-import { boot, db, app, $, esc, has, STAFF, scopeOf, colFor, reserveFilingNumber, DISTRICT_COURT, SUPREME_COURT } from '/courts/online-services/portal/dashboard/assets/js/portal-shell.js';
+import { boot, db, app, $, esc, has, STAFF, SUPREME, scopeOf, colFor, reserveFilingNumber, DISTRICT_COURT, SUPREME_COURT } from '/courts/online-services/portal/dashboard/assets/js/portal-shell.js';
 import { collection, getDocs, getDoc, doc, query, where, updateDoc, setDoc, runTransaction } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 import { getStorage, ref as sRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-storage.js";
 
@@ -107,6 +107,8 @@ async function main() {
 /* ── Roles & constants ──────────────────────────────────────────────── */
 const JD = ['Magistrate', 'Judge', 'Chief Judge'], JS = ['Justice', 'Chief Justice'], JUDICIAL = [...JD, ...JS];
 const scope = scopeOf(role), storage = getStorage(app), isJudicial = has(JUDICIAL, role);
+// The Supreme Court has superintending control: its staff can open and manage any district court case, but those cases are not listed unless they look one up.
+const superior = has(SUPREME, role), reach = superior ? [DISTRICT_COURT, SUPREME_COURT] : scope, isChief = has(['Chief Judge', 'Chief Justice'], role);
 const STATUSES = ['Open', 'Mediation', 'Deferred', 'Disposed', 'Closed'];
 const hashFor = id => '#' + encodeURIComponent(id);
 const FILE_MANAGE = 'https://migovt.org/courts/online-services/portal/dashboard/file/manage/';
@@ -166,12 +168,30 @@ function roleOptions(c) {
   return ['Plaintiff', 'Defendant', 'Petitioner', 'Respondent', 'Appellant', 'Appellee', 'Interested Party'];
 }
 const pool = court => judges.filter(j => has(court === SUPREME_COURT ? JS : JD, j.role));
+// Courtrooms follow the judicial officer: Chief Judge 1, Judge 2, Magistrate 3.
+const ROOM = { 'Chief Judge': '1', Judge: '2', Magistrate: '3' };
+const roomOf = j => ROOM[j?.role] || null;
+const roomLabel = v => /^\d+$/.test(String(v || '')) ? 'Courtroom ' + v : v || '';
+// Who may be drawn for a case: Small Claims and Civil Infractions go to magistrates only; Special Proceedings and criminal cases to magistrates, judges or chief judges; everything else to judges or chief judges; Supreme Court cases to justices.
+function eligibleRoles(c) {
+  if (c.court === SUPREME_COURT) return JS;
+  if (c.caseType === 'Traffic' || subOf(c) === 'Small Claims') return ['Magistrate'];
+  return c.caseType === 'Criminal' || subOf(c) === 'Special Proceedings' ? ['Magistrate', 'Judge', 'Chief Judge'] : ['Judge', 'Chief Judge'];
+}
+function eligible(c) { const r = eligibleRoles(c); let l = judges.filter(j => has(r, j.role)); if (!l.length && !(r.length === 1 && r[0] === 'Magistrate')) l = pool(c.court); return l; }
+const lot = l => l[crypto.getRandomValues(new Uint32Array(1))[0] % l.length];
+const iAmPresiding = c => isJudicial && (c.judgeUid === account.uid || (!!c.judge && nameKey(c.judge) === nameKey(account.name)));
+const authority = c => ({ presiding: iAmPresiding(c), chief: isChief, over: superior && c.court === DISTRICT_COURT });
+const canReassign = c => { const a = authority(c); return a.presiding || a.chief || a.over; };
+const canManual = c => { const a = authority(c); return a.chief || a.over; };
+const isServed = p => p.served === true || (p.served === undefined && hv(p.serviceDate));
+const defSide = r => sideOf(r) === 1;
 const balanceOf = c => { const o = c.financialOrders || [], owed = o.reduce((s, x) => s + (x.amount || 0), 0), paid = o.reduce((s, x) => s + (x.payments || []).reduce((t, p) => t + (p.amount || 0), 0), 0); return { owed, paid, bal: Math.max(0, owed - paid) }; };
 
 /* ── State ──────────────────────────────────────────────────────────── */
 let cases = [], judges = [], cur = null, col = null, cm = null, cmExists = false, filings = [];
 let tab = 'overview', docketFilter = 'all', docketQ = '', docketNewest = false, note = '', noteKind = 'ok';
-const LS = { q: '', status: '', court: '', mine: false, shown: 40 };
+const LS = { q: '', status: '', court: '', mine: isJudicial, shown: 40 };
 class UserError extends Error {}
 const bad = m => { throw new UserError(m); };
 
@@ -195,6 +215,8 @@ function showList() {
   const stat = (l, v, al) => `<div class="stat ${al ? 'alert-stat' : ''}"><span>${l}</span><b>${v}</b></div>`;
   const statuses = [...new Set([...STATUSES, ...cases.map(c => c.status).filter(Boolean)])];
   root.innerHTML = `<div id="msg"></div><div class="stats">${stat('Total cases', cases.length)}${stat('Open', open.length)}${stat('Without a judge', noJudge, noJudge > 0)}${stat('Hearings, next 7 days', hearings)}</div>
+    ${superior ? `<section class="card"><header><h3>Lower court cases</h3></header><p class="m">The Supreme Court has superintending control over the district court. Lower court cases stay out of this list, but you can open any of them by case number and manage it exactly as a district court clerk or judge would.</p>
+      <div class="acts"><input class="in" id="lc-no" placeholder="Case number, e.g. 26-52996-CV" aria-label="Lower court case number" style="max-width:340px">${btn('lclookup', 'Open case', '')}</div><div id="lc-err"></div></section>` : ''}
     <div class="tools"><input class="in" id="ls-q" type="search" placeholder="Search by case number, party, judge, or keyword" aria-label="Search cases" value="${esc(LS.q)}">
       <select class="in" id="ls-status" aria-label="Status"><option value="">All statuses</option>${statuses.map(s => `<option${s === LS.status ? ' selected' : ''}>${esc(s)}</option>`).join('')}</select>
       ${scope.length > 1 ? `<select class="in" id="ls-court" aria-label="Court"><option value="">Both courts</option>${scope.map(c => `<option${c === LS.court ? ' selected' : ''}>${esc(c)}</option>`).join('')}</select>` : ''}
@@ -204,7 +226,7 @@ function showList() {
 }
 function drawResults() {
   const q = LS.q.toLowerCase().trim(), me = nameKey(account.name);
-  const l = cases.filter(c => (!LS.status || c.status === LS.status) && (!LS.court || c.court === LS.court) && (!LS.mine || (judgeName(c).split(',').some(j => nameKey(j) === me)))
+  const l = cases.filter(c => (!LS.status || c.status === LS.status) && (!LS.court || c.court === LS.court) && (!LS.mine || c.judgeUid === account.uid || judgeName(c).split(',').some(j => nameKey(j) === me))
     && (!q || [caption(c), c.caseId, judgeName(c), c.docketSummary, JSON.stringify(c.parties || [])].join(' ').toLowerCase().includes(q)))
     .sort((a, b) => new Date(b.dates?.lastUpdated || b.dates?.filed || 0) - new Date(a.dates?.lastUpdated || a.dates?.filed || 0));
   const shown = l.slice(0, LS.shown);
@@ -227,7 +249,7 @@ async function showCase(id) {
     }
     if (!found) { const c = cases.find(x => x.caseId === id || x._id === id); if (c) { found = c; col = colFor(c.court); } }
     if (!found) { setHead('', `<a class="btn outline" href="#">All cases</a>`); root.innerHTML = `<section class="card">${empty('Case not found', `No record found for “${id}”.`)}</section>`; return; }
-    if (!scope.includes(found.court)) { setHead('', `<a class="btn outline" href="#">All cases</a>`); root.innerHTML = `<section class="card">${empty('This case is in another court', `This case belongs to ${found.court}. Your account can manage ${scope.join(' and ')} cases.`)}</section>`; return; }
+    if (!reach.includes(found.court)) { setHead('', `<a class="btn outline" href="#">All cases</a>`); root.innerHTML = `<section class="card">${empty('This case is in another court', `This case belongs to ${found.court}. Your account can manage ${reach.join(' and ')} cases.`)}</section>`; return; }
     cur = found;
     const cs = await getDoc(doc(db, 'caseManagement', cur._id)).catch(() => null);
     cmExists = !!cs?.exists();
@@ -257,14 +279,14 @@ async function change(fn, audit) {
 }
 const withEvent = (d, ev) => { const e = [...(d.events || [])]; e.push({ eventNumber: e.reduce((m, x) => Math.max(m, x.eventNumber || 0), 0) + 1, sealed: false, ...ev }); return e; };
 // Add (idx < 0), change, or remove (fn returns null) one item of a list field, optionally with a docket entry in the same save.
-async function listChange(field, idx, fn, audit, evFn) {
+async function listChange(field, idx, fn, audit, evFn, xFn) {
   const old = idx >= 0 ? (cur[field] || [])[idx] : null;
   await change(d => {
     const arr = [...(d[field] || [])]; let k = -1;
     if (idx >= 0) { k = arr.findIndex(x => JSON.stringify(x) === JSON.stringify(old)); if (k < 0) bad('Someone else changed this record while you were editing it. Reload the case and try again.'); }
     const res = fn(idx >= 0 ? arr[k] : null, d);
     if (idx >= 0) { if (res === null) arr.splice(k, 1); else arr[k] = res; } else arr.push(res);
-    const p = { [field]: arr }; if (evFn) p.events = withEvent(d, evFn(res, d)); return p;
+    const p = { [field]: arr }, ev = evFn && evFn(res, d); if (ev) p.events = withEvent(d, ev); if (xFn) Object.assign(p, xFn(res, d)); return p;
   }, audit);
 }
 async function eventChange(num, fn, audit) {
@@ -281,8 +303,9 @@ async function cmUpdate(field, fn) {
   cm[field] = arr; cmExists = true;
 }
 const cmPush = (field, mk) => cmUpdate(field, a => [...a, mk(a)]);
-const addAudit = action => cmPush('auditLog', () => ({ action, by: account.name, byUid: account.uid, byRole: role, at: now() }));
-const notify = n => cmPush('notifications', a => ({ num: a.reduce((m, x) => Math.max(m, x.num || 0), 0) + 1, at: now(), read: false, ...n })).then(() => addAudit(`Auto-issued notice: ${n.title || n.type} — ${n.text || ''}`));
+const addAudit = async action => { try { await cmPush('auditLog', () => ({ action, by: account.name, byUid: account.uid, byRole: role, at: now() })); } catch (e) { console.warn('Audit entry not saved', e); } };
+// Notices go out on their own whenever a hearing, order or assignment changes. A notice that fails to save never undoes the change itself.
+const notify = async n => { try { await cmPush('notifications', a => ({ num: a.reduce((m, x) => Math.max(m, x.num || 0), 0) + 1, at: now(), read: false, ...n })); await addAudit(`Auto-issued notice: ${n.title || n.type} — ${n.text || ''}`); } catch (e) { console.warn('Notice not saved', e); } };
 async function setTask(i, status) {
   const t = cm.tasks[i]; if (!t) return;
   await cmUpdate('tasks', a => { let k = a.findIndex(x => t.id && x.id === t.id); if (k < 0) k = a.findIndex(x => x.title === t.title && x.status === 'Open'); if (k < 0) bad('That task was already handled.'); a[k] = { ...a[k], status, completedAt: now(), completedBy: account.name }; return a; });
@@ -300,7 +323,11 @@ function alerts() {
     else if (diff < 0 && !hv(h.result)) out.push(['hi', `The ${esc(h.type || 'hearing')} on ${esc(fmtDate(h.date))} has no recorded result.`]);
   });
   const b = balanceOf(cur); if (b.bal > 0) out.push(['med', `Outstanding balance of <b>${money(b.bal)}</b>.`]);
-  if (!cur.judge) out.push(['med', 'No judge of record is assigned to this case.']);
+  if (!cur.judge) out.push(['med', 'No judge is assigned yet. Use Randomize judge to assign one.']);
+  const unserved = plist(cur).filter(p => defSide(p.role) && !isServed(p));
+  if (unserved.length && !isCrim(cur) && !/closed|disposed/i.test(cur.status || '')) out.push(['med', `<b>Not yet served:</b> ${unserved.map(p => esc(p.name)).join(', ')}.`]);
+  (cur.adr || []).forEach(a => { const d = parse(a.responseDeadline), diff = d ? (d - n) / 864e5 : null; if (diff !== null && diff >= -1 && diff <= 7 && !['Settled', 'Cancelled'].includes(a.result)) out.push(['med', `<b>${esc(a.type)}:</b> response due ${esc(fmtDate(a.responseDeadline))}.`]); });
+  (cur.judgments || []).forEach(j => { const d = parse(j.reviewDate), diff = d ? (d - n) / 864e5 : null; if (diff !== null && diff >= -1 && diff <= 7) out.push(['low', `Compliance review for “${esc(j.outcome)}” on ${esc(fmtDate(j.reviewDate))}.`]); });
   if (cur.sealed) out.push(['low', 'This case is sealed and withheld from public Case Search.']);
   if (/closed/i.test(cur.status || '') && b.bal > 0) out.push(['hi', 'This case is closed with a balance still owed.']);
   return out;
@@ -312,13 +339,13 @@ function draw() {
   setHead(`Case No. ${cur.caseId}`, '<a class="btn outline" href="#">All cases</a>');
   const crim = isCrim(cur), up = (cur.hearings || []).filter(h => parse(h.date) >= new Date() && !hv(h.result)).length;
   const tabs = [['overview', 'Overview'], ['docket', 'Docket', (cur.events || []).length], ['parties', 'Parties', plist(cur).length], ['hearings', 'Hearings', (cur.hearings || []).length],
-    ...(crim ? [['criminal', 'Charges and bonds', (cur.charges || []).length + (cur.bonds || []).length]] : []), ['financials', 'Financials', (cur.financialOrders || []).length], ['filings', 'Filings', filings.length], ['record', 'Staff record']];
-  const body = { overview: overviewTab, docket: docketTab, parties: partiesTab, hearings: hearingsTab, criminal: criminalTab, financials: financialsTab, filings: filingsTab, record: recordTab }[tab]();
+    ...(crim ? [['criminal', 'Charges and outcomes', (cur.charges || []).length + (cur.bonds || []).length + (cur.sentencing || []).length]] : [['judgments', RES[resKind(cur)].tab, (cur.judgments || []).length + (cur.adr || []).length]]), ['financials', 'Financials', (cur.financialOrders || []).length], ['filings', 'Filings', filings.length], ['record', 'Staff record']];
+  const body = { overview: overviewTab, docket: docketTab, parties: partiesTab, hearings: hearingsTab, criminal: criminalTab, judgments: judgmentsTab, financials: financialsTab, filings: filingsTab, record: recordTab }[tab]();
   const al = alerts(), b = balanceOf(cur), sub = subOf(cur);
   root.innerHTML = `<div id="msg">${note ? `<div class="${noteKind === 'ok' ? 'ok-bar' : 'alert'}" role="status">${esc(note)}</div>` : ''}</div>
-    <section class="card ch"><div class="pills"><span class="pill plain">${esc(cur.caseType || 'Case')}${sub ? ' · ' + esc(sub) : ''}</span>${stPill(cur.status)}${cur.sealed ? '<span class="pill bad">Sealed</span>' : ''}</div>
+    <section class="card ch"><div class="pills"><span class="pill plain">${esc(cur.caseType || 'Case')}${sub ? ' · ' + esc(sub) : ''}</span>${stPill(cur.status)} <button class="btn outline sm" type="button" data-a="status">Change status</button>${cur.sealed ? '<span class="pill bad">Sealed</span>' : ''}${superior && cur.court === DISTRICT_COURT ? '<span class="pill mid">District court · superintending control</span>' : ''}</div>
       <h3 class="ch-title">${esc(caption(cur))}</h3><p class="ch-num">Case No. <b>${esc(cur.caseId)}</b> · ${esc(cur.court)}</p>
-      <dl class="facts"><div><dt>Judge of record</dt><dd>${hv(judgeName(cur)) ? esc(judgeName(cur)) : '<span class="m">Unassigned</span>'}</dd></div><div><dt>Courtroom</dt><dd>${hv(cur.courtroomNumber) ? esc(cur.courtroomNumber) : '<span class="m">—</span>'}</dd></div>
+      <dl class="facts"><div><dt>Judge of record</dt><dd>${hv(judgeName(cur)) ? esc(judgeName(cur)) : '<span class="m">Unassigned</span>'}</dd></div><div><dt>Courtroom</dt><dd>${hv(cur.courtroomNumber) ? esc(roomLabel(cur.courtroomNumber)) : '<span class="m">—</span>'}</dd></div>
         <div><dt>Date filed</dt><dd>${esc(fmtDate(cur.dates?.filed) || '—')}</dd></div><div><dt>Last updated</dt><dd>${esc(fmtDate(cur.dates?.lastUpdated) || '—')}</dd></div>
         <div><dt>Upcoming hearings</dt><dd>${up}</dd></div>${b.owed ? `<div><dt>Balance</dt><dd>${money(b.bal)}</dd></div>` : ''}</dl></section>
     ${al.length ? `<div class="alerts">${al.map(a => `<div class="al ${a[0]}">${a[1]}</div>`).join('')}</div>` : ''}
@@ -326,11 +353,22 @@ function draw() {
     <div class="dgrid"><div>${body}</div><aside class="dside">${sidePanel()}</aside></div>`;
 }
 function sidePanel() {
-  const closed = /closed/i.test(cur.status || '');
+  const closed = /closed/i.test(cur.status || ''), k = RES[resKind(cur)], noJudge = !cur.judge;
   return `<section class="card"><header><h3>Actions</h3></header>
-    ${btn('order', 'Enter an order or ruling', '')}${btn('hearing:-1', 'Schedule a hearing', 'outline')}${btn('behalf', 'File on behalf of a party', 'outline')}${btn('party:-1', 'Add a party', 'outline')}${btn('finorder:-1', 'Add a financial order', 'outline')}
-    ${isCrim(cur) ? btn('charge:-1', 'Add a charge', 'outline') + btn('bond:-1', 'Set a bond', 'outline') : ''}${btn('newnote', 'Add an internal note', 'outline')}<hr>
-    <h4>Case record</h4>${btn('seal', cur.sealed ? 'Unseal case' : 'Seal case from public search', 'outline')}${btn('close', closed ? 'Reopen case' : 'Close case', closed ? 'outline' : 'danger')}</section>`;
+    ${noJudge ? btn('randomize', 'Randomize judge', '') : ''}${btn('order', 'Enter an order or ruling', noJudge ? 'outline' : '')}${btn('entryadd', 'Add a docket entry', 'outline')}${btn('status', 'Change case status', 'outline')}${btn('hearing:-1', 'Schedule a hearing', 'outline')}${btn('behalf', 'File on behalf of a party', 'outline')}${btn('party:-1', 'Add a party', 'outline')}${btn('finorder:-1', 'Add a financial order', 'outline')}
+    ${isCrim(cur) ? btn('charge:-1', 'Add a charge', 'outline') + btn('bond:-1', 'Set a bond', 'outline') + btn('sent:-1', 'Record a disposition', 'outline') : btn('judgment:-1', k.add, 'outline') + (cur.court !== SUPREME_COURT ? btn('adr:-1', 'Refer to mediation or ADR', 'outline') : '')}${btn('newnote', 'Add an internal note', 'outline')}<hr>
+    <h4>Case record</h4>${cur.judge && canReassign(cur) ? btn('reassign', 'Recuse or reassign judge', 'outline') : ''}${btn('seal', cur.sealed ? 'Unseal case' : 'Seal case from public search', 'outline')}${btn('close', closed ? 'Reopen case' : 'Close case', closed ? 'outline' : 'danger')}</section>`;
+}
+
+/* Judicial assignment */
+function assignmentCard() {
+  const c = cur, hist = [...(c.assignmentHistory || [])].reverse(), j = judges.find(x => x.name === c.judge);
+  const head = !c.judge ? btn('randomize', 'Randomize judge', '') : canReassign(c) ? btn('reassign', 'Recuse or reassign') : '';
+  return `<section class="card"><header><h3>Judicial assignment</h3>${head}</header>
+    ${c.judge ? `${dl([['Assigned to', c.judge], ['Office', j?.role], ['Courtroom', roomLabel(c.courtroomNumber)]])}
+      ${canReassign(c) ? '' : '<p class="m mt">Once a judge is assigned, the assignment can only change by recusal or administrative reassignment, entered by the presiding judge or the chief judge.</p>'}`
+      : `<p>No judge is assigned. A judicial officer will be drawn at random from those eligible for this type of case (${esc(eligibleRoles(c).join(', '))}), and the assignment is final once drawn.</p>`}
+    ${hist.length ? `<details class="fold mt"><summary>Assignment history (${hist.length})</summary>${hist.map(h => `<div class="note"><b>${esc(h.type)}</b> · ${esc(h.method || '')}<small>${esc(fmtDT(h.at))} · ${h.from ? esc(h.from) + ' → ' : ''}${esc(h.to)} · entered by ${esc(h.by)}</small>${hv(h.reason) ? esc(h.reason) : ''}</div>`).join('')}</details>` : ''}</section>`;
 }
 
 /* Overview */
@@ -344,11 +382,12 @@ function overviewTab() {
   return `<section class="card"><header><h3>Tasks</h3>${open.length ? `<span class="pill warn">${open.length} open</span>` : ''}</header>
       ${!cm.tasks.length ? empty('No tasks', 'Motions and other filings that need clerk or judicial action appear here automatically.') : (open.length ? open.map(taskCard).join('') : '<p class="m">Nothing is waiting on you.</p>')}
       ${done.length ? `<details class="fold mt"><summary>Completed and dismissed (${done.length})</summary>${done.map(doneCard).join('')}</details>` : ''}</section>
+    ${assignmentCard()}
     <div class="stats three"><div class="stat"><span>Next hearing</span><b style="font-size:22px">${up ? esc(fmtDate(up.date)) : '—'}</b><small>${up ? esc(up.type || '') : 'None scheduled'}</small></div>
       <div class="stat ${b.bal > 0 ? 'alert-stat' : ''}"><span>Balance due</span><b>${money(b.bal)}</b></div><div class="stat"><span>Docket entries</span><b>${(c.events || []).length}</b></div></div>
     <section class="card"><header><h3>Case details</h3>${btn('editdetails', 'Edit details')}</header>
       ${hv(c.docketSummary) ? `<div class="quote">${esc(c.docketSummary)}</div>` : ''}
-      ${dl([['Case number', c.caseId], ['Court', c.court], ['Case type', c.caseType], ...(subOf(c) ? [['Sub-type', subOf(c)]] : []), ['Status', c.status], ['Judge of record', judgeName(c)], ['Courtroom', c.courtroomNumber], ['Date filed', fmtDT(c.dates?.filed)], ['Last updated', fmtDT(c.dates?.lastUpdated)],
+      ${dl([['Case number', c.caseId], ['Court', c.court], ['Case type', c.caseType], ...(subOf(c) ? [['Sub-type', subOf(c)]] : []), ['Status', c.status], ['Judge of record', judgeName(c)], ['Courtroom', roomLabel(c.courtroomNumber)], ['Date filed', fmtDT(c.dates?.filed)], ['Last updated', fmtDT(c.dates?.lastUpdated)],
         ['Date closed', fmtDate(c.dates?.closed)], ...(hv(c.dates?.lowerCourtDecisionDate) ? [['Lower court decision', fmtDate(c.dates.lowerCourtDecisionDate)]] : []), ['Filing confirmation', c.intakeConfirmationNumber], ...(hv(c.caseTitleOverride) ? [['Caption override', c.caseTitleOverride]] : [])])}</section>
     ${lc ? `<section class="card"><header><h3>Lower court case</h3>${lc.caseFirestoreId ? `<a class="btn outline sm" href="${hashFor(lc.caseFirestoreId)}">Open lower case</a>` : ''}</header>${dl([['Court', lc.court], ['Case number', lc.caseNumber], ['Caption', lc.caption], ['Case type', lc.caseType], ['Judge', lc.judge], ['Filed', fmtDate(lc.dateFiled)]])}</section>` : ''}`;
 }
@@ -369,7 +408,7 @@ function docketRows() {
 function docketTab() {
   const f = [['all', 'All'], ['filing', 'Filings'], ['order', 'Orders'], ['other', 'Events']];
   return `<div class="bar"><div class="chips">${f.map(x => `<button type="button" class="${docketFilter === x[0] ? 'on' : ''}" data-a="dfilter:${x[0]}">${x[1]}</button>`).join('')}</div>
-      <input class="in" id="dk-q" type="search" placeholder="Search the docket" aria-label="Search the docket" value="${esc(docketQ)}">${btn('dsort', docketNewest ? 'Newest first' : 'Oldest first')}</div>
+      <input class="in" id="dk-q" type="search" placeholder="Search the docket" aria-label="Search the docket" value="${esc(docketQ)}">${btn('dsort', docketNewest ? 'Newest first' : 'Oldest first')}${btn('entryadd', 'Add a docket entry', '')}</div>
     <section class="card flush"><div id="dk-list">${docketRows()}</div></section>`;
 }
 
@@ -378,9 +417,10 @@ function partiesTab() {
   const l = plist(cur), raw = Array.isArray(cur.parties) ? cur.parties : [];
   return `<div class="sec-add"><span class="m">${l.length} on record</span>${btn('party:-1', 'Add a party', '')}</div>` + (!raw.length ? `<section class="card">${empty('No parties on record')}</section>` : raw.map((p, i) => {
     const cs = counselOf(p);
-    return `<section class="card"><header><div><h3>${esc(p.name)}</h3>${Array.isArray(p.aliases) && p.aliases.length ? `<small>a/k/a ${p.aliases.map(esc).join(', ')}</small>` : ''}</div><div class="acts"><span class="pill live">${esc(p.role || 'Party')}</span>${btn(`party:${i}`, 'Edit')}${btn(`rmparty:${i}`, 'Remove', 'danger sm')}</div></header>
-      ${kv([['Date of birth', fmtDate(p.dob)], ['Michigan PIN', p.pin], ['Representation', cs.length ? '' : 'Self-represented'], ...cs.map((a, k) => [k === 0 ? 'Lead counsel' : 'Counsel', a.name + (a.barNumber ? ` (Bar No. ${a.barNumber})` : '')]),
-        ...(hv(p.serviceDate) ? [['Service date', fmtDate(p.serviceDate)]] : []), ...(hv(p.answerDate) ? [['Answer date', fmtDate(p.answerDate)]] : []), ...(hv(p.responseDate) ? [['Response date', fmtDate(p.responseDate)]] : []),
+    return `<section class="card"><header><div><h3>${esc(p.name)}</h3>${Array.isArray(p.aliases) && p.aliases.length ? `<small>a/k/a ${p.aliases.map(esc).join(', ')}</small>` : ''}</div><div class="acts"><span class="pill live">${esc(p.role || 'Party')}</span>${defSide(p.role) ? `<span class="pill ${isServed(p) ? 'done' : isCrim(cur) ? 'plain' : 'warn'}">${isServed(p) ? 'Served' : 'Not served'}</span>` : ''}${btn(`party:${i}`, 'Edit')}${btn(`rmparty:${i}`, 'Remove', 'danger sm')}</div></header>
+      ${kv([['Date of birth', p.dob ? fmtDate(p.dob) : p.dobUnknown ? 'Unknown' : ''], ['Michigan PIN', p.pin || (p.pinUnknown ? 'Unknown' : '')], ['Representation', cs.length ? '' : 'Self-represented'],
+        ...(defSide(p.role) ? [['Service', isServed(p) ? 'Served' + (hv(p.serviceMethod) ? ' · ' + p.serviceMethod : '') : 'Not yet served']] : []), ...cs.map((a, k) => [k === 0 ? 'Lead counsel' : 'Counsel', a.name + (a.barNumber ? ` (Bar No. ${a.barNumber})` : '')]),
+        ...(hv(p.serviceDate) && isServed(p) ? [['Date served', fmtDate(p.serviceDate)]] : []), ...(hv(p.answerDate) ? [['Answer date', fmtDate(p.answerDate)]] : []), ...(hv(p.responseDate) ? [['Response date', fmtDate(p.responseDate)]] : []),
         ...(p.additionalFields || []).filter(f => hv(f.label)).map(f => [f.label, f.value])].filter(r => r[0] !== 'Representation' || r[1]))}</section>`;
   }).join(''));
 }
@@ -394,7 +434,7 @@ function hearingsTab() {
       <div><div class="hh"><div><b>${esc(h.type)}</b><small>${d ? esc(d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })) : ''} · ${esc(h.officer || cur.judge || '—')}${h.courtroom ? ' · ' + esc(h.courtroom) : ''}</small>${hv(h.requestedBy) ? `<small>Requested by ${esc(h.requestedBy)}</small>` : ''}</div>
         <span class="pill ${cancelled ? 'plain' : res ? 'done' : await_ ? 'bad' : 'live'}">${cancelled ? 'Cancelled' : res ? 'Completed' : await_ ? 'Awaiting result' : 'Upcoming'}</span></div>
         ${res && !cancelled ? `<p class="mt"><b>Result:</b> ${esc(h.result)}</p>` : ''}${hv(h.notes) ? `<small>${esc(h.notes)}</small>` : ''}
-        <div class="acts mt">${!res ? btn(`hdone:${h._i}`, '✓ Record result', 'good sm') : ''}${btn(`hearing:${h._i}`, 'Reschedule')}${!cancelled ? btn(`hcont:${h._i}`, 'Continue') + btn(`hcancel:${h._i}`, 'Cancel hearing', 'danger sm') : ''}${btn(`hnotice:${h._i}`, 'Issue notice')}</div></div></div>`; };
+        <div class="acts mt">${!res ? btn(`hdone:${h._i}`, '✓ Record result', 'good sm') : ''}${btn(`hearing:${h._i}`, 'Reschedule')}${!cancelled ? btn(`hcont:${h._i}`, 'Continue') + btn(`hcancel:${h._i}`, 'Cancel hearing', 'danger sm') : ''}</div></div></div>`; };
   return `<div class="sec-add"><span class="m">${all.length} on record</span>${btn('hearing:-1', 'Schedule a hearing', '')}</div>` + (!all.length ? `<section class="card">${empty('No hearings scheduled')}</section>`
     : `<section class="card flush">${up.length ? `<div class="grp">Upcoming</div>${up.map(row).join('')}` : ''}${past.length ? `<div class="grp">Past and completed</div>${past.map(row).join('')}` : ''}</section>`);
 }
@@ -409,14 +449,28 @@ function criminalTab() {
       ${kv([['Posted by', x.postedBy], ['Order date', fmtDate(x.orderDate)], ['Judge', x.judge], ['Receipt number', x.receipt], ['Date posted', fmtDate(x.postedDate)], ['Closed or released', fmtDate(x.closedDate)], ['Payee (refund)', x.payee]])}
       ${(x.conditions || []).length ? `<p class="mt"><b>Conditions</b></p><ul style="margin-left:20px">${x.conditions.map(c => `<li>${esc(c)}</li>`).join('')}</ul>` : ''}${hv(x.notes) ? `<p class="mt m">${esc(x.notes)}</p>` : ''}
       ${(x.actions || []).length ? `<div class="mt">${x.actions.map(a => `<small>${esc(fmtDate(a.date))}: ${esc(a.action)}${a.judge ? ' (' + esc(a.judge) + ')' : ''}</small>`).join('')}</div>` : ''}</div>`).join('');
-  const sent = se.map((s, i) => { const c = s.communityServiceOrIncarceration || {}, p = s.probation || {}, l = s.license || {};
-    return `<div class="item"><div class="ih"><h4>${esc(s.chargeRef || s.charge || 'Charge not specified')}</h4>${btn(`sent:${i}`, 'Edit')}</div>
-      ${kv([['Sentence date', fmtDate(s.sentenceDate)], ['Probation term', s.probationTerm], ['Incarceration term', s.incarcerationTerm], ['Facility', s.facility], ['Community service result', c.result], ['Location', c.location], ['Credit for time served', c.creditTimeServed],
+  const sent = se.map((s, i) => { const c = s.communityServiceOrIncarceration || {}, p = s.probation || {}, l = s.license || {}, sentenced = isSentence(s);
+    return `<div class="item"><div class="ih"><div><h4>${esc(s.chargeRef || s.charge || 'Charge not specified')}</h4><small>${esc(fmtDate(s.outcomeDate || s.sentenceDate))}</small></div><div class="acts"><span class="pill ${sentenced ? 'bad' : 'done'}">${esc(s.outcome || 'Sentenced')}</span>${btn(`sent:${i}`, 'Edit')}</div></div>
+      ${sentenced ? kv([['Sentence date', fmtDate(s.sentenceDate)], ['Probation term', s.probationTerm], ['Incarceration term', s.incarcerationTerm], ['Facility', s.facility], ['Community service result', c.result], ['Location', c.location], ['Credit for time served', c.creditTimeServed],
         ['Terms', hv(c.terms) ? c.terms + (c.concurrency ? ` (${c.concurrency})` : '') : ''], ['Deferred adjudication', c.deferredAdjudication === true ? 'Yes' : c.deferredAdjudication === false ? 'No' : ''], ['Probation officer', p.officer], ['Probation term (detail)', p.term],
-        ['License status', l.status], ['Days suspended', l.daysSuspended], ['License restrictions', l.restrictions]])}
+        ['License status', l.status], ['Days suspended', l.daysSuspended], ['License restrictions', l.restrictions]]) : ''}
       ${Array.isArray(p.conditions) && p.conditions.length ? `<p class="mt"><b>Probation conditions</b></p><ul style="margin-left:20px">${p.conditions.map(x => `<li>${esc(x)}</li>`).join('')}</ul>` : ''}${hv(s.notes) ? `<p class="mt m">${esc(s.notes)}</p>` : ''}</div>`; }).join('');
   const sec = (t, n, add, body, none) => `<section class="card"><header><h3>${t}</h3>${btn(add[0], add[1])}</header>${n ? body : `<p class="m">${none}</p>`}</section>`;
-  return sec('Charges', ch.length, ['charge:-1', 'Add a charge'], charges, 'No charges on record.') + sec('Bonds', bo.length, ['bond:-1', 'Set a bond'], bonds, 'No bonds on record.') + sec('Sentencing', se.length, ['sent:-1', 'Add a sentencing record'], sent, 'No sentencing records.');
+  return sec('Charges', ch.length, ['charge:-1', 'Add a charge'], charges, 'No charges on record.') + sec('Bonds', bo.length, ['bond:-1', 'Set a bond'], bonds, 'No bonds on record.') + sec('Dispositions and sentencing', se.length, ['sent:-1', 'Record a disposition'], sent, 'No dispositions yet. Record a verdict, dismissal or sentence for each charge.');
+}
+
+/* Judgments and ADR (every case that is not criminal or traffic) */
+function judgmentsTab() {
+  const k = RES[resKind(cur)], l = (cur.judgments || []).map((j, i) => ({ j, i })).sort((a, b) => new Date(b.j.judgmentDate || 0) - new Date(a.j.judgmentDate || 0)), adr = (cur.adr || []).map((a, i) => ({ a, i })).sort((x, y) => new Date(y.a.sessionDate || y.a.referredDate || 0) - new Date(x.a.sessionDate || x.a.referredDate || 0));
+  const jd = l.map(({ j, i }) => `<div class="item"><div class="ih"><div><h4>${esc(j.outcome)}</h4>${hv(j.matter) ? `<small>${esc(j.matter)}</small>` : ''}</div><div class="acts">${j.amount > 0 ? `<b style="font-family:var(--font-head);font-size:20px">${money(j.amount)}</b>` : ''}${btn(`judgment:${i}`, 'Edit')}</div></div>
+      ${kv([['Entered', fmtDate(j.judgmentDate)], ['Effective', fmtDate(j.effectiveDate)], ['In favor of', j.inFavorOf], ['Against', j.against], ['Underlying case', j.relatedCaseNumber], ['Compliance review', fmtDate(j.reviewDate)], ['Appeal deadline', fmtDate(j.appealDeadline)]].filter(r => hv(r[1]) || r[0] === 'Entered'))}
+      ${hv(j.relief) ? `<p class="mt"><b>Relief or terms:</b> ${esc(j.relief)}</p>` : ''}${(j.conditions || []).length ? `<p class="mt"><b>Conditions</b></p><ul style="margin-left:20px">${j.conditions.map(c => `<li>${esc(c)}</li>`).join('')}</ul>` : ''}${hv(j.notes) ? `<p class="mt m">${esc(j.notes)}</p>` : ''}</div>`).join('');
+  const ad = adr.map(({ a, i }) => `<div class="item"><div class="ih"><div><h4>${esc(a.type)}</h4>${hv(a.provider) ? `<small>${esc(a.provider)}</small>` : ''}</div><div class="acts"><span class="pill ${a.result === 'Settled' || a.result === 'Award issued' ? 'done' : a.result === 'Impasse' || a.result === 'Parties did not appear' ? 'bad' : a.result === 'Cancelled' ? 'plain' : 'live'}">${esc(a.result || 'Pending')}</span>${btn(`adr:${i}`, 'Update')}</div></div>
+      ${kv([['Referred', fmtDate(a.referredDate)], ['Session', fmtDT(a.sessionDate)], [/settle/i.test(a.result || '') ? 'Settlement amount' : 'Award or settlement', a.amount != null && a.amount !== '' ? money(a.amount) : ''], ['Response due', fmtDate(a.responseDeadline)]].filter(r => hv(r[1])))}
+      ${hv(a.terms) ? `<p class="mt"><b>Terms or award:</b> ${esc(a.terms)}</p>` : ''}${hv(a.notes) ? `<p class="mt m">${esc(a.notes)}</p>` : ''}</div>`).join('');
+  return `<div class="sec-add"><span class="m">${l.length} ${esc(k.title.toLowerCase())}</span>${btn('judgment:-1', k.add, '')}</div>
+    <section class="card"><header><h3>${esc(k.title)}</h3></header>${l.length ? jd : `<p class="m">${esc(k.none)}</p>`}</section>
+    ${cur.court !== SUPREME_COURT ? `<section class="card"><header><h3>Mediation and ADR</h3>${btn('adr:-1', 'Add a referral')}</header>${adr.length ? ad : '<p class="m">No mediation, case evaluation, arbitration or settlement conference on record.</p>'}</section>` : ''}`;
 }
 
 /* Financials */
@@ -459,8 +513,10 @@ function recordTab() {
 }
 
 /* ── Dialogs ────────────────────────────────────────────────────────── */
-const dlg = $('dlg'); let dlgOk = null;
-function modal({ title, body, ok = 'Save', okCls = '', wide = false, onOk }) {
+const errText = e => e instanceof UserError ? e.message : e?.code === 'permission-denied' ? 'Your account is not allowed to change this record. The Firestore security rules must let court staff update cases and caseManagement. (permission-denied)' : `We could not save this change. Check your connection and try again.${e?.code ? ' (' + e.code + ')' : ''}`;
+const dlg = $('dlg'); let dlgOk = null, dlgChange = null;
+function modal({ title, body, ok = 'Save', okCls = '', wide = false, onOk, onChange }) {
+  dlgChange = onChange || null;
   $('dlg-t').textContent = title; $('dlg-b').innerHTML = body; $('dlg-e').innerHTML = ''; dlg.classList.toggle('wide', wide);
   $('dlg-f').innerHTML = `<button class="btn outline" type="button" data-close>Cancel</button><button class="btn ${okCls}" type="button" id="dlg-ok">${ok}</button>`;
   dlgOk = onOk; if (!dlg.open) dlg.showModal(); dlg.querySelector('#dlg-b input:not([type=hidden]):not(.vh):not([disabled]),#dlg-b select,#dlg-b textarea')?.focus();
@@ -468,11 +524,11 @@ function modal({ title, body, ok = 'Save', okCls = '', wide = false, onOk }) {
 async function runOk() {
   const b = $('dlg-ok'), label = b.textContent; b.disabled = true; b.textContent = 'Saving…'; $('dlg-e').innerHTML = '';
   try { await dlgOk(); dlg.close(); draw(); }
-  catch (e) { if (!(e instanceof UserError)) console.error(e); $('dlg-e').innerHTML = `<div class="alert" role="alert">${esc(e instanceof UserError ? e.message : 'We could not save this change. Check your connection and try again.')}</div>`; b.disabled = false; b.textContent = label; }
+  catch (e) { if (!(e instanceof UserError)) console.error(e); $('dlg-e').innerHTML = `<div class="alert" role="alert">${esc(errText(e))}</div>`; b.disabled = false; b.textContent = label; }
 }
 const ask = (title, text, ok = 'Confirm', cls = '') => new Promise(res => { let yes = false; modal({ title, body: `<p>${text}</p>`, ok, okCls: cls, onOk: async () => { yes = true; res(true); } }); dlg.addEventListener('close', () => { if (!yes) res(false); }, { once: true }); });
 dlg.addEventListener('click', e => { if (e.target === dlg || e.target.closest('[data-close]')) dlg.close(); else if (e.target.closest('#dlg-ok')) runOk(); });
-dlg.addEventListener('change', e => { if (e.target.type === 'file') $(e.target.id + '-n').textContent = e.target.files[0]?.name || 'No file chosen'; });
+dlg.addEventListener('change', e => { dlgChange?.(e); if (e.target.type === 'file') $(e.target.id + '-n').textContent = e.target.files[0]?.name || 'No file chosen'; });
 const flash = (t, kind = 'ok') => { note = t; noteKind = kind; draw(); window.scrollTo({ top: 0, behavior: 'smooth' }); };
 
 const fld = (label, id, v = '', o = {}) => `<label class="f"><span>${label}</span><input id="${id}" type="${o.type || 'text'}" value="${esc(v)}"${o.ph ? ` placeholder="${esc(o.ph)}"` : ''}${o.list ? ` list="${o.list}"` : ''}${o.step ? ` step="${o.step}"` : ''}>${o.hint ? `<small>${o.hint}</small>` : ''}</label>`;
@@ -488,19 +544,17 @@ const judgeOpts = () => { const p = pool(cur.court), names = p.map(j => j.name);
 /* Case details */
 function editDetails() {
   const c = cur, sf = subField(c), st = [...new Set([...(c.status && !STATUSES.includes(c.status) ? [c.status] : []), ...STATUSES])], showLower = c.court === SUPREME_COURT || /appell|appeal/i.test(c.caseType || '') || hv(c.dates?.lowerCourtDecisionDate);
-  modal({ title: 'Edit case details', wide: true, body: g2(selF('Status', 'ed-status', st, c.status || st[0]), selF('Judge of record', 'ed-judge', [['', 'Unassigned'], ...judgeOpts()], c.judge || ''))
-    + g2(fld('Courtroom', 'ed-courtroom', c.courtroomNumber || '', { ph: 'e.g. Courtroom 3' }), sf ? fld('Sub-type', 'ed-sub', subOf(c), { ph: 'e.g. offense type, appeal type' }) : '<div></div>')
+  modal({ title: 'Edit case details', wide: true, body: g2(selF('Status', 'ed-status', st, c.status || st[0]), sf ? fld('Sub-type', 'ed-sub', subOf(c), { ph: 'e.g. offense type, appeal type' }) : '<div></div>')
     + (showLower ? g2(fld('Lower court decision date', 'ed-lower', inDate(c.dates?.lowerCourtDecisionDate), { type: 'date' }), '<div></div>') : '')
-    + fld('Case caption', 'ed-title', c.caseTitleOverride || '', { ph: 'Leave blank to build it from the parties', hint: 'Overrides the caption that is built from the parties.' }) + area('Docket summary', 'ed-summary', c.docketSummary || '', 'Short public summary of the case'),
+    + fld('Case caption', 'ed-title', c.caseTitleOverride || '', { ph: 'Leave blank to build it from the parties', hint: 'Overrides the caption that is built from the parties.' }) + area('Docket summary', 'ed-summary', c.docketSummary || '', 'Short public summary of the case')
+    + '<p class="m">The judge and courtroom are set by assignment. Use Recuse or reassign on the Overview tab to change them.</p>',
     onOk: async () => {
-      const status = val('ed-status'), judge = val('ed-judge') || null, courtroomNumber = val('ed-courtroom') || null, sub = $('ed-sub') ? val('ed-sub') || null : undefined, was = c.status;
-      const changes = [status !== was && `status ${was || 'none'} to ${status}`, judge !== (c.judge || null) && `judge to ${judge || 'unassigned'}`, courtroomNumber !== (c.courtroomNumber || null) && `courtroom to ${courtroomNumber || 'none'}`].filter(Boolean);
+      const status = val('ed-status'), sub = $('ed-sub') ? val('ed-sub') || null : undefined, was = c.status;
       await change(d => { const dates = { ...(d.dates || {}) };
         if ($('ed-lower')) dates.lowerCourtDecisionDate = isoDate(val('ed-lower'));
         if (status === 'Closed' && d.status !== 'Closed') dates.closed = now(); if (status !== 'Closed' && d.status === 'Closed') dates.closed = null;
-        return { status, judge, judges: judge ? [judge] : [], ...(judge !== (d.judge || null) ? { judgeUid: pool(d.court).find(j => j.name === judge)?.uid || null } : {}), courtroomNumber, dates,
-          docketSummary: val('ed-summary') || null, caseTitleOverride: val('ed-title') || null, ...(sf && sub !== undefined ? { [sf]: sub } : {}) }; },
-        'Updated case details' + (changes.length ? ` (${changes.join('; ')})` : ''));
+        return { status, dates, docketSummary: val('ed-summary') || null, caseTitleOverride: val('ed-title') || null, ...(sf && sub !== undefined ? { [sf]: sub } : {}) }; },
+        'Updated case details' + (status !== was ? ` (status ${was || 'none'} to ${status})` : ''));
     } });
 }
 
@@ -508,21 +562,31 @@ function editDetails() {
 function drawAtty(l) { $('pm-att').innerHTML = l.length ? l.map((a, i) => `<div class="arow"><input class="in a-name" placeholder="Attorney name" aria-label="Attorney name" value="${esc(a.name)}"><input class="in a-bar" placeholder="Bar number" aria-label="Bar number" value="${esc(a.bar)}">${btn(`rmatty:${i}`, 'Remove')}</div>`).join('') : '<p class="m" style="margin-bottom:10px">Self-represented</p>'; }
 const readAtty = () => [...document.querySelectorAll('#pm-att .arow')].map(r => ({ name: r.querySelector('.a-name').value, bar: r.querySelector('.a-bar').value }));
 function partyModal(idx) {
-  const old = idx >= 0 ? cur.parties[idx] : {}, ro = roleOptions(cur), cr = old.role || ro[0];
-  modal({ title: idx >= 0 ? 'Edit party' : 'Add a party', wide: true, ok: 'Save party', body: selF('Role', 'pm-role', ro.includes(cr) ? ro : [cr, ...ro], cr)
+  const old = idx >= 0 ? cur.parties[idx] : {}, ro = roleOptions(cur), cr = old.role || ro[0], showSvc = r => defSide(r), showResp = r => sideOf(r) === 0;
+  modal({ title: idx >= 0 ? 'Edit party' : 'Add a party', wide: true, ok: 'Save party',
+    onChange: e => { if (e.target.id === 'pm-role') { $('pm-svc').hidden = !showSvc(e.target.value); $('pm-resp').hidden = !showResp(e.target.value); } },
+    body: selF('Role', 'pm-role', ro.includes(cr) ? ro : [cr, ...ro], cr)
     + g2(fld('Full name', 'pm-name', old.name || ''), fld('Aliases', 'pm-aliases', (old.aliases || []).join(', '), { ph: 'a/k/a names, separated by commas' })) + g2(fld('Date of birth', 'pm-dob', inDate(old.dob), { type: 'date' }), fld('Michigan PIN', 'pm-pin', old.pin || ''))
     + `<div class="f"><span>Counsel of record</span><div id="pm-att"></div>${btn('addatty', 'Add an attorney')}<small>The first attorney listed is lead counsel.</small></div>`
-    + g3(fld('Service date', 'pm-service', inDate(old.serviceDate), { type: 'date' }), fld('Answer date', 'pm-answer', inDate(old.answerDate), { type: 'date', hint: 'Defendant' }), fld('Response date', 'pm-response', inDate(old.responseDate), { type: 'date', hint: 'Plaintiff' }))
+    + `<div id="pm-svc"${showSvc(cr) ? '' : ' hidden'}><h4 class="mt">Service</h4>` + g3(selF('Service status', 'pm-served', [['no', 'Not yet served'], ['yes', 'Served']], isServed(old) ? 'yes' : 'no'), fld('Date served', 'pm-service', inDate(old.serviceDate), { type: 'date' }),
+        selF('Method', 'pm-method', [['', '—'], 'Personal service', 'Substituted service', 'Certified mail', 'Publication', 'Electronic service', 'Acceptance or waiver'], old.serviceMethod || '')) + fld('Answer date', 'pm-answer', inDate(old.answerDate), { type: 'date' }) + '</div>'
+    + `<div id="pm-resp"${showResp(cr) ? '' : ' hidden'}>${fld('Response date', 'pm-response', inDate(old.responseDate), { type: 'date' })}</div>`
     + area('Additional fields', 'pm-extra', (old.additionalFields || []).map(f => `${f.label}: ${f.value}`).join('\n'), 'One “Label: Value” per line'),
     onOk: async () => {
       const name = val('pm-name'); if (!name) bad('Enter the party’s name.');
       const att = readAtty().filter(a => a.name.trim()).map(a => ({ name: a.name.trim(), ...(a.bar.trim() ? { barNumber: a.bar.trim() } : {}) }));
-      const next = { ...old, role: val('pm-role'), name }, put = (k, v) => { if (v && (!Array.isArray(v) || v.length)) next[k] = v; else delete next[k]; };
+      const r = val('pm-role'), next = { ...old, role: r, name }, put = (k, v) => { if (v && (!Array.isArray(v) || v.length)) next[k] = v; else delete next[k]; };
       put('dob', isoDate(val('pm-dob'))); put('pin', val('pm-pin')); put('aliases', val('pm-aliases').split(',').map(s => s.trim()).filter(Boolean));
-      put('serviceDate', isoDate(val('pm-service'))); put('answerDate', isoDate(val('pm-answer'))); put('responseDate', isoDate(val('pm-response')));
+      if (showSvc(r)) {
+        const served = val('pm-served') === 'yes'; if (served && !val('pm-service')) bad('Enter the date the party was served.');
+        next.served = served; put('serviceDate', served ? isoDate(val('pm-service')) : null); put('serviceMethod', served ? val('pm-method') : ''); put('answerDate', isoDate(val('pm-answer'))); delete next.responseDate;
+      } else { delete next.served; delete next.serviceDate; delete next.serviceMethod; delete next.answerDate; put('responseDate', showResp(r) ? isoDate(val('pm-response')) : null); }
       put('additionalFields', val('pm-extra').split('\n').map(s => s.trim()).filter(Boolean).map(l => { const i = l.indexOf(':'); return i > -1 ? { label: l.slice(0, i).trim(), value: l.slice(i + 1).trim() } : { label: l, value: '' }; }));
       next.selfRepresented = !att.length; if (att.length) { next.attorney = att[0]; next.attorneys = att; } else { delete next.attorney; delete next.attorneys; }
-      await listChange('parties', idx, () => next, idx >= 0 ? `Edited party: ${name}` : `Added party: ${name} (${next.role})`);
+      if (next.dob) delete next.dobUnknown; if (next.pin) delete next.pinUnknown;
+      const newlyServed = showSvc(r) && next.served && !isServed(old);
+      await listChange('parties', idx, () => next, idx >= 0 ? `Edited party: ${name}${newlyServed ? ' (marked as served)' : ''}` : `Added party: ${name} (${next.role})`,
+        newlyServed ? () => ({ type: 'event', date: now(), description: `Proof of service: ${name} served${next.serviceMethod ? ' by ' + next.serviceMethod.toLowerCase() : ''} on ${fmtDate(next.serviceDate)}` }) : null);
     } });
   drawAtty(counselOf(old).map(a => ({ name: a.name, bar: a.barNumber || '' })));
 }
@@ -565,23 +629,163 @@ function bondActionModal(i) {
       await listChange('bonds', i, b => ({ ...b, actions: [...(b.actions || []), { date: now(), action, judge }] }), `Bond action recorded: ${action}`, () => ({ type: 'event', date: now(), description: `Bond action: ${action}`, judge })); } });
 }
 
-/* Sentencing */
+/* Dispositions and sentencing */
+const SENT_OUT = { Criminal: ['Guilty', 'Not Guilty', 'Dismissed', 'Nolle Prosequi', 'Diversion'], Traffic: ['Responsible', 'Responsible with explanation', 'Not Responsible', 'Dismissed'] };
+const SENTENCED = ['Guilty', 'Responsible', 'Responsible with explanation', 'Diversion'];
+const isSentence = s => !s.outcome || SENTENCED.includes(s.outcome);   // older records have no outcome: they are all sentences
+const OUT_TEXT = { 'Not Guilty': 'Verdict: Not guilty', Dismissed: 'Charge dismissed', 'Nolle Prosequi': 'Nolle prosequi entered', Diversion: 'Deferred or diversion order entered', Guilty: 'Sentencing entered', 'Not Responsible': 'Determination: Not responsible', Responsible: 'Determination: Responsible', 'Responsible with explanation': 'Determination: Responsible with explanation' };
 function sentModal(idx) {
-  const s = idx >= 0 ? cur.sentencing[idx] : {}, c = s.communityServiceOrIncarceration || {}, p = s.probation || {}, l = s.license || {};
-  modal({ title: idx >= 0 ? 'Edit sentencing record' : 'Add a sentencing record', wide: true, body: fld('Charge', 'sn-charge', s.chargeRef || s.charge || '', { ph: 'Charge this sentence applies to', list: 'sn-charges' }) + dlist('sn-charges', (cur.charges || []).map(x => x.chargeName || x.title || ''))
-    + g2(fld('Sentence date', 'sn-date', inDate(s.sentenceDate), { type: 'date' }), fld('Facility', 'sn-fac', s.facility || '')) + g2(fld('Probation term', 'sn-prob', s.probationTerm || '', { ph: 'e.g. 12 months' }), fld('Incarceration term', 'sn-inc', s.incarcerationTerm || '', { ph: 'e.g. 30 days' }))
+  const s = idx >= 0 ? cur.sentencing[idx] : {}, c = s.communityServiceOrIncarceration || {}, p = s.probation || {}, l = s.license || {}, outs = SENT_OUT[cur.caseType] || SENT_OUT.Criminal, o0 = s.outcome || outs[0];
+  const pending = (cur.charges || []).filter(x => !hv(x.disposition) || x.disposition === 'Pending'), open = !/closed|disposed/i.test(cur.status || '');
+  modal({ title: idx >= 0 ? 'Edit disposition' : 'Record a disposition', wide: true, ok: 'Save',
+    onChange: e => { if (e.target.id === 'sn-out') $('sn-sent').hidden = !SENTENCED.includes(e.target.value); },
+    body: fld('Charge', 'sn-charge', s.chargeRef || s.charge || '', { ph: 'Charge this outcome applies to', list: 'sn-charges' }) + dlist('sn-charges', (cur.charges || []).map(x => x.chargeName || x.title || ''))
+    + g2(selF('Outcome', 'sn-out', outs, o0), fld('Date', 'sn-date', inDate(s.outcomeDate || s.sentenceDate), { type: 'date', hint: 'Date of the verdict, dismissal or sentence.' }))
+    + `<div id="sn-sent"${SENTENCED.includes(o0) ? '' : ' hidden'}><h4>Sentence</h4>` + fld('Facility', 'sn-fac', s.facility || '') + g2(fld('Probation term', 'sn-prob', s.probationTerm || '', { ph: 'e.g. 12 months' }), fld('Incarceration term', 'sn-inc', s.incarcerationTerm || '', { ph: 'e.g. 30 days' }))
     + '<h4 class="mt">Community service or incarceration</h4>' + g2(fld('Result', 'sn-cres', c.result || '', { list: 'sn-cr' }), fld('Location', 'sn-cloc', c.location || '')) + dlist('sn-cr', ['Completed', 'In Progress', 'Not Started', 'Violated'])
     + g2(fld('Credit for time served', 'sn-credit', c.creditTimeServed || ''), fld('Terms', 'sn-terms', c.terms || '')) + g2(selF('Concurrency', 'sn-conc', [['', '—'], 'Concurrent', 'Consecutive'], c.concurrency || ''), selF('Deferred adjudication', 'sn-def', [['', '—'], ['yes', 'Yes'], ['no', 'No']], c.deferredAdjudication === true ? 'yes' : c.deferredAdjudication === false ? 'no' : ''))
     + '<h4 class="mt">Probation</h4>' + g2(fld('Probation officer', 'sn-po', p.officer || ''), fld('Term', 'sn-pterm', p.term || '')) + area('Conditions', 'sn-pc', (p.conditions || []).join('\n'), 'One per line')
     + '<h4 class="mt">License</h4>' + g2(fld('Status', 'sn-ls', l.status || '', { list: 'sn-lsl' }), fld('Days suspended or revoked', 'sn-ld', l.daysSuspended || '')) + dlist('sn-lsl', ['Valid', 'Suspended', 'Revoked', 'Restricted'])
-    + fld('Restrictions', 'sn-lr', l.restrictions || '') + area('Notes', 'sn-notes', s.notes || ''),
+    + fld('Restrictions', 'sn-lr', l.restrictions || '') + '</div>' + area('Notes', 'sn-notes', s.notes || '')
+    + (open ? `<label class="opt"><input type="checkbox" id="sn-close" ${pending.length <= 1 ? 'checked' : ''}><div><b>Mark the case as Disposed</b><small>Leave this checked when every charge now has an outcome.</small></div></label>` : ''),
     onOk: async () => {
-      const chargeRef = val('sn-charge'); if (!chargeRef) bad('Specify the charge.'); const d = val('sn-def');
-      const rec = { chargeRef, sentenceDate: isoDate(val('sn-date')), facility: val('sn-fac') || null, probationTerm: val('sn-prob') || null, incarcerationTerm: val('sn-inc') || null,
+      const chargeRef = val('sn-charge'); if (!chargeRef) bad('Specify the charge.'); const outcome = val('sn-out'), sentenced = SENTENCED.includes(outcome), date = isoDate(val('sn-date')); if (!date) bad('Enter the date.');
+      const d = val('sn-def'), closeIt = $('sn-close')?.checked;
+      const rec = { chargeRef, outcome, outcomeDate: date, sentenceDate: outcome === 'Diversion' || !sentenced ? null : date, notes: val('sn-notes') || null };
+      const sent = { facility: val('sn-fac') || null, probationTerm: val('sn-prob') || null, incarcerationTerm: val('sn-inc') || null,
         communityServiceOrIncarceration: { result: val('sn-cres') || null, location: val('sn-cloc') || null, creditTimeServed: val('sn-credit') || null, terms: val('sn-terms') || null, concurrency: val('sn-conc') || null, deferredAdjudication: d === '' ? null : d === 'yes' },
         probation: { officer: val('sn-po') || null, term: val('sn-pterm') || null, conditions: val('sn-pc').split('\n').map(x => x.trim()).filter(Boolean) },
-        license: { status: val('sn-ls') || null, daysSuspended: val('sn-ld') || null, restrictions: val('sn-lr') || null }, notes: val('sn-notes') || null };
-      await listChange('sentencing', idx, old => ({ ...(old || {}), ...rec }), idx >= 0 ? `Edited sentencing record for ${chargeRef}` : `Added sentencing record for ${chargeRef}`, idx >= 0 ? null : () => ({ type: 'order', date: now(), description: `Sentencing entered: ${chargeRef}`, judge: cur.judge || null }));
+        license: { status: val('sn-ls') || null, daysSuspended: val('sn-ld') || null, restrictions: val('sn-lr') || null } };
+      const text = `${OUT_TEXT[outcome] || outcome} — ${chargeRef}`;
+      await listChange('sentencing', idx, old => { const r = { ...(old || {}), ...rec }; if (sentenced) Object.assign(r, sent); else for (const k of Object.keys(sent)) delete r[k]; return r; },
+        idx >= 0 ? `Edited disposition for ${chargeRef}: ${outcome}` : `Recorded disposition for ${chargeRef}: ${outcome}`,
+        idx >= 0 ? null : () => ({ type: 'order', date: now(), description: text, judge: cur.judge || null }),
+        (res, dd) => { const p = { charges: (dd.charges || []).map(x => (x.chargeName || x.title) === chargeRef ? { ...x, disposition: outcome, dispositionDate: date } : x) }; if (closeIt && !/closed|disposed/i.test(dd.status || '')) p.status = 'Disposed'; return p; });
+      if (idx < 0) await notify({ type: 'NEF', title: 'Notice of Entry of Order', text: `${text} was entered on the docket.` });
+    } });
+}
+
+/* Judgments, rulings and dispositions (civil, special proceedings, administrative, appellate) */
+const SMALL_OUT = ['Judgment for plaintiff', 'Judgment for defendant', 'Default judgment', 'Consent judgment', 'Settled — dismissed', 'Dismissed with prejudice', 'Dismissed without prejudice'];
+const CIVIL_OUT = ['Judgment for plaintiff', 'Judgment for defendant', 'Default judgment', 'Consent judgment', 'Summary disposition granted', 'No cause of action', 'Settled — dismissed', 'Dismissed with prejudice', 'Dismissed without prejudice', 'Transferred'];
+const SPECIAL_OUT = ['Petition granted', 'Petition granted in part', 'Petition denied', 'Writ issued', 'Writ denied', 'Consent order', 'Settled', 'Withdrawn', 'Dismissed'];
+const APPEAL_OUT = ['Affirmed', 'Reversed', 'Reversed and remanded', 'Vacated', 'Vacated and remanded', 'Remanded', 'Leave granted', 'Leave denied', 'Dismissed', 'Other'];
+const NONFINAL = ['Leave granted', 'Remanded', 'Reversed and remanded', 'Vacated and remanded', 'Petition granted in part'];
+const RES = {
+  civil: { tab: 'Judgments', title: 'Judgments and orders', add: 'Enter a judgment', verb: 'Judgment entered', out: CIVIL_OUT, matters: ['Claim', 'Counterclaim', 'Cross-claim', 'Third-party claim'], none: 'No judgments yet.' },
+  small: { tab: 'Judgments', title: 'Judgments and orders', add: 'Enter a judgment', verb: 'Judgment entered', out: SMALL_OUT, matters: ['Claim', 'Counterclaim'], none: 'No judgments yet.' },
+  special: { tab: 'Rulings', title: 'Rulings on petitions', add: 'Enter a ruling', verb: 'Ruling entered', out: SPECIAL_OUT, matters: ['Petition to set aside conviction', 'Petition for writ of habeas corpus', 'Petition for name change', 'Petition for protective order', 'Other petition'], none: 'No rulings yet.' },
+  appeal: { tab: 'Dispositions', title: 'Dispositions', add: 'Enter a disposition', verb: 'Disposition entered', out: APPEAL_OUT, matters: ['Judgment or order appealed', 'Application for leave to appeal'], none: 'No dispositions yet.' }
+};
+const resKind = c => c.court === SUPREME_COURT || /^(appellate|administrative)$/i.test(c.caseType || '') ? 'appeal' : subOf(c) === 'Special Proceedings' ? 'special' : subOf(c) === 'Small Claims' ? 'small' : 'civil';
+function judgmentModal(idx) {
+  const kind = resKind(cur), k = RES[kind], j = idx >= 0 ? cur.judgments[idx] : {}, o0 = j.outcome || k.out[0], open = !/closed|disposed/i.test(cur.status || '');
+  modal({ title: idx >= 0 ? 'Edit entry' : k.add, wide: true, ok: 'Save',
+    body: g2(fld(kind === 'special' ? 'Petition' : 'Matter', 'jd-matter', j.matter || '', { list: 'jd-matters', ph: kind === 'special' ? 'e.g. Petition to set aside conviction' : '' }), selF('Outcome', 'jd-out', k.out, o0)) + dlist('jd-matters', k.matters)
+    + g2(fld('Date entered', 'jd-date', inDate(j.judgmentDate) || inDate(now()), { type: 'date' }), fld('Effective date', 'jd-eff', inDate(j.effectiveDate), { type: 'date' }))
+    + g2(fld('In favor of', 'jd-for', j.inFavorOf || '', { list: 'jd-parties' }), fld('Against', 'jd-against', j.against || '', { list: 'jd-parties' })) + dlist('jd-parties', partyNames())
+    + (kind !== 'appeal' ? g2(fld('Amount awarded', 'jd-amt', j.amount ?? '', { type: 'number', step: '0.01', ph: '0.00', hint: 'Money judgment, settlement payment, costs or restitution.' }), kind === 'special' ? fld('Underlying case number', 'jd-rel', j.relatedCaseNumber || '', { hint: 'The conviction or detention this petition concerns, if any.' }) : '<div></div>') : '')
+    + area(kind === 'special' ? 'Relief granted or denied' : 'Relief or terms', 'jd-relief', j.relief || '', kind === 'special' ? 'e.g. Conviction set aside under MCL 780.621; release ordered' : 'Settlement or consent terms, equitable relief, or the court’s holding')
+    + area('Conditions', 'jd-cond', (j.conditions || []).join('\n'), 'One per line, such as payment schedule or compliance terms') + g2(fld('Compliance review date', 'jd-review', inDate(j.reviewDate), { type: 'date' }), fld('Appeal deadline', 'jd-appeal', inDate(j.appealDeadline), { type: 'date' }))
+    + area('Notes', 'jd-notes', j.notes || '')
+    + (idx < 0 && kind !== 'appeal' ? `<label class="opt"><input type="checkbox" id="jd-fin" checked><div><b>Create a financial order for the amount</b><small>Adds the amount to Financials against the party named under Against, when an amount is entered.</small></div></label>` : '')
+    + (idx < 0 && open ? `<label class="opt"><input type="checkbox" id="jd-close" ${NONFINAL.includes(o0) ? '' : 'checked'}><div><b>Mark the case as Disposed</b><small>Leave unchecked when more remains to be decided.</small></div></label>` : ''),
+    onOk: async () => {
+      const outcome = val('jd-out'), date = isoDate(val('jd-date')); if (!date) bad('Enter the date entered.');
+      const amount = $('jd-amt') && val('jd-amt') !== '' ? parseFloat(val('jd-amt')) || 0 : null, matter = val('jd-matter') || null, against = val('jd-against') || null, relief = val('jd-relief') || null;
+      const rec = { matter, outcome, judgmentDate: date, effectiveDate: isoDate(val('jd-eff')), inFavorOf: val('jd-for') || null, against, amount, relief, relatedCaseNumber: $('jd-rel') ? val('jd-rel') || null : j.relatedCaseNumber || null,
+        conditions: val('jd-cond').split('\n').map(x => x.trim()).filter(Boolean), reviewDate: isoDate(val('jd-review')), appealDeadline: isoDate(val('jd-appeal')), notes: val('jd-notes') || null };
+      const makeFin = idx < 0 && $('jd-fin')?.checked && amount > 0, closeIt = idx < 0 && $('jd-close')?.checked, text = `${k.verb}: ${outcome}${matter ? ' — ' + matter : ''}${amount > 0 ? ` (${money(amount)})` : ''}`;
+      await listChange('judgments', idx, old => ({ ...(old || {}), ...rec, ...(old ? {} : { enteredBy: account.name, enteredAt: now() }) }), idx >= 0 ? `Edited judgment entry: ${outcome}` : `${k.verb}: ${outcome}${matter ? ' — ' + matter : ''}`,
+        idx >= 0 ? null : () => ({ type: 'order', date: now(), description: text, comment: relief, judge: cur.judge || null, enteredBy: account.name, enteredByRole: role }),
+        (res, d) => { const p = {}; if (makeFin) p.financialOrders = [...(d.financialOrders || []), { type: 'Money Judgment', amount, payor: against, dueDate: rec.effectiveDate, description: matter ? `Judgment: ${matter}` : 'Judgment', assessmentDate: now(), payments: [] }]; if (closeIt && !/closed|disposed/i.test(d.status || '')) p.status = 'Disposed'; return p; });
+      if (idx < 0) await notify({ type: 'NEF', title: 'Notice of Entry of Order', text: `${text} was entered on the docket.` });
+    } });
+}
+
+/* Mediation and ADR */
+const ADR_TYPES = ['Facilitative mediation', 'Case evaluation', 'Arbitration', 'Judicial settlement conference', 'Settlement conference', 'Other ADR'];
+const ADR_RESULTS = ['Pending', 'Rescheduled', 'Settled', 'Partial settlement', 'Award issued', 'Impasse', 'Parties did not appear', 'Cancelled'];
+function adrModal(idx) {
+  const a = idx >= 0 ? cur.adr[idx] : {};
+  modal({ title: idx >= 0 ? 'Update ADR referral' : 'Refer to mediation or ADR', wide: true, ok: 'Save',
+    body: g2(selF('Type', 'ad-type', ADR_TYPES, a.type || ADR_TYPES[0]), fld('Mediator, panel or arbitrator', 'ad-prov', a.provider || ''))
+    + g2(fld('Referral date', 'ad-ref', inDate(a.referredDate) || inDate(now()), { type: 'date' }), fld('Session date and time', 'ad-sess', inDT(a.sessionDate), { type: 'datetime-local' }))
+    + g2(selF('Result', 'ad-res', ADR_RESULTS, a.result || 'Pending'), fld('Settlement or award amount', 'ad-amt', a.amount ?? '', { type: 'number', step: '0.01', ph: '0.00' }))
+    + fld('Response deadline', 'ad-due', inDate(a.responseDeadline), { type: 'date', hint: 'For example, the deadline to accept or reject a case evaluation award.' }) + area('Settlement terms or award', 'ad-terms', a.terms || '') + area('Notes', 'ad-notes', a.notes || '')
+    + '<p class="m">When a case settles, enter the resulting dismissal or consent judgment under Judgments or Rulings.</p>',
+    onOk: async () => {
+      const type = val('ad-type'), result = val('ad-res'), sess = isoDT(val('ad-sess')), amt = val('ad-amt') !== '' ? parseFloat(val('ad-amt')) || 0 : null;
+      const rec = { type, provider: val('ad-prov') || null, referredDate: isoDate(val('ad-ref')), sessionDate: sess, result, amount: amt, responseDeadline: isoDate(val('ad-due')), terms: val('ad-terms') || null, notes: val('ad-notes') || null };
+      const changed = idx < 0 || result !== (a.result || 'Pending'), moved = idx < 0 ? !!sess : sess !== (a.sessionDate || null);
+      await listChange('adr', idx, old => ({ ...(old || {}), ...rec }), idx >= 0 ? `Updated ${type}: ${result}` : `Referred to ${type}`,
+        (res, d) => changed ? { type: 'event', date: now(), description: idx < 0 ? `Referred to ${type}${sess ? ' — session ' + fmtDT(sess) : ''}` : `${type}: ${result}${amt ? ' (' + money(amt) + ')' : ''}`, judge: cur.judge || null } : null);
+      if (moved && sess) await notify({ type: 'Notice of Hearing', title: `Notice of ${type}`, text: `${type}${rec.provider ? ' with ' + rec.provider : ''} is scheduled for ${fmtDT(sess)}.` });
+    } });
+}
+
+/* Assignment, recusal and reassignment */
+const assignPatch = j => ({ judge: j.name, judges: [j.name], judgeUid: j.uid || null, courtroomNumber: roomOf(j) });
+const roomText = j => roomOf(j) ? `, Courtroom ${roomOf(j)}` : '';
+async function randomize() {
+  const l = eligible(cur); if (!l.length) bad(`No ${eligibleRoles(cur).join(', ').toLowerCase()} account is available to draw for this case.`);
+  if (!(await ask('Randomize judge', `A judicial officer will be drawn at random from ${l.length} eligible (${esc(eligibleRoles(cur).join(', '))}). <b>Once drawn, the assignment is official</b> and can only change by recusal or administrative reassignment.`, 'Randomize judge'))) return;
+  const j = lot(l), rec = { at: now(), type: 'Initial assignment', method: 'By lot', from: null, to: j.name, toRole: j.role, reason: null, by: account.name, byRole: role };
+  await change(d => { if (d.judge) bad('A judge was assigned to this case while you were working. Reload to see the assignment.'); return { ...assignPatch(j), events: withEvent(d, { type: 'event', date: now(), description: `Case assigned by lot to ${j.name} (${j.role})${roomText(j)}`, judge: j.name }), assignmentHistory: [...(d.assignmentHistory || []), rec] }; },
+    `Randomly assigned the case to ${j.name} (${j.role})${roomText(j)}`);
+  await notify({ type: 'NEF', title: 'Notice of Case Assignment', text: `This case was assigned to ${j.name}${roomText(j)}.` });
+  flash(`Assigned to ${j.name} (${j.role})${roomText(j)}.`);
+}
+function reassignModal() {
+  if (!cur.judge) bad('No judge is assigned yet. Randomize a judge first.');
+  if (!canReassign(cur)) bad('Only the presiding judge or the chief judge can change the assignment.');
+  const others = eligible(cur).filter(j => j.name !== cur.judge), manual = canManual(cur), old = cur.judge;
+  const WHY = { 'Recusal': ['Condition constituting the recusal', 'Briefly state the condition that requires recusal'], 'Administrative reassignment': ['Good cause for reassignment', 'State the good cause for reassigning the case'] };
+  modal({ title: 'Recusal or reassignment', wide: true, ok: 'Reassign case', onChange: e => {
+      if (e.target.name === 'rs-method') $('rs-man').hidden = e.target.value !== 'manual';
+      if (e.target.id === 'rs-why') { $('rs-nl').textContent = WHY[e.target.value][0]; $('rs-nar').placeholder = WHY[e.target.value][1]; } },
+    body: `<div class="quote">Currently assigned to <b>${esc(old)}</b>${cur.courtroomNumber ? ' · ' + esc(roomLabel(cur.courtroomNumber)) : ''}</div>`
+    + selF('Reason', 'rs-why', [['Recusal', 'Recusal'], ['Administrative reassignment', 'Administrative reassignment (requires good cause)']], 'Recusal')
+    + `<label class="f"><span id="rs-nl">${WHY.Recusal[0]}</span><textarea id="rs-nar" placeholder="${WHY.Recusal[1]}"></textarea><small>A short narrative is required. It is recorded on the docket and in the assignment history.</small></label>`
+    + `<div class="f"><span>How should the new judicial officer be chosen?</span>`
+    + `<label class="opt on"><input type="radio" name="rs-method" value="lot" checked><div><b>By lot</b><small>Drawn at random from the ${others.length} other eligible ${esc(eligibleRoles(cur).join(', ').toLowerCase())}.</small></div></label>`
+    + `<label class="opt"><input type="radio" name="rs-method" value="manual" ${manual ? '' : 'disabled'}><div><b>Manual</b><small>${manual ? 'Choose the judicial officer yourself.' : 'Only the chief judge can choose the new judicial officer manually.'}</small></div></label></div>`
+    + `<div id="rs-man" hidden>${selF('Assign to', 'rs-to', others.map(j => [j.name, `${j.name} — ${j.role}${roomOf(j) ? ' · Courtroom ' + roomOf(j) : ''}`]), others[0]?.name)}</div>`,
+    onOk: async () => {
+      const why = val('rs-why'), nar = val('rs-nar'), method = document.querySelector('input[name=rs-method]:checked')?.value || 'lot';
+      if (!nar) bad(`Enter the ${WHY[why][0].toLowerCase()}.`); if (!others.length) bad('There is no other eligible judicial officer to assign.');
+      if (method === 'manual' && !manual) bad('Only the chief judge can assign manually.');
+      const j = method === 'manual' ? others.find(x => x.name === val('rs-to')) : lot(others); if (!j) bad('Choose the judicial officer to assign.');
+      const how = method === 'manual' ? 'manually' : 'by lot', rec = { at: now(), type: why, method: method === 'manual' ? 'Manual' : 'By lot', from: old, to: j.name, toRole: j.role, reason: nar, by: account.name, byRole: role };
+      await change(d => { if (d.judge !== old) bad('The assignment changed while you were working. Reload the case and try again.');
+        return { ...assignPatch(j), events: withEvent(d, { type: 'order', date: now(), description: `${why === 'Recusal' ? 'Recusal of ' + old : 'Administrative reassignment from ' + old}. Case reassigned ${how} to ${j.name} (${j.role})${roomText(j)}`, comment: nar, judge: j.name, enteredBy: account.name, enteredByRole: role }), assignmentHistory: [...(d.assignmentHistory || []), rec] }; },
+        `${why}: reassigned from ${old} to ${j.name} (${j.role}) ${how}. ${why === 'Recusal' ? 'Condition' : 'Good cause'}: ${nar}`);
+      await notify({ type: 'NEF', title: 'Notice of Case Reassignment', text: `This case was reassigned from ${old} to ${j.name}${roomText(j)}.` });
+    } });
+}
+
+/* Status */
+function statusModal() {
+  const st = [...new Set([...(cur.status && !STATUSES.includes(cur.status) ? [cur.status] : []), ...STATUSES])];
+  modal({ title: 'Change case status', ok: 'Update status', body: `<div class="quote">Current status: <b>${esc(cur.status || 'none')}</b></div>` + selF('New status', 'st-new', st, cur.status || st[0]) + area('Reason (optional)', 'st-why', '', 'Added to the docket entry'),
+    onOk: async () => {
+      const to = val('st-new'), from = cur.status || null; if (to === from) bad('Choose a different status.'); const why = val('st-why') || null;
+      await change(d => { const dates = { ...(d.dates || {}) }; if (to === 'Closed' && d.status !== 'Closed') dates.closed = now(); if (to !== 'Closed' && d.status === 'Closed') dates.closed = null;
+        return { status: to, dates, events: withEvent(d, { type: 'event', date: now(), description: `Case status changed${from ? ' from ' + from : ''} to ${to}`, comment: why, enteredBy: account.name, enteredByRole: role }) }; },
+        `Changed case status from ${from || 'none'} to ${to}${why ? '. Reason: ' + why : ''}`);
+    } });
+}
+
+/* Docket: add an entry */
+function entryAddModal() {
+  modal({ title: 'Add a docket entry', wide: true, ok: 'Add entry', body: g2(selF('Entry type', 'ea-type', [['event', 'Event'], ['filing', 'Filing'], ['order', 'Order']], 'event'), fld('Date and time', 'ea-date', inDT(now()), { type: 'datetime-local' }))
+    + fld('Description', 'ea-desc', '', { ph: 'e.g. Proof of service filed', list: 'ea-list' }) + dlist('ea-list', ['Proof of service filed', 'Correspondence received', 'Transcript ordered', 'Exhibit received', 'Case file transferred', 'Clerk’s note', 'Notice mailed'])
+    + fld('Filed or entered by (optional)', 'ea-by', '', { list: 'ea-parties' }) + dlist('ea-parties', partyNames()) + area('Comment', 'ea-comment') + g2(fld('Document link', 'ea-link', '', { ph: 'https://…' }), fileIn('ea-file', 'Or upload a PDF'))
+    + `<label class="opt"><input type="checkbox" id="ea-seal"><div><b>Seal this entry from public access</b></div></label>`,
+    onOk: async () => {
+      const desc = val('ea-desc'); if (!desc) bad('Enter a description.'); const type = val('ea-type'), file = $('ea-file').files[0], link = file ? await upload('case-filings', file) : val('ea-link') || null, sealed = $('ea-seal').checked;
+      await change(d => ({ events: withEvent(d, { type, date: isoDT(val('ea-date')) || now(), description: desc, comment: val('ea-comment') || null, documentLink: link, sealed, filedBy: val('ea-by') || account.name, enteredBy: account.name, enteredByRole: role, ...(type === 'order' ? { judge: cur.judge || null } : {}) }) }), `Added docket entry: ${desc}`);
+      if (type === 'order' && !sealed) await notify({ type: 'NEF', title: 'Notice of Entry of Order', text: `${desc} was entered on the docket.` });
     } });
 }
 
@@ -591,7 +795,7 @@ function hearingModal(idx, taskIdx) {
   const h = idx >= 0 ? cur.hearings[idx] : {}, t = taskIdx != null && taskIdx >= 0 ? cm.tasks[taskIdx] : null;
   modal({ title: idx >= 0 ? 'Reschedule hearing' : 'Schedule a hearing', wide: true, ok: idx >= 0 ? 'Save changes' : 'Schedule hearing',
     body: (t ? `<div class="quote">Scheduling in response to: ${esc(t.title)}</div>` : '') + g2(fld('Hearing type', 'hm-type', h.type || (t ? stripSuffix(t.title) : ''), { ph: 'e.g. Motion Hearing', list: 'hm-types' }), fld('Date and time', 'hm-date', inDT(h.date), { type: 'datetime-local' })) + dlist('hm-types', HTYPES)
-      + g2(selF('Presiding officer', 'hm-off', [['', `Judge of record (${cur.judge || 'unassigned'})`], ...judgeOpts()], h.officer || ''), fld('Courtroom', 'hm-room', h.courtroom || cur.courtroomNumber || ''))
+      + g2(selF('Presiding officer', 'hm-off', [['', `Judge of record (${cur.judge || 'unassigned'})`], ...judgeOpts()], h.officer || ''), fld('Courtroom', 'hm-room', h.courtroom || roomLabel(cur.courtroomNumber)))
       + fld('Requested by', 'hm-req', h.requestedBy || (t ? t.filedBy : '') || '', { ph: 'e.g. Defense Counsel, Court, Plaintiff', list: 'hm-parties' }) + dlist('hm-parties', partyNames()) + area('Notes', 'hm-notes', h.notes || ''),
     onOk: async () => {
       const type = val('hm-type'), dv = val('hm-date'); if (!type || !dv) bad('Enter a hearing type and a date and time.');
@@ -612,7 +816,8 @@ function hearingContinueModal(i) {
   const h = cur.hearings[i];
   modal({ title: 'Continue hearing', ok: 'Continue hearing', body: `<div class="quote">${esc(h.type)} — currently ${esc(fmtDT(h.date))}</div>` + fld('New date and time', 'hc-date', inDT(h.date), { type: 'datetime-local' }),
     onOk: async () => { const v = val('hc-date'); if (!v) bad('Choose the new date and time.'); const iso = isoDT(v);
-      await listChange('hearings', i, x => ({ ...x, date: iso, result: null, notes: (x.notes ? x.notes + ' — ' : '') + 'Continued from ' + fmtDate(h.date) }), `Continued hearing: ${h.type} to ${fmtDate(iso)}`, () => ({ type: 'event', date: now(), description: `Hearing continued: ${h.type} — new date ${fmtDate(iso)}`, judge: h.officer || cur.judge || null })); } });
+      await listChange('hearings', i, x => ({ ...x, date: iso, result: null, notes: (x.notes ? x.notes + ' — ' : '') + 'Continued from ' + fmtDate(h.date) }), `Continued hearing: ${h.type} to ${fmtDate(iso)}`, () => ({ type: 'event', date: now(), description: `Hearing continued: ${h.type} — new date ${fmtDate(iso)}`, judge: h.officer || cur.judge || null }));
+      await notify({ type: 'Notice of Hearing', title: 'Notice of Hearing (Continued)', text: `${h.type} originally set for ${fmtDate(h.date)} has been continued to ${fmtDT(iso)}.` }); } });
 }
 
 /* Financials */
@@ -693,6 +898,9 @@ const saveNote = async text => { if (!text) return false; await cmPush('internal
 const num = v => parseInt(v, 10);
 const A = {
   more: () => { LS.shown += 40; drawResults(); },
+  lclookup: async () => { const id = val('lc-no').toUpperCase(), box = $('lc-err'); box.innerHTML = ''; if (!id) { box.innerHTML = '<div class="alert" role="alert">Enter a case number.</div>'; return; }
+    const s = await getDoc(doc(db, 'cases', id)).catch(() => null); if (!s?.exists()) { box.innerHTML = `<div class="alert" role="alert">No district court case has the number ${esc(id)}.</div>`; return; } location.hash = hashFor(id); },
+  status: statusModal, randomize, reassign: reassignModal, entryadd: entryAddModal, judgment: i => judgmentModal(num(i)), adr: i => adrModal(num(i)),
   tab: t => { tab = t; note = ''; draw(); },
   dfilter: f => { docketFilter = f; draw(); }, dsort: () => { docketNewest = !docketNewest; draw(); },
   editdetails: editDetails, entry: n => entryModal(num(n)), behalf: behalfModal,
@@ -704,8 +912,8 @@ const A = {
   addnote: async () => { if (await saveNote(val('nt-in'))) draw(); },
   rmparty: async i => { const p = cur.parties[num(i)]; if (await ask('Remove party', `Remove <b>${esc(p.name)}</b> from this case record?`, 'Remove party', 'danger')) { await listChange('parties', num(i), () => null, 'Removed a party from the case record'); draw(); } },
   hcancel: async i => { const h = cur.hearings[num(i)]; if (await ask('Cancel hearing', `Cancel the ${esc(h.type)} on ${esc(fmtDate(h.date))}?`, 'Cancel hearing', 'danger')) {
-    await listChange('hearings', num(i), x => ({ ...x, result: 'Cancelled' }), `Cancelled hearing: ${h.type} on ${fmtDate(h.date)}`, () => ({ type: 'event', date: now(), description: `Hearing cancelled: ${h.type} (was set for ${fmtDate(h.date)})` })); draw(); } },
-  hnotice: async i => { const h = cur.hearings[num(i)]; await notify({ type: 'Notice of Hearing', title: 'Notice of Hearing', text: `${h.type} scheduled for ${fmtDate(h.date)} before ${h.officer || cur.judge || 'the assigned judicial officer'}.` }); flash('Notice of Hearing issued. It is listed under Staff record.'); },
+    await listChange('hearings', num(i), x => ({ ...x, result: 'Cancelled' }), `Cancelled hearing: ${h.type} on ${fmtDate(h.date)}`, () => ({ type: 'event', date: now(), description: `Hearing cancelled: ${h.type} (was set for ${fmtDate(h.date)})` }));
+    await notify({ type: 'Notice of Hearing', title: 'Notice of Hearing Cancelled', text: `The ${h.type} set for ${fmtDate(h.date)} has been cancelled.` }); draw(); } },
   taskdone: async i => { await setTask(num(i), 'Completed'); draw(); },
   taskdismiss: async i => { if (await ask('Dismiss task', 'Dismiss this task without further action?', 'Dismiss task')) { await setTask(num(i), 'Dismissed'); draw(); } },
   seal: async () => { const s = !cur.sealed; if (await ask(s ? 'Seal case' : 'Unseal case', s ? 'Seal this entire case from public Case Search?' : 'Unseal this case for public Case Search?', s ? 'Seal case' : 'Unseal case')) { await change(() => ({ sealed: s }), s ? 'Sealed the entire case from public search' : 'Unsealed the case for public search'); draw(); } },
@@ -717,8 +925,9 @@ document.addEventListener('click', async e => {
   const row = e.target.closest('tr[data-open]'); if (row && !e.target.closest('a,button')) { location.hash = hashFor(row.dataset.open); return; }
   const el = e.target.closest('[data-a]'); if (!el || dlg.contains(el) && !['addatty', 'rmatty'].includes(el.dataset.a.split(':')[0])) return;
   const [n, ...v] = el.dataset.a.split(':'); if (!A[n]) return;
-  try { await A[n](...v); } catch (err) { console.error(err); flash(err instanceof UserError ? err.message : 'We could not complete that. Check your connection and try again.', 'bad'); }
+  try { await A[n](...v); } catch (err) { console.error(err); flash(errText(err), 'bad'); }
 });
+document.addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.id === 'lc-no') A.lclookup(); });
 document.addEventListener('input', e => {
   if (e.target.id === 'ls-q') { LS.q = e.target.value; LS.shown = 40; drawResults(); } else if (e.target.id === 'dk-q') { docketQ = e.target.value; $('dk-list').innerHTML = docketRows(); }
 });

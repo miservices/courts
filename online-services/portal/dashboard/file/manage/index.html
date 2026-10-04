@@ -238,10 +238,10 @@ if (!has(STAFF, role)) {
       if (f.filingType === 'new') {
         const sc = f.court === SUPREME_COURT, display = sc ? f.caseType : (DISPLAY[f.caseType] || 'Civil'), sf = sc ? null : SUBFIELD[display], caseId = f.reservedCaseId || await reserveCaseNumber(f.court, f.caseType), j = pickJudge(f.court, display, f.caseType);
         await setDoc(doc(db, colFor(f.court), caseId), { caseId, court: f.court, caseType: display, ...(f.lowerCourt ? { lowerCourt: f.lowerCourt } : {}), ...(sf ? { [sf]: f.caseType } : {}), status: sc ? (/^Appeal/.test(f.caseType) ? 'Pending' : 'Active') : display === 'Appellate' || display === 'Administrative' ? 'Pending' : 'Active',
-          dates: { filed: f.dateFiled || now(), lastUpdated: now() }, parties: f.parties || [], judge: j?.name || null, judges: j ? [j.name] : [], judgeUid: j?.uid || null, hearings: [], financialOrders: [],
+          dates: { filed: f.dateFiled || now(), lastUpdated: now() }, parties: f.parties || [], judge: j?.name || null, judges: j ? [j.name] : [], judgeUid: j?.uid || null, courtroomNumber: j ? ({ 'Chief Judge': '1', Judge: '2', Magistrate: '3' }[j.role] || null) : null, ...(j ? { assignmentHistory: [{ at: now(), type: 'Initial assignment', method: 'By lot', from: null, to: j.name, toRole: j.role, reason: null, by: 'System', byRole: null }] } : {}), hearings: [], financialOrders: [],
           events: eventsFor(f, []), sealed: false, relatedUserIds: f.filedByUid ? [f.filedByUid] : [], docketSummary: null, intakeConfirmationNumber: f.confirmationNumber, filingCounter: 1, ...(f.feeWaiver?.status === 'Denied with prejudice' ? { feeWaiverBarred: true } : {}) });
         id = num = caseId;
-        await auditEntry(caseId, j ? `Case opened and randomly assigned to ${j.name} (${j.role})` : 'Case opened. No judicial officer was available to assign.');
+        await auditEntry(caseId, j ? `Case opened and randomly assigned to ${j.name} (${j.role})${({ 'Chief Judge': 1, Judge: 2, Magistrate: 3 })[j.role] ? ', Courtroom ' + ({ 'Chief Judge': 1, Judge: 2, Magistrate: 3 })[j.role] : ''}` : 'Case opened. No judicial officer was available to assign.');
       } else if (id && cases[id]) {
         await updateDoc(doc(db, colFor(f.court), id), { events: eventsFor(f, cases[id].events), 'dates.lastUpdated': now() });
       }

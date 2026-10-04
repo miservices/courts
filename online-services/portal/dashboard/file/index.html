@@ -128,7 +128,9 @@ let S = blank(), cases = [], mine = [];
 const root = $('page-body');
 const courtOf = () => S.type === 'new' ? S.court : S.kase?.court;
 const lockCounsel = () => isPros && S.ctype === 'General Criminal';
-const mkParty = (r, i) => { const own = i === 0 && !S.counsel; return { role: r, kind: 'Person', name: own ? account.name || '' : '', pin: own ? account.mipassPin || '' : '', self: own, mine: false }; };
+const ymd = v => { const m = String(v || '').match(/^(\d{4}-\d{2}-\d{2})/); if (m) return m[1]; const d = v ? new Date(v) : null; return d && !isNaN(d) ? `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}` : ''; };
+const acctDob = ymd(account.dob || account.dateOfBirth || account.birthDate || account.birthdate);   // comes from the account, so it cannot be changed here
+const mkParty = (r, i) => { const own = i === 0 && !S.counsel; return { role: r, kind: 'Person', name: own ? account.name || '' : '', pin: own ? account.mipassPin || '' : '', dob: own ? acctDob : '', pinUnknown: false, dobUnknown: false, self: own, mine: false }; };
 
 Promise.all([getDocs(collection(db, 'cases')), getDocs(collection(db, 'mscCases')).catch(() => ({ docs: [] }))]).then(r => { cases = r.flatMap(s => s.docs.map(d => ({ ...d.data(), _id: d.id }))); if (S.step === 1) render(); }).catch(() => {});
 const loadMine = () => getDocs(query(collection(db, 'pendingFilings'), where('filedByUid', '==', account.uid)))
@@ -181,9 +183,15 @@ function prefillFromLower() {
   const side = r => /plaintiff|petitioner|prosecut|appellant|applicant|complainant/i.test(r || '') ? 0 : 1, me = lc(account.name);
   const m = lp.find(p => lc(p.name) === me || lc(p.attorney?.name) === me);
   const first = m ? side(m.role) : /criminal|traffic/i.test(c.caseType || '') ? 1 : side(lp[0].role);
-  const mk = (p, ri) => { const self = !S.counsel && lc(p.name) === me; return { role: roles[ri], kind: kindOf(p.name), name: p.name, pin: p.pin || (self ? account.mipassPin || '' : ''), self, mine: S.counsel && counselOf(p).some(a => lc(a.name) === me) }; };
+  const mk = (p, ri) => { const self = !S.counsel && lc(p.name) === me; return { role: roles[ri], kind: kindOf(p.name), name: p.name, pin: p.pin || (self ? account.mipassPin || '' : ''), dob: ymd(p.dob) || (self ? acctDob : ''), pinUnknown: false, dobUnknown: false, self, mine: S.counsel && counselOf(p).some(a => lc(a.name) === me) }; };
   const a = lp.filter(p => side(p.role) === first).map(p => mk(p, 0)), b = lp.filter(p => side(p.role) !== first).map(p => mk(p, 1));
   S.parties = [a[0] || mkParty(roles[0], 0), b[0] || mkParty(roles[1], 1), ...a.slice(1), ...b.slice(1)]; S.prefilled = true;
+}
+const unk = (k, on) => `<label style="display:flex;gap:8px;align-items:center;margin-top:8px;font-weight:600"><input type="checkbox" data-k="${k}" data-r ${on ? 'checked' : ''}> Unknown</label>`;
+function idFields(p, i, L) {
+  const canU = !p.self && !p.locked, pinU = canU && p.pinUnknown, dobU = canU && p.dobUnknown, pinLock = L && !!p.pin && !pinU, dobLock = p.self && !!acctDob;
+  return `<div class="cols"><label class="f"><span>Michigan PIN</span><input type="text" data-k="parties.${i}.pin" value="${esc(pinU ? '' : p.pin)}" placeholder="${pinU ? 'Unknown' : 'Michigan PIN'}" ${pinLock || pinU ? 'readonly' : ''}>${canU ? unk(`parties.${i}.pinUnknown`, pinU) : ''}<small>${pinLock ? 'Filled in from your account and cannot be changed.' : 'Appears on the case record.'}</small></label>
+    <label class="f"><span>Date of birth</span><input type="date" data-k="parties.${i}.dob" value="${esc(dobU ? '' : p.dob)}" ${dobLock || dobU ? 'readonly' : ''}>${canU ? unk(`parties.${i}.dobUnknown`, dobU) : ''}<small>${dobLock ? 'Filled in from your account and cannot be changed.' : 'Appears on the case record.'}</small></label></div>`;
 }
 function partyCard(p, i) {
   const pa = S.ctype === 'Civil Infraction' && p.role === 'Prosecuting Authority'; if (pa) p.kind = 'Government';
@@ -193,10 +201,10 @@ function partyCard(p, i) {
   const who = pa
     ? F('Prosecuting authority', sel(`parties.${i}.name`, p.name, AUTH, 'Select the prosecuting authority'), 'A traffic ticket issued under the Michigan Vehicle Code, or any other fine under a state statute, is brought by the <b>People of the State of Michigan</b>. If it was issued under a local county or municipal ordinance, choose the municipality (<b>City of Flint</b>) or the county (<b>County of Genesee</b>).')
     : `<div class="cols">${F('Party type', sel(`parties.${i}.kind`, p.kind, kinds, '', 1, L))}${F(p.kind === 'Person' ? 'Full name' : 'Name', inp(`parties.${i}.name`, p.name, '', 'text', L))}</div>
-    ${p.kind === 'Person' ? F('Michigan PIN', inp(`parties.${i}.pin`, p.pin, 'Michigan PIN', 'text', L && !!p.pin), p.self && p.pin ? 'Filled in from your account and cannot be changed.' : 'Appears on the case record.') : ''}`;
+    ${p.kind === 'Person' ? idFields(p, i, L) : ''}`;
   return `<div class="sub"><header><span>Party ${i + 1}${i < 2 ? ' · ' + esc(p.role) : ''}</span>${i >= 2 ? `<button class="btn outline sm" type="button" data-a="rmparty:${i}">Remove</button>` : ''}</header>
     ${i >= 2 ? F('Role', sel(`parties.${i}.role`, p.role, [...ROLES[S.ctype], 'Third Party', 'Intervenor', 'Cross-Claimant', 'Cross-Defendant'], '', 1)) : ''}${who}
-    ${p.self ? '<small style="margin-bottom:12px">Your name, party type and PIN come from your account.</small>' : ''}${p.locked ? '<small style="margin-bottom:12px">Prosecutors open criminal cases for the People of the State of Michigan.</small>' : ''}${rep}</div>`;
+    ${p.self ? '<small style="margin-bottom:12px">Your name, party type, PIN and date of birth come from your account.</small>' : ''}${p.locked ? '<small style="margin-bottom:12px">Prosecutors open criminal cases for the People of the State of Michigan.</small>' : ''}${rep}</div>`;
 }
 
 /* ── Steps ──────────────────────────────────────────────────────────── */
@@ -248,7 +256,7 @@ const notice = () => `<div class="sub"><b>${S.type === 'new' ? 'A case number is
 function stepReview() {
   const d = docs(), total = d.reduce((t, x) => t + fee(x.type, courtOf()), 0);
   const rows = S.type === 'new'
-    ? [['Court', S.court], ['Case type', S.ctype], ...(S.lower ? [['Lower court case', `${S.lower.caption} · ${S.lower.caseNumber}`]] : []), ...S.parties.map((p, i) => [`Party ${i + 1} (${p.role})`, p.name + (p.kind === 'Person' && p.pin ? ' · PIN ' + p.pin : '') + (p.mine ? ' — your client' : '')])]
+    ? [['Court', S.court], ['Case type', S.ctype], ...(S.lower ? [['Lower court case', `${S.lower.caption} · ${S.lower.caseNumber}`]] : []), ...S.parties.map((p, i) => [`Party ${i + 1} (${p.role})`, p.name + (p.kind === 'Person' ? ' · PIN ' + (p.pin || 'Unknown') + ' · DOB ' + (p.dob || 'Unknown') : '') + (p.mine ? ' — your client' : '')])]
     : [['Case', caption(S.kase) + ' · ' + S.kase.caseId], ['Court', S.kase.court], ['Filing as', S.type === 'appearance' ? 'Attorney for ' + S.repIds.map(i => S.kase.parties[i].name).join(' and ') : standing(S.kase).text]];
   return `<section class="card"><header><h3>Review your ${S.type === 'appearance' ? 'appearance' : 'filing'}</h3></header>
     <dl class="details">${rows.map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join('')}
@@ -297,7 +305,7 @@ function check() {
       if (S.type === 'appearance' && !S.repIds.length) return 'Check each party you represent.';
     } else {
       if (S.court === SUPREME_COURT && /^Appeal/.test(S.ctype) && !S.lower) return 'Select the lower court case you are appealing.';
-      if (S.parties.some(p => !p.name.trim() || (p.kind === 'Person' && !p.pin.trim()))) return 'Complete the name (and PIN for individuals) for every party.';
+      if (S.parties.some(p => !p.name.trim() || (p.kind === 'Person' && ((!p.pin.trim() && !p.pinUnknown) || (!p.dob && !p.dobUnknown))))) return 'Complete the name, PIN and date of birth for every individual. For other parties you can choose Unknown.';
       if (S.counsel && !S.parties.some(p => p.mine)) return 'Check each party you represent.';
       if (S.parties.some(p => p.mine && opposing(p))) return 'You cannot be counsel for the opposing party when opening a case.';
     }
@@ -334,7 +342,7 @@ async function submit() {
     S.links.forEach(l => documents.push({ type: 'gdrive', name: 'Google Drive Document', link: l.url.trim(), documentType: l.type, fee: fee(l.type, court) }));
 
     const obj = { confirmationNumber: conf, filingType: S.type, court, caseType: isNew ? S.ctype : S.kase.caseType || '', documentType: documents[0]?.documentType || 'Appearance (MC 02)',
-      parties: isNew ? S.parties.map(p => ({ role: p.role, name: p.name.trim(), ...(p.kind === 'Person' && p.pin.trim() ? { pin: p.pin.trim() } : {}), selfRepresented: !p.mine, ...(p.mine ? { attorney: atty, attorneys: [atty] } : {}) })) : [],
+      parties: isNew ? S.parties.map(p => ({ role: p.role, name: p.name.trim(), ...(p.kind === 'Person' && p.pin.trim() ? { pin: p.pin.trim() } : p.kind === 'Person' && p.pinUnknown ? { pinUnknown: true } : {}), ...(p.kind === 'Person' && p.dob ? { dob: new Date(p.dob + 'T12:00:00').toISOString() } : p.kind === 'Person' && p.dobUnknown ? { dobUnknown: true } : {}), selfRepresented: !p.mine, ...(p.mine ? { attorney: atty, attorneys: [atty] } : {}) })) : [],
       documents, totalFee: documents.reduce((t, d) => t + d.fee, 0), notesToClerk: S.notes.trim() || null, confirmationEmail: S.email.trim(), filerRole,
       filedBy: account.name, filedByUid: account.uid, isFilingAsCounsel: counsel, counselRepresents: counsel ? repNames : null, barNumber: counsel ? account.barNumber || null : null,
       dateFiled: now, status: 'Pending', accepted: false, urgent: false,
@@ -407,6 +415,8 @@ root.addEventListener('change', e => {
   const k = t.dataset.k; if (!k) return;
   set(k, t.type === 'checkbox' ? t.checked : t.value); if (k.startsWith('parties.')) S.touched = true;
   if (k === 'court') { S.ctype = ''; S.parties = []; S.lower = null; S.lq = ''; }
+  if (/\.pinUnknown$/.test(k) && t.checked) set(k.replace('pinUnknown', 'pin'), '');
+  if (/\.dobUnknown$/.test(k) && t.checked) set(k.replace('dobUnknown', 'dob'), '');
   if (k === 'ctype' || k === 'counsel') initParties();
   if (t.dataset.r !== undefined) render();
 });
