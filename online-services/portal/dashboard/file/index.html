@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Court Forms | Michigan Courts</title>
+<link rel="icon" type="image/png" href="/courts/images/favicon.png">
+
+
+<script src="/courts/shell.js" data-active="forms"></script>
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-ui,'Public Sans',system-ui,sans-serif);background:#e3e9f2;color:#1b2433;line-height:1.5;font-size:15px}
+a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #5b9be0;outline-offset:2px}
+
+/* Page header */
+.page-header{background:#10264a;padding:34px 0 38px}
+.wrap{max-width:1180px;margin:0 auto;padding:0 40px}
+.breadcrumb{display:flex;align-items:center;gap:8px;margin-bottom:14px;font-size:13px;flex-wrap:wrap}
+.breadcrumb a{color:#9cc4f5;text-decoration:none}
+.breadcrumb a:hover{color:#fff;text-decoration:underline}
+.breadcrumb span{color:#6f87ad}
+.breadcrumb .here{color:#fff}
+.page-header h2{font-family:var(--font-head,Georgia,serif);color:#fff;font-size:34px;font-weight:600;line-height:1.2;letter-spacing:-.01em}
+.page-header p{color:#c5d3e8;margin-top:10px;max-width:680px}
+.page-header p strong{color:#fff}
+.page-header p a{color:#9cc4f5;font-weight:600}
+.page-header p a:hover{color:#fff}
+
+/* Notice */
+.notice{background:#fff;border:1px solid #d5dde8;border-left:4px solid #1f5fae;border-radius:4px;padding:20px 24px;margin-bottom:28px}
+.notice h3{font-family:var(--font-head,Georgia,serif);font-size:20px;font-weight:600;color:#10264a;margin-bottom:8px}
+.notice p{margin-top:8px;color:#33405a}
+.notice p:first-of-type{margin-top:0}
+.notice a{color:#1f5fae;font-weight:600}
+.notice a:hover{color:#10264a}
+.notice ul{margin:8px 0 0 20px;color:#33405a}
+.notice li{margin-top:4px}
+.notice .recommend{display:inline-flex;align-items:center;margin-top:14px;font-size:14px;font-weight:600;padding:9px 16px;border-radius:4px;background:#10264a;color:#fff;text-decoration:none;border:2px solid #10264a}
+.notice .recommend:hover{background:#17335f;border-color:#17335f}
+.notice .recommend:focus-visible{outline:3px solid #5b9be0;outline-offset:2px}
+
+/* Toolbar */
+.toolbar{background:#fff;border-bottom:1px solid #d5dde8;box-shadow:0 2px 8px rgba(16,38,74,.08);position:sticky;top:var(--mc-sticky-top,0px);z-index:50;transition:top .25s ease}
+.toolbar .wrap{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding-top:14px;padding-bottom:14px}
+.search-wrap{position:relative;flex:1;min-width:220px;max-width:380px}
+.search-wrap svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:15px;height:15px;color:#5a667a;pointer-events:none}
+.search-wrap input,.filter-select{font:inherit;font-size:14px;color:#1b2433;border:1px solid #8896ab;border-radius:4px;background:#fff}
+.search-wrap input{width:100%;padding:10px 12px 10px 36px}
+.filter-select{padding:10px 12px;cursor:pointer}
+.toolbar-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.result-count{font-size:13px;color:#5a667a;white-space:nowrap}
+.clear-btn{display:none;font:inherit;font-size:13px;font-weight:600;color:#1f5fae;background:none;border:0;cursor:pointer;padding:4px 8px;border-radius:3px}
+.clear-btn:hover{background:#eef3f9}
+.clear-btn.visible{display:block}
+
+/* List */
+.forms-wrap{padding:32px 0 64px}
+.group{margin-bottom:28px}
+.group h3{font-family:var(--font-head,Georgia,serif);font-size:21px;font-weight:600;color:#10264a;margin-bottom:10px}
+.table-scroll{background:#fff;border:1px solid #d5dde8;border-radius:4px;overflow-x:auto}
+.forms-table{width:100%;border-collapse:collapse}
+.forms-table thead th{background:#17335f;color:#fff;padding:12px 16px;text-align:left;font-size:13px;font-weight:600;white-space:nowrap}
+.forms-table thead th:first-child{width:100px}
+.forms-table thead th:last-child{text-align:right}
+.forms-table tbody tr{border-bottom:1px solid #e3e9f1}
+.forms-table tbody tr:last-child{border-bottom:0}
+.forms-table tbody tr:hover{background:#f4f8fd}
+.forms-table td{padding:14px 16px;vertical-align:top}
+.form-number{font-weight:700;color:#10264a;white-space:nowrap}
+.form-title{font-weight:600;line-height:1.35}
+.form-desc{font-size:13.5px;color:#5a667a;margin-top:3px}
+.badge{display:inline-block;font-size:12.5px;font-weight:600;padding:3px 10px;border-radius:12px;white-space:nowrap;background:#eef3f9;color:#33405a}
+.badge.all{background:#e0ecfa;color:#17335f}
+.badge.district{background:#e2f0e8;color:#1c5a37}
+.badge.supreme{background:#ebe5f7;color:#4a2f8a}
+.form-actions{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:6px;font-size:13.5px;font-weight:600;padding:7px 14px;border-radius:4px;text-decoration:none;white-space:nowrap}
+.btn svg{width:14px;height:14px;flex-shrink:0}
+.btn-view{background:#10264a;color:#fff;border:2px solid #10264a}
+.btn-view:hover{background:#17335f;border-color:#17335f}
+.btn-copy{background:#fff;color:#10264a;border:2px solid #10264a}
+.btn-copy:hover{background:#eef3f9}
+
+/* States */
+.state-box{display:flex;align-items:center;gap:14px;padding:22px 24px;background:#fff;border:1px solid #d5dde8;border-left:4px solid #1f5fae;border-radius:4px}
+.state-box.error{border-left-color:#b42318;background:#fdf1f0}
+.state-box.error p{color:#7a1b13}
+.spin{width:20px;height:20px;border:3px solid #d5dde8;border-top-color:#10264a;border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.spin{animation-duration:2s}}
+.no-results{background:#fff;border:1px solid #d5dde8;border-radius:4px;text-align:center;padding:40px 20px;color:#5a667a}
+
+@media(max-width:900px){
+  .forms-table th:nth-child(4),.forms-table td:nth-child(4){display:none}
+}
+@media(max-width:768px){
+  .wrap{padding:0 20px}
+  .page-header h2{font-size:28px}
+  .forms-table th:nth-child(3),.forms-table td:nth-child(3){display:none}
+  .form-actions{flex-direction:column;align-items:flex-end}
+}
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <div class="wrap">
+    <div class="breadcrumb">
+      <a href="/courts/">Home</a><span>/</span>
+      <a href="/courts/forms-and-filing/information/">Forms &amp; Filing</a><span>/</span>
+      <span class="here">Court Forms</span>
+    </div>
+    <h2>Court forms</h2>
+    <p>Manual court forms, provided through Google Docs. Choose <strong>View</strong> to open the form, or <strong>Make a copy</strong> to get an editable version. From Google Docs, use <strong>File &gt; Download</strong> to save it as a DOCX, PDF, or Markdown (.md) file, among other formats.</p>
+    <p>For most filers, we do not recommend using these manual forms. Use the <a href="http://migovt.org/courts/online-services/portal/dashboard/document-drafting/">document drafter in the online portal</a> instead. It is easier, free, and comes with reduced filing fees.</p>
+  </div>
+</div>
+
+<div class="toolbar" role="search">
+  <div class="wrap">
+    <div class="search-wrap">
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="9" cy="9" r="5"/><path d="M15 15l-3-3"/></svg>
+      <input type="search" id="search-input" placeholder="Search by form number or title" aria-label="Search forms" oninput="applyFilters()">
+    </div>
+    <select class="filter-select" id="filter-category" aria-label="Category" onchange="applyFilters()">
+      <option value="">All categories</option>
+    </select>
+    <select class="filter-select" id="filter-court" aria-label="Court" onchange="applyFilters()">
+      <option value="">All courts</option>
+      <option value="All Courts">Both courts</option>
+      <option value="District Court">District Court</option>
+      <option value="Supreme Court">Supreme Court</option>
+    </select>
+    <div class="toolbar-right">
+      <span class="result-count" id="result-count" aria-live="polite"></span>
+      <button class="clear-btn" id="clear-btn" onclick="clearFilters()">Clear filters</button>
+    </div>
+  </div>
+</div>
+
+<div class="forms-wrap">
+  <div class="wrap">
+    <div class="notice" role="note">
+      <h3>Use the court's document drafter instead</h3>
+      <p>These manual forms are mainly provided so you can download them in the format you need. For most uses, the <a href="http://migovt.org/courts/online-services/portal/dashboard/document-drafting/">document drafter in the online portal</a> is the better choice. You enter your information into the court's built-in drafter, and it is easier, free, and cheaper, with reduced filing fees.</p>
+      <p>The court understands that many people like to print and handwrite their documents. Please be aware of the tradeoffs:</p>
+      <ul>
+        <li>Because you did not use the portal's document drafter, you are subject to higher filing fees.</li>
+        <li>Scanned documents often have larger file sizes, and you may be charged extra depending on how big the file is.</li>
+        <li>Files are capped at a maximum size, and scanned documents often go over it.</li>
+      </ul>
+      <a class="recommend" href="http://migovt.org/courts/online-services/portal/dashboard/document-drafting/">Go to the document drafter</a>
+    </div>
+
+    <div id="forms-container">
+      <div class="state-box"><div class="spin"></div><p>Loading forms…</p></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQnHhVqcjdBGTNLl3_VmFuLQ77GQ-02-6UIW55zl5EV2sUrfxjaRrBDR-LAaFGEklpJ4d5XXJaFA75R/pub?gid=0&single=true&output=csv';
+  let allForms = [];
+
+  function parseCSV(text) {
+    const rows = [];
+    let col = '', row = [], inQ = false;
+    for (let i = 0; i < text.length; i++) {
+      const ch = text[i], nx = text[i+1];
+      if (inQ) {
+        if (ch === '"' && nx === '"') { col += '"'; i++; }
+        else if (ch === '"') { inQ = false; }
+        else { col += ch; }
+      } else {
+        if (ch === '"') { inQ = true; }
+        else if (ch === ',') { row.push(col.trim()); col = ''; }
+        else if (ch === '\n' || (ch === '\r' && nx === '\n')) {
+          row.push(col.trim()); col = '';
+          if (row.some(c => c !== '')) rows.push(row);
+          row = [];
+          if (ch === '\r') i++;
+        } else { col += ch; }
+      }
+    }
+    if (col || row.length) { row.push(col.trim()); if (row.some(c => c !== '')) rows.push(row); }
+    return rows;
+  }
+
+  function csvToObjects(text) {
+    const rows = parseCSV(text);
+    if (rows.length < 2) return [];
+    const headers = rows[0].map(h => h.toLowerCase().replace(/\s+/g, '_'));
+    return rows.slice(1).map(row => {
+      const obj = {};
+      headers.forEach((h, i) => { obj[h] = row[i] || ''; });
+      return obj;
+    });
+  }
+
+  function esc(str) {
+    return String(str ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function courtBadge(court) {
+    const c = (court || '').toLowerCase();
+    const cls = c.includes('district') ? 'district' : c.includes('supreme') ? 'supreme' : 'all';
+    return `<span class="badge ${cls}">${esc(court)}</span>`;
+  }
+
+  function renderGroup(label, forms) {
+    const rows = forms.map(f => {
+      const viewBtn = f.form_url
+        ? `<a href="${esc(f.form_url)}" class="btn btn-view" target="_blank" rel="noopener">
+             <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 4h8l4 4v8H4V4z"/><path d="M12 4v4h4"/><path d="M7 11h6M7 14h4"/></svg>View</a>` : '';
+      const copyBtn = f.copy_url
+        ? `<a href="${esc(f.copy_url)}" class="btn btn-copy" target="_blank" rel="noopener">
+             <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="7" y="7" width="10" height="10" rx="1"/><path d="M3 13V3h10"/></svg>Make a copy</a>` : '';
+      return `
+        <tr>
+          <td><span class="form-number">${esc(f.form_number)}</span></td>
+          <td><div class="form-title">${esc(f.title)}</div>${f.description ? `<div class="form-desc">${esc(f.description)}</div>` : ''}</td>
+          <td><span class="badge">${esc(f.category)}</span></td>
+          <td>${courtBadge(f.court)}</td>
+          <td><div class="form-actions">${viewBtn}${copyBtn}</div></td>
+        </tr>`;
+    }).join('');
+
+    return `
+      <section class="group">
+        <h3>${esc(label)}</h3>
+        <div class="table-scroll">
+          <table class="forms-table">
+            <thead><tr>
+              <th>Form no.</th><th>Title and description</th><th>Category</th><th>Court</th>
+              <th style="text-align:right">Actions</th>
+            </tr></thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>
+      </section>`;
+  }
+
+  function applyFilters() {
+    const q      = document.getElementById('search-input').value.trim().toLowerCase();
+    const catF   = document.getElementById('filter-category').value.toLowerCase();
+    const courtF = document.getElementById('filter-court').value.toLowerCase();
+    document.getElementById('clear-btn').classList.toggle('visible', !!(q || catF || courtF));
+
+    const filtered = allForms.filter(f => {
+      const matchQ = !q ||
+        (f.form_number || '').toLowerCase().includes(q) ||
+        (f.title || '').toLowerCase().includes(q) ||
+        (f.description || '').toLowerCase().includes(q);
+      return matchQ &&
+        (!catF   || (f.category || '').toLowerCase() === catF) &&
+        (!courtF || (f.court || '').toLowerCase() === courtF);
+    });
+
+    document.getElementById('result-count').textContent =
+      filtered.length === allForms.length ? `${allForms.length} forms` : `${filtered.length} of ${allForms.length} forms`;
+    renderForms(filtered);
+  }
+
+  function clearFilters() {
+    document.getElementById('search-input').value = '';
+    document.getElementById('filter-category').value = '';
+    document.getElementById('filter-court').value = '';
+    applyFilters();
+  }
+
+  function renderForms(forms) {
+    const container = document.getElementById('forms-container');
+    if (!forms.length) {
+      container.innerHTML = '<div class="no-results">No forms match your search or filters. Try a different form number or clear the filters.</div>';
+      return;
+    }
+    const order = [], groups = {};
+    forms.forEach(f => {
+      const cat = f.category || 'Uncategorized';
+      if (!groups[cat]) { groups[cat] = []; order.push(cat); }
+      groups[cat].push(f);
+    });
+    container.innerHTML = order.map(cat => renderGroup(cat, groups[cat])).join('');
+  }
+
+  function buildCategoryFilter(forms) {
+    const cats = [...new Set(forms.map(f => f.category).filter(Boolean))].sort();
+    const sel = document.getElementById('filter-category');
+    cats.forEach(c => {
+      const opt = document.createElement('option');
+      opt.value = c.toLowerCase();
+      opt.textContent = c;
+      sel.appendChild(opt);
+    });
+  }
+
+  async function load() {
+    try {
+      const res = await fetch(CSV_URL);
+      if (!res.ok) throw new Error('The forms list could not be retrieved');
+      allForms = csvToObjects(await res.text());
+      buildCategoryFilter(allForms);
+      document.getElementById('result-count').textContent = `${allForms.length} forms`;
+      renderForms(allForms);
+    } catch (err) {
+      document.getElementById('forms-container').innerHTML =
+        `<div class="state-box error" role="alert"><p>Could not load forms: ${esc(err.message)}. Refresh the page to try again.</p></div>`;
+    }
+  }
+
+  load();
+</script>
+</body>
+</html>

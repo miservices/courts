@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Manage Filings | Online Portal</title>
+<link rel="icon" type="image/png" href="/courts/images/favicon.png">
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=Source+Serif+4:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/courts/online-services/portal/dashboard/assets/css/dashboard.css?v=5">
+<style>
+.q{border-top:1px solid #e3e9f1}.q:first-child{border-top:0}.q.urg{box-shadow:inset 4px 0 0 #b3261e}
+.qh{all:unset;box-sizing:border-box;display:flex;justify-content:space-between;align-items:center;gap:16px;width:100%;padding:15px 22px;cursor:pointer}
+.qh:hover{background:#f8fafd}.qh:focus-visible{outline:3px solid #5b9be0;outline-offset:-3px}
+.qh>div:first-child{min-width:0}.qh b{display:block}.qd{padding:6px 22px 22px;background:#fbfcfe;border-top:1px dashed var(--line)}
+.qd h4{font-family:var(--font-head);color:var(--navy);margin:18px 0 8px;font-size:16px}
+.tools{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px}.tools .in{flex:1;min-width:220px;width:auto}.tools select{width:auto}
+.docrow{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:10px 0;border-top:1px solid #e3e9f1}
+.log li{padding:6px 0;border-top:1px solid #eef2f7;font-size:14px}
+</style>
+</head>
+<body>
+<aside class="sidebar" id="sidebar-root" aria-label="Portal navigation"></aside>
+<div class="scrim" id="scrim" hidden></div>
+<div class="main">
+  <header class="topbar">
+    <div class="topbar-left">
+      <button class="menu-btn" id="menu-btn" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="sidebar-root"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+      <div><span class="topbar-eyebrow">Online Portal</span><span class="topbar-page-title" id="topbar-title">Manage Filings</span></div>
+    </div>
+    <div class="topbar-right"><span class="topbar-date" id="topbar-date"></span><div class="notif-wrap" id="notif-root"></div></div>
+  </header>
+  <main class="page-body">
+    <div class="page-head"><div><h2 id="page-title">Manage Filings</h2><p id="page-subtitle"></p></div><div id="page-action"></div></div>
+    <div id="page-body"><div class="loading-inline"><span class="spin-sm"></span>Loading…</div></div>
+  </main>
+</div>
+<div class="auth-loading-overlay" id="auth-overlay" role="status"><div class="alo-title">Online Portal</div><div class="spin"></div><div>Verifying your session…</div></div>
+
+<script type="module">
+import { boot, db, $, esc, has, STAFF, scopeOf, DISTRICT_COURT, SUPREME_COURT } from '/courts/online-services/portal/dashboard/assets/js/portal-shell.js';
+import { collection, getDocs, getDoc, doc, updateDoc, setDoc, runTransaction } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+
+const { account, role } = await boot({ id: 'mfilings', title: 'Manage Filings', subtitle: 'Review, accept, return, reject, or forward documents submitted for e-filing.' });
+const root = $('page-body');
+
+if (!has(STAFF, role)) {
+  root.innerHTML = '<section class="card"><div class="empty"><strong>Court staff only</strong><p>Managing filings is limited to clerks, judicial officers, and court staff. Contact your court administrator if you need access.</p></div></section>';
+} else {
+  /* ── State ────────────────────────────────────────────────────────── */
+  const scope = scopeOf(role), JUDGES = ['Magistrate', 'Judge', 'Chief Judge', 'Justice', 'Chief Justice'];
+  let P = [], cases = {}, judges = [], court = scope[0], tab = 'Pending', q = '', sort = 'newest', open = null, busy = false, msg = '';
+  const st = f => f.status || 'Pending', now = () => new Date().toISOString();
+  const fmt = v => v ? new Date(v).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' }) : '—';
+  const ago = v => { const m = Math.floor((Date.now() - new Date(v)) / 6e4); return m < 1 ? 'just now' : m < 60 ? m + 'm ago' : m < 1440 ? Math.floor(m / 60) + 'h ago' : Math.floor(m / 1440) + 'd ago'; };
+  const money = n => '$' + Number(n || 0).toFixed(2), safe = u => /^https?:\/\//.test(u || '') ? u : '#';
+  const isFW = d => /fee waiver/i.test((d.documentType || '') + ' ' + (d.name || ''));
+  const parties = f => Array.isArray(f.parties) ? f.parties : [];
+  const title = f => f.filingType === 'new' ? `New ${f.caseType}: ${parties(f)[0]?.name || 'Party 1'} v. ${parties(f)[1]?.name || 'Party 2'}`
+    : (c => c ? `${caption(c)} (${c.caseId})` : f.caseId || 'Existing case')(cases[f.caseFirestoreId]);
+  const caption = c => { const p = Array.isArray(c.parties) ? c.parties : []; return p[0]?.name && p[1]?.name ? `${p[0].name} v. ${p[1].name}` : c.caseId; };
+
+  /* ── Case-opening helpers ─────────────────────────────────────────── */
+  const DISPLAY = { 'Civil Infraction': 'Traffic', Criminal: 'Criminal', Administrative: 'Administrative', 'Administrative Appeal': 'Administrative', Appellate: 'Appellate', 'Extraordinary Writ': 'Appellate' };
+  const CODE = { Criminal: 'CR', Civil: 'CV', Traffic: 'CV', Administrative: 'AZ', Appellate: 'AZ' };
+  const SUBFIELD = { Civil: 'civilSubtype', Administrative: 'administrativeSubtype', Appellate: 'appellateSubtype' };
+  async function nextCaseId(ct, display) {
+    const sc = ct === SUPREME_COURT, year = new Date().getFullYear(), code = CODE[display] || 'AZ';
+    const ref = doc(db, 'caseNumberCounters', sc ? 'supreme' : `district-${code}-${year}`);
+    const n = await runTransaction(db, async tx => { const s = await tx.get(ref); const v = (s.exists() ? s.data().value || 0 : 0) + 1; tx.set(ref, { value: v, ...(sc ? {} : { code, year }), updatedAt: now() }); return v; });
+    return sc ? `MSC ${n}` : `${code}-${year}-${n}`;
+  }
+  function pickJudge(ct, display, sub) {
+    const roles = ct === SUPREME_COURT ? ['Justice', 'Chief Justice'] : display === 'Criminal' || display === 'Traffic' || sub === 'Small Claims' ? ['Magistrate', 'Judge', 'Chief Judge'] : ['Judge', 'Chief Judge'];
+    let pool = judges.filter(j => has(roles, j.role));
+    if (!pool.length) pool = judges.filter(j => (ct === SUPREME_COURT) === has(['Justice', 'Chief Justice'], j.role));
+    return pool.length ? pool[Math.floor(Math.random() * pool.length)] : null;
+  }
+  function eventsFor(f, existing) {
+    const ev = [...(existing || [])]; let n = ev.reduce((m, e) => Math.max(m, e.eventNumber || 0), 0) + 1;
+    (f.documents || []).forEach(d => ev.push({ eventNumber: n++, type: 'filing', date: f.dateFiled, description: isFW(d) ? `Fee waiver filed: ${d.documentType || d.name}` : d.documentType || d.name || 'Document filed',
+      comment: f.notesToClerk || null, documentLink: d.fileUrl || d.link || null, sealed: !!d.sealed, filedBy: f.filedBy, role: f.filerRole || null, confirmationNumber: f.confirmationNumber, docName: d.name }));
+    return ev;
+  }
+  const log = (f, text) => [...(f.activityLog || []), { text, by: account.name, at: now() }];
+  async function persist(f, patch) { await updateDoc(doc(db, 'pendingFilings', f._id), patch); Object.assign(f, patch); }
+
+  /* ── Load ─────────────────────────────────────────────────────────── */
+  async function load() {
+    root.querySelector('#list') && (root.querySelector('#list').innerHTML = '<div class="loading-inline"><span class="spin-sm"></span>Loading filings…</div>');
+    const [a, b, c] = await Promise.all([getDocs(collection(db, 'pendingFilings')), getDocs(collection(db, 'cases')), getDocs(collection(db, 'accounts')).catch(() => ({ docs: [] }))]);
+    P = a.docs.map(d => ({ ...d.data(), _id: d.id })); cases = {}; b.docs.forEach(d => cases[d.id] = { ...d.data(), _id: d.id });
+    judges = c.docs.map(d => ({ uid: d.id, name: d.data().name || 'Unnamed', role: d.data().role })).filter(j => has(JUDGES, j.role));
+    // Filings in an already-open case never wait for a clerk: they are entered on the docket automatically.
+    for (const f of P.filter(x => st(x) === 'Pending' && x.filingType !== 'new' && x.caseFirestoreId && cases[x.caseFirestoreId])) {
+      try {
+        const ref = doc(db, 'cases', f.caseFirestoreId), events = eventsFor(f, cases[f.caseFirestoreId].events);
+        await updateDoc(ref, { events, 'dates.lastUpdated': now() }); cases[f.caseFirestoreId].events = events;
+        await persist(f, { status: 'Accepted', accepted: true, autoFiled: true, reviewedBy: 'System (Auto-Filed)', reviewedAt: now(), linkedCaseId: f.caseId || null, linkedCaseFirestoreId: f.caseFirestoreId, activityLog: log(f, 'Automatically filed — filings in an existing case do not need clerk review') });
+      } catch (e) { console.warn('Auto-file failed', f._id, e); }
+    }
+  }
+
+  /* ── Views ────────────────────────────────────────────────────────── */
+  const stat = (l, v, al) => `<div class="stat ${al ? 'alert-stat' : ''}"><span>${l}</span><b>${v}</b></div>`;
+  const pill = s => `<span class="pill ${s === 'Accepted' ? 'done' : s === 'Rejected' ? 'bad' : s === 'Returned' ? 'mid' : 'warn'}">${esc(s)}</span>`;
+  const list = () => {
+    const l = P.filter(f => f.court === court && st(f) === tab && (!q || [f.confirmationNumber, f.filedBy, f.caseId, f.caseType, title(f)].join(' ').toLowerCase().includes(q)));
+    const d = (a, b) => new Date(a.dateFiled) - new Date(b.dateFiled);
+    l.sort(sort === 'oldest' ? d : (a, b) => d(b, a));
+    if (sort === 'urgent' || tab === 'Pending') l.sort((a, b) => (b.urgent ? 1 : 0) - (a.urgent ? 1 : 0));
+    return l;
+  };
+  function detail(f) {
+    const docs = f.documents || [], total = docs.reduce((t, d) => t + (d.fee || 0), 0), c = cases[f.linkedCaseFirestoreId || f.caseFirestoreId];
+    const rows = f.filingType === 'new' ? [['Court', f.court], ['Case type', f.caseType], ...parties(f).map((p, i) => [`Party ${i + 1} (${p.role})`, p.name + (p.attorney ? ' — repr. by ' + p.attorney.name : '')])]
+      : [['Case number', f.caseId || '—'], ['Court', f.court], ...(f.counselRepresents ? [['Attorney represents', f.counselRepresents]] : [])];
+    rows.push(['Filing as', f.filerRole || '—'], ['Filed by', f.filedBy + (f.isFilingAsCounsel ? ` (Bar No. ${f.barNumber || '—'})` : '')], ['Confirmation email', f.confirmationEmail || '—']);
+    if (f.notesToClerk) rows.push(['Notes to clerk', f.notesToClerk]);
+    const foot = st(f) === 'Pending' ? `
+      <h4>Decision</h4>
+      <label class="f"><span>Reason (required to return or reject; sent to the filer)</span><textarea class="in" id="reason-${f._id}" rows="3" placeholder="e.g. Please upload a signed copy and resubmit."></textarea></label>
+      <div class="acts"><button class="btn good" data-a="accept:${f._id}" ${busy ? 'disabled' : ''}>Accept filing</button><button class="btn" style="background:#4a2c85;border-color:#4a2c85" data-a="return:${f._id}">Return for correction</button>
+        <button class="btn danger" data-a="reject:${f._id}">Reject</button><button class="btn outline" data-a="urgent:${f._id}">${f.urgent ? 'Remove emergency flag' : 'Mark as emergency'}</button></div>
+      <div class="acts mt"><select class="in" style="width:auto;min-width:240px" id="fwd-${f._id}" aria-label="Forward to"><option value="">Forward to a judicial officer…</option>${judges.filter(j => (court === SUPREME_COURT) === has(['Justice', 'Chief Justice'], j.role)).map(j => `<option value="${esc(j.uid)}|${esc(j.name)}">${esc(j.name)} — ${esc(j.role)}</option>`).join('')}</select><button class="btn outline" data-a="forward:${f._id}">Forward</button></div>`
+      : `<div class="sub mt">${f.autoFiled ? 'Filed automatically — no clerk review needed for filings in an open case.' : `${esc(st(f))} by ${esc(f.reviewedBy || '—')}${f.reviewedByRole ? ' (' + esc(f.reviewedByRole) + ')' : ''} on ${fmt(f.reviewedAt)}.`}
+        ${f.rejectionReason || f.returnReason ? `<br><b>Reason:</b> ${esc(f.rejectionReason || f.returnReason)}` : ''}${f.linkedCaseId ? `<br><b>Case number:</b> ${esc(f.linkedCaseId)}` : ''}</div>
+        ${f.linkedCaseFirestoreId ? `<a class="btn outline sm" href="/courts/online-services/portal/dashboard/cases/manage/?case=${encodeURIComponent(f.linkedCaseFirestoreId)}">Open in Case Management</a>` : ''}`;
+    return `<div class="qd"><dl class="details">${rows.map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join('')}</dl>
+      <h4>Documents (${docs.length})</h4>${docs.map(d => { const u = d.type === 'pdf' ? d.fileUrl : d.link; return `<div class="docrow"><div><b>${esc(d.name)}</b><small>${esc(d.documentType || '—')} · ${d.fee ? money(d.fee) : 'No fee'}${isFW(d) ? ' · fee waiver' : ''}${u ? '' : ' · upload never completed'}</small></div>${u ? `<a class="btn outline sm" href="${esc(safe(u))}" target="_blank" rel="noopener">Open</a>` : ''}</div>`; }).join('')}
+      <p style="text-align:right;margin-top:8px"><b>Estimated fees: ${money(total)}</b></p>
+      <h4>Internal clerk notes <small style="display:inline">(staff only)</small></h4>
+      ${(f.clerkNotes || []).map(n => `<div class="sub"><small>${esc(n.by)} · ${ago(n.at)}</small>${esc(n.text)}</div>`).join('') || '<p style="color:var(--muted)">No notes yet.</p>'}
+      <div class="acts"><input class="in" style="flex:1;min-width:200px;width:auto" id="note-${f._id}" placeholder="Add an internal note"><button class="btn outline" data-a="note:${f._id}">Add note</button></div>
+      ${foot}
+      ${(f.activityLog || []).length ? `<h4>Activity</h4><ul class="rows log">${f.activityLog.slice().reverse().map(a => `<li><div>${esc(a.text)}<small>${esc(a.by)} · ${ago(a.at)}</small></div></li>`).join('')}</ul>` : ''}</div>`;
+  }
+  const row = f => `<div class="q${f.urgent ? ' urg' : ''}"><button class="qh" data-a="open:${f._id}" aria-expanded="${open === f._id}"><div>
+      <small>${esc(f.confirmationNumber || '—')}${f.urgent ? ' · <b style="color:#b3261e">Emergency</b>' : ''}${f.assignedJudge ? ' · forwarded to ' + esc(f.assignedJudge) : ''}</small>
+      <b>${esc(title(f))}</b><small>${f.filingType === 'new' ? 'New case' : 'Existing case'} · ${esc(f.documentType || 'Document')} · filed by ${esc(f.filedBy || '—')} · ${ago(f.dateFiled)}</small></div>
+      <div>${pill(st(f))}</div></button>${open === f._id ? detail(f) : ''}</div>`;
+
+  function draw() {
+    const inC = P.filter(f => f.court === court), cnt = t => inC.filter(f => st(f) === t).length, today = new Date().toDateString();
+    $('stats').innerHTML = stat('Pending review', cnt('Pending')) + stat('Marked emergency', inC.filter(f => st(f) === 'Pending' && f.urgent).length, 1) + stat('Returned for correction', cnt('Returned'))
+      + stat('Accepted today', inC.filter(f => f.status === 'Accepted' && f.reviewedAt && new Date(f.reviewedAt).toDateString() === today).length);
+    $('tabs').innerHTML = ['Pending', 'Returned', 'Accepted', 'Rejected'].map(t => `<button class="${t === tab ? 'on' : ''}" data-a="tab:${t}">${t}<i>${cnt(t)}</i></button>`).join('');
+    const l = list();
+    $('msg').innerHTML = msg ? `<div class="alert" role="alert" style="margin-bottom:16px"><strong>${esc(msg)}</strong></div>` : '';
+    $('list').innerHTML = l.length ? l.map(row).join('') : `<div class="empty"><strong>Nothing here</strong><p>${q ? 'No ' + tab.toLowerCase() + ' filings match your search.' : 'No ' + tab.toLowerCase() + ' filings for ' + esc(court) + '.'}</p></div>`;
+  }
+
+  /* ── Actions ──────────────────────────────────────────────────────── */
+  async function accept(f) {
+    busy = true; msg = ''; draw();
+    try {
+      let id = f.caseFirestoreId || null, num = f.caseId || null;
+      if (f.filingType === 'new') {
+        const display = DISPLAY[f.caseType] || 'Civil', sf = SUBFIELD[display], caseId = await nextCaseId(f.court, display), j = pickJudge(f.court, display, f.caseType);
+        await setDoc(doc(db, 'cases', caseId), { caseId, court: f.court, caseType: display, ...(sf ? { [sf]: f.caseType } : {}), status: display === 'Appellate' || display === 'Administrative' ? 'Pending' : 'Active',
+          dates: { filed: f.dateFiled || now(), lastUpdated: now() }, parties: f.parties || [], judge: j?.name || null, judges: j ? [j.name] : [], judgeUid: j?.uid || null, hearings: [], financialOrders: [],
+          events: eventsFor(f, []), sealed: false, relatedUserIds: f.filedByUid ? [f.filedByUid] : [], docketSummary: null, intakeConfirmationNumber: f.confirmationNumber });
+        id = num = caseId;
+      } else if (id && cases[id]) {
+        await updateDoc(doc(db, 'cases', id), { events: eventsFor(f, cases[id].events), 'dates.lastUpdated': now() });
+      }
+      await persist(f, { status: 'Accepted', accepted: true, reviewedBy: account.name, reviewedByUid: account.uid, reviewedByRole: role, reviewedAt: now(), linkedCaseId: num, linkedCaseFirestoreId: id, activityLog: log(f, 'Accepted' + (num ? ' — case ' + num : '')) });
+      await load();
+    } catch (e) { console.error(e); msg = 'We could not accept this filing. Nothing was changed on the filing — try again.'; }
+    busy = false; draw();
+  }
+  async function decide(f, status, field) {
+    const r = $('reason-' + f._id)?.value.trim();
+    if (!r) { msg = `Enter a reason before you ${status === 'Returned' ? 'return' : 'reject'} this filing.`; draw(); return; }
+    try { await persist(f, { status, accepted: false, [field]: r, reviewedBy: account.name, reviewedByUid: account.uid, reviewedByRole: role, reviewedAt: now(), activityLog: log(f, status) }); open = null; msg = ''; }
+    catch (e) { console.error(e); msg = 'We could not save that decision. Try again.'; }
+    draw();
+  }
+  const actions = {
+    open: id => { open = open === id ? null : id; msg = ''; },
+    tab: t => { tab = t; open = null; msg = ''; },
+    accept: id => accept(P.find(f => f._id === id)),
+    return: id => decide(P.find(f => f._id === id), 'Returned', 'returnReason'),
+    reject: id => decide(P.find(f => f._id === id), 'Rejected', 'rejectionReason'),
+    urgent: async id => { const f = P.find(x => x._id === id); await persist(f, { urgent: !f.urgent, activityLog: log(f, f.urgent ? 'Removed emergency flag' : 'Marked as emergency') }).catch(() => msg = 'Could not update the emergency flag.'); },
+    note: async id => { const f = P.find(x => x._id === id), t = $('note-' + id).value.trim(); if (t) await persist(f, { clerkNotes: [...(f.clerkNotes || []), { text: t, by: account.name, byUid: account.uid, at: now() }], activityLog: log(f, 'Added an internal note') }).catch(() => msg = 'Could not save the note.'); },
+    forward: async id => { const f = P.find(x => x._id === id), v = $('fwd-' + id).value; if (!v) { msg = 'Select a judicial officer to forward this filing to.'; return; } const [uid, name] = v.split('|'); await persist(f, { assignedJudge: name, assignedJudgeUid: uid, activityLog: log(f, `Forwarded to ${name} for review`) }).catch(() => msg = 'Could not forward this filing.'); }
+  };
+  document.addEventListener('click', async e => { const el = e.target.closest('[data-a]'); if (!el) return; const [n, v] = el.dataset.a.split(':'); if (n === 'accept' || n === 'return' || n === 'reject') { await actions[n](v); return; } if (actions[n]) { await actions[n](v); draw(); } });
+
+  /* ── Frame ────────────────────────────────────────────────────────── */
+  $('page-action').innerHTML = scope.length > 1 ? `<select class="in" id="court" style="width:auto" aria-label="Court">${scope.map(c => `<option>${esc(c)}</option>`).join('')}</select>` : `<span class="pill plain">${esc(court)}</span>`;
+  $('court')?.addEventListener('change', e => { court = e.target.value; open = null; draw(); });
+  root.innerHTML = `<div class="stats" id="stats"></div><div id="msg"></div>
+    <div class="tools"><input class="in" id="q" type="search" placeholder="Search by confirmation number, filer, case, or document type" aria-label="Search filings">
+      <select class="in" id="sort" aria-label="Sort"><option value="newest">Newest first</option><option value="oldest">Oldest first</option><option value="urgent">Emergency first</option></select>
+      <button class="btn outline" id="refresh" type="button">Refresh</button></div>
+    <div class="tabs" id="tabs" role="tablist"></div><section class="card flush"><div id="list"><div class="loading-inline" style="padding:24px"><span class="spin-sm"></span>Loading filings…</div></div></section>`;
+  $('q').oninput = e => { q = e.target.value.toLowerCase().trim(); draw(); };
+  $('sort').onchange = e => { sort = e.target.value; draw(); };
+  $('refresh').onclick = async () => { await load(); draw(); };
+  try { await load(); } catch (e) { console.error(e); msg = 'Filings could not be loaded. Refresh the page to try again.'; }
+  draw();
+}
+</script>
+</body>
+</html>
