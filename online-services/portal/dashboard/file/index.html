@@ -28,7 +28,7 @@
 
 <script type="module">
 import { boot, db, app, $, esc, has, ATTY, STAFF, CASE_CODES, DISTRICT_COURT, SUPREME_COURT, reserveCaseNumber, reserveFilingNumber, colFor } from '/courts/online-services/portal/dashboard/assets/js/portal-shell.js';
-import { collection, getDocs, addDoc, query, where, doc, getDoc, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+import { collection, getDocs, addDoc, query, where, doc, getDoc, updateDoc, setDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 
 const { account, role } = await boot({ id: 'filings', title: 'My filings', subtitle: 'File a new case, add to an existing one, enter an appearance, and track what you have submitted.' });
 const isAtty = has(ATTY, role), isPros = has(['Prosecuting Attorney'], role);
@@ -361,7 +361,19 @@ async function submit() {
       Object.assign(obj, { status: 'Accepted', accepted: true, autoFiled: true, reviewedBy: 'System (Auto-Filed)', reviewedAt: now, linkedCaseId: S.kase.caseId, linkedCaseFirestoreId: S.kase._id,
         activityLog: [{ text: ap ? 'Appearance entered automatically' : 'Automatically filed — filings in an existing case do not require clerk review', by: 'System', at: now }] });
     }
-    await addDoc(collection(db, 'pendingFilings'), obj);
+    const pf = await addDoc(collection(db, 'pendingFilings'), obj);
+    // Staff see a Notice of Electronic Filing on the case, and a task for motions and similar documents. Best effort: never blocks the filing.
+    if (!isNew && documents.length) try {
+      const cref = doc(db, 'caseManagement', S.kase._id), cs = await getDoc(cref), cd = cs.exists() ? cs.data() : { tasks: [], notifications: [], internalNotes: [], auditLog: [] };
+      const tasks = [...(cd.tasks || [])], notifications = [...(cd.notifications || [])];
+      let tn = tasks.reduce((m, t) => Math.max(m, t.num || 0), 0) + 1, nn = notifications.reduce((m, n) => Math.max(m, n.num || 0), 0) + 1;
+      documents.forEach(x => {
+        notifications.push({ num: nn++, type: 'NEF', title: 'Notice of Electronic Filing', text: `${x.documentType || x.name} filed by ${account.name} was accepted and entered on the docket.`, at: now, confirmationNumber: conf, read: false });
+        if ((/motion|petition|application|objection|stipulation for/i.test(x.documentType || '') || /\bMC 11[45]\b/.test(x.documentType || '')) && !/\bMC 20\b/.test(x.documentType || ''))
+          tasks.push({ num: tn, id: `${pf.id}-${tn}`, title: `${x.documentType} — needs review`, docType: x.documentType, filedBy: account.name, confirmationNumber: conf, status: 'Open', createdAt: now, suggestedActions: ['scheduleHearing', 'issueRuling'] }), tn++;
+      });
+      await setDoc(cref, { ...cd, tasks, notifications, caseFirestoreId: S.kase._id, lastUpdated: now }, { merge: true });
+    } catch (e) { console.warn('Could not write case-management record', e); }
     S.done = { conf, email: S.email.trim(), type: S.type, caseNo }; S.busy = false; loadMine(); render();
   } catch (e) { console.error(e); S.busy = false; S.err = e.message === 'side-conflict' ? 'An attorney cannot represent parties on both sides of a case.' : 'We could not submit your filing. Check your connection and try again.'; render(); }
 }

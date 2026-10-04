@@ -96,6 +96,29 @@ if (!has(STAFF, role)) {
   const log = (f, text) => [...(f.activityLog || []), { text, by: account.name, at: now() }];
   async function persist(f, patch) { await updateDoc(doc(db, 'pendingFilings', f._id), patch); Object.assign(f, patch); }
 
+  /* ── Case-management record (staff-only caseManagement/{caseId}): tasks, notices, audit log ── */
+  const MOTION_KEYWORDS = ['motion', 'petition', 'application', 'objection', 'stipulation for'];
+  const actionable = d => (MOTION_KEYWORDS.some(k => `${d.documentType || ''} ${d.name || ''}`.toLowerCase().includes(k)) || /\bMC 11[45]\b/.test(d.documentType || '')) && !isFW(d);
+  async function cmWrite(caseId, build) {   // best effort, like the old page: a failure here never blocks the filing
+    if (!caseId) return;
+    try {
+      const ref = doc(db, 'caseManagement', caseId), s = await getDoc(ref);
+      const data = s.exists() ? s.data() : { tasks: [], notifications: [], internalNotes: [], auditLog: [] };
+      await setDoc(ref, { ...data, ...build(data), caseFirestoreId: caseId, lastUpdated: now() }, { merge: true });
+    } catch (e) { console.warn('Could not write case-management record', e); }
+  }
+  const auditEntry = (caseId, action) => cmWrite(caseId, d => ({ auditLog: [...(d.auditLog || []), { action, by: account.name, byUid: account.uid, byRole: role, at: now() }] }));
+  // Every accepted filing in an open case produces a Notice of Electronic Filing; motions and similar documents also open a task.
+  const tasksAndNotices = (f, caseId) => cmWrite(caseId, d => {
+    const tasks = [...(d.tasks || [])], notifications = [...(d.notifications || [])];
+    let tn = tasks.reduce((m, t) => Math.max(m, t.num || 0), 0) + 1, nn = notifications.reduce((m, n) => Math.max(m, n.num || 0), 0) + 1;
+    (f.documents || []).forEach(x => {
+      notifications.push({ num: nn++, type: 'NEF', title: 'Notice of Electronic Filing', text: `${x.documentType || x.name || 'Document'} filed by ${f.filedBy || 'a party'} was accepted and entered on the docket.`, at: now(), confirmationNumber: f.confirmationNumber || null, read: false });
+      if (actionable(x)) tasks.push({ num: tn, id: `${f._id}-${tn}`, title: `${x.documentType || x.name || 'Filing'} — needs review`, docType: x.documentType || x.name || 'Filing', filedBy: f.filedBy || '—', confirmationNumber: f.confirmationNumber || null, status: 'Open', createdAt: now(), suggestedActions: ['scheduleHearing', 'issueRuling'] }), tn++;
+    });
+    return { tasks, notifications };
+  });
+
   /* ── Load ─────────────────────────────────────────────────────────── */
   async function load() {
     root.querySelector('#list') && (root.querySelector('#list').innerHTML = '<div class="loading-inline"><span class="spin-sm"></span>Loading filings…</div>');
@@ -108,6 +131,7 @@ if (!has(STAFF, role)) {
         const ref = doc(db, colFor(f.court), f.caseFirestoreId), events = eventsFor(f, cases[f.caseFirestoreId].events);
         await updateDoc(ref, { events, 'dates.lastUpdated': now() }); cases[f.caseFirestoreId].events = events;
         await persist(f, { status: 'Accepted', accepted: true, autoFiled: true, reviewedBy: 'System (Auto-Filed)', reviewedAt: now(), linkedCaseId: f.caseId || null, linkedCaseFirestoreId: f.caseFirestoreId, activityLog: log(f, 'Automatically filed — filings in an existing case do not need clerk review') });
+        await tasksAndNotices(f, f.caseFirestoreId);
       } catch (e) { console.warn('Auto-file failed', f._id, e); }
     }
   }
@@ -217,10 +241,12 @@ if (!has(STAFF, role)) {
           dates: { filed: f.dateFiled || now(), lastUpdated: now() }, parties: f.parties || [], judge: j?.name || null, judges: j ? [j.name] : [], judgeUid: j?.uid || null, hearings: [], financialOrders: [],
           events: eventsFor(f, []), sealed: false, relatedUserIds: f.filedByUid ? [f.filedByUid] : [], docketSummary: null, intakeConfirmationNumber: f.confirmationNumber, filingCounter: 1, ...(f.feeWaiver?.status === 'Denied with prejudice' ? { feeWaiverBarred: true } : {}) });
         id = num = caseId;
+        await auditEntry(caseId, j ? `Case opened and randomly assigned to ${j.name} (${j.role})` : 'Case opened. No judicial officer was available to assign.');
       } else if (id && cases[id]) {
         await updateDoc(doc(db, colFor(f.court), id), { events: eventsFor(f, cases[id].events), 'dates.lastUpdated': now() });
       }
       await persist(f, { status: 'Accepted', accepted: true, reviewedBy: account.name, reviewedByUid: account.uid, reviewedByRole: role, reviewedAt: now(), linkedCaseId: num, linkedCaseFirestoreId: id, activityLog: log(f, 'Accepted' + (num ? ' — case ' + num : '')) });
+      if (f.filingType !== 'new') await tasksAndNotices(f, id);
       await load();
     } catch (e) { console.error(e); msg = 'We could not accept this filing. Nothing was changed on the filing — try again.'; }
     busy = false; draw();
