@@ -17,6 +17,7 @@ b{font-weight:600}
 .sb-brand small{color:#9cc4f5;font-size:12.5px}
 .sb-nav{padding:14px 12px;display:flex;flex-direction:column;gap:2px;flex:1;overflow-y:auto}
 .sb-nav a{display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:4px;color:#c5d3e8;text-decoration:none;font-weight:500;border-left:3px solid transparent}
+.sb-bottom{margin-top:auto;padding-top:12px;border-top:1px solid #22406f}
 .sb-label{padding:18px 14px 6px;font-size:12.5px;font-weight:700;color:#9cc4f5;text-transform:uppercase;letter-spacing:.06em}
 .sb-nav a svg{width:19px;height:19px;flex-shrink:0}
 .sb-nav a:hover{background:var(--navy-mid);color:#fff}

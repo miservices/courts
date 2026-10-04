@@ -221,7 +221,7 @@ main{padding:36px 0 72px}
         <p class="lead">Choose how you'll use the Online Portal.</p>
         <fieldset class="roles">
           <legend class="visually-hidden" style="position:absolute;left:-9999px">Role</legend>
-          <label class="role"><input type="radio" name="role" value="public" onchange="selectRole('public')"><span class="box"><b>Portal user</b><span>Cases, fines, and filings</span></span></label>
+          <label class="role"><input type="radio" name="role" value="public" onchange="selectRole('public')"><span class="box"><b>Public user</b><span>Cases, fines, and filings</span></span></label>
           <label class="role"><input type="radio" name="role" value="bar" onchange="selectRole('bar')"><span class="box"><b>Bar member</b><span>Licensed attorney</span></span></label>
         </fieldset>
 
@@ -451,7 +451,7 @@ main{padding:36px 0 72px}
     const email = $('f-email').value.trim();
     const isBar = role === 'bar' && barData;
     const name  = isBar ? barData.name : (migovt.name || '—');
-    const roleLabel = isBar ? barData.role : 'Portal User';
+    const roleLabel = isBar ? barData.role : 'Public User';
     const pin = migovt.pin;
 
     await waitForFb();

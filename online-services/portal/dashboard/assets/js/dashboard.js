@@ -9,6 +9,44 @@ import { getFirestore, doc, getDoc, collection, getDocs }
 /* ── Settings (edit here) ─────────────────────────────────────────────── */
 const SIGNIN = '/courts/online-services/portal/';
 const PUBLIC = '/courts/';
+const BASE   = '/courts/online-services/portal/dashboard/';
+
+/* ── Roles: who sees which sidebar pages (edit the lists here) ─────────── */
+const SELF   = ['Public User', 'Justice System User', 'Provisional Attorney', 'Licensed Attorney', 'Prosecuting Attorney'];
+const ENFORCE = ['Justice System User', 'Prosecuting Attorney', 'Legal Services User'];
+const STAFF  = ['Court Reporter', 'Law Clerk', 'Judicial Assistant',
+                'Deputy Clerk', 'County Clerk', 'Court Administrator', 'Magistrate', 'Judge', 'Chief Judge',
+                'Deputy Clerk of the Supreme Court', 'Clerk of the Supreme Court', 'Reporter of Decisions',
+                'State Court Administrator', 'Justice', 'Chief Justice'];
+const SUPREME = ['Deputy Clerk of the Supreme Court', 'Clerk of the Supreme Court', 'Reporter of Decisions',
+                 'State Court Administrator', 'Justice', 'Chief Justice'];
+const LEGACY = { 'portal user': 'Public User', 'bar member': 'Licensed Attorney' };   // roles saved by the old sign-up
+const roleOf = a => { const r = String(a.role || '').trim(); return LEGACY[r.toLowerCase()] || r || 'Public User'; };
+
+/* ── Sidebar pages. roles: 'all' or a list. Paths are relative to BASE. ── */
+const NAV = [
+  { title: null, items: [
+    { id: 'overview', label: 'Overview', path: '', roles: 'all' } ] },
+  { title: 'Workspace', items: [
+    { id: 'cases',      label: 'My cases',           path: 'cases/',             roles: SELF },
+    { id: 'hearings',   label: 'My hearings',        path: 'hearings/',          roles: SELF },
+    { id: 'drafting',   label: 'Document Drafting',  path: 'document-drafting/', roles: [...SELF, ...STAFF] },
+    { id: 'filings',    label: 'My filings',         path: 'file/',              roles: SELF },
+    { id: 'financials', label: 'My financials',      path: 'financials/',        roles: SELF },
+    { id: 'enforce',    label: 'Enforcement services', path: 'enforcement-services/', roles: ENFORCE } ] },
+  { title: 'Court operations', items: [
+    { id: 'docket',      label: 'Docket',                    path: 'docket/',                        roles: STAFF },
+    { id: 'mhearings',   label: 'Manage Hearings',           path: 'hearings/manage/',               roles: STAFF },
+    { id: 'mcases',      label: 'Case Management',           path: 'cases/manage/',                  roles: STAFF },
+    { id: 'mfilings',    label: 'Manage Filings',            path: 'file/manage/',                   roles: STAFF },
+    { id: 'mfinancials', label: 'Manage Financials',         path: 'financials/manage/',             roles: STAFF },
+    { id: 'menforce',    label: 'Enforcement administration', path: 'enforcement-services/manage/',  roles: STAFF },
+    { id: 'reports',     label: 'Court Reports',             path: 'reports/',                       roles: STAFF } ] },
+  { title: 'Supreme Court', items: [
+    { id: 'opinions',       label: 'Opinions',       path: 'opinions/',       roles: SUPREME },
+    { id: 'administration', label: 'Administration', path: 'administration/', roles: SUPREME } ] }
+];
+const SETTINGS = { id: 'settings', label: 'Account Settings', path: 'settings/', roles: 'all' };   // always last
 const LINKS = [
   { label: 'Search cases',       href: '/courts/case-search/' },
   { label: 'Pay fines & fees',   href: '/courts/online-services/pay-fees/' },
@@ -103,25 +141,54 @@ async function loadData(account) {
 
 /* ── Sidebar ──────────────────────────────────────────────────────────── */
 const ICON = {
-  overview: '<path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z"/>',
-  link: '<path d="M7 17L17 7M9 7h8v8"/>'
+  overview:   '<path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z"/>',
+  cases:      '<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>',
+  hearings:   '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
+  drafting:   '<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 15l5-5 1.5 1.5L10.5 16.5H9z"/>',
+  filings:    '<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/>',
+  financials: '<rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20M6 15h4"/>',
+  enforce:    '<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/>',
+  docket:     '<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>',
+  mhearings:  '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4M9 15l2 2 4-4"/>',
+  mcases:     '<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2M3 13h18"/>',
+  mfilings:   '<path d="M8 3h8l4 4v10H8z"/><path d="M4 7v14h12"/>',
+  mfinancials:'<path d="M3 7h16a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2zM3 7l2-3h12v3"/><circle cx="16.5" cy="13.5" r="1"/>',
+  menforce:   '<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/>',
+  reports:    '<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
+  opinions:   '<path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2z"/><path d="M4 19V5M9 8h6"/>',
+  administration: '<path d="M4 21h16M5 21V10l7-5 7 5v11M9 21v-6h6v6"/>',
+  settings:   '<circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"/>',
+  link:       '<path d="M7 17L17 7M9 7h8v8"/>'
 };
 const svg = k => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICON[k]}</svg>`;
 
+const canSee = (item, role) => item.roles === 'all' || item.roles.some(r => norm(r) === norm(role));
+
 function renderSidebar(account) {
+  const role = roleOf(account);
+  const here = location.pathname.replace(/index\.html$/, '').replace(/\/?$/, '/');
+  const link = it => {
+    const href = BASE + it.path, on = href === here;
+    return `<a href="${href}" class="${on ? 'active' : ''}" ${on ? 'aria-current="page"' : ''}>${svg(it.id)}${esc(it.label)}</a>`;
+  };
+
+  const groups = NAV.map(g => ({ title: g.title, items: g.items.filter(i => canSee(i, role)) })).filter(g => g.items.length);
+  const nav = groups.map(g => `${g.title ? `<div class="sb-label">${esc(g.title)}</div>` : ''}${g.items.map(link).join('')}`).join('');
+
   $('sidebar-root').innerHTML = `
-    <a class="sb-brand" href="./">
+    <a class="sb-brand" href="${BASE}">
       <svg viewBox="0 0 52 52" aria-hidden="true"><circle cx="26" cy="26" r="25" fill="#fff"/><g stroke="#10264a" stroke-width="2" stroke-linecap="round" fill="none"><path d="M26 11v26M17 15h18M19 38h14"/><path d="M17 15l-6 12h12zM35 15l-6 12h12z" stroke-width="1.6" stroke-linejoin="round"/></g></svg>
       <span><b>Online Portal</b><small>Michigan Courts</small></span>
     </a>
     <nav class="sb-nav" aria-label="Portal">
-      <a href="./" class="active" aria-current="page">${svg('overview')}Overview</a>
+      ${nav}
       <div class="sb-label">Quick links</div>
       ${LINKS.map(l => `<a href="${l.href}">${svg('link')}${esc(l.label)}</a>`).join('')}
+      <div class="sb-bottom">${link(SETTINGS)}</div>
     </nav>
     <div class="sb-foot">
       <div class="sb-user"><div class="avatar" aria-hidden="true">${esc(initials(account.name))}</div>
-        <div><b>${esc(account.name)}</b><small>${esc(account.role || 'Portal User')}</small></div></div>
+        <div><b>${esc(account.name)}</b><small>${esc(role)}</small></div></div>
       <a class="sb-link" href="${PUBLIC}">Michigan Courts website</a>
       <button class="sb-signout" type="button" data-signout>Sign out</button>
     </div>`;
@@ -187,7 +254,7 @@ function renderOverview(account, d) {
 
   return `
     <section class="welcome">
-      <div><h3>Welcome back, ${esc(first)}</h3><p>${esc(account.role || 'Portal User')}${account.barNumber ? ' · Bar No. ' + esc(account.barNumber) : ''}</p></div>
+      <div><h3>Welcome back, ${esc(first)}</h3><p>${esc(roleOf(account))}${account.barNumber ? ' · Bar No. ' + esc(account.barNumber) : ''}</p></div>
       <div class="quick"><a href="/courts/online-services/pay-fees/">Pay a fine</a><a href="/courts/forms-and-filing/forms/">Court forms</a><a href="/courts/case-search/">Search cases</a></div>
     </section>
     <div class="stats">
