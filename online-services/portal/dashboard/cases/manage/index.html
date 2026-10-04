@@ -94,7 +94,7 @@ dialog>footer{display:flex;justify-content:flex-end;gap:10px;padding:14px 22px;b
 <div class="auth-loading-overlay" id="auth-overlay" role="status"><div class="alo-title">Online Portal</div><div class="spin"></div><div>Verifying your session…</div></div>
 
 <script type="module">
-import { boot, db, app, $, esc, has, STAFF, SUPREME, scopeOf, colFor, reserveFilingNumber, logAction, DISTRICT_COURT, SUPREME_COURT } from '/courts/online-services/portal/dashboard/assets/js/portal-shell.js';
+import { boot, db, app, $, esc, has, STAFF, SUPREME, scopeOf, colFor, reserveFilingNumber, logAction, DISTRICT_COURT, SUPREME_COURT } from '/courts/online-services/portal/dashboard/assets/js/portal-shell.js?v=6';
 import { collection, getDocs, getDoc, doc, query, where, updateDoc, setDoc, runTransaction } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 import { getStorage, ref as sRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-storage.js";
 

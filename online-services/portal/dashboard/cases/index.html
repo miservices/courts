@@ -66,7 +66,7 @@ tr[data-open]{cursor:pointer}
 <div class="auth-loading-overlay" id="auth-overlay" role="status"><div class="alo-title">Online Portal</div><div class="spin"></div><div>Verifying your session…</div></div>
 
 <script type="module">
-import { boot, db, $, esc, has, SELF, STAFF, colFor, DISTRICT_COURT, SUPREME_COURT } from '/courts/online-services/portal/dashboard/assets/js/portal-shell.js';
+import { boot, db, $, esc, has, SELF, STAFF, colFor, DISTRICT_COURT, SUPREME_COURT } from '/courts/online-services/portal/dashboard/assets/js/portal-shell.js?v=6';
 import { collection, getDocs, getDoc, doc, query, where } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 
 const { account, role } = await boot({ id: 'cases', title: 'My cases', subtitle: 'Cases where you are a party or an attorney of record.' });

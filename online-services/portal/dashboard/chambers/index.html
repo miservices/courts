@@ -53,7 +53,7 @@ dialog>footer{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:10px;padd
 <div class="auth-loading-overlay" id="auth-overlay" role="status"><div class="alo-title">Online Portal</div><div class="spin"></div><div>Verifying your session…</div></div>
 
 <script type="module">
-import { boot, db, $, esc, has, roleOf, STAFF, SUPREME, DISTRICT, DISTRICT_COURT, SUPREME_COURT, AO4, CLERKS, CHAMBERS_STAFF, OFFICERS, ADMINS, newCompDoc } from '/courts/online-services/portal/dashboard/assets/js/portal-shell.js';
+import { boot, db, $, esc, has, roleOf, STAFF, SUPREME, DISTRICT, DISTRICT_COURT, SUPREME_COURT, AO4, CLERKS, CHAMBERS_STAFF, OFFICERS, ADMINS, newCompDoc } from '/courts/online-services/portal/dashboard/assets/js/portal-shell.js?v=6';
 import { collection, getDocs, getDoc, doc, runTransaction } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 
 const { account, role } = await boot({ id: 'chambers', title: 'Chambers', subtitle: 'Assign staff, set compensation, and keep Administrative Order No. 4 records.' });
