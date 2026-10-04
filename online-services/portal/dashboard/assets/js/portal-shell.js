@@ -2,7 +2,7 @@
    Usage: const { account, role } = await boot({ id: 'filings', title: '...', subtitle: '...' }); */
 import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
 import { getAuth, setPersistence, browserLocalPersistence, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
-import { getFirestore, doc, getDoc, runTransaction } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+import { getFirestore, doc, getDoc, runTransaction, collection, getDocs } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 
 const SIGNIN = '/courts/online-services/portal/', PUBLIC = '/courts/';
 const BASE = 'https://migovt.org/courts/online-services/portal/dashboard/';
@@ -55,7 +55,7 @@ const NAV = [
   ['Workspace', [['cases', 'My cases', 'cases/', SELF], ['hearings', 'My hearings', 'hearings/', SELF], ['drafting', 'Document Drafting', 'document-drafting/', [...SELF, ...STAFF]],
     ['filings', 'My filings', 'file/', SELF], ['financials', 'My financials', 'financials/', SELF], ['enforce', 'Enforcement services', 'enforcement-services/', ENFORCE]]],
   ['Court operations', [['docket', 'Docket', 'docket/', STAFF], ['mhearings', 'Manage Hearings', 'hearings/manage/', STAFF], ['mcases', 'Case Management', 'cases/manage/', STAFF],
-    ['mfilings', 'Manage Filings', 'file/manage/', STAFF], ['mfinancials', 'Manage Financials', 'financials/manage/', STAFF], ['menforce', 'Enforcement administration', 'enforcement-services/manage/', STAFF], ['reports', 'Court Reports', 'reports/', STAFF]]],
+    ['chambers', 'Chambers', 'chambers/', STAFF], ['mfilings', 'Manage Filings', 'file/manage/', STAFF], ['mfinancials', 'Manage Financials', 'financials/manage/', STAFF], ['menforce', 'Enforcement administration', 'enforcement-services/manage/', STAFF], ['reports', 'Court Reports', 'reports/', STAFF]]],
   ['Supreme Court', [['opinions', 'Opinions', 'opinions/', SUPREME], ['administration', 'Administration', 'administration/', SUPREME]]]
 ];
 const LINKS = [['Search cases', '/courts/case-search/', 'all'], ['Manual court forms', '/courts/forms-and-filing/forms/', 'all'], ['Filing information', '/courts/forms-and-filing/information/', SELF]];
@@ -65,7 +65,7 @@ const ICON = {
   filings: 'M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8zM14 3v5h5M9 13h6M9 17h6', financials: 'M4 5h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2zM2 10h20M6 15h4',
   enforce: 'M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z', docket: 'M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01', mhearings: 'M5 5h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2zM3 10h18M9 15l2 2 4-4',
   mcases: 'M5 7h14a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2zM9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2M3 13h18', mfilings: 'M8 3h8l4 4v10H8zM4 7v14h12',
-  mfinancials: 'M3 7h16a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2zM3 7l2-3h12v3', menforce: 'M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6zM9 12l2 2 4-4', reports: 'M4 20V10M10 20V4M16 20v-7M22 20H2',
+  mfinancials: 'M3 7h16a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2zM3 7l2-3h12v3', menforce: 'M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6zM9 12l2 2 4-4', chambers: 'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1M18 4l2 2-2 2', reports: 'M4 20V10M10 20V4M16 20v-7M22 20H2',
   opinions: 'M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2zM4 19V5M9 8h6', administration: 'M4 21h16M5 21V10l7-5 7 5v11M9 21v-6h6v6', settings: 'M12 4a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1', link: 'M7 17L17 7M9 7h8v8'
 };
 const svg = k => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${ICON[k]}"/></svg>`;
@@ -100,6 +100,60 @@ const CSS = `
 .cbo{padding:10px 12px;cursor:pointer;border-top:1px solid #eef2f7}.cbo:hover,.cbo.hl{background:#e8f0fb}.cbn{padding:14px 12px;color:var(--muted)}
 .acts{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.mt{margin-top:14px}
 @media(max-width:700px){.cols{grid-template-columns:1fr}.steps{grid-template-columns:1fr 1fr}}`;
+
+
+/* ── Judicial Administrative Compensation Program (Administrative Order No. 4) ──
+   compensation/{accountId} holds one record per person: current weekly pay, pay history, discretionary pay,
+   bonuses, and every action-based payment. Action pay is recorded automatically by logAction (AO 4 § I). */
+export const CLERKS = ['County Clerk', 'Deputy Clerk', 'Clerk of the Supreme Court', 'Deputy Clerk of the Supreme Court'];
+export const CHAMBERS_STAFF = ['Law Clerk', 'Judicial Assistant'];
+export const OFFICERS = ['Justice', 'Chief Justice', 'Judge', 'Chief Judge', 'Magistrate'];
+export const ADMINS = ['Court Administrator', 'State Court Administrator'];
+export const AO4 = {
+  weeklyMin: 1500, weeklyMax: 3000, maxPaidDeputies: 3, bonusPerPublication: 8000, bonusMinPages: 30,
+  fixedWeekly: { 'Court Administrator': 4500, 'State Court Administrator': 6000, 'Reporter of Decisions': 5000, 'Clerk of the Supreme Court': 5000, 'Deputy Clerk of the Supreme Court': 4000, 'County Clerk': 5000, 'Deputy Clerk': 4000 },
+  weeklyBudget: r => has(['Justice', 'Chief Justice'], r) ? 9000 : r === 'Chief Judge' ? 8000 : 7000,
+  discretionaryBudget: r => has(['Justice', 'Chief Justice'], r) ? 30000 : r === 'Chief Judge' ? 25000 : 20000,
+  poolCap: r => r === 'State Court Administrator' ? 4000 : 3500, poolBudget: r => r === 'State Court Administrator' ? 18000 : 12000,
+  rates: {   // [chambers staff, clerks, local court administrator]
+    'event-entry':      { label: 'Entered an event into the court system', staff: 10, clerk: 10, admin: 2 },
+    'filing-processed': { label: 'Processed a filing', staff: 25, clerk: 25, admin: 5 },
+    'filing-entered':   { label: 'Entered a filing into the court system', staff: 25, clerk: 25, admin: 5 },
+    'case-closed':      { label: 'Case closed', staff: 500 },
+    'jury-summons':     { label: 'Jury summons issued', admin: 100 }
+  }
+};
+let _accts = null;
+const allAccounts = () => _accts || (_accts = getDocs(collection(db, 'accounts')).then(s => s.docs.map(d => ({ uid: d.id, ...d.data() }))).catch(e => { _accts = null; console.warn('Accounts unavailable for compensation', e); return []; }));
+const nkey = n => { const t = String(n || '').toLowerCase().replace(/^hon\.?\s+/, '').replace(/[.,]/g, '').trim().split(/\s+/); return t.length ? t[0] + ' ' + t[t.length - 1] : ''; };
+export const newCompDoc = (a, court) => ({ uid: a.uid, name: a.name || '', role: a.role || '', court: court || null, supervisor: a.supervisor || null, supervisorUid: a.supervisorUid || null, weekly: null, weeklyHistory: [], discretionary: [], bonuses: [], actions: [], actionTotals: {}, actionEarnings: 0, submissions: [], activity: [], createdAt: new Date().toISOString() });
+async function pay(payee, court, entry) {
+  const r = doc(db, 'compensation', payee.uid);
+  await runTransaction(db, async tx => {
+    const s = await tx.get(r), d = s.exists() ? s.data() : newCompDoc(payee, court);
+    if ((d.actions || []).some(x => x.ref === entry.ref)) return;               // never pay twice for the same action
+    const t = { ...(d.actionTotals || {}) }; t[entry.type] = { count: (t[entry.type]?.count || 0) + 1, amount: (t[entry.type]?.amount || 0) + entry.amount };
+    const next = { ...d, actions: [...(d.actions || []), entry].slice(-500), actionTotals: t, actionEarnings: (d.actionEarnings || 0) + entry.amount, updatedAt: entry.at };
+    s.exists() ? tx.update(r, next) : tx.set(r, next);
+  });
+}
+// Called after a qualifying action is saved. Never throws: a failed compensation record must not undo court work.
+export async function logAction(actor, actorRole, court, type, { caseId, ref, judgeUid, judgeName } = {}) {
+  try {
+    const rate = AO4.rates[type]; if (!rate) return;
+    const at = new Date().toISOString(), by = { name: actor.name, uid: actor.uid, role: actorRole }, basis = 'AO No. 4', jobs = [];
+    const mk = (payee, amount, why) => ({ id: `${type}-${payee.uid}-${Date.now().toString(36)}`, type, label: rate.label, amount, at, caseId: caseId || null, ref: `${ref || caseId + ':' + at}:${payee.uid}`, performedBy: by, court, basis: basis + ' § ' + why });
+    const people = await allAccounts();
+    if (type === 'case-closed') {
+      people.filter(p => has(CHAMBERS_STAFF, p.role) && p.supervisorUid && (p.supervisorUid === judgeUid || (judgeName && nkey(p.supervisor) === nkey(judgeName)))).forEach(p => jobs.push(pay(p, court, mk(p, rate.staff, 'C(1)(d)'))));
+    } else {
+      if (rate.clerk && has(CLERKS, actorRole)) jobs.push(pay(actor, court, mk(actor, rate.clerk, 'G(5)')));
+      else if (rate.staff && has(CHAMBERS_STAFF, actorRole) && actor.supervisorUid) jobs.push(pay(actor, court, mk(actor, rate.staff, 'C(1)')));
+      if (rate.admin && court === DISTRICT_COURT) people.filter(p => key(p.role) === key('Court Administrator')).forEach(p => jobs.push(pay(p, court, mk(p, rate.admin, 'E(1)'))));
+    }
+    await Promise.all(jobs);
+  } catch (e) { console.warn('Compensation record not saved', e); }
+}
 
 export function boot({ id, title, subtitle }) {
   document.head.insertAdjacentHTML('beforeend', `<style>${CSS}</style>`);

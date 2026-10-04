@@ -71,7 +71,7 @@ dialog>footer{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:10px;padd
 <div class="auth-loading-overlay" id="auth-overlay" role="status"><div class="alo-title">Online Portal</div><div class="spin"></div><div>Verifying your session…</div></div>
 
 <script type="module">
-import { boot, db, $, esc, has, STAFF, scopeOf, colFor, DISTRICT_COURT, SUPREME_COURT } from '/courts/online-services/portal/dashboard/assets/js/portal-shell.js';
+import { boot, db, $, esc, has, STAFF, scopeOf, colFor, logAction, DISTRICT_COURT, SUPREME_COURT } from '/courts/online-services/portal/dashboard/assets/js/portal-shell.js';
 import { collection, getDocs, doc, runTransaction } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 
 const { account, role } = await boot({ id: 'mhearings', title: 'Manage Hearings', subtitle: 'Schedule, reschedule, and record the outcome of hearings.' });
@@ -145,8 +145,10 @@ const hearingConflicts = (o, c, selfKey) => { const s0 = new Date(o.date).getTim
 // Every change re-reads the case first, so edits made at the same time elsewhere are never overwritten.
 async function mutate(c, fn, audit) {
   const r = doc(db, colFor(c.court), c._id);
-  const next = await runTransaction(db, async tx => { const s = await tx.get(r); if (!s.exists()) bad('This case no longer exists.'); const d = s.data(), p = fn(d) || {}; p.dates = { ...(p.dates || d.dates || {}), lastUpdated: now() }; tx.update(r, p); return { ...d, ...p }; });
-  Object.assign(c, next); if (audit) await addAudit(c, audit);
+  const next = await runTransaction(db, async tx => { const s = await tx.get(r); if (!s.exists()) bad('This case no longer exists.'); const d = s.data(), p = fn(d) || {}; p.dates = { ...(p.dates || d.dates || {}), lastUpdated: now() }; tx.update(r, p); return { ...d, ...p, __was: d }; });
+  const was = next.__was; delete next.__was; Object.assign(c, next); if (audit) await addAudit(c, audit);
+  // Compensation (AO No. 4 § I): each new docket entry is an event entered into the court system.
+  for (const e of (next.events || []).slice((was.events || []).length)) await logAction(account, role, c.court, 'event-entry', { caseId: c.caseId, ref: `${c.caseId}:event:${e.eventNumber}` });
 }
 async function hearingMutate(c, old, fn, audit, evFn) {
   await mutate(c, d => { const arr = [...(d.hearings || [])]; let k = -1;

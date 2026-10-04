@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Court Reports | Online Portal</title>
+<link rel="icon" type="image/png" href="/courts/images/favicon.png">
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=Source+Serif+4:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/courts/online-services/portal/dashboard/assets/css/dashboard.css?v=5">
+<style>
+.m{color:var(--muted);font-weight:400}.mt{margin-top:16px}
+.tools{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px;align-items:center}.tools .in{width:auto;min-width:0;flex:0 0 auto}.tools .grow{flex:1}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}@media(max-width:900px){.grid2{grid-template-columns:1fr}}
+.card h3{font-size:18px;margin-bottom:4px}.card .sub{color:var(--muted);margin-bottom:14px;font-size:14.5px}
+.bars{display:grid;gap:8px}.br{display:grid;grid-template-columns:minmax(110px,190px) 1fr auto;gap:12px;align-items:center;font-size:14.5px}.bl{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bt{height:14px;background:#e9eef5;border-radius:3px;overflow:hidden;display:block}.bt i{display:block;height:100%;background:var(--navy);border-radius:3px}.br b{min-width:44px;text-align:right}
+.mchart{display:grid;grid-template-columns:repeat(12,1fr);gap:6px;align-items:end;height:190px;border-bottom:1px solid var(--line);padding-top:8px}
+.mc{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:2px}.mc .pair{display:flex;gap:3px;align-items:flex-end;height:calc(100% - 18px);width:100%;justify-content:center}
+.mc .pair span{display:block;width:42%;max-width:20px;background:var(--navy);border-radius:3px 3px 0 0;min-height:1px}.mc .pair span.b{background:#7fa6d6}.mc small{font-size:11.5px;color:var(--muted);height:16px;line-height:16px}
+.legend{display:flex;gap:16px;flex-wrap:wrap;margin-top:8px;font-size:14px;color:var(--muted)}.legend i{display:inline-block;width:12px;height:12px;border-radius:2px;background:var(--navy);margin-right:6px;vertical-align:-1px}.legend i.b{background:#7fa6d6}
+.mvals{display:grid;grid-template-columns:repeat(12,1fr);gap:6px;font-size:11.5px;color:var(--muted);text-align:center;margin-top:4px}
+td small,th small{display:block;color:var(--muted);font-weight:400}.num{text-align:right;white-space:nowrap}th.num{text-align:right}
+.soon{padding:40px 22px;text-align:center}.soon h3{font-size:22px;margin-bottom:6px}
+.note{border-left:4px solid var(--navy);background:#eef3f9;border-radius:4px;padding:10px 14px;margin-bottom:14px;color:var(--navy)}
+@media print{.sidebar,.topbar,.tools,.tabs{display:none!important}.main{margin:0!important}}
+</style>
+</head>
+<body>
+<aside class="sidebar" id="sidebar-root" aria-label="Portal navigation"></aside>
+<div class="scrim" id="scrim" hidden></div>
+<div class="main">
+  <header class="topbar">
+    <div class="topbar-left">
+      <button class="menu-btn" id="menu-btn" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="sidebar-root"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+      <div><span class="topbar-eyebrow">Online Portal</span><span class="topbar-page-title" id="topbar-title">Court Reports</span></div>
+    </div>
+    <div class="topbar-right"><span class="topbar-date" id="topbar-date"></span><div class="notif-wrap" id="notif-root"></div></div>
+  </header>
+  <main class="page-body">
+    <div class="page-head"><div><h2 id="page-title">Court Reports</h2><p id="page-subtitle"></p></div><div id="page-action"></div></div>
+    <div id="page-body"><div class="loading-inline"><span class="spin-sm"></span>Building reports…</div></div>
+  </main>
+</div>
+<div class="auth-loading-overlay" id="auth-overlay" role="status"><div class="alo-title">Online Portal</div><div class="spin"></div><div>Verifying your session…</div></div>
+
+<script type="module">
+import { boot, db, $, esc, has, roleOf, STAFF, scopeOf, colFor, AO4, OFFICERS, ADMINS, DISTRICT_COURT, SUPREME_COURT } from '/courts/online-services/portal/dashboard/assets/js/portal-shell.js';
+import { collection, getDocs } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+
+const { account, role } = await boot({ id: 'reports', title: 'Court Reports', subtitle: 'Caseload, filings, and financial reports for the court.' });
+const root = $('page-body');
+if (!has(STAFF, role)) root.innerHTML = '<section class="card"><div class="empty"><strong>Court staff only</strong><p>Court Reports are limited to court staff.</p></div></section>';
+else await main();
+
+async function main() {
+const scope = scopeOf(role), DC = DISTRICT_COURT, SC = SUPREME_COURT, oversight = has(['Chief Judge', 'Court Administrator', 'Chief Justice', 'State Court Administrator'], role);
+const money = n => (Number(n) || 0).toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 0 });
+const pct = (a, b) => b ? Math.round(a / b * 100) + '%' : '—', avg = l => l.length ? Math.round(l.reduce((t, x) => t + x, 0) / l.length) : null;
+const parse = s => { const d = new Date(s); return isNaN(d) ? null : d; }, days = (a, b) => Math.max(0, Math.round((b - a) / 864e5));
+const p2 = n => String(n).padStart(2, '0'), mk = d => `${d.getFullYear()}-${p2(d.getMonth() + 1)}`;
+const NOW = new Date(), isClosed = c => /closed|disposed/i.test(c.status || ''), closeDate = c => parse(c.dates?.closed || c.dates?.lastUpdated), filedDate = c => parse(c.dates?.filed);
+const grp = (l, f) => { const m = new Map(); l.forEach(x => { const k = f(x) || 'Not specified'; (m.get(k) || m.set(k, []).get(k)).push(x); }); return [...m.entries()]; };
+const fmtDate = s => { const d = parse(s); return d ? d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—'; };
+
+/* ── Data ───────────────────────────────────────────────────────────── */
+const D = { cases: { [DC]: [], [SC]: [] }, filings: [], comp: [], people: [], compOk: true };
+async function load() {
+  const safe = p => p.catch(e => { console.warn(e); return { docs: [] }; });
+  const [dc, sc, pf, ac] = await Promise.all([scope.includes(DC) ? safe(getDocs(collection(db, colFor(DC)))) : { docs: [] }, scope.includes(SC) ? safe(getDocs(collection(db, colFor(SC)))) : { docs: [] }, safe(getDocs(collection(db, 'pendingFilings'))), safe(getDocs(collection(db, 'accounts')))]);
+  D.cases[DC] = dc.docs.map(d => ({ ...d.data(), _id: d.id })); D.cases[SC] = sc.docs.map(d => ({ ...d.data(), _id: d.id }));
+  D.filings = pf.docs.map(d => ({ ...d.data(), _id: d.id })); D.people = ac.docs.map(d => ({ ...d.data(), uid: d.id, role: roleOf(d.data()) }));
+  try { D.comp = (await getDocs(collection(db, 'compensation'))).docs.map(d => ({ ...d.data(), uid: d.id })); } catch (e) { console.warn(e); D.compOk = false; }
+}
+let court = scope[0], tab = 'caseload', per = '12m';
+const since = () => { const d = new Date(NOW); return per === '30d' ? new Date(d.setDate(d.getDate() - 30)) : per === '90d' ? new Date(d.setDate(d.getDate() - 90)) : per === 'ytd' ? new Date(d.getFullYear(), 0, 1) : per === '12m' ? new Date(d.getFullYear(), d.getMonth() - 11, 1) : null; };
+const inP = v => { const t = v instanceof Date ? v : parse(v), s = since(); return !!t && (!s || t >= s) && t <= NOW; };
+const PER = { '30d': 'Last 30 days', '90d': 'Last 90 days', ytd: 'Year to date', '12m': 'Last 12 months', all: 'All time' };
+const months = () => Array.from({ length: 12 }, (_, i) => { const d = new Date(NOW.getFullYear(), NOW.getMonth() - 11 + i, 1); return { k: mk(d), l: d.toLocaleDateString('en-US', { month: 'short' }) }; });
+
+/* ── Building blocks ────────────────────────────────────────────────── */
+const stat = (l, v, al) => `<div class="stat ${al ? 'alert-stat' : ''}"><span>${l}</span><b>${v}</b></div>`;
+const card = (t, sub, body) => `<section class="card"><h3>${t}</h3>${sub ? `<p class="sub">${sub}</p>` : ''}${body}</section>`;
+const bars = (rows, fmt = n => n.toLocaleString('en-US')) => rows.length ? `<div class="bars">${(() => { const mx = Math.max(1, ...rows.map(r => r.v)); return rows.map(r => `<div class="br"><span class="bl" title="${esc(r.l)}">${esc(r.l)}</span><span class="bt"><i style="width:${Math.max(r.v ? 2 : 0, r.v / mx * 100)}%"></i></span><b>${fmt(r.v)}</b></div>`).join(''); })()}</div>` : '<p class="m">Nothing to report for this period.</p>';
+const table = (heads, rows, none = 'Nothing to report for this period.') => rows.length ? `<div class="table-scroll"><table><thead><tr>${heads.map(h => `<th${h[1] ? ' class="num"' : ''}>${h[0] || h}</th>`).join('')}</tr></thead><tbody>${rows.join('')}</tbody></table></div>` : `<p class="m">${none}</p>`;
+const monthChart = (a, b, la, lb) => { const ms = months(), mx = Math.max(1, ...ms.map(m => Math.max(a[m.k] || 0, b[m.k] || 0)));
+  return `<div class="mchart" role="img" aria-label="${esc(la)} and ${esc(lb)} by month">${ms.map(m => `<div class="mc"><div class="pair"><span style="height:${(a[m.k] || 0) / mx * 100}%" title="${esc(la)} ${a[m.k] || 0}"></span><span class="b" style="height:${(b[m.k] || 0) / mx * 100}%" title="${esc(lb)} ${b[m.k] || 0}"></span></div><small>${m.l}</small></div>`).join('')}</div>
+  <div class="mvals">${ms.map(m => `<span>${a[m.k] || 0} / ${b[m.k] || 0}</span>`).join('')}</div><div class="legend"><span><i></i>${esc(la)}</span><span><i class="b"></i>${esc(lb)}</span></div>`; };
+const tally = (l, f) => { const o = {}; l.forEach(x => { const d = f(x); if (d) { const k = mk(d); o[k] = (o[k] || 0) + 1; } }); return o; };
+const hearingsOf = cs => cs.flatMap(c => (c.hearings || []).map(h => ({ c, h, when: parse(h.date) })).filter(x => x.when));
+
+/* ── Caseload ───────────────────────────────────────────────────────── */
+function caseload() {
+  const msc = court === SC, cs = D.cases[court], open = cs.filter(c => !isClosed(c)), opened = cs.filter(c => inP(filedDate(c))), closed = cs.filter(c => isClosed(c) && inP(closeDate(c)));
+  const age = c => { const f = filedDate(c); return f ? days(f, NOW) : null; }, ages = open.map(age).filter(x => x !== null), toClose = closed.map(c => { const f = filedDate(c), e = closeDate(c); return f && e ? days(f, e) : null; }).filter(x => x !== null);
+  const hs = hearingsOf(cs), soon = hs.filter(x => !x.h.result && x.when > NOW && x.when - NOW <= 30 * 864e5), needs = hs.filter(x => !x.h.result && x.when < NOW);
+  const evs = cs.flatMap(c => (c.events || []).map(e => ({ e, c }))).filter(x => inP(x.e.date)), opinions = evs.filter(x => /opinion/i.test(`${x.e.type} ${x.e.description}`)), orders = evs.filter(x => /\border\b/i.test(`${x.e.type} ${x.e.description}`));
+  const aging = [['0–30 days', 0, 30], ['31–90 days', 31, 90], ['91–180 days', 91, 180], ['181–365 days', 181, 365], ['Over a year', 366, 1e9]].map(([l, a, b]) => ({ l, v: ages.filter(x => x >= a && x <= b).length }));
+  const types = grp(cs, c => c.caseType).sort((a, b) => b[1].length - a[1].length), byJudge = grp(open, c => c.judge || 'Unassigned').sort((a, b) => b[1].length - a[1].length);
+  const hasNext = c => (c.hearings || []).some(h => !h.result && parse(h.date) > NOW);
+  const oa = hs.filter(x => /oral argument/i.test(x.h.type || ''));
+  return `<div class="stats">${stat('Cases on record', cs.length)}${stat(msc ? 'Pending' : 'Open', open.length)}${stat('Filed in period', opened.length)}${stat(msc ? 'Decided in period' : 'Closed in period', closed.length)}${stat('Clearance rate', pct(closed.length, opened.length))}${stat('Average age, open', ages.length ? avg(ages) + ' days' : '—')}</div>
+  <p class="m" style="margin:-4px 0 16px">Clearance rate is cases closed divided by cases filed in the period. Closed includes disposed cases. ${esc(PER[per])}.</p>
+  <div class="grid2">${card('Filed and closed by month', 'Last 12 months. Under each month: filed / closed.', monthChart(tally(cs, filedDate), tally(cs.filter(isClosed), closeDate), 'Filed', 'Closed'))}
+  ${card('Age of open cases', `${open.length} ${msc ? 'pending' : 'open'} case${open.length === 1 ? '' : 's'}${ages.length ? `, oldest ${Math.max(...ages)} days` : ''}`, bars(aging))}</div>
+  <div class="mt">${card('By case type', msc ? 'Applications, appeals, and original actions' : 'Every case on record', table(['Type', ['On record', 1], [msc ? 'Pending' : 'Open', 1], ['Filed in period', 1], ['Closed in period', 1], ['Clearance', 1], ['Avg days to close', 1]], types.map(([t, l]) => { const o = l.filter(c => !isClosed(c)).length, f = l.filter(c => inP(filedDate(c))).length, k = l.filter(c => isClosed(c) && inP(closeDate(c))), d = avg(k.map(c => { const a = filedDate(c), b = closeDate(c); return a && b ? days(a, b) : null; }).filter(x => x !== null)); return `<tr><td><b>${esc(t)}</b></td><td class="num">${l.length}</td><td class="num">${o}</td><td class="num">${f}</td><td class="num">${k.length}</td><td class="num">${pct(k.length, f)}</td><td class="num">${d ?? '—'}</td></tr>`; }), 'No cases on record.'))}</div>
+  <div class="grid2 mt">${card(msc ? 'Pending cases by justice' : 'Open caseload by judicial officer', 'Cases assigned to each officer', table(['Officer', [msc ? 'Pending' : 'Open', 1], ['Over 180 days', 1], ['No hearing set', 1]], byJudge.map(([j, l]) => `<tr><td><b>${esc(j)}</b></td><td class="num">${l.length}</td><td class="num">${l.filter(c => age(c) > 180).length}</td><td class="num">${l.filter(c => !hasNext(c)).length}</td></tr>`), 'No open cases.'))}
+  ${card('By status', 'Cases on record', bars(grp(cs, c => c.status).sort((a, b) => b[1].length - a[1].length).map(([l, v]) => ({ l, v: v.length }))))}</div>
+  ${msc ? `<div class="grid2 mt">${card('Opinions, orders and arguments', esc(PER[per]), table(['Measure', ['Count', 1]], [['Opinions issued', opinions.length], ['Orders entered', orders.length], ['Oral arguments held', oa.filter(x => inP(x.when) && /argu/i.test(x.h.result || '')).length], ['Cases submitted without argument', oa.filter(x => inP(x.when) && /submitted/i.test(x.h.result || '')).length], ['Oral arguments scheduled', oa.filter(x => !x.h.result && x.when > NOW).length]].map(([l, v]) => `<tr><td>${l}</td><td class="num"><b>${v}</b></td></tr>`)))}
+    ${card('Cases by lower court', 'Where pending and decided cases came from', bars(grp(cs.filter(c => c.lowerCourt?.court), c => c.lowerCourt.court).sort((a, b) => b[1].length - a[1].length).slice(0, 10).map(([l, v]) => ({ l, v: v.length }))))}</div>`
+  : `<div class="grid2 mt">${card('Hearings', 'Scheduled and held', table(['Measure', ['Count', 1]], [['Hearings in the next 30 days', soon.length], ['  In person', soon.filter(x => x.h.attendance !== 'video' && x.h.attendance !== 'hybrid').length], ['  In person or by video', soon.filter(x => x.h.attendance === 'hybrid').length], ['  Video only', soon.filter(x => x.h.attendance === 'video').length], ['Held without a recorded result', needs.length], ['Held in period', hs.filter(x => x.h.result && x.h.result !== 'Cancelled' && inP(x.when)).length], ['Cancelled in period', hs.filter(x => x.h.result === 'Cancelled' && inP(x.when)).length]].map(([l, v]) => `<tr><td>${esc(l)}</td><td class="num"><b>${v}</b></td></tr>`)))}
+    ${card('Housekeeping', 'Records that need attention', table(['Measure', ['Count', 1]], [['Cases with no judicial officer', cs.filter(c => !c.judge && !isClosed(c)).length], ['Open cases with no future hearing', open.filter(c => !hasNext(c)).length], ['Sealed cases', cs.filter(c => c.sealed).length], ['Cases waiting to be closed (disposed)', cs.filter(c => /disposed/i.test(c.status || '')).length]].map(([l, v]) => `<tr><td>${l}</td><td class="num"><b>${v}</b></td></tr>`)))}</div>`}`;
+}
+
+/* ── Filings ────────────────────────────────────────────────────────── */
+const stOf = f => f.status || 'Pending';
+function filings() {
+  const msc = court === SC, cs = D.cases[court], pf = D.filings.filter(f => f.court === court), inPf = pf.filter(f => inP(f.dateFiled));
+  const evs = cs.flatMap(c => (c.events || []).filter(e => e.type === 'filing').map(e => ({ e, c }))), ev = evs.filter(x => inP(x.e.date)), opened = cs.filter(c => inP(filedDate(c)));
+  const pending = pf.filter(f => stOf(f) === 'Pending'), oldest = pending.map(f => parse(f.dateFiled)).filter(Boolean).sort((a, b) => a - b)[0];
+  const done = inPf.filter(f => f.reviewedAt && !f.autoFiled), hrs = avg(done.map(f => { const a = parse(f.dateFiled), b = parse(f.reviewedAt); return a && b ? Math.round((b - a) / 36e5) : null; }).filter(x => x !== null));
+  const acc = inPf.filter(f => stOf(f) === 'Accepted'), ret = inPf.filter(f => stOf(f) === 'Returned'), rej = inPf.filter(f => stOf(f) === 'Rejected'), auto = acc.filter(f => f.autoFiled), clerkAcc = acc.length - auto.length;
+  const docs = {}; inPf.forEach(f => (f.documents?.length ? f.documents : [{ documentType: f.documentType }]).forEach(d => { const k = d.documentType || d.name || 'Document'; docs[k] = (docs[k] || 0) + 1; }));
+  const fw = inPf.filter(f => f.feeWaiver?.status).map(f => f.feeWaiver.status), counsel = inPf.filter(f => f.isFilingAsCounsel).length;
+  return `<div class="stats">${stat('Documents docketed', ev.length)}${stat(msc ? 'New cases and applications' : 'New cases opened', opened.length)}${stat('E-filings submitted', inPf.length)}${stat('Awaiting review now', pending.length, pending.length > 0)}${stat('Average review time', hrs !== null ? (hrs >= 48 ? Math.round(hrs / 24) + ' days' : hrs + ' hrs') : '—')}${stat('Accepted by clerk', pct(clerkAcc, clerkAcc + ret.length + rej.length))}</div>
+  <p class="m" style="margin:-4px 0 16px">${esc(PER[per])}. ${oldest ? `Oldest waiting filing was submitted ${fmtDate(oldest)}. ` : ''}Filings in open cases are filed automatically and are not counted in the clerk acceptance rate.</p>
+  <div class="grid2">${card('Documents docketed by month', 'Last 12 months. Under each month: documents docketed / cases opened.', monthChart(tally(evs.map(x => x.e), e => parse(e.date)), tally(cs, filedDate), 'Documents docketed', 'New cases'))}
+  ${card('E-filing outcomes', esc(PER[per]), table(['Outcome', ['Filings', 1], ['Share', 1]], [['Filed automatically', auto.length], ['Accepted by a clerk', clerkAcc], ['Returned for correction', ret.length], ['Rejected', rej.length], ['Still pending', inPf.filter(f => stOf(f) === 'Pending').length]].map(([l, v]) => `<tr><td>${l}</td><td class="num"><b>${v}</b></td><td class="num">${pct(v, inPf.length)}</td></tr>`)))}</div>
+  <div class="grid2 mt">${card('Most filed documents', 'Document types submitted for e-filing', bars(Object.entries(docs).sort((a, b) => b[1] - a[1]).slice(0, 10).map(([l, v]) => ({ l, v }))))}
+  ${card(msc ? 'New filings by case type' : 'New cases by type', esc(PER[per]), bars(grp(opened, c => c.caseType).sort((a, b) => b[1].length - a[1].length).map(([l, v]) => ({ l, v: v.length }))))}</div>
+  <div class="grid2 mt">${card('Who is filing', 'E-filings in the period', table(['Filer', ['Filings', 1]], [['Attorneys', counsel], ['Self-represented and other filers', inPf.length - counsel]].map(([l, v]) => `<tr><td>${l}</td><td class="num"><b>${v}</b></td></tr>`)))}
+  ${card('Fee waiver requests', esc(PER[per]), table(['Result', ['Requests', 1]], [...new Set(fw)].map(s => `<tr><td>${esc(s)}</td><td class="num"><b>${fw.filter(x => x === s).length}</b></td></tr>`), 'No fee waiver requests in this period.'))}</div>`;
+}
+
+/* ── Appeals (Supreme Court) ────────────────────────────────────────── */
+const outOf = c => { const j = (c.judgments || []).slice(-1)[0]; return isClosed(c) || j ? (j?.outcome || 'Other') : 'Pending'; };
+function appeals() {
+  const cs = D.cases[SC].filter(c => c.lowerCourt || /appeal|leave/i.test(c.caseType || '')), dec = cs.filter(c => outOf(c) !== 'Pending'), decP = dec.filter(c => inP(closeDate(c))), filedP = cs.filter(c => inP(filedDate(c)));
+  const O = c => outOf(c), n = re => decP.filter(c => re.test(O(c))).length, aff = n(/^affirmed/i), rev = n(/reversed/i), vac = n(/vacated/i), gr = n(/leave granted/i), de = n(/leave denied/i);
+  const lag = avg(cs.map(c => { const a = parse(c.dates?.lowerCourtDecisionDate), b = filedDate(c); return a && b ? days(a, b) : null; }).filter(x => x !== null)), toDec = avg(decP.map(c => { const a = filedDate(c), b = closeDate(c); return a && b ? days(a, b) : null; }).filter(x => x !== null));
+  const OUT = ['Affirmed', 'Reversed', 'Vacated', 'Remanded', 'Leave granted', 'Leave denied', 'Dismissed'], cell = (l, re) => l.filter(c => re.test(O(c))).length;
+  const lowers = grp(cs, c => c.lowerCourt?.court).sort((a, b) => b[1].length - a[1].length);
+  return `<div class="stats">${stat('Appeals on record', cs.length)}${stat('Pending', cs.length - dec.length)}${stat('Filed in period', filedP.length)}${stat('Decided in period', decP.length)}${stat('Reversed or vacated', pct(rev + vac, aff + rev + vac))}${stat('Leave granted', pct(gr, gr + de))}</div>
+  <p class="m" style="margin:-4px 0 16px">Reversed or vacated is the share of merits decisions (affirmed, reversed, vacated) in the period. Leave granted is the share of leave applications decided. ${esc(PER[per])}.</p>
+  <div class="grid2">${card('Outcomes in the period', `${decP.length} decided`, bars(grp(decP, O).sort((a, b) => b[1].length - a[1].length).map(([l, v]) => ({ l, v: v.length }))))}
+  ${card('Timing', 'Days', table(['Measure', ['Days', 1]], [['Lower court decision to appeal filed, average', lag], ['Appeal filed to decision, average', toDec], ['Pending longer than a year', cs.filter(c => outOf(c) === 'Pending' && filedDate(c) && days(filedDate(c), NOW) > 365).length]].map(([l, v]) => `<tr><td>${l}</td><td class="num"><b>${v ?? '—'}</b></td></tr>`)))}</div>
+  <div class="mt">${card('Appeals by lower court', 'Source of the appeal and how each was resolved (all time)', table(['Lower court', ['Appeals', 1], ['Pending', 1], ...OUT.map(o => [o, 1])], lowers.map(([l, v]) => `<tr><td><b>${esc(l)}</b></td><td class="num">${v.length}</td><td class="num">${v.filter(c => O(c) === 'Pending').length}</td>${OUT.map(o => `<td class="num">${cell(v, new RegExp(o === 'Reversed' ? 'reversed' : o === 'Remanded' ? '^remanded' : '^' + o, 'i'))}</td>`).join('')}</tr>`), 'No appeals on record.'))}</div>
+  <div class="grid2 mt">${card('Appeals by case type of the lower court', 'Criminal, civil and other', bars(grp(cs, c => c.lowerCourt?.caseType).sort((a, b) => b[1].length - a[1].length).map(([l, v]) => ({ l, v: v.length }))))}
+  ${card('Appeals filed by month', 'Last 12 months', monthChart(tally(cs, filedDate), tally(dec, closeDate), 'Filed', 'Decided'))}</div>`;
+}
+
+/* ── Enforcement (not built yet) ────────────────────────────────────── */
+const enforcement = () => card('Enforcement', '', '<div class="soon"><h3>Enforcement reports are coming soon</h3><p class="m">Warrants, collections and compliance reporting will appear here once enforcement services are connected to reports.</p></div>');
+
+/* ── Financials ─────────────────────────────────────────────────────── */
+function accrued(d, s, e) {   // weekly pay accrued between s and e, pro-rated by day from the pay history
+  const segs = [...(d.weeklyHistory || []), ...(d.weekly ? [d.weekly] : [])]; let t = 0;
+  segs.forEach(w => { const a = parse(w.effective), b = parse(w.endedAt) || NOW; if (!a) return; const from = Math.max(a, s || a), to = Math.min(b, e); if (to > from) t += w.amount * (to - from) / (7 * 864e5); });
+  return Math.round(t);
+}
+function financials() {
+  const cs = D.cases[court], orders = cs.flatMap(c => (c.financialOrders || []).map(o => ({ o, c }))), paid = o => (o.payments || []).reduce((t, p) => t + Number(p.amount || 0), 0), owed = ({ o }) => Math.max(0, Number(o.amount || 0) - paid(o));
+  const ass = orders.filter(x => inP(x.o.assessmentDate || x.c.dates?.filed)), assessed = ass.reduce((t, x) => t + Number(x.o.amount || 0), 0), pays = orders.flatMap(x => (x.o.payments || []).map(p => ({ ...p, type: x.o.type }))).filter(p => inP(p.date)), collected = pays.reduce((t, p) => t + Number(p.amount || 0), 0);
+  const outstanding = orders.reduce((t, x) => t + owed(x), 0), overdue = orders.filter(x => owed(x) > 0 && parse(x.o.dueDate) && parse(x.o.dueDate) < NOW), types = grp(orders, x => x.o.type).sort((a, b) => b[1].length - a[1].length);
+  const byMonth = {}; pays.forEach(p => { const d = parse(p.date); if (d) byMonth[mk(d)] = (byMonth[mk(d)] || 0) + Number(p.amount || 0); }); const ms = months();
+  const fees = `<h3 style="margin:6px 0 12px;font-size:20px">Court fees and financial orders</h3><div class="stats">${stat('Assessed in period', money(assessed))}${stat('Collected in period', money(collected))}${stat('Outstanding, all orders', money(outstanding), outstanding > 0)}${stat('Overdue', money(overdue.reduce((t, x) => t + owed(x), 0)), overdue.length > 0)}${stat('Cases with a balance', new Set(orders.filter(x => owed(x) > 0).map(x => x.c._id)).size)}</div>
+  <div class="grid2">${card('Collections by month', 'Payments received, last 12 months', bars(ms.map(m => ({ l: m.l + ' ' + m.k.slice(0, 4), v: byMonth[m.k] || 0 })), money))}
+  ${card('By order type', 'All financial orders on record', table(['Type', ['Orders', 1], ['Assessed', 1], ['Collected', 1], ['Outstanding', 1], ['Collected %', 1]], types.map(([t, l]) => { const a = l.reduce((s, x) => s + Number(x.o.amount || 0), 0), p = l.reduce((s, x) => s + paid(x.o), 0); return `<tr><td><b>${esc(t)}</b></td><td class="num">${l.length}</td><td class="num">${money(a)}</td><td class="num">${money(p)}</td><td class="num">${money(Math.max(0, a - p))}</td><td class="num">${pct(p, a)}</td></tr>`; }), 'No financial orders on record for this court.'))}</div>`;
+  return fees + jacp();
+}
+function jacp() {
+  const head = '<h3 style="margin:28px 0 4px;font-size:20px">Judicial Administrative Compensation Program</h3><p class="m" style="margin-bottom:12px">Administrative Order No. 4. Weekly pay is pro-rated by day. Automatic pay is counted from each person\'s 500 most recent recorded actions.</p>';
+  if (!D.compOk) return head + '<div class="note">Compensation records could not be loaded. The Firestore rules must allow this role to read the compensation collection.</div>';
+  const me = D.people.find(p => p.uid === account.uid), courtOfDoc = d => d.court || (has(['Court Administrator', 'County Clerk', 'Deputy Clerk'], d.role) ? DC : SC);
+  let docs = D.comp.filter(d => courtOfDoc(d) === court); const scoped = oversight ? docs : has(OFFICERS, role) ? docs.filter(d => d.supervisorUid === account.uid) : docs.filter(d => d.uid === account.uid);
+  docs = scoped; const s = since(), pay = d => { const a = accrued(d, s, NOW), dis = (d.discretionary || []).filter(x => inP(x.date)).reduce((t, x) => t + x.amount, 0), act = (d.actions || []).filter(x => inP(x.at)).reduce((t, x) => t + x.amount, 0), bon = (d.bonuses || []).filter(x => inP(x.date)).reduce((t, x) => t + x.amount, 0); return { a, dis, act, bon, total: a + dis + act + bon }; };
+  const rows = docs.map(d => ({ d, p: pay(d) })), sum = k => rows.reduce((t, r) => t + r.p[k], 0), weeklyNow = docs.reduce((t, d) => t + (d.weekly?.amount || 0), 0);
+  const roles = grp(rows, r => r.d.role).sort((a, b) => b[1].reduce((t, r) => t + r.p.total, 0) - a[1].reduce((t, r) => t + r.p.total, 0));
+  const supervisors = D.people.filter(p => (has(OFFICERS, p.role) || has(ADMINS, p.role)) && (!oversight ? p.uid === account.uid : true) && p.role !== 'Magistrate' && (has(ADMINS, p.role) ? (p.role === 'Court Administrator') === (court === DC) : (has(['Justice', 'Chief Justice'], p.role) === (court === SC))));
+  const wkUsed = u => D.people.filter(p => p.supervisorUid === u).reduce((t, p) => t + (D.comp.find(d => d.uid === p.uid)?.weekly?.amount || 0) * (['Law Clerk', 'Judicial Assistant', 'Court Reporter'].includes(p.role) ? 1 : 0), 0), mo = mk(NOW), dUsed = u => D.comp.reduce((t, d) => t + (d.discretionary || []).filter(x => x.authorizedByUid === u && x.month === mo).reduce((a, x) => a + x.amount, 0), 0);
+  const due = supervisors.filter(p => D.people.some(x => x.supervisorUid === p.uid) && !has(['State Court Administrator'], p.role)).filter(p => { const l = (D.comp.find(d => d.uid === p.uid)?.submissions || []).slice(-1)[0]; return !l || Date.now() - new Date(l.at) > 92 * 864e5; });
+  return head + `<div class="stats">${stat('Weekly pay committed', money(weeklyNow) + ' / wk')}${stat('Weekly pay accrued', money(sum('a')))}${stat('Discretionary pay', money(sum('dis')))}${stat('Automatic action pay', money(sum('act')))}${stat('Bonuses', money(sum('bon')))}${stat('Total in period', money(sum('total')))}</div>`
+    + `<div class="mt">${card('By position', `${docs.length} compensation record${docs.length === 1 ? '' : 's'} · ${esc(PER[per])}`, table(['Position', ['People', 1], ['Weekly now', 1], ['Weekly accrued', 1], ['Discretionary', 1], ['Automatic', 1], ['Bonuses', 1], ['Total', 1]], roles.map(([r, l]) => `<tr><td><b>${esc(r)}</b></td><td class="num">${l.length}</td><td class="num">${money(l.reduce((t, x) => t + (x.d.weekly?.amount || 0), 0))}</td><td class="num">${money(l.reduce((t, x) => t + x.p.a, 0))}</td><td class="num">${money(l.reduce((t, x) => t + x.p.dis, 0))}</td><td class="num">${money(l.reduce((t, x) => t + x.p.act, 0))}</td><td class="num">${money(l.reduce((t, x) => t + x.p.bon, 0))}</td><td class="num"><b>${money(l.reduce((t, x) => t + x.p.total, 0))}</b></td></tr>`), 'No compensation records yet. Records are created when staff are assigned in Chambers and when they complete qualifying actions.'))}</div>`
+    + `<div class="mt">${card('Budgets by supervisor', 'Weekly benefit budget and this month\'s discretionary budget', table(['Supervisor', ['Weekly used', 1], ['Weekly budget', 1], ['Discretionary this month', 1], ['Discretionary budget', 1], 'Records to SCAO'], supervisors.map(p => { const adm = has(ADMINS, p.role), l = (D.comp.find(d => d.uid === p.uid)?.submissions || []).slice(-1)[0], dueP = due.includes(p); return `<tr><td><b>${esc(p.name)}</b><small>${esc(p.role)}</small></td><td class="num">${money(wkUsed(p.uid))}</td><td class="num">${money(adm ? AO4.poolBudget(p.role) : AO4.weeklyBudget(p.role))}</td><td class="num">${adm ? '—' : money(dUsed(p.uid))}</td><td class="num">${adm ? '—' : money(AO4.discretionaryBudget(p.role))}</td><td>${dueP ? '<span class="pill warn">Due</span>' : l ? esc(fmtDate(l.at)) : p.role === 'State Court Administrator' ? 'Retained by SCAO' : '—'}</td></tr>`; }), 'No supervisors found.'))}</div>`
+    + (oversight || docs.length <= 1 ? '' : '') + `<div class="mt">${card('Individual records', 'Largest totals first', table(['Person', 'Supervisor', ['Weekly', 1], ['Discretionary', 1], ['Automatic', 1], ['Total', 1]], rows.sort((a, b) => b.p.total - a.p.total).slice(0, 40).map(r => `<tr><td><b>${esc(r.d.name)}</b><small>${esc(r.d.role)}</small></td><td>${esc(r.d.supervisor || '—')}</td><td class="num">${r.d.weekly ? money(r.d.weekly.amount) : '—'}</td><td class="num">${money(r.p.dis)}</td><td class="num">${money(r.p.act)}</td><td class="num"><b>${money(r.p.total)}</b></td></tr>`), 'No records.'))}</div>`;
+}
+
+/* ── Page ───────────────────────────────────────────────────────────── */
+const TABS = () => court === SC ? [['caseload', 'Caseload'], ['filings', 'Filings'], ['appeals', 'Appeals'], ['financials', 'Financials']] : [['caseload', 'Caseload'], ['filings', 'Filings'], ['enforcement', 'Enforcement'], ['financials', 'Financials']];
+const REP = { caseload, filings, appeals, enforcement, financials };
+function draw() {
+  if (!TABS().some(t => t[0] === tab)) tab = 'caseload';
+  $('page-subtitle').textContent = court === SC ? 'Caseload, filings, appeals and financial reports for the Michigan Supreme Court.' : 'Caseload, filings, enforcement and financial reports for the Genesee Co. District Court.';
+  $('page-action').innerHTML = '<button class="btn outline" type="button" id="print">Print this report</button>';
+  $('print').onclick = () => window.print();
+  root.innerHTML = `<div class="tools">${scope.length > 1 ? `<select class="in" id="r-court" aria-label="Court">${scope.map(c => `<option${c === court ? ' selected' : ''}>${esc(c)}</option>`).join('')}</select>` : ''}<select class="in" id="r-per" aria-label="Period">${Object.entries(PER).map(([k, l]) => `<option value="${k}"${k === per ? ' selected' : ''}>${l}</option>`).join('')}</select></div>
+    <div class="tabs" role="tablist">${TABS().map(t => `<button type="button" role="tab" aria-selected="${t[0] === tab}" class="${t[0] === tab ? 'on' : ''}" data-tab="${t[0]}">${t[1]}</button>`).join('')}</div><div id="rep"></div>`;
+  try { $('rep').innerHTML = REP[tab](); } catch (e) { console.error(e); $('rep').innerHTML = '<div class="alert" role="alert">This report could not be built from the current records.</div>'; }
+}
+document.addEventListener('click', e => { const t = e.target.closest('[data-tab]'); if (t) { tab = t.dataset.tab; draw(); } });
+document.addEventListener('change', e => { if (e.target.id === 'r-court') { court = e.target.value; draw(); } else if (e.target.id === 'r-per') { per = e.target.value; draw(); } });
+try { await load(); } catch (e) { console.error(e); root.innerHTML = '<div class="alert" role="alert"><strong>We could not load the reports.</strong><p>Refresh the page to try again.</p></div>'; return; }
+draw();
+}
+</script>
+</body>
+</html>

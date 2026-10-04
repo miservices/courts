@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chambers | Online Portal</title>
+<link rel="icon" type="image/png" href="/courts/images/favicon.png">
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=Source+Serif+4:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/courts/online-services/portal/dashboard/assets/css/dashboard.css?v=5">
+<style>
+.m{color:var(--muted);font-weight:400}.mt{margin-top:14px}
+.meters{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px;margin-bottom:18px}
+.meter{background:#fff;border:1px solid var(--line);border-radius:6px;padding:14px 18px}.meter .top{display:flex;justify-content:space-between;gap:10px;align-items:baseline;margin-bottom:8px}.meter .top b{color:var(--navy)}
+.track{height:10px;background:#e3e9f1;border-radius:5px;overflow:hidden}.fill{height:100%;background:var(--navy)}.fill.hi{background:#b7791f}.fill.full{background:#b3261e}
+.meter small{display:block;margin-top:6px;color:var(--muted)}
+.tbar{display:flex;gap:12px;flex-wrap:wrap;align-items:center;justify-content:space-between;margin-bottom:14px}.tbar .acts{display:flex;gap:8px;flex-wrap:wrap}
+.banner{border-left:4px solid var(--navy);background:#eef3f9;border-radius:4px;padding:10px 14px;margin-bottom:14px;color:var(--navy)}
+.whoami{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:16px}
+td small,th small{display:block;color:var(--muted);font-weight:400}
+.num{text-align:right;white-space:nowrap}th.num{text-align:right}
+.rowacts{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.quote{background:#f4f7fb;border-radius:4px;padding:10px 14px;margin-bottom:16px;color:var(--navy)}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:16px}@media(max-width:700px){.cols{grid-template-columns:1fr}}
+dialog{border:0;padding:0;border-radius:6px;width:min(620px,calc(100vw - 24px));max-height:calc(100vh - 48px);box-shadow:0 24px 60px rgba(9,22,40,.35);color:var(--text);font:inherit;overflow:hidden;margin:auto}
+dialog[open]{display:flex;flex-direction:column}dialog::backdrop{background:rgba(9,22,40,.55)}
+dialog>header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:16px 22px;border-bottom:1px solid var(--line);background:#f4f7fb}
+dialog>header h3{font-size:19px}dialog>header p{color:var(--muted);margin-top:2px}
+.x{font:inherit;font-size:22px;line-height:1;width:36px;height:36px;border:1px solid var(--line);border-radius:4px;background:#fff;cursor:pointer;color:var(--navy);flex-shrink:0}.x:hover{background:#eef3f9}
+#dlg-b{padding:20px 22px 6px;overflow:auto}#dlg-e{padding:0 22px 14px}#dlg-e .alert{margin:0}
+dialog>footer{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:10px;padding:14px 22px;border-top:1px solid var(--line);background:#f4f7fb}
+</style>
+</head>
+<body>
+<aside class="sidebar" id="sidebar-root" aria-label="Portal navigation"></aside>
+<div class="scrim" id="scrim" hidden></div>
+<div class="main">
+  <header class="topbar">
+    <div class="topbar-left">
+      <button class="menu-btn" id="menu-btn" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="sidebar-root"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+      <div><span class="topbar-eyebrow">Online Portal</span><span class="topbar-page-title" id="topbar-title">Chambers</span></div>
+    </div>
+    <div class="topbar-right"><span class="topbar-date" id="topbar-date"></span><div class="notif-wrap" id="notif-root"></div></div>
+  </header>
+  <main class="page-body">
+    <div class="page-head"><div><h2 id="page-title">Chambers</h2><p id="page-subtitle"></p></div><div id="page-action"></div></div>
+    <div id="page-body"><div class="loading-inline"><span class="spin-sm"></span>Loading chambers…</div></div>
+  </main>
+</div>
+<dialog id="dlg" aria-labelledby="dlg-t">
+  <header><div><h3 id="dlg-t"></h3><p id="dlg-w"></p></div><button class="x" type="button" aria-label="Close" data-close>×</button></header>
+  <div id="dlg-b"></div><div id="dlg-e"></div><footer id="dlg-f"></footer>
+</dialog>
+<div class="auth-loading-overlay" id="auth-overlay" role="status"><div class="alo-title">Online Portal</div><div class="spin"></div><div>Verifying your session…</div></div>
+
+<script type="module">
+import { boot, db, $, esc, has, roleOf, STAFF, SUPREME, DISTRICT, DISTRICT_COURT, SUPREME_COURT, AO4, CLERKS, CHAMBERS_STAFF, OFFICERS, ADMINS, newCompDoc } from '/courts/online-services/portal/dashboard/assets/js/portal-shell.js';
+import { collection, getDocs, getDoc, doc, runTransaction } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+
+const { account, role } = await boot({ id: 'chambers', title: 'Chambers', subtitle: 'Assign staff, set compensation, and keep Administrative Order No. 4 records.' });
+const root = $('page-body'), BASE = 'https://migovt.org/courts/online-services/portal/dashboard/';
+if (!has(STAFF, role)) root.innerHTML = '<section class="card"><div class="empty"><strong>Court staff only</strong><p>Chambers is limited to court staff.</p></div></section>';
+else await main();
+
+async function main() {
+/* ── Rules of Administrative Order No. 4, in one place ──────────────── */
+const SC = SUPREME_COURT, DC = DISTRICT_COURT, LC = 'Law Clerk', JA = 'Judicial Assistant';
+const MANAGES = { Justice: [LC, JA], 'Chief Justice': [LC, JA], Judge: [LC, JA, 'Magistrate'], 'Chief Judge': [LC, JA, 'Magistrate'], Magistrate: [LC, JA],
+  'Court Administrator': ['County Clerk', 'Deputy Clerk', 'Court Reporter'], 'State Court Administrator': ['Clerk of the Supreme Court', 'Deputy Clerk of the Supreme Court', 'Reporter of Decisions', 'Court Reporter'] };
+const isOfficer = has(OFFICERS, role), isAdmin = has(ADMINS, role), canInterfere = has(['Chief Judge', 'Chief Justice'], role), isOversight = canInterfere || isAdmin, supervises = !!MANAGES[role];
+const payKind = r => r === 'Magistrate' ? 'none' : has(CHAMBERS_STAFF, r) ? 'range' : r === 'Court Reporter' ? 'pool' : AO4.fixedWeekly[r] ? 'fixed' : 'none';
+const BASIS = { range: 'AO No. 4 § C(2)', pool: 'AO No. 4 § D(3) / E(3)', fixed: 'AO No. 4 §§ D–G' };
+const courtOfRole = r => has(SUPREME, r) ? SC : has(DISTRICT, r) ? DC : null;
+const money = n => (Number(n) || 0).toLocaleString('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: Number.isInteger(Number(n) || 0) ? 0 : 2 });
+const p2 = n => String(n).padStart(2, '0'), now = () => new Date().toISOString();
+const monthKey = d => `${d.getFullYear()}-${p2(d.getMonth() + 1)}`, thisMonth = monthKey(new Date());
+const fmtDate = s => { const d = new Date(s); return isNaN(d) ? '—' : d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }); };
+const nameKey = n => { const t = String(n || '').toLowerCase().replace(/^hon\.?\s+/, '').replace(/[.,]/g, '').trim().split(/\s+/); return t.length ? t[0] + ' ' + t[t.length - 1] : ''; };
+class UserError extends Error {}
+const bad = m => { throw new UserError(m); };
+const errText = e => e instanceof UserError ? e.message : e?.code === 'permission-denied' ? 'Your account is not allowed to change this record. The Firestore security rules must let this role update accounts and the compensation collection. (permission-denied)' : `We could not save this change. Check your connection and try again.${e?.code ? ' (' + e.code + ')' : ''}`;
+
+/* ── Data ───────────────────────────────────────────────────────────── */
+let people = [], comp = new Map(), cases = null, tab = '', vu = null, note = '', noteKind = 'ok', magOpen = null;
+const byUid = u => people.find(p => p.uid === u), me = () => byUid(account.uid) || { ...account, role };
+const courtOf = p => p ? courtOfRole(p.role) || (p.supervisorUid ? courtOfRole(byUid(p.supervisorUid)?.role) : null) : null;
+const myCourt = () => courtOfRole(role) || courtOf(me());
+const wk = uid => comp.get(uid)?.weekly?.amount || 0;
+const team = uid => people.filter(p => p.supervisorUid === uid);
+async function load() {
+  const as = await getDocs(collection(db, 'accounts'));
+  people = as.docs.map(d => ({ ...d.data(), uid: d.id, role: roleOf(d.data()) })).filter(p => p.name);
+  comp = new Map();
+  try { (await getDocs(collection(db, 'compensation'))).docs.forEach(d => comp.set(d.id, d.data())); }
+  catch (e) { const ids = [account.uid, ...people.filter(p => p.supervisorUid === account.uid || has(MANAGES[role] || [], p.role)).map(p => p.uid)]; await Promise.all([...new Set(ids)].map(async u => { try { const s = await getDoc(doc(db, 'compensation', u)); if (s.exists()) comp.set(u, s.data()); } catch (_) {} })); }
+  // Administrators have a fixed weekly rate under the order; their record documents itself the first time they open this page.
+  const fixed = AO4.fixedWeekly[role];
+  if (isAdmin && fixed && !comp.get(account.uid)?.weekly) { try { await saveComp(me(), d => ({ ...d, weekly: { amount: fixed, kind: 'fixed', basis: role === 'Court Administrator' ? 'AO No. 4 § E(2)' : 'AO No. 4 § D(1)', setBy: 'Administrative Order No. 4', effective: now() } }), 'Weekly compensation established by Administrative Order No. 4'); } catch (e) { console.warn(e); } }
+}
+// One transaction on compensation/{accountId}; creates the record if this is the person's first entry.
+async function saveComp(p, fn, action) {
+  const r = doc(db, 'compensation', p.uid);
+  const next = await runTransaction(db, async tx => {
+    const s = await tx.get(r), d = s.exists() ? s.data() : newCompDoc(p, courtOf(p)), n = fn({ ...d }), at = now();
+    n.activity = [...(n.activity || d.activity || []), { at, by: account.name, byUid: account.uid, action }].slice(-100); n.updatedAt = at; n.name = p.name || n.name; n.role = p.role || n.role;
+    s.exists() ? tx.update(r, n) : tx.set(r, n); return n;
+  });
+  comp.set(p.uid, next);
+}
+
+/* ── Budgets and checks ─────────────────────────────────────────────── */
+const weeklyUsed = (supUid, exceptUid) => team(supUid).filter(p => p.uid !== exceptUid && ['range', 'pool'].includes(payKind(p.role))).reduce((t, p) => t + wk(p.uid), 0);
+const discUsed = supUid => [...comp.values()].reduce((t, d) => t + (d.discretionary || []).filter(x => x.authorizedByUid === supUid && x.month === thisMonth).reduce((s, x) => s + (x.amount || 0), 0), 0);
+const weeklyBudget = s => isAdmin && s.role === role || has(ADMINS, s.role) ? AO4.poolBudget(s.role) : AO4.weeklyBudget(s.role);
+function payCheck(staff, sup, amount) {
+  const k = payKind(staff.role); if (k === 'none') return null;
+  if (k === 'fixed') { if (/^Deputy Clerk/.test(staff.role) && team(sup.uid).filter(p => p.role === staff.role && p.uid !== staff.uid && wk(p.uid) > 0).length >= AO4.maxPaidDeputies) return `Not more than ${AO4.maxPaidDeputies} deputy clerks may receive weekly compensation under the order.`; return null; }
+  if (!(amount > 0)) return 'Enter the weekly compensation amount.';
+  if (k === 'range' && (amount < AO4.weeklyMin || amount > AO4.weeklyMax)) return `Recurring weekly compensation for a ${staff.role.toLowerCase()} must be between ${money(AO4.weeklyMin)} and ${money(AO4.weeklyMax)}.`;
+  if (k === 'pool' && amount > AO4.poolCap(sup.role)) return `The most you may authorize for each person is ${money(AO4.poolCap(sup.role))} per week.`;
+  const budget = k === 'pool' ? AO4.poolBudget(sup.role) : AO4.weeklyBudget(sup.role), used = weeklyUsed(sup.uid, staff.uid);
+  if (used + amount > budget) return `This would bring ${sup.name}'s weekly budget to ${money(used + amount)} of ${money(budget)}. Only ${money(Math.max(0, budget - used))} remains.`;
+  return null;
+}
+const weeklyFor = (staff, sup, amount) => payKind(staff.role) === 'fixed' ? AO4.fixedWeekly[staff.role] : amount;
+
+/* ── Writes ─────────────────────────────────────────────────────────── */
+// Assign (sup given), release (sup null) or transfer: the account's supervisor field and the compensation record change together.
+async function assign(staff, sup, amount, action) {
+  const k = payKind(staff.role), aRef = doc(db, 'accounts', staff.uid), cRef = doc(db, 'compensation', staff.uid), from = staff.supervisor;
+  await runTransaction(db, async tx => {
+    const a = await tx.get(aRef), c = await tx.get(cRef); if (!a.exists()) bad('This account no longer exists.');
+    if ((a.data().supervisorUid || null) !== (staff.supervisorUid || null)) bad('Someone else changed this assignment. Reload the page and try again.');
+    const at = now(), pat = sup ? { supervisor: sup.name, supervisorUid: sup.uid, supervisorRole: sup.role, supervisorSince: at } : { supervisor: null, supervisorUid: null, supervisorRole: null, supervisorSince: null };
+    tx.update(aRef, pat);
+    if (k !== 'none') {
+      const d = c.exists() ? c.data() : newCompDoc({ ...a.data(), uid: staff.uid }, sup ? courtOfRole(sup.role) : courtOf(staff)), hist = [...(d.weeklyHistory || [])];
+      if (d.weekly) hist.push({ ...d.weekly, endedAt: at, endedBy: account.name, endedReason: action });
+      const n = { ...d, supervisor: pat.supervisor, supervisorUid: pat.supervisorUid, supervisorRole: pat.supervisorRole, court: sup ? courtOfRole(sup.role) : d.court || null, name: staff.name, role: staff.role, weeklyHistory: hist, updatedAt: at,
+        weekly: sup ? { amount: weeklyFor(staff, sup, amount), kind: k, basis: BASIS[k], setBy: account.name, setByUid: account.uid, setByRole: role, effective: at } : null,
+        activity: [...(d.activity || []), { at, by: account.name, byUid: account.uid, action }].slice(-100) };
+      c.exists() ? tx.update(cRef, n) : tx.set(cRef, n);
+    }
+  });
+  Object.assign(staff, sup ? { supervisor: sup.name, supervisorUid: sup.uid, supervisorRole: sup.role } : { supervisor: null, supervisorUid: null, supervisorRole: null }); await load();
+}
+
+/* ── Dialog plumbing ────────────────────────────────────────────────── */
+const dlg = $('dlg'); let dlgOk = null;
+function modal({ title, sub = '', body, ok = 'Save', okCls = '', onOk }) {
+  $('dlg-t').textContent = title; $('dlg-w').textContent = sub; $('dlg-b').innerHTML = body; $('dlg-e').innerHTML = ''; dlgOk = onOk;
+  $('dlg-f').innerHTML = `<button class="btn outline" type="button" data-close>Cancel</button><button class="btn ${okCls}" type="button" id="dlg-ok">${ok}</button>`;
+  if (!dlg.open) dlg.showModal(); dlg.querySelector('#dlg-b input:not([readonly]),#dlg-b select')?.focus();
+}
+async function runOk() {
+  const b = $('dlg-ok'), label = b.textContent; b.disabled = true; b.textContent = 'Saving…'; $('dlg-e').innerHTML = '';
+  try { await dlgOk(); dlg.close(); draw(); } catch (e) { if (!(e instanceof UserError)) console.error(e); $('dlg-e').innerHTML = `<div class="alert" role="alert">${esc(errText(e))}</div>`; b.disabled = false; b.textContent = label; }
+}
+dlg.addEventListener('click', e => { if (e.target === dlg || e.target.closest('[data-close]')) dlg.close(); else if (e.target.closest('#dlg-ok')) runOk(); });
+const val = id => ($(id)?.value || '').trim();
+const fld = (label, id, v = '', o = {}) => `<label class="f"><span>${label}</span><input id="${id}" type="${o.type || 'text'}" value="${esc(v)}"${o.ph ? ` placeholder="${esc(o.ph)}"` : ''}${o.step ? ` step="${o.step}"` : ''}${o.ro ? ' readonly' : ''}>${o.hint ? `<small class="m">${o.hint}</small>` : ''}</label>`;
+const selF = (label, id, opts, v) => `<label class="f"><span>${label}</span><select id="${id}">${opts.map(([ov, ol]) => `<option value="${esc(ov)}"${ov === v ? ' selected' : ''}>${esc(ol)}</option>`).join('')}</select></label>`;
+const flash = (t, kind = 'ok') => { note = t; noteKind = kind; draw(); window.scrollTo({ top: 0, behavior: 'smooth' }); };
+
+/* ── Actions ────────────────────────────────────────────────────────── */
+const weeklyField = (staff, sup, cur) => { const k = payKind(staff.role); return k === 'fixed' ? fld('Weekly compensation', 'w-amt', String(AO4.fixedWeekly[staff.role]), { ro: true, hint: 'Fixed for this position by Administrative Order No. 4.' })
+  : k === 'none' ? '' : fld('Weekly compensation ($)', 'w-amt', cur || '', { type: 'number', step: '50', hint: k === 'range' ? `Between ${money(AO4.weeklyMin)} and ${money(AO4.weeklyMax)} per week. ${esc(sup.name)} has ${money(Math.max(0, AO4.weeklyBudget(sup.role) - weeklyUsed(sup.uid, staff.uid)))} of weekly budget left.` : `No more than ${money(AO4.poolCap(sup.role))} per person. ${money(Math.max(0, AO4.poolBudget(sup.role) - weeklyUsed(sup.uid, staff.uid)))} of the ${money(AO4.poolBudget(sup.role))} weekly budget remains.` }); };
+function assignModal(staff, sup, override) {
+  const k = payKind(staff.role);
+  modal({ title: override && staff.supervisor ? `Reassign ${staff.name}` : `Assign ${staff.name}`, sub: `${staff.role} → ${sup.name}`, ok: 'Assign', okCls: 'good',
+    body: (staff.supervisor ? `<div class="quote">Currently assigned to ${esc(staff.supervisor)}. As ${esc(role)} you are overriding that assignment.</div>` : '') + (k === 'none' ? `<p>${esc(staff.name)} will be assigned to ${esc(sup.name)}.</p>` : weeklyField(staff, sup, '')),
+    onOk: async () => { if (staff.supervisorUid && staff.supervisorUid !== sup.uid && !override) bad(`${staff.name} is assigned to ${staff.supervisor}, who must release or transfer them first.`);
+      const amt = Number(val('w-amt')), e = payCheck(staff, sup, amt); if (e) bad(e);
+      await assign(staff, sup, amt, `Assigned to ${sup.name}${staff.supervisor ? ` (from ${staff.supervisor})` : ''}`);
+      note = `${staff.name} is now assigned to ${sup.name}.${k !== 'none' ? ' Their compensation record was created or updated.' : ''}`; noteKind = 'ok'; } });
+}
+function transferModal(staff) {
+  const k = payKind(staff.role), pool = people.filter(p => p.uid !== staff.supervisorUid && has(isMagRole(staff) ? ['Judge', 'Chief Judge'] : has(CHAMBERS_STAFF, staff.role) ? OFFICERS : ADMINS.filter(a => MANAGES[a].includes(staff.role)), p.role) && (!courtOf(p) || !myCourt() || courtOf(p) === myCourt()));
+  if (!pool.length) return flash('There is nobody else to transfer them to.', 'bad');
+  modal({ title: `Transfer ${staff.name}`, sub: `${staff.role} · currently with ${staff.supervisor}`, ok: 'Transfer', okCls: 'good',
+    body: selF('Transfer to', 't-to', pool.map(p => [p.uid, `${p.name} — ${p.role}`]), pool[0].uid) + (k === 'range' || k === 'pool' ? fld('Weekly compensation with the new supervisor ($)', 'w-amt', String(wk(staff.uid) || ''), { type: 'number', step: '50', hint: 'Checked against the new supervisor\'s weekly budget.' }) : ''),
+    onOk: async () => { const to = byUid(val('t-to')); if (!to) bad('Choose who to transfer them to.'); const amt = Number(val('w-amt')), e = payCheck(staff, to, amt); if (e) bad(e);
+      const from = staff.supervisor; await assign(staff, to, amt, `Transferred from ${from} to ${to.name}`); note = `${staff.name} was transferred from ${from} to ${to.name}.`; noteKind = 'ok'; } });
+}
+const isMagRole = s => s.role === 'Magistrate';
+function releaseModal(staff) {
+  modal({ title: `Release ${staff.name}`, sub: `${staff.role} · ${staff.supervisor}`, ok: 'Release', okCls: 'danger', body: `<p>${esc(staff.name)} will no longer be assigned to ${esc(staff.supervisor)}${payKind(staff.role) !== 'none' ? ' and their recurring weekly compensation will end' : ''}. Their pay history stays on record.</p>`,
+    onOk: async () => { const from = staff.supervisor; await assign(staff, null, 0, `Released by ${account.name} from ${from}`); note = `${staff.name} was released.`; noteKind = 'ok'; } });
+}
+function payModal(staff, sup) {
+  modal({ title: `Weekly pay for ${staff.name}`, sub: staff.role, ok: 'Save pay', okCls: 'good', body: weeklyField(staff, sup, String(wk(staff.uid) || '')),
+    onOk: async () => { const amt = Number(val('w-amt')), e = payCheck(staff, sup, amt); if (e) bad(e); if (amt === wk(staff.uid)) bad('That is already the current amount.');
+      await saveComp(staff, d => ({ ...d, weeklyHistory: d.weekly ? [...(d.weeklyHistory || []), { ...d.weekly, endedAt: now(), endedBy: account.name, endedReason: 'Rate changed' }] : d.weeklyHistory || [], weekly: { amount: amt, kind: payKind(staff.role), basis: BASIS[payKind(staff.role)], setBy: account.name, setByUid: account.uid, setByRole: role, effective: now() } }), `Weekly compensation set to ${money(amt)}`);
+      note = `Weekly pay for ${staff.name} is now ${money(amt)}.`; noteKind = 'ok'; } });
+}
+function discModal(staff) {
+  const budget = AO4.discretionaryBudget(role), used = discUsed(account.uid);
+  modal({ title: `Additional pay for ${staff.name}`, sub: 'Discretionary chambers compensation · AO No. 4 § C(3)', ok: 'Authorize', okCls: 'good',
+    body: `<div class="quote">${money(Math.max(0, budget - used))} left of your ${money(budget)} monthly discretionary budget.</div>` + fld('Amount ($)', 'd-amt', '', { type: 'number', step: '50' }) + fld('Specific duty performed', 'd-duty', '', { ph: 'e.g. Drafted bench memorandum for the Smith matter' }) + fld('Date of the duty', 'd-date', new Date().toISOString().slice(0, 10), { type: 'date' }),
+    onOk: async () => { const amt = Number(val('d-amt')), duty = val('d-duty'), dt = val('d-date'); if (!(amt > 0)) bad('Enter an amount.'); if (!duty) bad('Describe the specific duty. The order requires it to be documented.'); if (!dt) bad('Enter the date.');
+      const month = dt.slice(0, 7), usedM = [...comp.values()].reduce((t, d) => t + (d.discretionary || []).filter(x => x.authorizedByUid === account.uid && x.month === month).reduce((s, x) => s + (x.amount || 0), 0), 0);
+      if (usedM + amt > budget) bad(`That would bring your discretionary compensation for ${month} to ${money(usedM + amt)} of ${money(budget)}.`);
+      await saveComp(staff, d => ({ ...d, discretionary: [...(d.discretionary || []), { id: 'd' + Date.now().toString(36), amount: amt, duty, date: dt, month, authorizedBy: account.name, authorizedByUid: account.uid, authorizerRole: role, recordedAt: now(), basis: 'AO No. 4 § C(3)' }] }), `Discretionary compensation ${money(amt)}: ${duty}`);
+      note = `${money(amt)} authorized for ${staff.name}.`; noteKind = 'ok'; } });
+}
+function bonusModal(staff) {
+  modal({ title: `Publication bonus for ${staff.name}`, sub: 'AO No. 4 § F(2)', ok: 'Record bonus', okCls: 'good',
+    body: `<p class="m" style="margin-bottom:12px">The reporter of decisions receives ${money(AO4.bonusPerPublication)} for each publication of at least ${AO4.bonusMinPages} pages.</p>` + fld('Publication', 'b-title', '', { ph: 'Title or citation' }) + fld('Number of pages', 'b-pages', '', { type: 'number' }) + fld('Date issued', 'b-date', new Date().toISOString().slice(0, 10), { type: 'date' }),
+    onOk: async () => { const title = val('b-title'), pages = parseInt(val('b-pages'), 10); if (!title) bad('Enter the publication.'); if (!(pages >= AO4.bonusMinPages)) bad(`A publication must have at least ${AO4.bonusMinPages} pages to qualify.`);
+      await saveComp(staff, d => ({ ...d, bonuses: [...(d.bonuses || []), { id: 'b' + Date.now().toString(36), amount: AO4.bonusPerPublication, title, pages, date: val('b-date'), authorizedBy: account.name, authorizedByUid: account.uid, basis: 'AO No. 4 § F(2)', recordedAt: now() }] }), `Publication bonus ${money(AO4.bonusPerPublication)}: ${title}`);
+      note = `Bonus of ${money(AO4.bonusPerPublication)} recorded for ${staff.name}.`; noteKind = 'ok'; } });
+}
+function submitModal() {
+  const sup = me(), last = (comp.get(account.uid)?.submissions || []).slice(-1)[0], staff = team(account.uid), n = staff.reduce((t, p) => t + (comp.get(p.uid)?.discretionary || []).length + (comp.get(p.uid)?.bonuses || []).length + (comp.get(p.uid)?.weeklyHistory || []).length + (comp.get(p.uid)?.weekly ? 1 : 0), 0);
+  modal({ title: 'Submit records to the State Court Administrative Office', sub: 'AO No. 4 § H(2)', ok: 'Submit records', okCls: 'good',
+    body: `<p>This sends the compensation records for ${staff.length} staff member${staff.length === 1 ? '' : 's'} (${n} weekly, discretionary and bonus entries) to the State Court Administrative Office.${last ? ` Your last submission was ${esc(fmtDate(last.at))}.` : ' You have not submitted records before.'} Action-based pay is recorded automatically and does not need to be reported.</p>`,
+    onOk: async () => { await saveComp(sup, d => ({ ...d, submissions: [...(d.submissions || []), { at: now(), by: account.name, byUid: account.uid, periodStart: last?.at || null, staff: staff.map(p => ({ uid: p.uid, name: p.name, role: p.role })), entries: n }] }), 'Submitted compensation records to the State Court Administrative Office');
+      note = 'Records submitted to the State Court Administrative Office.'; noteKind = 'ok'; } });
+}
+
+/* ── Rendering ──────────────────────────────────────────────────────── */
+const btn = (a, label, cls = 'outline sm') => `<button class="btn ${cls}" type="button" data-a="${a}">${label}</button>`;
+const tbl = (heads, rows, empty) => rows.length ? `<div class="table-scroll"><table><thead><tr>${heads.map(h => `<th${h[1] ? ' class="num"' : ''}>${h[0] || h}</th>`).join('')}</tr></thead><tbody>${rows.join('')}</tbody></table></div>` : `<div class="empty"><strong>${esc(empty)}</strong></div>`;
+const meter = (label, used, budget, sub) => { const pct = budget ? Math.min(100, Math.round(used / budget * 100)) : 0; return `<div class="meter"><div class="top"><span>${esc(label)}</span><b>${money(used)} <span class="m">of ${money(budget)}</span></b></div><div class="track" role="img" aria-label="${pct}% used"><div class="fill ${pct >= 100 ? 'full' : pct >= 85 ? 'hi' : ''}" style="width:${pct}%"></div></div><small>${esc(sub || `${money(Math.max(0, budget - used))} remaining`)}</small></div>`; };
+const monthPay = uid => (comp.get(uid)?.actions || []).filter(a => String(a.at).slice(0, 7) === thisMonth).reduce((t, a) => t + a.amount, 0);
+const discMonth = uid => (comp.get(uid)?.discretionary || []).filter(x => x.month === thisMonth).reduce((t, x) => t + x.amount, 0);
+const canEditSup = u => u === account.uid || (canInterfere && courtOf(byUid(u)) === myCourt());
+const TABS = () => { const t = [];
+  if (supervises) t.push(['team', isAdmin ? 'My administrative staff' : 'My chambers'], ['avail', isAdmin ? 'Add staff' : 'Available staff']);
+  if (has(['Judge', 'Chief Judge'], role)) t.push(['mags', 'Magistrates']);
+  if (supervises) t.push(['records', 'Records']);
+  if (isOversight) t.push(['court', 'Court overview']);
+  if (!isOfficer) t.push(['me', 'My assignment and pay']); return t; };
+function draw() {
+  const tabs = TABS(); if (!tab || !tabs.some(t => t[0] === tab)) tab = tabs[0][0]; if (!vu) vu = supervises ? account.uid : null;
+  $('page-subtitle').textContent = isOfficer ? 'Assign law clerks and judicial assistants, set their pay, and keep the records Administrative Order No. 4 requires.' : isAdmin ? 'Log the court\'s clerks, reporters and other staff, and keep their compensation records.' : 'Your assignment and compensation record.';
+  $('page-action').innerHTML = '';
+  const m = me(), flashHtml = note ? `<div class="${noteKind === 'ok' ? 'ok-bar' : 'alert'}" role="status" style="margin-bottom:16px">${esc(note)}</div>` : '';
+  const head = role === 'Magistrate' ? `<div class="whoami"><span class="pill ${m.supervisor ? 'done' : 'warn'}">${m.supervisor ? 'Assigned to ' + esc(m.supervisor) : 'Not yet assigned to a judge'}</span></div>` : '';
+  root.innerHTML = flashHtml + head + `<div class="tabs" role="tablist">${tabs.map(t => `<button type="button" role="tab" aria-selected="${t[0] === tab}" class="${t[0] === tab ? 'on' : ''}" data-a="tab:${t[0]}">${t[1]}</button>`).join('')}</div><div id="tb"></div>`;
+  $('tb').innerHTML = { team: teamHtml, avail: availHtml, mags: magsHtml, records: recordsHtml, court: courtHtml, me: meHtml }[tab]();
+}
+function teamHtml() {
+  const sup = byUid(vu) || me(), mine = vu === account.uid, edit = canEditSup(vu), staff = team(sup.uid).filter(p => !isMagRole(p)), admin = has(ADMINS, sup.role);
+  const meters = admin ? meter('Weekly administrative budget', weeklyUsed(sup.uid), AO4.poolBudget(sup.role), 'Applies to court reporters you authorize, up to ' + money(AO4.poolCap(sup.role)) + ' each') : meter('Weekly benefit budget', weeklyUsed(sup.uid), AO4.weeklyBudget(sup.role)) + meter(`Discretionary budget for ${new Date().toLocaleDateString('en-US', { month: 'long' })}`, discUsed(sup.uid), AO4.discretionaryBudget(sup.role));
+  const rows = staff.map(p => { const k = payKind(p.role), c = comp.get(p.uid);
+    const acts = (edit ? btn(`transfer:${p.uid}`, 'Transfer') + btn(`release:${p.uid}`, 'Release', 'outline sm') : '') + (mine && k !== 'fixed' && k !== 'none' ? btn(`pay:${p.uid}`, 'Set pay') : '') + (mine && !admin ? btn(`disc:${p.uid}`, 'Add pay') : '') + (mine && p.role === 'Reporter of Decisions' && role === 'State Court Administrator' ? btn(`bonus:${p.uid}`, 'Publication bonus') : '');
+    return `<tr><td><b>${esc(p.name)}</b><small>${esc(p.role)}</small></td><td class="num">${c?.weekly ? money(c.weekly.amount) : '—'}<small>${k === 'fixed' ? 'Fixed by order' : k === 'pool' ? 'Authorized' : k === 'range' ? 'Set by officer' : ''}</small></td>${admin ? '' : `<td class="num">${money(discMonth(p.uid))}</td>`}<td class="num">${money(monthPay(p.uid))}</td><td>${p.supervisorSince ? esc(fmtDate(p.supervisorSince)) : '—'}</td><td><div class="rowacts">${acts}</div></td></tr>`; });
+  return (!mine ? `<div class="banner">Viewing the ${admin ? 'administrative staff' : 'chambers'} of <b>${esc(sup.name)}</b> (${esc(sup.role)}). ${edit ? 'As ' + esc(role) + ' you can transfer or release staff, but pay is set by the officer.' : 'This view is read only.'} ${btn('mine', 'Back to my own', 'outline sm')}</div>` : '')
+    + `<div class="meters">${meters}</div><section class="card flush"><div style="padding:16px 22px 0"><h3>${admin ? 'Administrative staff' : 'Law clerks and judicial assistants'}</h3><p class="m">${staff.length} assigned</p></div>`
+    + tbl(['Name', ['Weekly pay', 1], ...(admin ? [] : [['Added this month', 1]]), ['Action pay this month', 1], 'Since', ''], rows, `Nobody is assigned to ${mine ? 'you' : sup.name} yet. ${mine ? 'Open ' + (isAdmin ? 'Add staff' : 'Available staff') + ' to assign someone.' : ''}`) + '</section>';
+}
+function availHtml() {
+  const kinds = (MANAGES[role] || []).filter(r => r !== 'Magistrate'), list = people.filter(p => has(kinds, p.role)).sort((a, b) => (a.supervisorUid ? 1 : 0) - (b.supervisorUid ? 1 : 0) || a.name.localeCompare(b.name)), sup = me();
+  const rows = list.map(p => { const mineP = p.supervisorUid === account.uid, free = !p.supervisorUid;
+    const act = mineP ? '<span class="pill done">Assigned to you</span>' : free ? btn(`assign:${p.uid}`, 'Assign to me', 'good sm') : canInterfere ? btn(`reassign:${p.uid}`, 'Reassign to me', 'outline sm') : `<span class="m">Assigned to ${esc(p.supervisor)}. They must release or transfer ${esc(p.name.split(' ')[0])} first.</span>`;
+    return `<tr><td><b>${esc(p.name)}</b><small>${esc(p.role)}</small></td><td>${free ? '<span class="pill live">Available</span>' : `Assigned to ${esc(p.supervisor)}`}</td><td><div class="rowacts">${act}</div></td></tr>`; });
+  const info = isAdmin ? `Clerks, deputy clerks, reporters${role === 'State Court Administrator' ? ' and the reporter of decisions' : ''} are logged by the ${esc(role.toLowerCase())}. Clerks and the reporter of decisions are paid the weekly rate fixed by the order. Court reporters are paid an amount you authorize, up to ${money(AO4.poolCap(role))}.` : `Each person can be assigned to one ${role === 'Magistrate' ? 'magistrate' : 'justice or judge'} at a time. Weekly pay must be between ${money(AO4.weeklyMin)} and ${money(AO4.weeklyMax)}, within your ${money(AO4.weeklyBudget(role))} weekly budget.`;
+  return `<div class="banner">${info}</div><section class="card flush">${tbl(['Name', 'Status', ''], rows, 'No staff accounts found')}</section>`;
+}
+function magsHtml() {
+  const mags = people.filter(isMagRole).sort((a, b) => (a.supervisorUid ? 1 : 0) - (b.supervisorUid ? 1 : 0) || a.name.localeCompare(b.name)), rows = mags.map(p => { const mineP = p.supervisorUid === account.uid, free = !p.supervisorUid, ctrl = mineP || canInterfere, see = mineP || canInterfere;
+    const act = (free ? btn(`assign:${p.uid}`, 'Assign to me', 'good sm') : !mineP && canInterfere ? btn(`reassign:${p.uid}`, 'Reassign to me') : '') + (!free && ctrl ? btn(`transfer:${p.uid}`, 'Transfer') + btn(`release:${p.uid}`, 'Release') : '') + (see ? btn(`mcases:${p.uid}`, magOpen === p.uid ? 'Hide cases' : 'View cases') : '') + (!free && !ctrl ? `<span class="m">Assigned to ${esc(p.supervisor)}</span>` : '');
+    return `<tr><td><b>${esc(p.name)}</b><small>Magistrate</small></td><td>${free ? '<span class="pill live">Not assigned</span>' : mineP ? '<span class="pill done">Assigned to you</span>' : `Assigned to ${esc(p.supervisor)}`}</td><td><div class="rowacts">${act}</div></td></tr>`; });
+  return `<div class="banner">Each magistrate is assigned to a judge. A magistrate who is already assigned must be released or transferred by their judge${canInterfere ? ', or reassigned by you as chief judge' : ''}. Open a magistrate's cases to review them in Case Management.</div><section class="card flush">${tbl(['Magistrate', 'Status', ''], rows, 'No magistrates found')}</section>${magOpen ? magCases(byUid(magOpen)) : ''}`;
+}
+function magCases(m) {
+  if (!m) return ''; if (cases === null) return '<section class="card mt"><div class="loading-inline"><span class="spin-sm"></span>Loading cases…</div></section>';
+  const l = cases.filter(c => (m.uid && c.judgeUid === m.uid) || (c.judge && nameKey(c.judge) === nameKey(m.name))).sort((a, b) => String(b.dates?.lastUpdated || '').localeCompare(String(a.dates?.lastUpdated || '')));
+  const next = c => (c.hearings || []).filter(h => !h.result && new Date(h.date) > new Date()).sort((a, b) => new Date(a.date) - new Date(b.date))[0], cap = c => c.caseTitleOverride || (c.parties || []).map?.(x => x.name).filter(Boolean).slice(0, 2).join(' v. ') || c.caseId;
+  return `<section class="card flush mt"><div style="padding:16px 22px 0"><h3>Cases assigned to ${esc(m.name)}</h3><p class="m">${l.length} case${l.length === 1 ? '' : 's'}. Select a case to open it in Case Management.</p></div>` + tbl(['Case', 'Type', 'Status', 'Next hearing'], l.map(c => { const h = next(c); return `<tr><td><a href="${BASE}cases/manage/#${encodeURIComponent(c._id)}"><b>${esc(c.caseId)}</b></a><small>${esc(cap(c))}</small></td><td>${esc(c.caseType || '—')}</td><td><span class="pill ${/closed|disposed/i.test(c.status || '') ? 'plain' : 'live'}">${esc(c.status || '—')}</span></td><td>${h ? esc(fmtDate(h.date)) + `<small>${esc(h.type || '')}</small>` : '—'}</td></tr>`; }), 'No cases are assigned to this magistrate') + '</section>';
+}
+function recordsHtml() {
+  const sup = byUid(vu) || me(), staff = team(sup.uid).filter(p => !isMagRole(p)), admin = has(ADMINS, sup.role), rows = [];
+  staff.forEach(p => { const c = comp.get(p.uid) || {};
+    [...(c.weeklyHistory || []), ...(c.weekly ? [c.weekly] : [])].forEach(w => rows.push({ at: w.effective, who: p, type: 'Weekly rate', detail: `${money(w.amount)} per week${w.endedAt ? ` (ended ${fmtDate(w.endedAt)})` : ' (current)'}`, amt: w.amount, by: w.setBy, basis: w.basis }));
+    (c.discretionary || []).forEach(x => rows.push({ at: x.date, who: p, type: 'Discretionary', detail: x.duty, amt: x.amount, by: x.authorizedBy, basis: x.basis }));
+    (c.bonuses || []).forEach(x => rows.push({ at: x.date, who: p, type: 'Publication bonus', detail: `${x.title} (${x.pages} pages)`, amt: x.amount, by: x.authorizedBy, basis: x.basis }));
+    Object.entries(c.actionTotals || {}).forEach(([k, v]) => rows.push({ at: c.updatedAt, who: p, type: 'Automatic', detail: `${v.count} × ${AO4.rates[k]?.label || k}`, amt: v.amount, by: 'Electronic compensation system', basis: 'AO No. 4 § I' })); });
+  rows.sort((a, b) => String(b.at).localeCompare(String(a.at)));
+  const lastSub = (comp.get(sup.uid)?.submissions || []).slice(-1)[0], old = rows.length && (!lastSub || Date.now() - new Date(lastSub.at) > 92 * 864e5), mine = vu === account.uid;
+  return `<div class="tbar"><div>${old ? '<span class="pill warn">Submission due</span>' : '<span class="pill done">Up to date</span>'} <span class="m">${lastSub ? 'Last submitted ' + esc(fmtDate(lastSub.at)) : 'No submissions yet'}. Records go to the State Court Administrative Office at least every 3 months.</span></div>${mine && !has(['State Court Administrator'], role) ? btn('submit', 'Submit records', 'good') : ''}</div>`
+    + `<section class="card flush">${tbl(['Date', 'Person', 'Type', 'Detail', ['Amount', 1], 'Authorized by'], rows.map(r => `<tr><td>${esc(fmtDate(r.at))}</td><td><b>${esc(r.who.name)}</b><small>${esc(r.who.role)}</small></td><td>${esc(r.type)}</td><td>${esc(r.detail)}<small>${esc(r.basis || '')}</small></td><td class="num">${money(r.amt)}</td><td>${esc(r.by || '—')}</td></tr>`), 'No compensation records yet')}</section>`;
+}
+function courtHtml() {
+  const mc = myCourt(), sups = people.filter(p => (has(OFFICERS, p.role) || has(ADMINS, p.role)) && courtOf(p) === mc && p.role !== 'Magistrate' || p.role === 'Magistrate' && courtOf(p) === mc), unStaff = people.filter(p => has(CHAMBERS_STAFF, p.role) && !p.supervisorUid).length, unMag = people.filter(p => isMagRole(p) && !p.supervisorUid).length;
+  const rows = sups.sort((a, b) => a.role.localeCompare(b.role) || a.name.localeCompare(b.name)).map(p => { const admin = has(ADMINS, p.role), n = team(p.uid).filter(x => !isMagRole(x)).length, mags = team(p.uid).filter(isMagRole).length, wb = admin ? AO4.poolBudget(p.role) : AO4.weeklyBudget(p.role);
+    return `<tr><td><b>${esc(p.name)}</b><small>${esc(p.role)}${p.supervisor ? ' · assigned to ' + esc(p.supervisor) : ''}</small></td><td class="num">${n}${mags ? `<small>${mags} magistrate${mags === 1 ? '' : 's'}</small>` : ''}</td><td class="num">${money(weeklyUsed(p.uid))}<small>of ${money(wb)}</small></td><td class="num">${admin ? '—' : money(discUsed(p.uid))}${admin ? '' : `<small>of ${money(AO4.discretionaryBudget(p.role))}</small>`}</td><td>${btn(`open:${p.uid}`, 'Open')}</td></tr>`; });
+  return `<div class="stats"><div class="stat"><span>Supervisors</span><b>${sups.length}</b></div><div class="stat"><span>Unassigned law clerks and assistants</span><b>${unStaff}</b></div><div class="stat"><span>Magistrates without a judge</span><b>${unMag}</b></div></div>`
+    + `<div class="banner">${canInterfere ? `As ${esc(role)} you can transfer or release staff and reassign magistrates in this court. Pay stays with the officer who sets it.` : 'You can review every chambers in this court. Assignments are changed by the chief ' + (mc === SC ? 'justice' : 'judge') + '.'}</div><section class="card flush">${tbl(['Supervisor', ['Staff', 1], ['Weekly used', 1], ['Discretionary this month', 1], ''], rows, 'No supervisors found')}</section>`;
+}
+function meHtml() {
+  const c = comp.get(account.uid), m = me(), cur = c?.weekly, hist = [...(c?.weeklyHistory || []), ...(cur ? [cur] : [])].sort((a, b) => String(b.effective).localeCompare(String(a.effective)));
+  const tot = Object.entries(c?.actionTotals || {}), acts = [...(c?.actions || [])].reverse().slice(0, 50), extra = [...(c?.discretionary || []).map(x => ({ at: x.date, t: 'Discretionary', d: x.duty, a: x.amount, by: x.authorizedBy })), ...(c?.bonuses || []).map(x => ({ at: x.date, t: 'Publication bonus', d: x.title, a: x.amount, by: x.authorizedBy }))].sort((a, b) => String(b.at).localeCompare(String(a.at)));
+  const need = has(CHAMBERS_STAFF, role) ? 'You are not assigned to a justice, judge, or magistrate yet. One of them can assign you from their Chambers page.' : has(['County Clerk', 'Deputy Clerk', 'Court Reporter'], role) ? 'You are not logged by the court administrator yet.' : has(['Clerk of the Supreme Court', 'Deputy Clerk of the Supreme Court', 'Reporter of Decisions'], role) ? 'You are not logged by the state court administrator yet.' : '';
+  return (!m.supervisor && !isAdmin && need ? `<div class="banner">${need} Action-based pay still records automatically.</div>` : '')
+    + `<div class="stats"><div class="stat"><span>Weekly pay</span><b>${cur ? money(cur.amount) : '—'}</b></div><div class="stat"><span>Supervisor</span><b style="font-size:18px">${esc(m.supervisor || (isAdmin ? 'State Court Administrative Office' : 'None'))}</b></div><div class="stat"><span>Action pay this month</span><b>${money(monthPay(account.uid))}</b></div><div class="stat"><span>Action pay, all time</span><b>${money(c?.actionEarnings || 0)}</b></div></div>`
+    + `<section class="card flush mt"><div style="padding:16px 22px 0"><h3>Automatic compensation</h3><p class="m">Recorded by the electronic compensation system under AO No. 4 § I whenever you complete a qualifying action.</p></div>${tbl(['Action', ['Count', 1], ['Total', 1]], tot.map(([k, v]) => `<tr><td>${esc(AO4.rates[k]?.label || k)}</td><td class="num">${v.count}</td><td class="num">${money(v.amount)}</td></tr>`), 'Nothing recorded yet')}</section>`
+    + `<section class="card flush mt"><div style="padding:16px 22px 0"><h3>Weekly pay history</h3></div>${tbl(['Effective', ['Weekly', 1], 'Set by', 'Basis'], hist.map(w => `<tr><td>${esc(fmtDate(w.effective))}${w.endedAt ? `<small>ended ${esc(fmtDate(w.endedAt))}</small>` : '<small>current</small>'}</td><td class="num">${money(w.amount)}</td><td>${esc(w.setBy || '—')}</td><td>${esc(w.basis || '')}</td></tr>`), 'No weekly pay yet')}</section>`
+    + (extra.length ? `<section class="card flush mt"><div style="padding:16px 22px 0"><h3>Additional pay and bonuses</h3></div>${tbl(['Date', 'Type', 'Duty', ['Amount', 1], 'Authorized by'], extra.map(x => `<tr><td>${esc(fmtDate(x.at))}</td><td>${esc(x.t)}</td><td>${esc(x.d)}</td><td class="num">${money(x.a)}</td><td>${esc(x.by || '—')}</td></tr>`), '')}</section>` : '')
+    + `<section class="card flush mt"><div style="padding:16px 22px 0"><h3>Recent automatic entries</h3></div>${tbl(['When', 'Action', 'Case', ['Amount', 1]], acts.map(a => `<tr><td>${esc(fmtDate(a.at))}</td><td>${esc(a.label)}</td><td>${esc(a.caseId || '—')}</td><td class="num">${money(a.amount)}</td></tr>`), 'No entries yet')}</section>`;
+}
+
+/* ── Events ─────────────────────────────────────────────────────────── */
+document.addEventListener('click', async e => {
+  const el = e.target.closest('[data-a]'); if (!el || dlg.contains(el)) return; const [n, ...r] = el.dataset.a.split(':'), v = r.join(':'), p = byUid(v), m = me();
+  try {
+    if (n === 'tab') { tab = v; note = ''; if (v === 'mags' && cases === null) loadCases(); draw(); }
+    else if (n === 'open') { vu = v; tab = 'team'; note = ''; draw(); } else if (n === 'mine') { vu = account.uid; draw(); }
+    else if (n === 'assign') assignModal(p, m, false); else if (n === 'reassign') assignModal(p, m, true);
+    else if (n === 'transfer') transferModal(p); else if (n === 'release') releaseModal(p);
+    else if (n === 'pay') payModal(p, byUid(vu) || m); else if (n === 'disc') discModal(p); else if (n === 'bonus') bonusModal(p); else if (n === 'submit') submitModal();
+    else if (n === 'mcases') { magOpen = magOpen === v ? null : v; if (magOpen && cases === null) loadCases(); draw(); }
+  } catch (err) { console.error(err); flash(errText(err), 'bad'); }
+});
+async function loadCases() { try { cases = (await getDocs(collection(db, 'cases'))).docs.map(d => ({ ...d.data(), _id: d.id })); } catch (e) { console.error(e); cases = []; } draw(); }
+
+try { await load(); } catch (e) { console.error(e); root.innerHTML = '<div class="alert" role="alert"><strong>We could not load chambers.</strong><p>Refresh the page to try again.</p></div>'; return; }
+draw();
+}
+</script>
+</body>
+</html>

@@ -40,7 +40,7 @@
 <div class="auth-loading-overlay" id="auth-overlay" role="status"><div class="alo-title">Online Portal</div><div class="spin"></div><div>Verifying your session…</div></div>
 
 <script type="module">
-import { boot, db, $, esc, has, STAFF, scopeOf, SUPREME_COURT, reserveCaseNumber, colFor } from '/courts/online-services/portal/dashboard/assets/js/portal-shell.js';
+import { boot, db, $, esc, has, STAFF, scopeOf, SUPREME_COURT, reserveCaseNumber, colFor, logAction } from '/courts/online-services/portal/dashboard/assets/js/portal-shell.js';
 import { collection, getDocs, getDoc, doc, updateDoc, setDoc, runTransaction } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 
 const { account, role } = await boot({ id: 'mfilings', title: 'Manage Filings', subtitle: 'Review, accept, return, reject, or forward documents submitted for e-filing.' });
@@ -247,6 +247,9 @@ if (!has(STAFF, role)) {
       }
       await persist(f, { status: 'Accepted', accepted: true, reviewedBy: account.name, reviewedByUid: account.uid, reviewedByRole: role, reviewedAt: now(), linkedCaseId: num, linkedCaseFirestoreId: id, activityLog: log(f, 'Accepted' + (num ? ' — case ' + num : '')) });
       if (f.filingType !== 'new') await tasksAndNotices(f, id);
+      // Compensation (AO No. 4 § I): processing a filing and entering it on the docket.
+      await logAction(account, role, f.court, 'filing-processed', { caseId: num, ref: `${f._id}:processed` });
+      await logAction(account, role, f.court, 'filing-entered', { caseId: num, ref: `${f._id}:entered` });
       await load();
     } catch (e) { console.error(e); msg = 'We could not accept this filing. Nothing was changed on the filing — try again.'; }
     busy = false; draw();
@@ -254,7 +257,7 @@ if (!has(STAFF, role)) {
   async function decide(f, status, field) {
     const r = $('reason-' + f._id)?.value.trim();
     if (!r) { flash(`Enter a reason before you ${status === 'Returned' ? 'return' : 'reject'} this filing.`); return; }
-    try { await persist(f, { status, accepted: false, [field]: r, reviewedBy: account.name, reviewedByUid: account.uid, reviewedByRole: role, reviewedAt: now(), activityLog: log(f, status) }); go(null); msg = ''; }
+    try { await persist(f, { status, accepted: false, [field]: r, reviewedBy: account.name, reviewedByUid: account.uid, reviewedByRole: role, reviewedAt: now(), activityLog: log(f, status) }); await logAction(account, role, f.court, 'filing-processed', { caseId: f.caseId || null, ref: `${f._id}:processed` }); go(null); msg = ''; }
     catch (e) { console.error(e); msg = 'We could not save that decision. Try again.'; }
     draw();
   }

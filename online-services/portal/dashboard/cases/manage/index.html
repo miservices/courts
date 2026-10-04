@@ -94,7 +94,7 @@ dialog>footer{display:flex;justify-content:flex-end;gap:10px;padding:14px 22px;b
 <div class="auth-loading-overlay" id="auth-overlay" role="status"><div class="alo-title">Online Portal</div><div class="spin"></div><div>Verifying your session…</div></div>
 
 <script type="module">
-import { boot, db, app, $, esc, has, STAFF, SUPREME, scopeOf, colFor, reserveFilingNumber, DISTRICT_COURT, SUPREME_COURT } from '/courts/online-services/portal/dashboard/assets/js/portal-shell.js';
+import { boot, db, app, $, esc, has, STAFF, SUPREME, scopeOf, colFor, reserveFilingNumber, logAction, DISTRICT_COURT, SUPREME_COURT } from '/courts/online-services/portal/dashboard/assets/js/portal-shell.js';
 import { collection, getDocs, getDoc, doc, query, where, updateDoc, setDoc, runTransaction } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 import { getStorage, ref as sRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-storage.js";
 
@@ -273,10 +273,15 @@ async function change(fn, audit) {
     const s = await tx.get(ref); if (!s.exists()) bad('This case no longer exists.');
     const d = s.data(), p = fn(d) || {};
     p.dates = { ...(p.dates || d.dates || {}), lastUpdated: now() };
-    tx.update(ref, p); return { ...d, ...p };
+    tx.update(ref, p); return { ...d, ...p, __was: d };
   });
+  const was = next.__was; delete next.__was;
   cur = { ...next, _id: cur._id };
   if (audit) await addAudit(audit);
+  // Compensation (AO No. 4 § I): each new docket entry is an event entered; closing a case pays the officer's chambers staff.
+  const added = (next.events || []).slice((was.events || []).length), isClosed = x => /^closed$/i.test(x.status || '');
+  for (const e of added) await logAction(account, role, cur.court, 'event-entry', { caseId: cur.caseId, ref: `${cur.caseId}:event:${e.eventNumber}` });
+  if (isClosed(next) && !isClosed(was)) await logAction(account, role, cur.court, 'case-closed', { caseId: cur.caseId, ref: `${cur.caseId}:closed`, judgeUid: cur.judgeUid, judgeName: cur.judge });
 }
 const withEvent = (d, ev) => { const e = [...(d.events || [])]; e.push({ eventNumber: e.reduce((m, x) => Math.max(m, x.eventNumber || 0), 0) + 1, sealed: false, ...ev }); return e; };
 // Add (idx < 0), change, or remove (fn returns null) one item of a list field, optionally with a docket entry in the same save.
