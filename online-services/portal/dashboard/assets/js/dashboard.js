@@ -9,7 +9,8 @@ import { getFirestore, doc, getDoc, collection, getDocs }
 /* ── Settings (edit here) ─────────────────────────────────────────────── */
 const SIGNIN = '/courts/online-services/portal/';
 const PUBLIC = '/courts/';
-const BASE   = '/courts/online-services/portal/dashboard/';
+const ORIGIN = 'https://migovt.org';
+const BASE   = ORIGIN + '/courts/online-services/portal/dashboard/';
 
 /* ── Roles: who sees which sidebar pages (edit the lists here) ─────────── */
 const SELF   = ['Public User', 'Justice System User', 'Provisional Attorney', 'Licensed Attorney', 'Prosecuting Attorney'];
@@ -21,7 +22,15 @@ const STAFF  = ['Court Reporter', 'Law Clerk', 'Judicial Assistant',
 const SUPREME = ['Deputy Clerk of the Supreme Court', 'Clerk of the Supreme Court', 'Reporter of Decisions',
                  'State Court Administrator', 'Justice', 'Chief Justice'];
 const LEGACY = { 'portal user': 'Public User', 'bar member': 'Licensed Attorney' };   // roles saved by the old sign-up
-const roleOf = a => { const r = String(a.role || '').trim(); return LEGACY[r.toLowerCase()] || r || 'Public User'; };
+const ALL_ROLES = [...new Set([...SELF, ...ENFORCE, ...STAFF, ...SUPREME])];
+const roleKey = x => String(x || '').toLowerCase().replace(/[^a-z]/g, '');
+// Matches the saved role to a known one (ignoring case and spacing). An unrecognized role falls back to Public User.
+const roleOf = a => {
+  const raw = String(a.role || '').trim();
+  const hit = ALL_ROLES.find(r => roleKey(r) === roleKey(raw)) || LEGACY[raw.toLowerCase()];
+  if (!hit) console.warn('Portal: unrecognized role "' + raw + '", showing Public User pages.');
+  return hit || 'Public User';
+};
 
 /* ── Sidebar pages. roles: 'all' or a list. Paths are relative to BASE. ── */
 const NAV = [
@@ -168,13 +177,14 @@ function renderSidebar(account) {
   const role = roleOf(account);
   const here = location.pathname.replace(/index\.html$/, '').replace(/\/?$/, '/');
   const link = it => {
-    const href = BASE + it.path, on = href === here;
+    const href = BASE + it.path, on = new URL(href).pathname === here;
     return `<a href="${href}" class="${on ? 'active' : ''}" ${on ? 'aria-current="page"' : ''}>${svg(it.id)}${esc(it.label)}</a>`;
   };
 
   const groups = NAV.map(g => ({ title: g.title, items: g.items.filter(i => canSee(i, role)) })).filter(g => g.items.length);
   const nav = groups.map(g => `${g.title ? `<div class="sb-label">${esc(g.title)}</div>` : ''}${g.items.map(link).join('')}`).join('');
 
+  console.info('Portal dashboard v3 | role:', role);
   $('sidebar-root').innerHTML = `
     <a class="sb-brand" href="${BASE}">
       <svg viewBox="0 0 52 52" aria-hidden="true"><circle cx="26" cy="26" r="25" fill="#fff"/><g stroke="#10264a" stroke-width="2" stroke-linecap="round" fill="none"><path d="M26 11v26M17 15h18M19 38h14"/><path d="M17 15l-6 12h12zM35 15l-6 12h12z" stroke-width="1.6" stroke-linejoin="round"/></g></svg>
