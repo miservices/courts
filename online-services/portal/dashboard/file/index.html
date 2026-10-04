@@ -57,11 +57,11 @@ let S = blank(), cases = [], mine = [];
 const root = $('page-body');
 const isCounsel = has(ATTY, role);
 const courtOf = () => S.type === 'new' ? S.court : S.kase?.court;
-const mkParty = (r, i) => ({ role: r, kind: 'Person', name: i === 0 && !S.counsel ? (account.name || '') : '', pin: '', mine: false });
+const mkParty = (r, i) => ({ role: r, kind: 'Person', name: i === 0 && !S.counsel ? (account.name || '') : '', pin: i === 0 && !S.counsel ? (account.mipassPin || '') : '', self: i === 0 && !S.counsel, mine: false });
 
 getDocs(collection(db, 'cases')).then(s => { cases = s.docs.map(d => ({ ...d.data(), _id: d.id })); if (S.step === 1) render(); }).catch(() => {});
 const loadMine = () => getDocs(query(collection(db, 'pendingFilings'), where('filedByUid', '==', account.uid)))
-  .then(s => { mine = s.docs.map(d => ({ ...d.data(), _id: d.id })).sort((a, b) => new Date(b.dateFiled) - new Date(a.dateFiled)); if (S.view === 'history') render(); }).catch(() => {});
+  .then(s => { mine = s.docs.map(d => ({ ...d.data(), _id: d.id })).sort((a, b) => new Date(b.dateFiled) - new Date(a.dateFiled)); renderAction(); if (S.view === 'history') render(); }).catch(() => {});
 loadMine();
 
 const linked = () => {
@@ -92,7 +92,7 @@ function partyCard(p, i) {
     ${i >= 2 ? F('Role', sel(`parties.${i}.role`, p.role, [...ROLES[S.ctype], ...EXTRA])) : ''}
     <div class="cols">${F('Party type', sel(`parties.${i}.kind`, p.kind, ['Person', 'Business or organization', 'Government'], '', 1))}
       ${F(p.kind === 'Person' ? 'Full name' : 'Name', inp(`parties.${i}.name`, p.name))}</div>
-    ${p.kind === 'Person' ? F('Michigan PIN', inp(`parties.${i}.pin`, p.pin, 'Your Michigan PIN'), 'Used by the clerk to verify identity. It is never shown on the public record.') : ''}${rep}</div>`;
+    ${p.kind === 'Person' ? F('Michigan PIN', inp(`parties.${i}.pin`, p.pin, 'Michigan PIN'), p.self && p.pin ? 'Filled in from your account.' : 'Appears on the case record.') : ''}${rep}</div>`;
 }
 
 function stepCase() {
@@ -111,7 +111,7 @@ function stepDocs() {
   const o = docOpts();
   return `<section class="card"><header><h3>Documents</h3></header>
     <p class="mt" style="margin:0 0 14px;color:var(--muted)">Upload PDFs of 5 MB or less (MCR 2.119). Documents with photographs or scanned images go in through Google Drive instead.</p>
-    ${F('Add PDF files', '<input type="file" id="fi" accept="application/pdf,.pdf" multiple>')}
+    <div class="drop" id="dz"><input class="vh" type="file" id="fi" accept="application/pdf,.pdf" multiple><label for="fi" class="btn">Choose PDF files</label><p class="big">or drag and drop them here</p><p>PDF only · up to 5 MB each</p></div>
     ${S.files.map((f, i) => `<div class="sub"><header><span>${esc(f.file.name)} <small style="display:inline">· ${(f.file.size / 1048576).toFixed(2)} MB</small></span><button class="btn outline sm" type="button" data-a="rmfile:${i}">Remove</button></header>${F('Document type', sel(`files.${i}.type`, f.type, o, 'Select a type', 1))}</div>`).join('')}
     ${S.links.map((l, i) => `<div class="sub"><header><span>Google Drive document ${i + 1}</span><button class="btn outline sm" type="button" data-a="rmlink:${i}">Remove</button></header><div class="cols">${F('Document type', sel(`links.${i}.type`, l.type, o, 'Select a type', 1))}${F('Share link', inp(`links.${i}.url`, l.url, 'https://drive.google.com/…', 'url'), 'Set sharing to “Anyone with the link can view”.')}</div></div>`).join('')}
     <button class="btn outline" type="button" data-a="addlink">Add a Google Drive link</button></section>`;
@@ -121,7 +121,7 @@ const docs = () => [...S.files.map(f => ({ name: f.file.name, type: f.type })), 
 function stepReview() {
   const d = docs(), total = d.reduce((t, x) => t + fee(x.type, courtOf()), 0);
   const rows = S.type === 'new'
-    ? [['Court', S.court], ['Case type', S.ctype], ...S.parties.map((p, i) => [`Party ${i + 1} (${p.role})`, p.name + (p.mine ? ' — your client' : '')])]
+    ? [['Court', S.court], ['Case type', S.ctype], ...S.parties.map((p, i) => [`Party ${i + 1} (${p.role})`, p.name + (p.kind === 'Person' && p.pin ? ' · PIN ' + p.pin : '') + (p.mine ? ' — your client' : '')])]
     : [['Case', caption(S.kase) + ' · ' + S.kase.caseId], ['Court', S.kase.court], ...(S.counsel ? [['You represent', S.rep]] : [])];
   return `<section class="card"><header><h3>Review your filing</h3></header>
     <dl class="details">${rows.map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join('')}
@@ -139,8 +139,11 @@ function history() {
     `<tr><td class="nw"><b>${esc(f.confirmationNumber)}</b></td><td>${esc(f.filingType === 'new' ? `New ${f.caseType}` : f.caseId)}<small>${esc((f.documents || []).map(d => d.documentType).join(', '))}</small>${f.returnReason || f.rejectionReason ? `<small><b>Clerk:</b> ${esc(f.returnReason || f.rejectionReason)}</small>` : ''}${f.linkedCaseId && f.filingType === 'new' ? `<small>Case number ${esc(f.linkedCaseId)}</small>` : ''}</td><td class="nw">${fmt(f.dateFiled)}</td><td>${pillFor(f.status)}</td></tr>`).join('')}</tbody></table></div></section>`;
 }
 
-function render() {
+function renderAction() {
   $('page-action').innerHTML = `<div class="acts"><button class="btn${S.view === 'new' ? '' : ' outline'}" data-a="view:new">New filing</button><button class="btn${S.view === 'history' ? '' : ' outline'}" data-a="view:history">My submissions (${mine.length})</button></div>`;
+}
+function render() {
+  renderAction();
   if (S.view === 'history') { root.innerHTML = history(); return; }
   if (S.done) {
     root.innerHTML = `<section class="card" style="text-align:center;padding:40px 24px"><h3 style="font-size:24px">Filing submitted</h3><p style="color:var(--muted);margin:8px 0 18px">The clerk’s office will review it. You will be emailed at ${esc(S.done.email)}.</p>
@@ -191,7 +194,7 @@ async function submit() {
     const mineP = S.parties.find(p => p.mine);
     const filerRole = S.counsel ? 'Attorney for ' + (S.type === 'new' ? mineP?.name : S.rep.trim()) : S.type === 'new' ? S.parties[0].role : 'Party of Record';
     const obj = { confirmationNumber: conf, filingType: S.type, court, caseType: S.type === 'new' ? S.ctype : S.kase.caseType || '', documentType: documents[0].documentType,
-      parties: S.type === 'new' ? S.parties.map(p => ({ role: p.role, name: p.name.trim(), selfRepresented: !p.mine, ...(p.mine ? { attorney: { name: account.name, barNumber: account.barNumber || null } } : {}) })) : [],
+      parties: S.type === 'new' ? S.parties.map(p => ({ role: p.role, name: p.name.trim(), ...(p.kind === 'Person' && p.pin.trim() ? { pin: p.pin.trim() } : {}), selfRepresented: !p.mine, ...(p.mine ? { attorney: { name: account.name, barNumber: account.barNumber || null } } : {}) })) : [],
       partyIntake: S.type === 'new' ? S.parties.map(p => ({ role: p.role, kind: p.kind, name: p.name.trim(), pin: p.pin || null })) : [],
       documents, totalFee: documents.reduce((t, d) => t + d.fee, 0), notesToClerk: S.notes.trim() || null, confirmationEmail: S.email.trim(), filerRole,
       filedBy: account.name, filedByUid: account.uid, isFilingAsCounsel: S.counsel, counselRepresents: S.counsel ? (S.type === 'new' ? mineP?.name : S.rep.trim()) : null,
@@ -208,7 +211,7 @@ const initParties = () => { const r = ROLES[S.ctype]; S.parties = [mkParty(r[0],
 root.addEventListener('input', e => { const k = e.target.dataset.k; if (!k || e.target.type === 'checkbox') return; set(k, e.target.value); if (k === 'q') $('cl').innerHTML = caseList(linked()); });
 root.addEventListener('change', e => {
   const t = e.target;
-  if (t.id === 'fi') { [...t.files].forEach(f => { if (!/pdf$/i.test(f.name) && f.type !== 'application/pdf') S.err = f.name + ' is not a PDF.'; else if (f.size > 5242880) S.err = f.name + ' is over 5 MB.'; else if (!S.files.some(x => x.file.name === f.name)) S.files.push({ file: f, type: '' }); }); render(); return; }
+  if (t.id === 'fi') { addFiles(t.files); return; }
   const k = t.dataset.k; if (!k) return;
   set(k, t.type === 'checkbox' ? t.checked : t.value);
   if (k === 'court') { S.ctype = ''; S.parties = []; }
@@ -216,6 +219,14 @@ root.addEventListener('change', e => {
   if (k === 'counsel') S.parties.forEach(p => p.mine = false);
   if (t.dataset.r !== undefined) render();
 });
+function addFiles(fl) {
+  S.err = '';
+  [...fl].forEach(f => { if (!/\.pdf$/i.test(f.name) && f.type !== 'application/pdf') S.err = f.name + ' is not a PDF.'; else if (f.size > 5242880) S.err = f.name + ' is over 5 MB.'; else if (!S.files.some(x => x.file.name === f.name)) S.files.push({ file: f, type: '' }); });
+  render();
+}
+root.addEventListener('dragover', e => { const z = e.target.closest('#dz'); if (z) { e.preventDefault(); z.classList.add('over'); } });
+root.addEventListener('dragleave', e => e.target.closest('#dz')?.classList.remove('over'));
+root.addEventListener('drop', e => { if (e.target.closest('#dz')) { e.preventDefault(); addFiles(e.dataTransfer.files); } });
 const act = a => {
   const [n, v] = a.split(':');
   if (n === 'type') { S.type = v; S.kase = null; S.files = []; S.links = []; }

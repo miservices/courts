@@ -11,11 +11,14 @@
 .q{border-top:1px solid #e3e9f1}.q:first-child{border-top:0}.q.urg{box-shadow:inset 4px 0 0 #b3261e}
 .qh{all:unset;box-sizing:border-box;display:flex;justify-content:space-between;align-items:center;gap:16px;width:100%;padding:15px 22px;cursor:pointer}
 .qh:hover{background:#f8fafd}.qh:focus-visible{outline:3px solid #5b9be0;outline-offset:-3px}
-.qh>div:first-child{min-width:0}.qh b{display:block}.qd{padding:6px 22px 22px;background:#fbfcfe;border-top:1px dashed var(--line)}
-.qd h4{font-family:var(--font-head);color:var(--navy);margin:18px 0 8px;font-size:16px}
-.tools{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px}.tools .in{flex:1;min-width:220px;width:auto}.tools select{width:auto}
-.docrow{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:10px 0;border-top:1px solid #e3e9f1}
-.log li{padding:6px 0;border-top:1px solid #eef2f7;font-size:14px}
+.qh>div:first-child{min-width:0}.qh b{display:block}
+.tools{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px}.tools .in{flex:1;min-width:220px;width:auto}.tools select{width:auto;flex:0 0 auto}
+.dhead{display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap;margin-bottom:20px}.dhead .grow{flex:1;min-width:240px}.dhead h3{font-size:24px}
+.dgrid{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:20px;align-items:start}
+.dside{position:sticky;top:88px}.dside .btn{display:block;width:100%;text-align:center;margin-bottom:8px}.dside hr{border:0;border-top:1px solid var(--line);margin:16px 0}
+.docrow{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:12px 0;border-top:1px solid #e3e9f1}.docrow:first-of-type{border-top:0;padding-top:0}
+.note{padding:10px 0;border-top:1px solid #eef2f7}.note:first-of-type{border-top:0}.log li{padding:8px 0;border-top:1px solid #eef2f7;font-size:14.5px}
+@media(max-width:1000px){.dgrid{grid-template-columns:1fr}.dside{position:static}}
 </style>
 </head>
 <body>
@@ -110,44 +113,53 @@ if (!has(STAFF, role)) {
     if (sort === 'urgent' || tab === 'Pending') l.sort((a, b) => (b.urgent ? 1 : 0) - (a.urgent ? 1 : 0));
     return l;
   };
-  function detail(f) {
-    const docs = f.documents || [], total = docs.reduce((t, d) => t + (d.fee || 0), 0), c = cases[f.linkedCaseFirestoreId || f.caseFirestoreId];
-    const rows = f.filingType === 'new' ? [['Court', f.court], ['Case type', f.caseType], ...parties(f).map((p, i) => [`Party ${i + 1} (${p.role})`, p.name + (p.attorney ? ' — repr. by ' + p.attorney.name : '')])]
-      : [['Case number', f.caseId || '—'], ['Court', f.court], ...(f.counselRepresents ? [['Attorney represents', f.counselRepresents]] : [])];
-    rows.push(['Filing as', f.filerRole || '—'], ['Filed by', f.filedBy + (f.isFilingAsCounsel ? ` (Bar No. ${f.barNumber || '—'})` : '')], ['Confirmation email', f.confirmationEmail || '—']);
-    if (f.notesToClerk) rows.push(['Notes to clerk', f.notesToClerk]);
-    const foot = st(f) === 'Pending' ? `
-      <h4>Decision</h4>
-      <label class="f"><span>Reason (required to return or reject; sent to the filer)</span><textarea class="in" id="reason-${f._id}" rows="3" placeholder="e.g. Please upload a signed copy and resubmit."></textarea></label>
-      <div class="acts"><button class="btn good" data-a="accept:${f._id}" ${busy ? 'disabled' : ''}>Accept filing</button><button class="btn" style="background:#4a2c85;border-color:#4a2c85" data-a="return:${f._id}">Return for correction</button>
-        <button class="btn danger" data-a="reject:${f._id}">Reject</button><button class="btn outline" data-a="urgent:${f._id}">${f.urgent ? 'Remove emergency flag' : 'Mark as emergency'}</button></div>
-      <div class="acts mt"><select class="in" style="width:auto;min-width:240px" id="fwd-${f._id}" aria-label="Forward to"><option value="">Forward to a judicial officer…</option>${judges.filter(j => (court === SUPREME_COURT) === has(['Justice', 'Chief Justice'], j.role)).map(j => `<option value="${esc(j.uid)}|${esc(j.name)}">${esc(j.name)} — ${esc(j.role)}</option>`).join('')}</select><button class="btn outline" data-a="forward:${f._id}">Forward</button></div>`
-      : `<div class="sub mt">${f.autoFiled ? 'Filed automatically — no clerk review needed for filings in an open case.' : `${esc(st(f))} by ${esc(f.reviewedBy || '—')}${f.reviewedByRole ? ' (' + esc(f.reviewedByRole) + ')' : ''} on ${fmt(f.reviewedAt)}.`}
-        ${f.rejectionReason || f.returnReason ? `<br><b>Reason:</b> ${esc(f.rejectionReason || f.returnReason)}` : ''}${f.linkedCaseId ? `<br><b>Case number:</b> ${esc(f.linkedCaseId)}` : ''}</div>
-        ${f.linkedCaseFirestoreId ? `<a class="btn outline sm" href="/courts/online-services/portal/dashboard/cases/manage/?case=${encodeURIComponent(f.linkedCaseFirestoreId)}">Open in Case Management</a>` : ''}`;
-    return `<div class="qd"><dl class="details">${rows.map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join('')}</dl>
-      <h4>Documents (${docs.length})</h4>${docs.map(d => { const u = d.type === 'pdf' ? d.fileUrl : d.link; return `<div class="docrow"><div><b>${esc(d.name)}</b><small>${esc(d.documentType || '—')} · ${d.fee ? money(d.fee) : 'No fee'}${isFW(d) ? ' · fee waiver' : ''}${u ? '' : ' · upload never completed'}</small></div>${u ? `<a class="btn outline sm" href="${esc(safe(u))}" target="_blank" rel="noopener">Open</a>` : ''}</div>`; }).join('')}
-      <p style="text-align:right;margin-top:8px"><b>Estimated fees: ${money(total)}</b></p>
-      <h4>Internal clerk notes <small style="display:inline">(staff only)</small></h4>
-      ${(f.clerkNotes || []).map(n => `<div class="sub"><small>${esc(n.by)} · ${ago(n.at)}</small>${esc(n.text)}</div>`).join('') || '<p style="color:var(--muted)">No notes yet.</p>'}
-      <div class="acts"><input class="in" style="flex:1;min-width:200px;width:auto" id="note-${f._id}" placeholder="Add an internal note"><button class="btn outline" data-a="note:${f._id}">Add note</button></div>
-      ${foot}
-      ${(f.activityLog || []).length ? `<h4>Activity</h4><ul class="rows log">${f.activityLog.slice().reverse().map(a => `<li><div>${esc(a.text)}<small>${esc(a.by)} · ${ago(a.at)}</small></div></li>`).join('')}</ul>` : ''}</div>`;
+  const card = (h, body, cls = '') => `<section class="card ${cls}"><header><h3>${h}</h3></header>${body}</section>`;
+  const dl = (rows, mb = 0) => `<dl class="details" style="margin-bottom:${mb}px">${rows.map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join('')}</dl>`;
+  function detailView(f) {
+    const docs = f.documents || [], total = docs.reduce((t, d) => t + (d.fee || 0), 0), s = st(f), c = cases[f.linkedCaseFirestoreId || f.caseFirestoreId];
+    const ps = parties(f).map((p, i) => ({ ...p, pin: p.pin ?? f.partyIntake?.[i]?.pin }));
+    const caseCard = f.filingType === 'new'
+      ? card('New case', dl([['Court', f.court], ['Case type', f.caseType]], 18) + `<div class="table-scroll"><table><thead><tr><th>Party</th><th>Role</th><th>Michigan PIN</th><th>Represented by</th></tr></thead><tbody>${ps.map(p => `<tr><td><b>${esc(p.name)}</b></td><td>${esc(p.role)}</td><td>${esc(p.pin || '—')}</td><td>${esc(p.attorney ? p.attorney.name + (p.attorney.barNumber ? ' (Bar No. ' + p.attorney.barNumber + ')' : '') : 'Self-represented')}</td></tr>`).join('')}</tbody></table></div>`)
+      : card('Case', dl([['Case number', f.caseId || '—'], ['Caption', c ? caption(c) : '—'], ['Court', f.court], ['Case status', c?.status || '—'], ...(f.counselRepresents ? [['Attorney represents', f.counselRepresents]] : [])]));
+    const filing = card('Filing details', dl([['Filed by', f.filedBy || '—'], ['Filing as', f.filerRole || '—'], ...(f.isFilingAsCounsel ? [['Bar number', f.barNumber || '—']] : []), ['Confirmation email', f.confirmationEmail || '—'], ['Submitted', fmt(f.dateFiled)], ...(f.notesToClerk ? [['Notes to clerk', f.notesToClerk]] : [])]));
+    const docCard = card(`Documents (${docs.length})`, docs.map(d => { const u = d.type === 'pdf' ? d.fileUrl : d.link; return `<div class="docrow"><div><b>${esc(d.name)}</b><small>${esc(d.documentType || '—')} · ${d.fee ? money(d.fee) : 'No fee'}${isFW(d) ? ' · fee waiver request' : ''}${u ? '' : ' · upload never completed'}</small></div>${u ? `<a class="btn outline sm" href="${esc(safe(u))}" target="_blank" rel="noopener">Open</a>` : ''}</div>`; }).join('') + `<p style="text-align:right;margin-top:10px"><b>Estimated fees: ${money(total)}</b></p>`);
+    const noteCard = card('Internal notes <small style="display:inline;font-weight:400">staff only</small>', ((f.clerkNotes || []).map(n => `<div class="note"><small>${esc(n.by)} · ${ago(n.at)}</small>${esc(n.text)}</div>`).join('') || '<p style="color:var(--muted);margin-bottom:12px">No notes yet.</p>') + `<div class="acts mt"><input class="in" style="flex:1;min-width:200px;width:auto" id="note-${f._id}" placeholder="Add an internal note" aria-label="Internal note"><button class="btn outline" data-a="note:${f._id}">Add note</button></div>`);
+    const actCard = (f.activityLog || []).length ? card('Activity', `<ul class="rows log">${f.activityLog.slice().reverse().map(a => `<li><div>${esc(a.text)}<small>${esc(a.by)} · ${ago(a.at)}</small></div></li>`).join('')}</ul>`) : '';
+    const side = s === 'Pending'
+      ? card('Decision', `<label class="f"><span>Reason</span><textarea id="reason-${f._id}" rows="4" placeholder="e.g. Please upload a signed copy and resubmit."></textarea><small>Required to return or reject. Sent to the filer.</small></label>
+          <button class="btn good" data-a="accept:${f._id}" ${busy ? 'disabled' : ''}>${busy ? 'Accepting…' : 'Accept filing'}</button>
+          <button class="btn" style="background:#4a2c85;border-color:#4a2c85" data-a="return:${f._id}">Return for correction</button>
+          <button class="btn danger" data-a="reject:${f._id}">Reject</button><hr>
+          <label class="f"><span>Forward to</span><select id="fwd-${f._id}"><option value="">Select a judicial officer</option>${judges.filter(j => (f.court === SUPREME_COURT) === has(['Justice', 'Chief Justice'], j.role)).map(j => `<option value="${esc(j.uid)}|${esc(j.name)}"${f.assignedJudge === j.name ? ' selected' : ''}>${esc(j.name)} — ${esc(j.role)}</option>`).join('')}</select></label>
+          <button class="btn outline" data-a="forward:${f._id}">Forward</button>
+          <button class="btn outline" data-a="urgent:${f._id}">${f.urgent ? 'Remove emergency flag' : 'Mark as emergency'}</button>`)
+      : card('Outcome', `<p style="margin-bottom:10px">${pill(s)}</p><p>${f.autoFiled ? 'Filed automatically. Filings in an open case do not need clerk review.' : `${esc(s)} by ${esc(f.reviewedBy || '—')}${f.reviewedByRole ? ' (' + esc(f.reviewedByRole) + ')' : ''} on ${fmt(f.reviewedAt)}.`}</p>
+          ${f.rejectionReason || f.returnReason ? `<p class="mt"><b>Reason:</b> ${esc(f.rejectionReason || f.returnReason)}</p>` : ''}${f.linkedCaseId ? `<p class="mt"><b>Case number:</b> ${esc(f.linkedCaseId)}</p>` : ''}
+          ${f.linkedCaseFirestoreId ? `<a class="btn outline mt" href="/courts/online-services/portal/dashboard/cases/manage/?case=${encodeURIComponent(f.linkedCaseFirestoreId)}">Open in Case Management</a>` : ''}`);
+    return `<div class="dhead"><button class="btn outline sm" data-a="close">Back to all filings</button>
+        <div class="grow"><small>${esc(f.confirmationNumber || '—')} · ${f.filingType === 'new' ? 'New case' : 'Existing case'}</small><h3>${esc(title(f))}</h3></div>
+        <div class="acts">${f.urgent ? '<span class="pill bad">Emergency</span>' : ''}${f.assignedJudge ? `<span class="pill plain">Forwarded to ${esc(f.assignedJudge)}</span>` : ''}${pill(s)}</div></div>
+      <div class="dgrid"><div>${caseCard}${docCard}${filing}${noteCard}${actCard}</div><aside class="dside">${side}</aside></div>`;
   }
-  const row = f => `<div class="q${f.urgent ? ' urg' : ''}"><button class="qh" data-a="open:${f._id}" aria-expanded="${open === f._id}"><div>
+  const row = f => `<div class="q${f.urgent ? ' urg' : ''}"><button class="qh" data-a="open:${f._id}"><div>
       <small>${esc(f.confirmationNumber || '—')}${f.urgent ? ' · <b style="color:#b3261e">Emergency</b>' : ''}${f.assignedJudge ? ' · forwarded to ' + esc(f.assignedJudge) : ''}</small>
       <b>${esc(title(f))}</b><small>${f.filingType === 'new' ? 'New case' : 'Existing case'} · ${esc(f.documentType || 'Document')} · filed by ${esc(f.filedBy || '—')} · ${ago(f.dateFiled)}</small></div>
-      <div>${pill(st(f))}</div></button>${open === f._id ? detail(f) : ''}</div>`;
+      <div>${pill(st(f))}</div></button></div>`;
 
   function draw() {
+    $('msg').innerHTML = msg ? `<div class="alert" role="alert" style="margin-bottom:16px"><strong>${esc(msg)}</strong></div>` : '';
+    const f = open && P.find(x => x._id === open && scope.includes(x.court));
+    $('queue').hidden = !!f; $('detail').hidden = !f;
+    if (f) { $('detail').innerHTML = detailView(f); return; }
     const inC = P.filter(f => f.court === court), cnt = t => inC.filter(f => st(f) === t).length, today = new Date().toDateString();
     $('stats').innerHTML = stat('Pending review', cnt('Pending')) + stat('Marked emergency', inC.filter(f => st(f) === 'Pending' && f.urgent).length, 1) + stat('Returned for correction', cnt('Returned'))
       + stat('Accepted today', inC.filter(f => f.status === 'Accepted' && f.reviewedAt && new Date(f.reviewedAt).toDateString() === today).length);
     $('tabs').innerHTML = ['Pending', 'Returned', 'Accepted', 'Rejected'].map(t => `<button class="${t === tab ? 'on' : ''}" data-a="tab:${t}">${t}<i>${cnt(t)}</i></button>`).join('');
     const l = list();
-    $('msg').innerHTML = msg ? `<div class="alert" role="alert" style="margin-bottom:16px"><strong>${esc(msg)}</strong></div>` : '';
     $('list').innerHTML = l.length ? l.map(row).join('') : `<div class="empty"><strong>Nothing here</strong><p>${q ? 'No ' + tab.toLowerCase() + ' filings match your search.' : 'No ' + tab.toLowerCase() + ' filings for ' + esc(court) + '.'}</p></div>`;
   }
+  const flash = t => { msg = t; $('msg').innerHTML = `<div class="alert" role="alert" style="margin-bottom:16px"><strong>${esc(t)}</strong></div>`; window.scrollTo({ top: 0, behavior: 'smooth' }); };
+  const go = id => { open = id; msg = ''; if (id) location.hash = id; else history.pushState(null, '', location.pathname + location.search); window.scrollTo({ top: 0 }); };
 
   /* ── Actions ──────────────────────────────────────────────────────── */
   async function accept(f) {
@@ -170,13 +182,14 @@ if (!has(STAFF, role)) {
   }
   async function decide(f, status, field) {
     const r = $('reason-' + f._id)?.value.trim();
-    if (!r) { msg = `Enter a reason before you ${status === 'Returned' ? 'return' : 'reject'} this filing.`; draw(); return; }
-    try { await persist(f, { status, accepted: false, [field]: r, reviewedBy: account.name, reviewedByUid: account.uid, reviewedByRole: role, reviewedAt: now(), activityLog: log(f, status) }); open = null; msg = ''; }
+    if (!r) { flash(`Enter a reason before you ${status === 'Returned' ? 'return' : 'reject'} this filing.`); return; }
+    try { await persist(f, { status, accepted: false, [field]: r, reviewedBy: account.name, reviewedByUid: account.uid, reviewedByRole: role, reviewedAt: now(), activityLog: log(f, status) }); go(null); msg = ''; }
     catch (e) { console.error(e); msg = 'We could not save that decision. Try again.'; }
     draw();
   }
   const actions = {
-    open: id => { open = open === id ? null : id; msg = ''; },
+    open: id => go(id),
+    close: () => go(null),
     tab: t => { tab = t; open = null; msg = ''; },
     accept: id => accept(P.find(f => f._id === id)),
     return: id => decide(P.find(f => f._id === id), 'Returned', 'returnReason'),
@@ -185,16 +198,23 @@ if (!has(STAFF, role)) {
     note: async id => { const f = P.find(x => x._id === id), t = $('note-' + id).value.trim(); if (t) await persist(f, { clerkNotes: [...(f.clerkNotes || []), { text: t, by: account.name, byUid: account.uid, at: now() }], activityLog: log(f, 'Added an internal note') }).catch(() => msg = 'Could not save the note.'); },
     forward: async id => { const f = P.find(x => x._id === id), v = $('fwd-' + id).value; if (!v) { msg = 'Select a judicial officer to forward this filing to.'; return; } const [uid, name] = v.split('|'); await persist(f, { assignedJudge: name, assignedJudgeUid: uid, activityLog: log(f, `Forwarded to ${name} for review`) }).catch(() => msg = 'Could not forward this filing.'); }
   };
-  document.addEventListener('click', async e => { const el = e.target.closest('[data-a]'); if (!el) return; const [n, v] = el.dataset.a.split(':'); if (n === 'accept' || n === 'return' || n === 'reject') { await actions[n](v); return; } if (actions[n]) { await actions[n](v); draw(); } });
+  document.addEventListener('click', async e => {
+    const el = e.target.closest('[data-a]'); if (!el) return; const [n, v] = el.dataset.a.split(':');
+    const keep = open && $('reason-' + open)?.value;
+    if (n === 'accept' || n === 'return' || n === 'reject') { await actions[n](v); return; }
+    if (actions[n]) { await actions[n](v); draw(); const r = open && $('reason-' + open); if (r && keep) r.value = keep; }
+  });
+  window.addEventListener('hashchange', () => { open = location.hash.slice(1) || null; draw(); });
 
   /* ── Frame ────────────────────────────────────────────────────────── */
   $('page-action').innerHTML = scope.length > 1 ? `<select class="in" id="court" style="width:auto" aria-label="Court">${scope.map(c => `<option>${esc(c)}</option>`).join('')}</select>` : `<span class="pill plain">${esc(court)}</span>`;
-  $('court')?.addEventListener('change', e => { court = e.target.value; open = null; draw(); });
-  root.innerHTML = `<div class="stats" id="stats"></div><div id="msg"></div>
+  $('court')?.addEventListener('change', e => { court = e.target.value; draw(); });
+  open = location.hash.slice(1) || null;
+  root.innerHTML = `<div id="msg"></div><div id="queue"><div class="stats" id="stats"></div>
     <div class="tools"><input class="in" id="q" type="search" placeholder="Search by confirmation number, filer, case, or document type" aria-label="Search filings">
       <select class="in" id="sort" aria-label="Sort"><option value="newest">Newest first</option><option value="oldest">Oldest first</option><option value="urgent">Emergency first</option></select>
       <button class="btn outline" id="refresh" type="button">Refresh</button></div>
-    <div class="tabs" id="tabs" role="tablist"></div><section class="card flush"><div id="list"><div class="loading-inline" style="padding:24px"><span class="spin-sm"></span>Loading filings…</div></div></section>`;
+    <div class="tabs" id="tabs" role="tablist"></div><section class="card flush"><div id="list"><div class="loading-inline" style="padding:24px"><span class="spin-sm"></span>Loading filings…</div></div></section></div><div id="detail" hidden></div>`;
   $('q').oninput = e => { q = e.target.value.toLowerCase().trim(); draw(); };
   $('sort').onchange = e => { sort = e.target.value; draw(); };
   $('refresh').onclick = async () => { await load(); draw(); };

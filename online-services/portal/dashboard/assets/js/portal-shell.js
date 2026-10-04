@@ -51,10 +51,10 @@ const svg = k => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" str
 const ok = (roles, r) => roles === 'all' || has(roles, r);
 
 const CSS = `
-.f{display:grid;gap:6px;margin-bottom:16px}.f>span{font-weight:600;font-size:14.5px;color:var(--navy)}
-.f input,.f select,.f textarea,.in{font:inherit;padding:10px 12px;border:1px solid #9fb0c8;border-radius:4px;background:#fff;width:100%;color:var(--text)}
+.f{display:grid;gap:6px;align-content:start;margin-bottom:16px}.f>span{font-weight:600;font-size:14.5px;color:var(--navy)}
+.f input,.f select,.f textarea,.in{font:inherit;min-height:44px;padding:10px 12px;border:1px solid #9fb0c8;border-radius:4px;background:#fff;width:100%;color:var(--text)}
 .f textarea{min-height:84px;resize:vertical}.f input:focus,.f select:focus,.f textarea:focus,.in:focus{outline:3px solid #5b9be0;outline-offset:1px;border-color:var(--blue)}
-.cols{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}.cols .f{margin-bottom:0}.sub .cols{margin-bottom:2px}
 .steps{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px}
 .steps div{padding:11px 14px;background:#fff;border:1px solid var(--line);border-top:3px solid var(--line);border-radius:4px;font-size:14px;color:var(--muted)}
 .steps .on{border-top-color:var(--navy);color:var(--navy);font-weight:600}.steps .done{border-top-color:#2f7d4f;color:#154d2e}
@@ -68,6 +68,10 @@ const CSS = `
 .sub>header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;font-weight:600;color:var(--navy)}
 .btn.sm{padding:6px 12px;font-size:13.5px}.btn.danger{background:#b3261e;border-color:#b3261e}.btn.good{background:#2f7d4f;border-color:#2f7d4f}.btn:disabled{opacity:.5;cursor:not-allowed}
 .pill.warn{background:#fbefd6;color:#8a5a12}.pill.bad{background:#fbe3e0;color:#7a1b13}.pill.mid{background:#ece6f7;color:#4a2c85}
+.drop{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;padding:26px 18px;border:2px dashed #9fb0c8;border-radius:6px;background:#f8fafd;margin-bottom:16px;transition:background .15s,border-color .15s}
+.drop.over{border-color:var(--blue);background:#e8f0fb}.drop p{margin:0;color:var(--muted);font-size:14.5px}.drop .big{font-weight:600;color:var(--navy)}
+.vh{position:absolute;width:1px;height:1px;opacity:0;overflow:hidden}.vh:focus-visible+label{outline:3px solid #5b9be0;outline-offset:2px}
+.fchip{display:flex;justify-content:space-between;align-items:center;gap:12px}
 .acts{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.mt{margin-top:14px}
 @media(max-width:700px){.cols{grid-template-columns:1fr}.steps{grid-template-columns:1fr 1fr}}`;
 
