@@ -2,7 +2,7 @@
    Usage: const { account, role } = await boot({ id: 'filings', title: '...', subtitle: '...' }); */
 import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
 import { getAuth, setPersistence, browserLocalPersistence, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
-import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+import { getFirestore, doc, getDoc, runTransaction } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 
 const SIGNIN = '/courts/online-services/portal/', PUBLIC = '/courts/';
 const BASE = 'https://migovt.org/courts/online-services/portal/dashboard/';
@@ -28,6 +28,15 @@ export const app = getApps().length ? getApp() : initializeApp({
   storageBucket: "micourt-dada6.firebasestorage.app", messagingSenderId: "1013564619997", appId: "1:1013564619997:web:8f259dab457915758f6f34" });
 export const auth = getAuth(app), db = getFirestore(app);
 await setPersistence(auth, browserLocalPersistence);
+
+/* Case numbers: YY-#-CODE (district, one running sequence per year) or "MSC #" (Supreme Court). */
+export const CASE_CODES = { 'Small Claims': 'SC', 'Civil Infraction': 'CI', 'General Civil': 'CV', 'Administrative Appeal': 'AA', 'General Appeal': 'GA', 'General Criminal': 'CR', 'Special Proceedings': 'SP',
+  Expungement: 'SP', 'Special Proceeding': 'SP', Criminal: 'CR', Administrative: 'AA', Appellate: 'GA', Traffic: 'CI' };
+export async function reserveCaseNumber(court, caseType) {
+  const sc = court === SUPREME_COURT, year = new Date().getFullYear(), ref = doc(db, 'caseNumberCounters', sc ? 'supreme' : 'district-' + year);
+  const n = await runTransaction(db, async tx => { const s = await tx.get(ref); const v = (s.exists() ? s.data().value || 0 : 0) + 1; tx.set(ref, { value: v, ...(sc ? {} : { year }), updatedAt: new Date().toISOString() }); return v; });
+  return sc ? `MSC ${n}` : `${String(year).slice(-2)}-${n}-${CASE_CODES[caseType] || 'CV'}`;
+}
 
 const NAV = [
   [null, [['overview', 'Overview', '', 'all']]],

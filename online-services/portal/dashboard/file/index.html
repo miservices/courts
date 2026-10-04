@@ -27,21 +27,20 @@
 <div class="auth-loading-overlay" id="auth-overlay" role="status"><div class="alo-title">Online Portal</div><div class="spin"></div><div>Verifying your session…</div></div>
 
 <script type="module">
-import { boot, db, app, $, esc, has, ATTY, STAFF } from '/courts/online-services/portal/dashboard/assets/js/portal-shell.js';
-import { collection, getDocs, addDoc, query, where } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+import { boot, db, app, $, esc, has, ATTY, STAFF, CASE_CODES, DISTRICT_COURT, reserveCaseNumber } from '/courts/online-services/portal/dashboard/assets/js/portal-shell.js';
+import { collection, getDocs, addDoc, query, where, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 
 const { account, role } = await boot({ id: 'filings', title: 'My filings', subtitle: 'File a new case, add to an existing one, and track what you have submitted.' });
 
 /* ── Court data ─────────────────────────────────────────────────────── */
 const FW = 'Fee Waiver Request (MC 20)';
 const COURTS = {
-  'Genesee Co. District Court': ['Small Claims', 'General Civil', 'Civil Infraction', 'Expungement', 'Administrative', 'Special Proceeding', ...(has(STAFF, role) || role === 'Prosecuting Attorney' ? ['Criminal'] : [])],
+  'Genesee Co. District Court': ['Small Claims', 'Civil Infraction', 'General Civil', 'Administrative Appeal', 'General Appeal', 'Special Proceedings', ...(has(STAFF, role) || role === 'Prosecuting Attorney' ? ['General Criminal'] : [])],
   'Michigan Supreme Court': ['Appellate', 'Administrative Appeal', 'Original Action', 'Extraordinary Writ']
 };
-const ROLES = { 'Small Claims': ['Plaintiff', 'Defendant'], 'General Civil': ['Plaintiff', 'Defendant'], 'Civil Infraction': ['Defendant', 'Prosecuting Authority'], Expungement: ['Petitioner', 'Respondent'], Criminal: ['Prosecution', 'Defendant'],
-  Administrative: ['Petitioner', 'Respondent'], 'Special Proceeding': ['Petitioner', 'Respondent'], Appellate: ['Appellant', 'Appellee'], 'Administrative Appeal': ['Petitioner', 'Respondent'], 'Original Action': ['Plaintiff', 'Defendant'], 'Extraordinary Writ': ['Petitioner', 'Respondent'] };
-const INIT = { 'Small Claims': ['Complaint (DC 84)', FW], 'General Civil': ['Complaint', 'Summons (MC 01)', FW], 'Civil Infraction': ['Appeal of Civil Infraction (DC 102)', FW], Expungement: ['Application to Set Aside a Conviction or Arrest (MC 227)', FW],
-  Criminal: ['Criminal Complaint / Information'], Administrative: ['Petition'], 'Special Proceeding': ['Petition', 'Application for Writ of Garnishment', 'Application for Writ of Habeas Corpus', 'Petition for Order of Contempt'],
+const ROLES = { 'Small Claims': ['Plaintiff', 'Defendant'], 'General Civil': ['Plaintiff', 'Defendant'], 'Civil Infraction': ['Defendant', 'Prosecuting Authority'], 'General Criminal': ['Prosecution', 'Defendant'], 'Special Proceedings': ['Petitioner', 'Respondent'], 'General Appeal': ['Appellant', 'Appellee'], Appellate: ['Appellant', 'Appellee'], 'Administrative Appeal': ['Petitioner', 'Respondent'], 'Original Action': ['Plaintiff', 'Defendant'], 'Extraordinary Writ': ['Petitioner', 'Respondent'] };
+const INIT = { 'Small Claims': ['Complaint (DC 84)', FW], 'General Civil': ['Complaint', 'Summons (MC 01)', FW], 'Civil Infraction': ['Appeal of Civil Infraction (DC 102)', FW], 'General Criminal': ['Criminal Complaint / Information'], 'Administrative Appeal': ['Petition for Review'], 'General Appeal': ['Application for Leave to Appeal', 'Notice of Appeal (as of right)'],
+  'Special Proceedings': ['Application to Set Aside a Conviction or Arrest (MC 227)', 'Application for Writ of Habeas Corpus', 'Application for Writ of Garnishment', 'Petition for Order of Contempt', 'Petition', FW],
   Appellate: ['Application for Leave to Appeal', 'Notice of Appeal (as of right)'], 'Administrative Appeal': ['Petition for Review'], 'Original Action': ['Complaint'],
   'Extraordinary Writ': ['Petition for Writ of Mandamus', 'Petition for Writ of Prohibition', 'Petition for Superintending Control', 'Petition for Quo Warranto'] };
 const COMMON = ['Motion', 'Emergency Motion', 'Response / Answer', 'Brief', 'Reply Brief', 'Affidavit / Declaration', 'Proposed Order', 'Stipulation', FW, 'Notice of Appeal', 'Proof of Service', 'Notice', 'Other'];
@@ -74,7 +73,7 @@ const caption = c => { const p = Array.isArray(c.parties) ? c.parties : []; cons
 /* ── Views ──────────────────────────────────────────────────────────── */
 const F = (label, inner, hint) => `<label class="f"><span>${label}</span>${inner}${hint ? `<small>${hint}</small>` : ''}</label>`;
 const inp = (k, v, ph = '', t = 'text') => `<input type="${t}" data-k="${k}" value="${esc(v)}" placeholder="${esc(ph)}">`;
-const sel = (k, v, opts, ph, r) => `<select data-k="${k}" ${r ? 'data-r' : ''}>${ph ? `<option value="">${ph}</option>` : ''}${opts.map(o => `<option${o === v ? ' selected' : ''}>${esc(o)}</option>`).join('')}</select>`;
+const sel = (k, v, opts, ph, r) => `<select data-k="${k}" ${r ? 'data-r' : ''}>${ph ? `<option value="">${ph}</option>` : ''}${opts.map(o => { const [ov, ol] = Array.isArray(o) ? o : [o, o]; return `<option value="${esc(ov)}"${ov === v ? ' selected' : ''}>${esc(ol)}</option>`; }).join('')}</select>`;
 const opt = (on, a, title, sub) => `<div class="opt${on ? ' on' : ''}" role="radio" aria-checked="${on}" tabindex="0" data-a="${a}"><input type="radio" tabindex="-1" ${on ? 'checked' : ''}><div><b>${title}</b><small>${sub}</small></div></div>`;
 
 function stepType() {
@@ -82,7 +81,7 @@ function stepType() {
     `<section class="card"><header><h3>What are you filing?</h3></header>
       ${opt(S.type === 'new', 'type:new', 'Start a new case', 'File a complaint, petition, or other document that opens a new matter.')}
       ${opt(S.type === 'existing', 'type:existing', 'File in an existing case', 'Submit a motion, response, brief, or other document in a case already on the docket.')}
-      ${S.type === 'new' ? `<div class="cols mt">${F('Court', sel('court', S.court, Object.keys(COURTS), 'Select a court', 1))}${S.court ? F('Case type', sel('ctype', S.ctype, COURTS[S.court], 'Select a case type', 1)) : ''}</div>` : ''}
+      ${S.type === 'new' ? `<div class="cols mt">${F('Court', sel('court', S.court, Object.keys(COURTS), 'Select a court', 1))}${S.court ? F('Case type', sel('ctype', S.ctype, COURTS[S.court].map(n => [n, S.court === DISTRICT_COURT ? `${n} (${CASE_CODES[n]})` : n]), 'Select a case type', 1), S.court === DISTRICT_COURT ? 'Petitions to set aside (expungements) and habeas corpus petitions are filed under Special Proceedings. Don’t know your case code? <a href="https://migovt.org/courts/forms-and-filing/information/#codes" target="_blank" rel="noopener">See the case codes guide</a>.' : '') : ''}</div>` : ''}
     </section>`;
 }
 
@@ -118,6 +117,8 @@ function stepDocs() {
 }
 
 const docs = () => [...S.files.map(f => ({ name: f.file.name, type: f.type })), ...S.links.map(l => ({ name: 'Google Drive document', type: l.type }))];
+const notice = () => `<div class="sub"><b>${S.type === 'new' ? 'A case number is reserved when you submit.' : 'No clerk review is needed.'}</b><small style="color:var(--text);margin-top:4px">${S.type === 'new'
+  ? 'Your case will not appear in Case Search unless the clerk accepts your filing.' : 'This case is already open, so your documents are added to the docket automatically when you submit.'}</small></div>`;
 function stepReview() {
   const d = docs(), total = d.reduce((t, x) => t + fee(x.type, courtOf()), 0);
   const rows = S.type === 'new'
@@ -127,7 +128,7 @@ function stepReview() {
     <dl class="details">${rows.map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join('')}
       ${d.map(x => `<div><dt>${esc(x.type)}</dt><dd>${esc(x.name)} · ${fee(x.type, courtOf()) ? money(fee(x.type, courtOf())) : 'No fee'}</dd></div>`).join('')}
       <div><dt>Estimated fees</dt><dd>${money(total)} — due in person within 14 days, not at filing</dd></div></dl>
-    ${F('Confirmation email', inp('email', S.email, 'you@example.com', 'email'), 'We send updates here when the clerk accepts, returns, or rejects your filing.')}
+    ${notice()}${F('Confirmation email', inp('email', S.email, 'you@example.com', 'email'), 'We send updates here when the clerk accepts, returns, or rejects your filing.')}
     ${F('Notes to the clerk (optional)', `<textarea data-k="notes">${esc(S.notes)}</textarea>`)}
     <label class="opt${S.cert ? ' on' : ''}"><input type="checkbox" data-k="cert" data-r ${S.cert ? 'checked' : ''}><div><b>This filing is accurate and complete</b><small>I certify the information and documents are true to the best of my knowledge. Once submitted, a filing cannot be edited.</small></div></label></section>`;
 }
@@ -136,7 +137,7 @@ const pillFor = s => `<span class="pill ${s === 'Accepted' ? 'done' : s === 'Rej
 function history() {
   if (!mine.length) return `<section class="card">${'<div class="empty"><strong>No filings yet</strong><p>Filings you submit appear here with their review status.</p></div>'}</section>`;
   return `<section class="card flush"><div class="table-scroll"><table><thead><tr><th>Confirmation</th><th>Filing</th><th>Filed</th><th>Status</th></tr></thead><tbody>${mine.map(f =>
-    `<tr><td class="nw"><b>${esc(f.confirmationNumber)}</b></td><td>${esc(f.filingType === 'new' ? `New ${f.caseType}` : f.caseId)}<small>${esc((f.documents || []).map(d => d.documentType).join(', '))}</small>${f.returnReason || f.rejectionReason ? `<small><b>Clerk:</b> ${esc(f.returnReason || f.rejectionReason)}</small>` : ''}${f.linkedCaseId && f.filingType === 'new' ? `<small>Case number ${esc(f.linkedCaseId)}</small>` : ''}</td><td class="nw">${fmt(f.dateFiled)}</td><td>${pillFor(f.status)}</td></tr>`).join('')}</tbody></table></div></section>`;
+    `<tr><td class="nw"><b>${esc(f.confirmationNumber)}</b></td><td>${esc(f.filingType === 'new' ? `New ${f.caseType}` : f.caseId)}<small>${esc((f.documents || []).map(d => d.documentType).join(', '))}</small>${f.returnReason || f.rejectionReason ? `<small><b>Clerk:</b> ${esc(f.returnReason || f.rejectionReason)}</small>` : ''}${f.filingType === 'new' && (f.linkedCaseId || f.reservedCaseId) ? `<small>Case number ${esc(f.linkedCaseId || f.reservedCaseId)}${f.linkedCaseId ? '' : ' (reserved — not a case until the clerk accepts)'}</small>` : ''}</td><td class="nw">${fmt(f.dateFiled)}</td><td>${pillFor(f.status)}</td></tr>`).join('')}</tbody></table></div></section>`;
 }
 
 function renderAction() {
@@ -146,8 +147,13 @@ function render() {
   renderAction();
   if (S.view === 'history') { root.innerHTML = history(); return; }
   if (S.done) {
-    root.innerHTML = `<section class="card" style="text-align:center;padding:40px 24px"><h3 style="font-size:24px">Filing submitted</h3><p style="color:var(--muted);margin:8px 0 18px">The clerk’s office will review it. You will be emailed at ${esc(S.done.email)}.</p>
-      <p style="margin-bottom:6px;color:var(--muted)">Confirmation number</p><p style="font-family:var(--font-head);font-size:28px;color:var(--navy);margin-bottom:22px">${esc(S.done.conf)}</p>
+    const d = S.done, isNew = d.type === 'new';
+    root.innerHTML = `<section class="card" style="text-align:center;padding:40px 24px"><h3 style="font-size:24px">${isNew ? 'Filing submitted' : 'Filing added to your case'}</h3>
+      ${isNew ? `<p style="color:var(--muted);margin:14px 0 4px">Your reserved case number</p><p style="font-family:var(--font-head);font-size:34px;color:var(--navy)">${esc(d.caseNo)}</p>
+        <p style="max-width:520px;margin:10px auto 18px">This number is yours, but <b>the case will not appear in Case Search unless the clerk accepts your filing.</b> We will email ${esc(d.email)} when it is reviewed.</p>`
+      : `<p style="color:var(--muted);margin:14px 0 4px">Case</p><p style="font-family:var(--font-head);font-size:30px;color:var(--navy)">${esc(d.caseNo)}</p>
+        <p style="max-width:520px;margin:10px auto 18px"><b>No clerk review is needed.</b> Your documents were added to the docket automatically.</p>`}
+      <p style="margin-bottom:4px;color:var(--muted)">Confirmation number</p><p style="font-weight:600;margin-bottom:22px">${esc(d.conf)}</p>
       <div class="acts" style="justify-content:center"><button class="btn" data-a="again">File another document</button><button class="btn outline" data-a="view:history">View my submissions</button></div></section>`;
     return;
   }
@@ -200,8 +206,18 @@ async function submit() {
       filedBy: account.name, filedByUid: account.uid, isFilingAsCounsel: S.counsel, counselRepresents: S.counsel ? (S.type === 'new' ? mineP?.name : S.rep.trim()) : null,
       barNumber: S.counsel ? account.barNumber || null : null, dateFiled: now, status: 'Pending', accepted: false, urgent: false };
     if (S.type === 'existing') { obj.caseId = S.kase.caseId; obj.caseFirestoreId = S.kase._id; }
+    if (S.type === 'new') obj.reservedCaseId = await reserveCaseNumber(court, S.ctype);
+    else {
+      const ref = doc(db, 'cases', S.kase._id), snap = await getDoc(ref), prev = snap.exists() ? snap.data().events || [] : [];
+      let n = prev.reduce((m, e) => Math.max(m, e.eventNumber || 0), 0) + 1;
+      const events = [...prev, ...documents.map(d => ({ eventNumber: n++, type: 'filing', date: now, description: /fee waiver/i.test(d.documentType || '') ? `Fee waiver filed: ${d.documentType}` : d.documentType || d.name,
+        comment: S.notes.trim() || null, documentLink: d.fileUrl || d.link || null, sealed: false, filedBy: account.name, role: filerRole, confirmationNumber: conf, docName: d.name }))];
+      await updateDoc(ref, { events, 'dates.lastUpdated': now });
+      Object.assign(obj, { status: 'Accepted', accepted: true, autoFiled: true, reviewedBy: 'System (Auto-Filed)', reviewedAt: now, linkedCaseId: S.kase.caseId, linkedCaseFirestoreId: S.kase._id,
+        activityLog: [{ text: 'Automatically filed — filings in an existing case do not require clerk review', by: 'System', at: now }] });
+    }
     await addDoc(collection(db, 'pendingFilings'), obj);
-    S.done = { conf, email: S.email.trim() }; S.busy = false; S.err = ''; loadMine(); render();
+    S.done = { conf, email: S.email.trim(), type: S.type, caseNo: S.type === 'new' ? obj.reservedCaseId : S.kase.caseId }; S.busy = false; S.err = ''; loadMine(); render();
   } catch (e) { console.error(e); S.busy = false; S.err = 'We could not submit your filing. Check your connection and try again.'; render(); }
 }
 
