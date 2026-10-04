@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My financials | Online Portal</title>
+<link rel="icon" type="image/png" href="/courts/images/favicon.png">
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=Source+Serif+4:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/courts/online-services/portal/dashboard/assets/css/dashboard.css?v=5">
+<style>
+.m{color:var(--muted);font-weight:400}.mt{margin-top:14px}
+.ord{margin-bottom:16px}.ord .top{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;align-items:flex-start;margin-bottom:12px}
+.ord h3{font-size:19px;margin-bottom:2px}.ord .top small{display:block;color:var(--muted)}.pills{display:flex;gap:6px;flex-wrap:wrap}
+.amts{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px 18px;margin-bottom:14px}.amts div{display:grid;gap:2px}.amts dt{font-size:13px;color:var(--muted)}.amts dd{font-weight:700;font-size:17px;color:var(--navy)}.amts dd.owe{font-size:22px}
+.acts{display:flex;gap:8px;flex-wrap:wrap}
+.alert-line{border-left:4px solid #b7791f;background:#fdf6e7;color:#6e4a10;border-radius:4px;padding:10px 14px;margin-bottom:10px}
+.alert-line.red{border-color:#b3261e;background:#fdf1f0;color:#7a1b13}
+.note{border-left:4px solid var(--navy);background:#eef3f9;border-radius:4px;padding:10px 14px;margin-bottom:12px;color:var(--navy)}
+td small,th small{display:block;color:var(--muted);font-weight:400}.num{text-align:right;white-space:nowrap}th.num{text-align:right}
+.rcpt{text-align:center;padding:6px 0 4px}.rcpt .big{font-family:var(--font-head);font-size:34px;color:var(--navy);font-weight:700;margin:6px 0}.rcpt .tick{width:54px;height:54px;border-radius:50%;background:#e4f3ea;color:#2f7d4f;font-size:30px;line-height:54px;margin:0 auto 6px}
+.kv{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px 22px;margin-bottom:6px;text-align:left}.kv dt{font-size:13px;color:var(--muted)}.kv dd{font-weight:600;overflow-wrap:anywhere}
+.spinbox{display:flex;gap:12px;align-items:center;justify-content:center;padding:34px 0;color:var(--navy);font-weight:600}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:16px}@media(max-width:700px){.cols{grid-template-columns:1fr}}
+dialog{border:0;padding:0;border-radius:6px;width:min(640px,calc(100vw - 24px));max-height:calc(100vh - 48px);box-shadow:0 24px 60px rgba(9,22,40,.35);color:var(--text);font:inherit;overflow:hidden;margin:auto}
+dialog[open]{display:flex;flex-direction:column}dialog.wide{width:min(820px,calc(100vw - 24px))}dialog::backdrop{background:rgba(9,22,40,.55)}
+dialog>header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:16px 22px;border-bottom:1px solid var(--line);background:#f4f7fb}dialog>header h3{font-size:19px}dialog>header p{color:var(--muted);margin-top:2px}
+.x{font:inherit;font-size:22px;line-height:1;width:36px;height:36px;border:1px solid var(--line);border-radius:4px;background:#fff;cursor:pointer;color:var(--navy);flex-shrink:0}.x:hover{background:#eef3f9}
+#dlg-b{padding:20px 22px 6px;overflow:auto}#dlg-e{padding:0 22px 14px}#dlg-e .alert{margin:0}
+dialog>footer{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:10px;padding:14px 22px;border-top:1px solid var(--line);background:#f4f7fb}
+@media print{body>*:not(dialog){display:none!important}dialog{position:static!important;box-shadow:none!important;width:auto!important;max-height:none!important}dialog>footer,.x{display:none!important}}
+</style>
+</head>
+<body>
+<aside class="sidebar" id="sidebar-root" aria-label="Portal navigation"></aside>
+<div class="scrim" id="scrim" hidden></div>
+<div class="main">
+  <header class="topbar">
+    <div class="topbar-left">
+      <button class="menu-btn" id="menu-btn" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="sidebar-root"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+      <div><span class="topbar-eyebrow">Online Portal</span><span class="topbar-page-title" id="topbar-title">My financials</span></div>
+    </div>
+    <div class="topbar-right"><span class="topbar-date" id="topbar-date"></span><div class="notif-wrap" id="notif-root"></div></div>
+  </header>
+  <main class="page-body">
+    <div class="page-head"><div><h2 id="page-title">My financials</h2><p id="page-subtitle"></p></div><div id="page-action"></div></div>
+    <div id="page-body"><div class="loading-inline"><span class="spin-sm"></span>Loading your balances…</div></div>
+  </main>
+</div>
+<dialog id="dlg" aria-labelledby="dlg-t">
+  <header><div><h3 id="dlg-t"></h3><p id="dlg-w"></p></div><button class="x" type="button" aria-label="Close" data-close>×</button></header>
+  <div id="dlg-b"></div><div id="dlg-e"></div><footer id="dlg-f"></footer>
+</dialog>
+<div class="auth-loading-overlay" id="auth-overlay" role="status"><div class="alo-title">Online Portal</div><div class="spin"></div><div>Verifying your session…</div></div>
+
+<script type="module">
+import { boot, db, $, esc, has, SELF, colFor } from '/courts/online-services/portal/dashboard/assets/js/portal-shell.js?v=6';
+import * as F from '/courts/online-services/portal/dashboard/assets/js/finance.js?v=1';
+import { collection, getDocs, doc, runTransaction } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+
+const { account, role } = await boot({ id: 'financials', title: 'My financials', subtitle: 'Fines, fees, restitution and judgments in your cases.' });
+const root = $('page-body'), BASE = 'https://migovt.org/courts/online-services/portal/dashboard/';
+if (!has(SELF, role)) { $('page-subtitle').textContent = ''; root.innerHTML = `<section class="card"><div class="empty"><strong>This page is for litigants and attorneys</strong><p>Court staff manage fines, fees and payments in Manage Financials.</p><a class="btn" href="${BASE}financials/manage/">Open Manage Financials</a></div></section>`; }
+else await main();
+
+async function main() {
+const { money, r2 } = F, NOW = new Date(), norm = s => String(s || '').toLowerCase().replace(/\s+/g, ' ').trim();
+const fmtD = s => { const d = F.parseDay(s); return d ? d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—'; };
+const fmtDT = s => { const d = new Date(s); return isNaN(d) ? '—' : d.toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' }); };
+const hv = v => v !== undefined && v !== null && String(v).trim() !== '';
+const sideOf = r => /defendant|respondent|appellee/i.test(r || '') ? 1 : /plaintiff|petitioner|prosecut|appellant|applicant|complainant|claimant/i.test(r || '') ? 0 : null;
+const counselOf = p => { const a = [...(p.attorneys || [])]; if (p.attorney?.name && !a.some(x => x.name === p.attorney.name)) a.unshift(p.attorney); return a.filter(x => x && x.name); };
+function caption(c) {
+  if (hv(c.caseTitleOverride)) return c.caseTitleOverride;
+  const l = F.caseParties(c), t = String(c.caseType || '').toLowerCase(), a = l.find(x => sideOf(x.role) === 0), b = l.find(x => sideOf(x.role) === 1);
+  if (t === 'criminal' || t === 'traffic') return a && b ? `${a.name} v. ${b.name}` : `State of Michigan v. ${b?.name || 'Unknown'}`;
+  if (a && b) return `${a.name} v. ${b.name}`; if (a) return `Ex parte ${a.name}`; if (b) return `In re ${b.name}`; return c.administrativeSubtype || c.caseId || 'Case';
+}
+// Which of this case's parties are me, or are my clients if I am an attorney.
+function link(c) {
+  const me = norm(account.name), bar = String(account.barNumber || '').trim(), l = F.caseParties(c);
+  const own = l.filter(p => norm(p.name) === me), clients = l.filter(p => counselOf(p).some(a => norm(a.name) === me || (bar && String(a.barNumber || '').trim() === bar)));
+  if (!own.length && !clients.length && !(c.relatedUserIds || []).includes(account.uid)) return null;
+  return { names: new Set([...own, ...clients].map(p => norm(p.name))), roles: new Set([...own, ...clients].map(p => norm(p.role))), forClient: !own.length && clients.length ? clients.map(p => p.name).join(' and ') : null, filer: !own.length && !clients.length };
+}
+const mine = (o, lk) => lk.filer ? true : hv(o.payor) ? lk.names.has(norm(o.payor)) : hv(o.owedBy) ? lk.roles.has(norm(o.owedBy)) : !lk.forClient;
+
+/* ── Data ───────────────────────────────────────────────────────────── */
+let items = [], tab = 'owe', note = '', noteKind = 'ok';
+const safe = p => p.catch(() => ({ docs: [] }));
+async function load() {
+  const [a, b] = await Promise.all([safe(getDocs(collection(db, 'cases'))), safe(getDocs(collection(db, 'mscCases')))]); items = [];
+  [...a.docs, ...b.docs].forEach(s => { const c = { ...s.data(), _id: s.id }, lk = link(c); if (!lk) return;
+    (c.financialOrders || []).forEach((o, i) => { const raw = F.normalize(o, F.idOf(c, i)); if (!mine(raw, lk)) return; items.push({ key: c._id + '|' + raw.id, c, lk, o: F.accrue(raw, NOW).order }); }); });   // late fees and interest show as soon as they are due
+  const far = new Date(8.64e15); items.sort((x, y) => (F.parseDay(x.o.dueDate) || far) - (F.parseDay(y.o.dueDate) || far));   // soonest due first; orders with no due date last
+}
+const byKey = k => items.find(x => x.key === k);
+class UserError extends Error {} const bad = m => { throw new UserError(m); };
+const errText = e => e instanceof UserError ? e.message : e?.code === 'permission-denied' ? 'We could not process this right now. Please try again later or contact the clerk\'s office.' : 'We could not complete that. Check your connection and try again.';
+// Every change re-reads the case, posts anything that has come due, then applies the change to that copy.
+async function change(x, fn) {
+  const r = doc(db, colFor(x.c.court), x.c._id), at = new Date();
+  await runTransaction(db, async tx => {
+    const s = await tx.get(r); if (!s.exists()) bad('This case could not be found.'); const d = s.data(), arr = (d.financialOrders || []).map((o, i) => F.normalize(o, F.idOf(d.caseId ? d : { ...d, _id: s.id }, i)));
+    const k = arr.findIndex(o => o.id === x.o.id); if (k < 0) bad('This balance has changed. Refresh the page and try again.');
+    arr[k] = F.settle(F.normalize(fn(F.accrue(arr[k], at).order, at), arr[k].id)); tx.update(r, { financialOrders: arr, dates: { ...(d.dates || {}), lastUpdated: at.toISOString() } });
+  });
+}
+
+/* ── Dialogs ────────────────────────────────────────────────────────── */
+const dlg = $('dlg'); let dlgOk = null, dlgChange = null;
+function modal({ title, sub = '', body, ok = 'Save', okCls = '', wide = false, onOk, onChange, closeLabel = 'Cancel' }) {
+  dlgChange = onChange || null; $('dlg-t').textContent = title; $('dlg-w').textContent = sub; $('dlg-b').innerHTML = body; $('dlg-e').innerHTML = ''; dlg.classList.toggle('wide', wide); dlgOk = onOk;
+  $('dlg-f').innerHTML = `<button class="btn outline" type="button" data-close>${onOk ? closeLabel : 'Close'}</button>${onOk ? `<button class="btn ${okCls}" type="button" id="dlg-ok">${ok}</button>` : ''}`;
+  if (!dlg.open) dlg.showModal();
+}
+async function runOk() { const b = $('dlg-ok'), label = b.textContent; b.disabled = true; $('dlg-e').innerHTML = ''; b.textContent = 'Please wait…';
+  try { await dlgOk(); } catch (e) { if (!(e instanceof UserError)) console.error(e); $('dlg-e').innerHTML = `<div class="alert" role="alert">${esc(errText(e))}</div>`; b.disabled = false; b.textContent = label; } }
+dlg.addEventListener('click', e => { if (e.target === dlg || e.target.closest('[data-close]')) { dlg.close(); draw(); } else if (e.target.closest('#dlg-ok')) runOk(); else { const el = e.target.closest('[data-a]'); if (el) act(el.dataset.a); } });
+dlg.addEventListener('input', e => dlgChange?.(e)); dlg.addEventListener('change', e => dlgChange?.(e));
+const val = id => ($(id)?.value || '').trim();
+const fld = (label, id, v = '', o = {}) => `<label class="f"><span>${label}</span><input id="${id}" type="${o.type || 'text'}" value="${esc(v)}"${o.step ? ` step="${o.step}"` : ''}${o.min != null ? ` min="${o.min}"` : ''}${o.ro ? ' readonly' : ''}>${o.hint ? `<small class="m">${o.hint}</small>` : ''}</label>`;
+const selF = (label, id, opts, v) => `<label class="f"><span>${label}</span><select id="${id}">${opts.map(([ov, ol]) => `<option value="${esc(ov)}"${ov === v ? ' selected' : ''}>${esc(ol)}</option>`).join('')}</select></label>`;
+const pills = o => F.statusOf(o, NOW).map(([t, l]) => `<span class="pill ${t}">${esc(l)}</span>`).join('');
+
+/* ── Paying ─────────────────────────────────────────────────────────── */
+function payModal(x) {
+  const o = x.o, bal = F.balanceOf(o), ps = F.planState(o, NOW), choices = [['full', `Pay the full balance — ${money(bal)}`, bal], ...(ps && ps.dueNow > 0 ? [['due', `Pay what is due now — ${money(Math.min(bal, ps.dueNow))}`, Math.min(bal, ps.dueNow)]] : []), ...(ps && ps.nextAmount > 0 && !(ps.dueNow > 0) ? [['inst', `Pay the next installment — ${money(ps.nextAmount)}`, ps.nextAmount]] : []), ['other', 'Pay a different amount', null]];
+  const start = choices[ps && ps.dueNow > 0 ? 1 : 0];
+  modal({ title: 'Make a payment', sub: `${o.type} · ${x.c.caseId}`, ok: 'Submit payment', okCls: 'good',
+    body: `<div class="note">Balance ${money(bal)}${F.isPastDue(o, NOW) ? ' · past due' : ''}</div>` + choices.map(([v, l], i) => `<label class="opt"><input type="radio" name="pc" value="${v}" ${v === start[0] ? 'checked' : ''}><div><b>${esc(l)}</b></div></label>`).join('')
+      + `<div id="p-oth" ${start[0] === 'other' ? '' : 'hidden'}>${fld('Amount ($)', 'p-amt', '', { type: 'number', step: '0.01', min: 0.01 })}</div>` + selF('Payment method', 'p-meth', F.METHODS.map(m => [m, m]), F.METHODS[0]),
+    onChange: e => { if (e.target.name === 'pc') $('p-oth').hidden = e.target.value !== 'other'; },
+    onOk: async () => {
+      const pick = dlg.querySelector('input[name=pc]:checked')?.value, amt = pick === 'other' ? r2(val('p-amt')) : r2(choices.find(c => c[0] === pick)[2]);
+      if (!(amt > 0)) bad('Enter the amount you want to pay.'); if (amt > bal + 0.004) bad(`You owe ${money(bal)}. Enter that amount or less.`);
+      $('dlg-b').innerHTML = '<div class="spinbox"><span class="spin-sm"></span>Processing your payment…</div>'; $('dlg-f').innerHTML = '';
+      await new Promise(r => setTimeout(r, 1400));
+      let pay; try { await change(x, (cur, at) => { if (amt > F.balanceOf(cur) + 0.004) bad(`The balance changed to ${money(F.balanceOf(cur))}. Please start again.`); pay = F.makePayment(cur, { amount: amt, method: val('p-meth') || F.METHODS[0], by: account.name, byUid: account.uid, byRole: role, date: at, balanceAfter: r2(F.balanceOf(cur) - amt) }); return { ...cur, payments: [...cur.payments, pay] }; }); }
+      catch (e) { modal({ title: 'Make a payment', sub: `${o.type} · ${x.c.caseId}`, body: '<p>Your payment was not completed.</p>', onOk: null }); throw e; }
+      await load(); receipt(pay, x.c, o);
+    } });
+}
+function receipt(p, c, o) {
+  modal({ title: 'Payment receipt', sub: 'Keep this confirmation for your records.', body: `<div class="rcpt"><div class="tick" aria-hidden="true">✓</div><b>Payment received</b><div class="big">${money(Math.abs(p.amount))}</div></div>
+    <dl class="kv"><div><dt>Confirmation number</dt><dd>${esc(p.confirmation)}</dd></div><div><dt>Date and time</dt><dd>${esc(fmtDT(p.date))}</dd></div><div><dt>Paid with</dt><dd>${esc(p.method || '—')}</dd></div><div><dt>Case</dt><dd>${esc(c.caseId)}</dd></div><div><dt>Paid toward</dt><dd>${esc(o.type)}${o.description ? ' — ' + esc(o.description) : ''}</dd></div><div><dt>Remaining balance</dt><dd>${money(Math.max(0, p.balanceAfter ?? 0))}</dd></div><div><dt>Paid by</dt><dd>${esc(p.by || account.name)}</dd></div></dl>`, onOk: null });
+  $('dlg-f').insertAdjacentHTML('afterbegin', '<button class="btn outline" type="button" data-a="print">Print receipt</button>');
+}
+function planRequest(x) {
+  const bal = F.balanceOf(x.o);
+  modal({ title: 'Request a payment plan', sub: `${x.o.type} · ${x.c.caseId}`, ok: 'Send request', okCls: 'good',
+    body: `<p class="m" style="margin-bottom:14px">The clerk or judicial officer reviews every request. While a plan is in place, late fees are not added as long as you stay current. If you fall more than ${F.GRACE_DAYS} days behind, the plan ends and the late fee applies.</p>` + selF('How often will you pay?', 'r-freq', [['monthly', 'Every month'], ['biweekly', 'Every two weeks'], ['weekly', 'Every week']], 'monthly')
+      + fld('Amount of each payment ($)', 'r-inst', '', { type: 'number', step: '0.01', min: F.MIN_INSTALLMENT, hint: `Your balance is ${money(bal)}. The smallest payment is ${money(F.MIN_INSTALLMENT)}.` }) + fld('First payment date', 'r-start', new Date(Date.now() + 7 * 864e5).toISOString().slice(0, 10), { type: 'date' }) + fld('Anything the court should know (optional)', 'r-note'),
+    onOk: async () => { const inst = r2(val('r-inst')); if (!(inst >= F.MIN_INSTALLMENT)) bad(`Each payment must be at least ${money(F.MIN_INSTALLMENT)}.`); if (!val('r-start')) bad('Choose the first payment date.');
+      await change(x, cur => { if (cur.planRequest?.status === 'Requested') bad('You already have a request waiting for review.'); return { ...cur, planRequest: { status: 'Requested', requestedAt: new Date().toISOString(), requestedBy: account.name, requestedByUid: account.uid, frequency: val('r-freq'), installment: Math.min(inst, F.balanceOf(cur)), startDate: val('r-start'), note: val('r-note') || null } }; });
+      await load(); dlg.close(); note = 'Your payment plan request was sent. You will see the result here once it has been reviewed.'; noteKind = 'ok'; draw(); } });
+}
+function detail(x) {
+  const o = x.o, ps = F.planState(o, NOW), rows = F.ledger(o), gar = (o.garnishments || []);
+  modal({ title: `${o.type}${o.description ? ' — ' + o.description : ''}`, sub: `${caption(x.c)} · ${x.c.caseId}`, wide: true,
+    body: `<div class="pills" style="margin-bottom:14px">${pills(o)}</div>${ps ? `<div class="note">Payment plan: ${money(ps.installment)} ${esc(o.schedule.frequency === 'monthly' ? 'every month' : o.schedule.frequency === 'weekly' ? 'every week' : 'every two weeks')}.${ps.next ? ` Next payment ${esc(fmtD(ps.next))}.` : ''}${o.schedule.status === 'Defaulted' ? ' This plan ended because a payment was missed.' : ''}</div>` : ''}
+      ${o.planRequest?.status === 'Requested' ? `<div class="note">Your payment plan request (${money(o.planRequest.installment)} ${esc(o.planRequest.frequency)}) is waiting for review.</div>` : o.planRequest?.status === 'Declined' ? `<div class="alert-line">Your payment plan request was declined${o.planRequest.reason ? ': ' + esc(o.planRequest.reason) : '.'}</div>` : ''}
+      ${gar.map(g => `<div class="alert-line red"><b>${esc(g.type)}</b> — ${esc(g.status)}. Issued ${esc(fmtD(g.issuedAt))} to ${esc(g.garnishee)}.${g.status === 'Active' ? ` Up to ${money(g.limit)} may be withheld${g.perPeriod ? `, ${money(g.perPeriod)} each ${esc(g.frequency || 'pay period')}` : ''}.` : ''}</div>`).join('')}
+      <div class="table-scroll"><table><thead><tr><th>Date</th><th>Entry</th><th class="num">Charges</th><th class="num">Payments and credits</th><th class="num">Balance</th></tr></thead><tbody>${rows.map(r => `<tr><td>${esc(fmtD(r.date))}</td><td><b>${esc(r.label)}</b>${r.reversed ? ' <span class="pill plain">Reversed</span>' : ''}<small>${esc(r.desc)}</small></td><td class="num">${r.charge ? money(r.charge) : ''}</td><td class="num">${r.credit ? money(r.credit) : ''}</td><td class="num"><b>${money(r.balance)}</b></td></tr>`).join('')}</tbody></table></div>`,
+    onOk: null });
+}
+function printRcpt() { window.print(); }
+
+/* ── Page ───────────────────────────────────────────────────────────── */
+const stat = (l, v, al) => `<div class="stat ${al ? 'alert-stat' : ''}"><span>${l}</span><b>${v}</b></div>`;
+function card(x) {
+  const o = x.o, bal = F.balanceOf(o), open = F.isOpen(o), adj = F.adjOf(o), ps = F.planState(o, NOW), dl = F.lateDeadline(o);
+  const warn = open && F.lateEligible(o) && !o.lateFeeAt && dl && !o.schedule && dl > NOW && F.parseDay(o.dueDate) && (dl - NOW) < 14 * 864e5 ? `<div class="alert-line">A ${F.LATE_RATE * 100}% late fee (${money(bal * F.LATE_RATE)}) is added if this is not paid by ${esc(fmtD(new Date(dl.getTime() - 1)))}.</div>` : '';
+  return `<section class="card ord"><div class="top"><div><h3>${esc(o.type)}${o.description ? ` <span class="m">— ${esc(o.description)}</span>` : ''}</h3><small>${esc(caption(x.c))} · ${esc(x.c.caseId)}${x.lk.forClient ? ' · for ' + esc(x.lk.forClient) : ''}</small></div><div class="pills">${pills(o)}</div></div>${warn}
+    <dl class="amts"><div><dt>Original amount</dt><dd>${money(o.originalAmount)}</dd></div>${adj ? `<div><dt>Late fees, interest and changes</dt><dd>${adj > 0 ? '+' : ''}${money(adj)}</dd></div>` : ''}<div><dt>Paid</dt><dd>${money(Math.max(0, F.paidOf(o)))}</dd></div><div><dt>${bal < 0 ? 'Credit on this account' : 'Balance due'}</dt><dd class="owe">${money(Math.abs(bal))}</dd></div>${o.dueDate && open && !ps ? `<div><dt>Due date</dt><dd>${esc(fmtD(o.dueDate))}</dd></div>` : ''}${ps?.next ? `<div><dt>Next payment</dt><dd>${money(ps.nextAmount)} on ${esc(fmtD(ps.next))}</dd></div>` : ''}</dl>
+    <div class="acts">${open ? `<button class="btn" type="button" data-a="pay:${esc(x.key)}">Make a payment</button>` : ''}${open && !o.schedule && o.planRequest?.status !== 'Requested' && F.typeKind(o.type) !== 'restitution' ? `<button class="btn outline" type="button" data-a="plan:${esc(x.key)}">Request a payment plan</button>` : ''}<button class="btn outline" type="button" data-a="open:${esc(x.key)}">View details</button></div></section>`;
+}
+function paymentsAll() { return items.flatMap(x => (x.o.payments || []).map(p => ({ p, x }))).sort((a, b) => new Date(b.p.date) - new Date(a.p.date)); }
+function draw() {
+  $('page-subtitle').textContent = items.length ? 'Fines, fees, restitution and judgments in your cases.' : 'Nothing is owed in your cases right now.';
+  const openI = items.filter(x => F.isOpen(x.o)), credit = items.filter(x => F.balanceOf(x.o) < -0.004), done = items.filter(x => !F.isOpen(x.o) && F.balanceOf(x.o) >= -0.004), owe = r2(openI.reduce((t, x) => t + F.balanceOf(x.o), 0)), pastDue = r2(openI.filter(x => F.isPastDue(x.o, NOW) || x.o.schedule?.status === 'Defaulted').reduce((t, x) => t + F.balanceOf(x.o), 0)), paid = r2(items.reduce((t, x) => t + Math.max(0, F.paidOf(x.o)), 0));
+  const nexts = openI.map(x => { const ps = F.planState(x.o, NOW); return ps?.next ? { d: ps.next, a: ps.nextAmount } : F.parseDay(x.o.dueDate) ? { d: F.parseDay(x.o.dueDate), a: F.balanceOf(x.o) } : null; }).filter(Boolean).sort((a, b) => a.d - b.d)[0];
+  const hist = paymentsAll(), shown = tab === 'owe' ? [...openI, ...credit.filter(x => !openI.includes(x))] : tab === 'closed' ? done : [];
+  root.innerHTML = (note ? `<div class="${noteKind === 'ok' ? 'ok-bar' : 'alert'}" role="status" style="margin-bottom:16px">${esc(note)}</div>` : '') + `<div class="stats">${stat('Balance due', money(owe), owe > 0)}${stat('Past due', money(pastDue), pastDue > 0)}${stat('Paid to date', money(paid))}${stat('Next payment', nexts ? `${money(nexts.a)}<small style="display:block;font-size:13px;font-weight:500;color:var(--muted)">${esc(fmtD(nexts.d))}</small>` : '—')}</div>
+    <div class="tabs" role="tablist">${[['owe', 'What I owe', openI.length], ['history', 'Payment history', hist.length], ['closed', 'Paid and closed', done.length]].map(([k, l, n]) => `<button type="button" role="tab" aria-selected="${tab === k}" class="${tab === k ? 'on' : ''}" data-a="tab:${k}">${l}<i>${n}</i></button>`).join('')}</div>
+    ${tab === 'history' ? (hist.length ? `<section class="card flush"><div class="table-scroll"><table><thead><tr><th>Date</th><th>Case</th><th>Paid toward</th><th>Method</th><th class="num">Amount</th><th></th></tr></thead><tbody>${hist.map(({ p, x }) => `<tr><td>${esc(fmtDT(p.date))}</td><td>${esc(x.c.caseId)}</td><td>${esc(x.o.type)}<small>${esc(F.kindLabel(p))}</small></td><td>${esc(p.method || '—')}<small>${esc(p.confirmation || '')}</small></td><td class="num"><b>${money(p.amount)}</b></td><td>${p.amount > 0 && p.confirmation ? `<button class="btn outline sm" type="button" data-a="rcpt:${esc(x.key)}:${esc(p.id || '')}">Receipt</button>` : ''}</td></tr>`).join('')}</tbody></table></div></section>` : '<section class="card"><div class="empty"><strong>No payments yet</strong><p>Payments you make will be listed here with a receipt.</p></div></section>')
+      : shown.length ? shown.map(card).join('') : `<section class="card"><div class="empty"><strong>${tab === 'owe' ? 'You do not owe anything right now' : 'Nothing here yet'}</strong><p>${tab === 'owe' ? 'Fines, fees, restitution and judgments in your cases appear here when they are assessed.' : 'Balances that are paid off appear here.'}</p></div></section>`}`;
+}
+function act(a) { const [n, ...r] = a.split(':'), v = r.join(':'); try {
+  if (n === 'tab') { tab = v; note = ''; draw(); } else if (n === 'print') printRcpt(); else if (n === 'pay') payModal(byKey(v)); else if (n === 'plan') planRequest(byKey(v)); else if (n === 'open') detail(byKey(v));
+  else if (n === 'rcpt') { const [k, id] = [v.slice(0, v.lastIndexOf(':')), v.slice(v.lastIndexOf(':') + 1)], x = byKey(k), p = x.o.payments.find(q => (q.id || '') === id); if (p) receipt({ ...p, balanceAfter: p.balanceAfter ?? F.balanceOf(x.o) }, x.c, x.o); }
+} catch (e) { console.error(e); } }
+document.addEventListener('click', e => { if (dlg.contains(e.target)) return; const el = e.target.closest('[data-a]'); if (el) { note = ''; act(el.dataset.a); } });
+try { await load(); } catch (e) { console.error(e); root.innerHTML = '<div class="alert" role="alert"><strong>We could not load your balances.</strong><p>Refresh the page to try again.</p></div>'; return; }
+draw();
+}
+</script>
+</body>
+</html>

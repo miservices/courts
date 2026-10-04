@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Manage Financials | Online Portal</title>
+<link rel="icon" type="image/png" href="/courts/images/favicon.png">
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=Source+Serif+4:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/courts/online-services/portal/dashboard/assets/css/dashboard.css?v=5">
+<style>
+.m{color:var(--muted);font-weight:400}.mt{margin-top:14px}
+.tools{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px;align-items:center}.tools .in{flex:1;min-width:200px;width:auto}.tools select.in{flex:0 0 auto;min-width:0}
+.chk{display:flex;gap:8px;align-items:center;font-weight:600;color:var(--navy);white-space:nowrap}.chk input{width:18px;height:18px}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}.chips button{font:inherit;font-weight:600;font-size:14px;padding:6px 14px;border-radius:16px;border:1px solid var(--line);background:#fff;color:var(--navy);cursor:pointer}.chips button.on{background:var(--navy);color:#fff;border-color:var(--navy)}.chips i{font-style:normal;opacity:.75;margin-left:6px}
+.tabs i{font-style:normal;font-weight:500;color:var(--muted);margin-left:6px}
+tbody tr[data-a]{cursor:pointer}tbody tr[data-a]:hover{background:#f6f9fd}
+td small,th small{display:block;color:var(--muted);font-weight:400}.num{text-align:right;white-space:nowrap}th.num{text-align:right}.pills{display:flex;gap:6px;flex-wrap:wrap}
+.amts{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px 18px;margin-bottom:14px}.amts div{display:grid;gap:2px}.amts dt{font-size:13px;color:var(--muted)}.amts dd{font-weight:700;font-size:17px;color:var(--navy)}.amts dd.owe{font-size:22px}
+.alert-line{border-left:4px solid #b7791f;background:#fdf6e7;color:#6e4a10;border-radius:4px;padding:10px 14px;margin-bottom:10px}.alert-line.red{border-color:#b3261e;background:#fdf1f0;color:#7a1b13}
+.note{border-left:4px solid var(--navy);background:#eef3f9;border-radius:4px;padding:10px 14px;margin-bottom:12px;color:var(--navy)}
+.acts{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}.sec{margin:18px 0 8px;font-size:16px;color:var(--navy)}
+.kv{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px 22px;margin-bottom:6px;text-align:left}.kv dt{font-size:13px;color:var(--muted)}.kv dd{font-weight:600;overflow-wrap:anywhere}
+.rcpt{text-align:center;padding:6px 0 4px}.rcpt .big{font-family:var(--font-head);font-size:34px;color:var(--navy);font-weight:700;margin:6px 0}.rcpt .tick{width:54px;height:54px;border-radius:50%;background:#e4f3ea;color:#2f7d4f;font-size:30px;line-height:54px;margin:0 auto 6px}
+.quote{background:#f4f7fb;border-radius:4px;padding:10px 14px;margin-bottom:16px;color:var(--navy)}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:16px}@media(max-width:700px){.cols{grid-template-columns:1fr}}
+dialog{border:0;padding:0;border-radius:6px;width:min(660px,calc(100vw - 24px));max-height:calc(100vh - 48px);box-shadow:0 24px 60px rgba(9,22,40,.35);color:var(--text);font:inherit;overflow:hidden;margin:auto}
+dialog[open]{display:flex;flex-direction:column}dialog.wide{width:min(900px,calc(100vw - 24px))}dialog::backdrop{background:rgba(9,22,40,.55)}
+dialog>header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:16px 22px;border-bottom:1px solid var(--line);background:#f4f7fb}dialog>header h3{font-size:19px}dialog>header p{color:var(--muted);margin-top:2px}
+.x{font:inherit;font-size:22px;line-height:1;width:36px;height:36px;border:1px solid var(--line);border-radius:4px;background:#fff;cursor:pointer;color:var(--navy);flex-shrink:0}.x:hover{background:#eef3f9}
+#dlg-b{padding:20px 22px 6px;overflow:auto}#dlg-e{padding:0 22px 14px}#dlg-e .alert{margin:0}
+dialog>footer{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:10px;padding:14px 22px;border-top:1px solid var(--line);background:#f4f7fb}
+@media print{body>*:not(dialog){display:none!important}dialog{position:static!important;box-shadow:none!important;width:auto!important;max-height:none!important}dialog>footer,.x{display:none!important}}
+</style>
+</head>
+<body>
+<aside class="sidebar" id="sidebar-root" aria-label="Portal navigation"></aside>
+<div class="scrim" id="scrim" hidden></div>
+<div class="main">
+  <header class="topbar">
+    <div class="topbar-left">
+      <button class="menu-btn" id="menu-btn" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="sidebar-root"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+      <div><span class="topbar-eyebrow">Online Portal</span><span class="topbar-page-title" id="topbar-title">Manage Financials</span></div>
+    </div>
+    <div class="topbar-right"><span class="topbar-date" id="topbar-date"></span><div class="notif-wrap" id="notif-root"></div></div>
+  </header>
+  <main class="page-body">
+    <div class="page-head"><div><h2 id="page-title">Manage Financials</h2><p id="page-subtitle"></p></div><div id="page-action"></div></div>
+    <div id="page-body"><div class="loading-inline"><span class="spin-sm"></span>Loading financial records…</div></div>
+  </main>
+</div>
+<dialog id="dlg" aria-labelledby="dlg-t">
+  <header><div><h3 id="dlg-t"></h3><p id="dlg-w"></p></div><button class="x" type="button" aria-label="Close" data-close>×</button></header>
+  <div id="dlg-b"></div><div id="dlg-e"></div><footer id="dlg-f"></footer>
+</dialog>
+<div class="auth-loading-overlay" id="auth-overlay" role="status"><div class="alo-title">Online Portal</div><div class="spin"></div><div>Verifying your session…</div></div>
+
+<script type="module">
+import { boot, db, $, esc, has, STAFF, OFFICERS, scopeOf, colFor, logAction, DISTRICT_COURT, SUPREME_COURT } from '/courts/online-services/portal/dashboard/assets/js/portal-shell.js?v=6';
+import * as F from '/courts/online-services/portal/dashboard/assets/js/finance.js?v=1';
+import { collection, getDocs, doc, runTransaction } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+
+const { account, role } = await boot({ id: 'mfinancials', title: 'Manage Financials', subtitle: 'Fines, fees, restitution and judgments: payments, adjustments, plans and garnishments.' });
+const root = $('page-body'), BASE = 'https://migovt.org/courts/online-services/portal/dashboard/';
+if (!has(STAFF, role)) root.innerHTML = '<section class="card"><div class="empty"><strong>Court staff only</strong><p>Manage Financials is limited to court staff.</p></div></section>';
+else await main();
+
+async function main() {
+const { money, r2 } = F, NOW = new Date(), scope = scopeOf(role);
+const CLERICAL = ['County Clerk', 'Deputy Clerk', 'Clerk of the Supreme Court', 'Deputy Clerk of the Supreme Court', 'Court Administrator', 'State Court Administrator'];
+const isJud = has(OFFICERS, role), canAct = isJud || has(CLERICAL, role);   // everything except reductions, court credits, interest changes and garnishments (judicial officers only)
+const hv = v => v !== undefined && v !== null && String(v).trim() !== '';
+const nameKey = n => { const t = String(n || '').toLowerCase().replace(/^hon\.?\s+/, '').replace(/[.,]/g, '').trim().split(/\s+/); return t.length ? t[0] + ' ' + t[t.length - 1] : ''; };
+const fmtD = s => { const d = F.parseDay(s); return d ? d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—'; };
+const fmtDT = s => { const d = new Date(s); return isNaN(d) ? '—' : d.toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' }); };
+const iso = d => (d || new Date()).toISOString(), plus = n => new Date(Date.now() + n * 864e5).toISOString().slice(0, 10);
+const sideOf = r => /defendant|respondent|appellee/i.test(r || '') ? 1 : /plaintiff|petitioner|prosecut|appellant|applicant|complainant|claimant/i.test(r || '') ? 0 : null;
+function caption(c) {
+  if (hv(c.caseTitleOverride)) return c.caseTitleOverride;
+  const l = F.caseParties(c), t = String(c.caseType || '').toLowerCase(), a = l.find(x => sideOf(x.role) === 0), b = l.find(x => sideOf(x.role) === 1);
+  if (t === 'criminal' || t === 'traffic') return a && b ? `${a.name} v. ${b.name}` : `State of Michigan v. ${b?.name || 'Unknown'}`;
+  if (a && b) return `${a.name} v. ${b.name}`; if (a) return `Ex parte ${a.name}`; if (b) return `In re ${b.name}`; return c.administrativeSubtype || c.caseId || 'Case';
+}
+class UserError extends Error {} const bad = m => { throw new UserError(m); };
+const errText = e => e instanceof UserError ? e.message : e?.code === 'permission-denied' ? 'Your account is not allowed to change this record. The Firestore rules must let court staff update cases. (permission-denied)' : `We could not save this change. Check your connection and try again.${e?.code ? ' (' + e.code + ')' : ''}`;
+
+/* ── Data ───────────────────────────────────────────────────────────── */
+let cases = [], items = [], tab = 'orders', chip = 'outstanding', note = '', noteKind = 'ok', back = null;
+const f = { q: '', type: '', court: '', mine: isJud };
+async function load() {
+  const safe = p => p.catch(() => ({ docs: [] }));
+  const snaps = await Promise.all(scope.map(ct => safe(getDocs(collection(db, colFor(ct)))))); cases = snaps.flatMap(s => s.docs.map(d => ({ ...d.data(), _id: d.id }))); rebuild();
+}
+function rebuild() { items = []; cases.forEach(c => (c.financialOrders || []).forEach((o, i) => { const raw = F.normalize(o, F.idOf(c, i)), r = F.accrue(raw, NOW); items.push({ key: c._id + '|' + raw.id, c, o: r.order, due: r.posted }); })); }
+const byKey = k => items.find(x => x.key === k);
+const mineOf = x => x.c.judgeUid === account.uid || nameKey(x.c.judge) === nameKey(account.name);
+
+/* ── Saving ─────────────────────────────────────────────────────────── */
+async function cmUpdate(c, field, fn) {
+  const r = doc(db, 'caseManagement', c._id);
+  await runTransaction(db, async tx => { const s = await tx.get(r), next = fn([...((s.exists() && s.data()[field]) || [])]); if (s.exists()) tx.update(r, { [field]: next }); else tx.set(r, { tasks: [], notifications: [], internalNotes: [], auditLog: [], caseFirestoreId: c._id, [field]: next }); });
+}
+const addAudit = async (c, action) => { try { await cmUpdate(c, 'auditLog', a => [...a, { action, by: account.name, byUid: account.uid, byRole: role, at: iso() }]); } catch (e) { console.warn('Audit entry not saved', e); } };
+const notify = async (c, n) => { try { await cmUpdate(c, 'notifications', a => [...a, { num: a.reduce((m, x) => Math.max(m, x.num || 0), 0) + 1, at: iso(), read: false, type: 'Financial Notice', ...n }]); await addAudit(c, `Auto-issued notice: ${n.title} — ${n.text}`); } catch (e) { console.warn('Notice not saved', e); } };
+// One transaction on the case: re-reads it, posts anything that has come due, applies fn, and writes the docket entry with it.
+async function mutate(c, fn) {
+  const r = doc(db, colFor(c.court), c._id), at = new Date(); let out = {}, posts = [];
+  const next = await runTransaction(db, async tx => {
+    const s = await tx.get(r); if (!s.exists()) bad('This case no longer exists.'); const d = s.data(); posts = [];
+    const arr = (d.financialOrders || []).map((o, i) => { const a = F.accrue(F.normalize(o, F.idOf({ ...d, _id: s.id }, i)), at); if (a.posted.length) posts.push({ order: a.order, posted: a.posted }); return a.order; });
+    out = fn(arr, d, at) || {}; const orders = (out.orders || arr).map(o => F.settle(F.normalize(o, o.id))), p = { financialOrders: orders, dates: { ...(d.dates || {}), lastUpdated: iso(at) } };
+    if (out.event) p.events = [...(d.events || []), { eventNumber: (d.events || []).reduce((m, x) => Math.max(m, x.eventNumber || 0), 0) + 1, sealed: false, type: 'event', date: iso(at), judge: d.judge || null, ...out.event }];
+    tx.update(r, p); return { ...d, ...p };
+  });
+  Object.assign(c, next); rebuild();
+  for (const p of posts) for (const q of p.posted) await notify(c, { title: q.kind === 'late-fee' ? 'Late Fee Added' : q.kind === 'interest' ? 'Interest Added' : 'Payment Plan Defaulted', text: `${p.order.type}: ${q.kind === 'late-fee' ? `a ${F.LATE_RATE * 100}% late fee of ${money(q.amount)} was added because the balance was not paid within ${F.GRACE_DAYS} days after the due date.` : q.kind === 'interest' ? `interest of ${money(q.amount)} was added.` : q.reason}` });
+  if (out.audit) await addAudit(c, out.audit); if (out.notice) await notify(c, out.notice);
+  if (out.event) { const n = (next.events || []).slice(-1)[0]?.eventNumber; await logAction(account, role, c.court, 'event-entry', { caseId: c.caseId, ref: `${c.caseId}:event:${n}` }); }
+  return out;
+}
+const upd = (arr, id, fn) => { const k = arr.findIndex(o => o.id === id); if (k < 0) bad('That order was not found.'); const n = [...arr]; n[k] = fn(arr[k]); return n; };
+const need = (cond, m) => { if (!cond) bad(m); };
+// Late fees and interest that have come due are posted whenever staff open this page.
+async function postDue() {
+  let n = 0; const todo = cases.filter(c => (c.financialOrders || []).some((o, i) => { const a = F.accrue(F.normalize(o, F.idOf(c, i)), NOW); return a.posted.length || a.changed; }));
+  for (const c of todo) { try { await mutate(c, () => ({})); n++; } catch (e) { console.warn('Could not post charges for', c.caseId, e); } }
+  return n;
+}
+
+/* ── Dialogs ────────────────────────────────────────────────────────── */
+const dlg = $('dlg'); let dlgOk = null, dlgChange = null;
+function modal({ title, sub = '', body, ok = 'Save', okCls = '', wide = false, onOk, onChange, bk }) {
+  back = bk || null; dlgChange = onChange || null; $('dlg-t').textContent = title; $('dlg-w').textContent = sub; $('dlg-b').innerHTML = body; $('dlg-e').innerHTML = ''; dlg.classList.toggle('wide', wide); dlgOk = onOk;
+  $('dlg-f').innerHTML = `<button class="btn outline" type="button" data-close>${onOk ? 'Cancel' : 'Close'}</button>${onOk ? `<button class="btn ${okCls}" type="button" id="dlg-ok">${ok}</button>` : ''}`;
+  if (!dlg.open) dlg.showModal(); if (onOk) dlg.querySelector('#dlg-b input:not([type=hidden]):not([type=radio]):not([readonly]),#dlg-b select')?.focus();
+}
+const closeDlg = () => { const b = back; back = null; if (b && byKey(b)) showOrder(b); else { dlg.close(); draw(); } };
+async function runOk() { const b = $('dlg-ok'), label = b.textContent; b.disabled = true; b.textContent = 'Saving…'; $('dlg-e').innerHTML = '';
+  try { await dlgOk(); } catch (e) { if (!(e instanceof UserError)) console.error(e); $('dlg-e').innerHTML = `<div class="alert" role="alert">${esc(errText(e))}</div>`; b.disabled = false; b.textContent = label; } }
+dlg.addEventListener('click', e => { if (e.target === dlg || e.target.closest('[data-close]')) closeDlg(); else if (e.target.closest('#dlg-ok')) runOk(); else { const el = e.target.closest('[data-a]'); if (el) act(el.dataset.a); } });
+dlg.addEventListener('input', e => dlgChange?.(e)); dlg.addEventListener('change', e => dlgChange?.(e));
+const val = id => ($(id)?.value || '').trim();
+const fld = (label, id, v = '', o = {}) => `<label class="f"><span>${label}</span><input id="${id}" type="${o.type || 'text'}" value="${esc(v)}"${o.step ? ` step="${o.step}"` : ''}${o.min != null ? ` min="${o.min}"` : ''}${o.list ? ` list="${o.list}"` : ''}${o.ph ? ` placeholder="${esc(o.ph)}"` : ''}${o.ro ? ' readonly' : ''}>${o.hint ? `<small class="m">${o.hint}</small>` : ''}</label>`;
+const area = (label, id, ph = '') => `<label class="f"><span>${label}</span><textarea id="${id}" placeholder="${esc(ph)}"></textarea></label>`;
+const selF = (label, id, opts, v) => `<label class="f"><span>${label}</span><select id="${id}">${opts.map(([ov, ol]) => `<option value="${esc(ov)}"${ov === v ? ' selected' : ''}>${esc(ol)}</option>`).join('')}</select></label>`;
+const g2 = (...c) => `<div class="cols">${c.join('')}</div>`, dlist = (id, l) => `<datalist id="${id}">${l.map(x => `<option value="${esc(x)}">`).join('')}</datalist>`;
+const opt = (id, label, hint, on) => `<label class="opt"><input type="radio" name="${id}" value="${label.k}" ${on ? 'checked' : ''}><div><b>${esc(label.t)}</b>${hint ? `<small>${esc(hint)}</small>` : ''}</div></label>`;
+const amountIn = (id, max, hint) => fld('Amount ($)', id, '', { type: 'number', step: '0.01', min: 0.01, hint: hint || (max != null ? `Up to ${money(max)}.` : '') });
+const reasonIn = (id = 'x-why', label = 'Reason or order reference') => area(label + ' (required)', id, 'e.g. Order of 10/4/2026 reducing the fine');
+const who = () => ({ by: account.name, byUid: account.uid, byRole: role });
+const adj = (kind, amount, reason, extra = {}) => ({ id: F.newId('ADJ'), kind, amount: r2(amount), date: iso(), reason, ...who(), ...extra });
+
+/* ── Operations ─────────────────────────────────────────────────────── */
+function receipt(p, c, o, bk) {
+  modal({ title: 'Payment receipt', sub: 'Give a copy to the payer.', bk, body: `<div class="rcpt"><div class="tick" aria-hidden="true">✓</div><b>Payment received</b><div class="big">${money(Math.abs(p.amount))}</div></div>
+    <dl class="kv"><div><dt>Confirmation number</dt><dd>${esc(p.confirmation)}</dd></div><div><dt>Date and time</dt><dd>${esc(fmtDT(p.date))}</dd></div><div><dt>Paid with</dt><dd>${esc(p.method || '—')}</dd></div><div><dt>Case</dt><dd>${esc(c.caseId)}</dd></div><div><dt>Paid toward</dt><dd>${esc(o.type)}${o.description ? ' — ' + esc(o.description) : ''}</dd></div><div><dt>Remaining balance</dt><dd>${money(Math.max(0, p.balanceAfter ?? 0))}</dd></div><div><dt>Payer</dt><dd>${esc(o.payor || '—')}</dd></div><div><dt>Received by</dt><dd>${esc(p.by || '')}</dd></div></dl>`, onOk: null });
+  $('dlg-f').insertAdjacentHTML('afterbegin', '<button class="btn outline" type="button" data-a="print">Print receipt</button>');
+}
+function paymentModal(x) {
+  const bal = F.balanceOf(x.o), ps = F.planState(x.o, NOW);
+  modal({ title: 'Take a payment', sub: `${x.o.type} · ${x.c.caseId}`, bk: x.key, ok: 'Record payment', okCls: 'good',
+    body: `<div class="quote">Balance ${money(bal)}${ps?.dueNow > 0 ? ` · due now under the plan: ${money(Math.min(bal, ps.dueNow))}` : ''}</div>` + fld('Amount received ($)', 'p-amt', String(bal), { type: 'number', step: '0.01', min: 0.01 }) + g2(selF('Payment method', 'p-meth', F.COUNTER.map(m => [m, m]), 'Cash'), fld('Check or reference number (optional)', 'p-ref')) + fld('Note (optional)', 'p-note'),
+    onOk: async () => { const amt = r2(val('p-amt')); need(amt > 0, 'Enter the amount received.'); need(amt <= bal + 0.004, `The balance is ${money(bal)}. To accept more, correct the amount owed first.`); let pay;
+      await mutate(x.c, (arr, d, at) => { const cur = arr.find(o => o.id === x.o.id); need(amt <= F.balanceOf(cur) + 0.004, `The balance changed to ${money(F.balanceOf(cur))}. Reopen the order.`);
+        pay = F.makePayment(cur, { amount: amt, method: val('p-meth'), note: [val('p-ref') && 'Ref ' + val('p-ref'), val('p-note')].filter(Boolean).join(' · ') || null, ...who(), date: at, balanceAfter: r2(F.balanceOf(cur) - amt) });
+        return { orders: upd(arr, x.o.id, o => ({ ...o, payments: [...o.payments, pay] })), audit: `Recorded payment of ${money(amt)} (${val('p-meth')}) on ${x.o.type}` }; });
+      receipt(pay, x.c, x.o, x.key); } });
+}
+function assessModal() {
+  const open = cases.filter(c => !/closed/i.test(c.status || '')); let c = null;
+  const parties = () => F.caseParties(c || {}).map(p => [p.name, `${p.name} — ${p.role}`]);
+  modal({ title: 'Assess a fine, fee or judgment', sub: 'Adds a new financial order to a case.', ok: 'Assess', okCls: 'good', wide: true,
+    body: fld('Case', 'a-case', '', { ph: 'Start typing a case number or name', list: 'a-cases', hint: 'Choose the case this is assessed in.' }) + dlist('a-cases', open.map(k => `${k.caseId} — ${caption(k)}`))
+      + g2(selF('Type', 'a-type', F.TYPES.map(t => [t, t]), 'Court Fine'), `<label class="f"><span>Who owes it</span><select id="a-payor"><option value="">Choose a case first</option></select></label>`)
+      + g2(fld('Amount ($)', 'a-amt', '', { type: 'number', step: '0.01', min: 0.01 }), fld('Due date', 'a-due', plus(30), { type: 'date', hint: 'A 20% late fee applies if a fine or fee is unpaid 5 days after this date.' }))
+      + fld('Description', 'a-desc', '', { ph: 'e.g. Speeding, 15 mph over' }) + `<div id="a-int" hidden>${fld('Interest rate (% per year)', 'a-rate', String(F.JUDGMENT_RATE), { type: 'number', step: '0.01', min: 0, hint: 'Simple interest posts each month on the unpaid balance.' })}</div>`,
+    onChange: e => { if (e.target.id === 'a-case') { const m = open.find(k => `${k.caseId} — ${caption(k)}` === e.target.value || k.caseId === e.target.value.trim()); if (m) { c = m; $('a-payor').innerHTML = parties().map(([v, l]) => `<option value="${esc(v)}">${esc(l)}</option>`).join(''); } }
+      if (e.target.id === 'a-type') { const k = F.typeKind(e.target.value); $('a-int').hidden = k !== 'judgment'; if (k === 'restitution' || k === 'judgment') $('a-due').value = ''; else if (!$('a-due').value) $('a-due').value = plus(30); } },
+    onOk: async () => { need(c, 'Choose a case from the list.'); const type = val('a-type'), amt = r2(val('a-amt')), payor = val('a-payor'); need(amt > 0, 'Enter the amount.'); need(payor, 'Choose who owes it.');
+      const due = val('a-due') || null, desc = val('a-desc') || null, k = F.typeKind(type), cc = c;
+      await mutate(cc, (arr, d, at) => { const o = { id: F.newId('FO'), type, description: desc, payor, amount: amt, originalAmount: amt, dueDate: due, assessmentDate: iso(at), assessedBy: account.name, payments: [], adjustments: [], garnishments: [], ...(k === 'judgment' ? { interest: { rate: r2(val('a-rate') || F.JUDGMENT_RATE), lastAccrued: null } } : {}) };
+        return { orders: [...arr, o], event: { description: `${k === 'judgment' ? 'Money judgment entered' : 'Financial assessment entered'}: ${type}${desc ? ' (' + desc + ')' : ''} of ${money(amt)} against ${payor}${due ? `, due ${fmtD(due)}` : ''}.` }, audit: `Assessed ${type} ${money(amt)} against ${payor}`,
+          notice: { title: 'Notice of Financial Assessment', text: `${type} of ${money(amt)} assessed against ${payor}${due ? `, due ${fmtD(due)}` : ''}. Payment can be made online under My financials.` } }; });
+      note = `${type} of ${money(amt)} assessed in ${cc.caseId}.`; noteKind = 'ok'; dlg.close(); draw(); } });
+}
+function modifyModal(x) {
+  const bal = F.balanceOf(x.o);
+  modal({ title: 'Reduce or modify', sub: `${x.o.type} · ${x.c.caseId} · balance ${money(bal)}`, bk: x.key, ok: 'Enter modification', okCls: 'good',
+    body: [{ k: 'reduce', t: 'Reduce the amount owed' }, { k: 'waive', t: `Waive the balance (${money(bal)})` }, { k: 'increase', t: 'Increase the amount owed' }, { k: 'rate', t: 'Change the interest rate' }].map((o, i) => opt('m-mode', o, '', i === 0)).join('')
+      + `<div id="m-amt">${amountIn('m-n', bal)}</div><div id="m-rate" hidden>${fld('Interest rate (% per year)', 'm-r', String(F.rateOf(x.o)), { type: 'number', step: '0.01', min: 0, hint: 'Use 0 to stop interest.' })}</div>` + reasonIn(),
+    onChange: e => { if (e.target.name === 'm-mode') { const m = e.target.value; $('m-amt').hidden = m === 'waive' || m === 'rate'; $('m-rate').hidden = m !== 'rate'; } },
+    onOk: async () => { const m = dlg.querySelector('input[name=m-mode]:checked').value, why = val('x-why'), n = r2(val('m-n')); need(why, 'Enter the reason or order reference.');
+      if (m === 'reduce') { need(n > 0, 'Enter the amount.'); need(n <= bal + 0.004, `You can reduce it by up to ${money(bal)}. To go further, use Correct an error.`); } if (m === 'increase') need(n > 0, 'Enter the amount.'); if (m === 'waive') need(bal > 0, 'There is no balance to waive.');
+      const rate = r2(val('m-r')); if (m === 'rate') need(rate >= 0 && val('m-r') !== '', 'Enter the interest rate.');
+      const desc = m === 'reduce' ? `reduced by ${money(n)}` : m === 'waive' ? `waived (${money(bal)})` : m === 'increase' ? `increased by ${money(n)}` : `interest rate set to ${rate}%`;
+      await mutate(x.c, (arr, d, at) => { const cur = arr.find(o => o.id === x.o.id), b = F.balanceOf(cur);
+        const orders = upd(arr, x.o.id, o => m === 'rate' ? { ...o, interest: { ...(o.interest || {}), rate, lastAccrued: o.interest?.lastAccrued || iso(at), setBy: account.name } } : (() => { const a = m === 'waive' ? adj('waiver', -Math.max(0, b), why) : adj(m === 'reduce' ? 'reduction' : 'increase', m === 'reduce' ? -n : n, why); return { ...o, adjustments: [...o.adjustments, a], amount: r2(o.amount + a.amount) }; })());
+        return { orders, event: { description: `Order modifying financial obligation: ${x.o.type}${x.o.description ? ' (' + x.o.description + ')' : ''} ${desc}. ${why}` }, audit: `${x.o.type} ${desc}: ${why}`, notice: { title: 'Notice of Modified Financial Obligation', text: `${x.o.type} was ${desc}. ${why}` } }; });
+      note = `${x.o.type} ${desc}.`; noteKind = 'ok'; closeDlg(); } });
+}
+function creditModal(x) {
+  const others = x.c.financialOrders ? items.filter(y => y.c === x.c && y.key !== x.key && F.balanceOf(y.o) < -0.004 && (y.o.payor || '') === (x.o.payor || '')) : [], bal = F.balanceOf(x.o);
+  if (bal <= 0.004) { note = 'This order has no balance to apply a credit to.'; noteKind = 'bad'; return closeDlg(); }
+  modal({ title: 'Apply a credit', sub: `${x.o.type} · ${x.c.caseId} · balance ${money(bal)}`, bk: x.key, ok: 'Apply credit', okCls: 'good',
+    body: [...(others.length ? [{ k: 'xfer', t: 'Transfer an overpayment from another order' }] : []), ...(isJud ? [{ k: 'court', t: 'Court credit (time served, community service, other)' }] : [])].map((o, i) => opt('c-mode', o, o.k === 'xfer' ? 'Moves money already paid on another order for the same person.' : 'Reduces the amount owed by order of the court.', i === 0)).join('') || '<p>There are no overpayments to transfer, and court credits require a judicial officer.</p>'
+      + `<div id="c-src" ${others.length ? '' : 'hidden'}>${selF('Transfer from', 'c-from', others.map(y => [y.key, `${y.o.type} — credit ${money(-F.balanceOf(y.o))}`]), others[0]?.key)}</div>` + amountIn('c-n', bal) + area('Reason (required)', 'x-why', 'e.g. 3 days jail credit at $50 per day'),
+    onChange: e => { if (e.target.name === 'c-mode') $('c-src').hidden = e.target.value !== 'xfer'; },
+    onOk: async () => { const m = dlg.querySelector('input[name=c-mode]:checked')?.value; need(m, 'Choose the kind of credit.'); const n = r2(val('c-n')), why = val('x-why'); need(n > 0, 'Enter the amount.'); need(why, 'Enter the reason.'); need(n <= bal + 0.004, `The balance is ${money(bal)}.`);
+      const from = m === 'xfer' ? byKey(val('c-from')) : null; if (m === 'xfer') { need(from, 'Choose the order to transfer from.'); need(n <= -F.balanceOf(from.o) + 0.004, `The other order only has ${money(-F.balanceOf(from.o))} in credit.`); }
+      await mutate(x.c, (arr, d, at) => { let orders = arr;
+        if (m === 'xfer') { orders = upd(orders, from.o.id, o => ({ ...o, payments: [...o.payments, F.makePayment(o, { amount: -n, kind: 'credit-out', note: `Applied to ${x.o.type}. ${why}`, ...who(), date: at, confirmation: null })] })); orders = upd(orders, x.o.id, o => ({ ...o, payments: [...o.payments, F.makePayment(o, { amount: n, kind: 'credit-in', note: `From ${from.o.type}. ${why}`, ...who(), date: at, confirmation: null })] })); }
+        else orders = upd(orders, x.o.id, o => { const a = adj('credit', -n, why); return { ...o, adjustments: [...o.adjustments, a], amount: r2(o.amount + a.amount) }; });
+        return { orders, event: { description: `Credit of ${money(n)} applied to ${x.o.type}. ${why}` }, audit: `Applied ${money(n)} credit to ${x.o.type}: ${why}`, notice: { title: 'Credit Applied', text: `A credit of ${money(n)} was applied to ${x.o.type}. ${why}` } }; });
+      note = `Credit of ${money(n)} applied.`; noteKind = 'ok'; closeDlg(); } });
+}
+function refundModal(x) {
+  const credit = r2(-F.balanceOf(x.o)); if (credit <= 0.004) { note = 'There is no credit balance to refund. Reduce or void the charge first if the order was vacated.'; noteKind = 'bad'; return closeDlg(); }
+  modal({ title: 'Issue a refund', sub: `${x.o.type} · ${x.c.caseId} · credit ${money(credit)}`, bk: x.key, ok: 'Issue refund', okCls: 'good',
+    body: fld('Refund amount ($)', 'r-n', String(credit), { type: 'number', step: '0.01', min: 0.01, hint: `Up to ${money(credit)}. Only money paid above what is owed can be refunded.` }) + g2(selF('Refund by', 'r-meth', [['Check', 'Check'], ['Original payment method', 'Original payment method'], ['Bank account (ACH)', 'Bank account (ACH)']], 'Original payment method'), fld('Payable to', 'r-to', x.o.payor || '')) + area('Reason (required)', 'x-why', 'e.g. Fine reduced by order; overpayment returned'),
+    onOk: async () => { const n = r2(val('r-n')), why = val('x-why'); need(n > 0, 'Enter the refund amount.'); need(why, 'Enter the reason.'); need(val('r-to'), 'Enter who the refund is payable to.'); let pay;
+      await mutate(x.c, (arr, d, at) => { const cur = arr.find(o => o.id === x.o.id); need(n <= -F.balanceOf(cur) + 0.004, `Only ${money(Math.max(0, -F.balanceOf(cur)))} can be refunded now.`);
+        pay = F.makePayment(cur, { amount: -n, kind: 'refund', method: val('r-meth'), note: `Payable to ${val('r-to')}. ${why}`, ...who(), date: at }); return { orders: upd(arr, x.o.id, o => ({ ...o, payments: [...o.payments, pay] })), audit: `Refunded ${money(n)} to ${val('r-to')} (${val('r-meth')}): ${why}`, notice: { title: 'Refund Issued', text: `A refund of ${money(n)} was issued on ${x.o.type}. ${why}` } }; });
+      note = `Refund of ${money(n)} issued (${pay.confirmation}).`; noteKind = 'ok'; closeDlg(); } });
+}
+function correctModal(x) {
+  const o = x.o, ents = [...(o.payments || []).filter(p => !p.reversed && !p.reverses && !/^credit/.test(p.kind || '')).map(p => ({ k: 'p:' + p.id, l: `${fmtD(p.date)} — ${F.kindLabel(p)} ${money(Math.abs(p.amount))}${p.confirmation ? ' (' + p.confirmation + ')' : ''}` })), ...(o.adjustments || []).filter(a => !a.reversed && !a.reverses).map(a => ({ k: 'a:' + a.id, l: `${fmtD(a.date)} — ${F.adjLabel(a)} ${money(a.amount)}` }))];
+  modal({ title: 'Correct an error', sub: `${x.o.type} · ${x.c.caseId}`, bk: x.key, ok: 'Make correction', okCls: 'good',
+    body: '<div class="quote">The original entry stays on the record. A correcting entry offsets it, so the history is never erased.</div>' + [{ k: 'rev', t: 'Reverse an entry' }, { k: 'amt', t: `Correct the amount assessed (now ${money(o.originalAmount)})` }].map((m, i) => opt('e-mode', m, '', i === 0)).join('')
+      + `<div id="e-rev">${selF('Entry to reverse', 'e-ent', ents.length ? ents.map(e => [e.k, e.l]) : [['', 'No entries can be reversed']], ents[0]?.k)}</div><div id="e-amt" hidden>${fld('Correct amount assessed ($)', 'e-n', String(o.originalAmount), { type: 'number', step: '0.01', min: 0 })}</div>` + reasonIn('x-why', 'What was wrong'),
+    onChange: e => { if (e.target.name === 'e-mode') { $('e-rev').hidden = e.target.value !== 'rev'; $('e-amt').hidden = e.target.value !== 'amt'; } },
+    onOk: async () => { const m = dlg.querySelector('input[name=e-mode]:checked').value, why = val('x-why'); need(why, 'Explain what was wrong.'); let desc;
+      await mutate(x.c, (arr, d, at) => { const orders = upd(arr, x.o.id, cur => {
+        if (m === 'amt') { const n = r2(val('e-n')); need(val('e-n') !== '' && n >= 0, 'Enter the correct amount.'); const delta = r2(n - cur.originalAmount); need(delta !== 0, 'That is already the amount assessed.'); const a = adj('correction', delta, why, { corrects: true }); desc = `assessed amount corrected from ${money(cur.originalAmount)} to ${money(n)}`; return { ...cur, adjustments: [...cur.adjustments, a], amount: r2(cur.amount + delta) }; }
+        const [t, id] = val('e-ent').split(':'); need(id, 'Choose the entry to reverse.');
+        if (t === 'p') { const p = cur.payments.find(q => q.id === id); need(p, 'That entry was not found.'); desc = `${F.kindLabel(p).toLowerCase()} of ${money(Math.abs(p.amount))} reversed`; return { ...cur, payments: [...cur.payments.map(q => q.id === id ? { ...q, reversed: true } : q), F.makePayment(cur, { amount: -p.amount, kind: 'correction', note: `Reverses ${p.confirmation || p.id}. ${why}`, ...who(), date: at, reverses: id, confirmation: null })] }; }
+        const a = cur.adjustments.find(q => q.id === id); need(a, 'That entry was not found.'); need(isJud || !/late-fee|interest/.test(a.kind), 'Only a judicial officer can reverse a late fee or interest.');
+        desc = `${F.adjLabel(a).toLowerCase()} of ${money(a.amount)} reversed`; const rv = adj('correction', -a.amount, why, { reverses: id, reversesKind: a.kind, ...(a.corrects ? { corrects: true } : {}) }); return { ...cur, adjustments: [...cur.adjustments.map(q => q.id === id ? { ...q, reversed: true } : q), rv], amount: r2(cur.amount + rv.amount) }; });
+        return { orders, event: { description: `Correction to financial record (${x.o.type}): ${desc}. ${why}` }, audit: `Corrected ${x.o.type}: ${desc}. ${why}`, notice: { title: 'Correction to Financial Record', text: `${x.o.type}: ${desc}. ${why}` } }; });
+      note = `Correction made: ${desc}.`; noteKind = 'ok'; closeDlg(); } });
+}
+function planModal(x) {
+  const bal = F.balanceOf(x.o), rq = x.o.planRequest?.status === 'Requested' ? x.o.planRequest : null, s = x.o.schedule && ['Active', 'Defaulted'].includes(x.o.schedule.status) ? x.o.schedule : null, p = rq || s || {};
+  modal({ title: s ? 'Change payment plan' : rq ? 'Review payment plan request' : 'Set up a payment plan', sub: `${x.o.type} · ${x.c.caseId} · balance ${money(bal)}`, bk: x.key, ok: rq ? 'Approve plan' : 'Save plan', okCls: 'good',
+    body: (rq ? `<div class="quote">Requested by ${esc(rq.requestedBy)} on ${esc(fmtD(rq.requestedAt))}.${rq.note ? ' “' + esc(rq.note) + '”' : ''}</div>` : '') + g2(selF('Frequency', 'l-freq', [['monthly', 'Every month'], ['biweekly', 'Every two weeks'], ['weekly', 'Every week']], p.frequency || 'monthly'), fld('Payment amount ($)', 'l-inst', String(p.installment || ''), { type: 'number', step: '0.01', min: F.MIN_INSTALLMENT, hint: `At least ${money(F.MIN_INSTALLMENT)}.` })) + fld('First payment date', 'l-start', String(p.startDate || plus(14)).slice(0, 10), { type: 'date' })
+      + `<p class="m">While the plan is active, no late fee is added. If an installment is more than ${F.GRACE_DAYS} days late, the plan defaults and the late fee applies.</p>`,
+    onOk: async () => { const inst = r2(val('l-inst')); need(inst >= F.MIN_INSTALLMENT, `Each payment must be at least ${money(F.MIN_INSTALLMENT)}.`); need(val('l-start'), 'Choose the first payment date.'); need(bal > 0, 'There is no balance.');
+      const sched = { frequency: val('l-freq'), installment: Math.min(inst, bal), startDate: val('l-start'), status: 'Active', setBy: account.name, setByUid: account.uid, setAt: iso() }, txt = `${money(sched.installment)} ${sched.frequency === 'monthly' ? 'every month' : sched.frequency === 'weekly' ? 'every week' : 'every two weeks'} starting ${fmtD(sched.startDate)}`;
+      await mutate(x.c, arr => ({ orders: upd(arr, x.o.id, o => ({ ...o, schedule: sched, planRequest: o.planRequest?.status === 'Requested' ? { ...o.planRequest, status: 'Approved', reviewedBy: account.name, reviewedAt: iso() } : o.planRequest })), event: { description: `Payment plan established for ${x.o.type}: ${txt}.` }, audit: `Payment plan set for ${x.o.type}: ${txt}`, notice: { title: 'Payment Plan Approved', text: `${x.o.type}: ${txt}. Late fees are not added while you stay current.` } }));
+      note = `Payment plan saved: ${txt}.`; noteKind = 'ok'; closeDlg(); } });
+}
+function declineModal(x) { modal({ title: 'Decline payment plan request', sub: `${x.o.type} · ${x.c.caseId}`, bk: x.key, ok: 'Decline request', okCls: 'danger', body: area('Reason (shown to the requester)', 'x-why'),
+  onOk: async () => { const why = val('x-why'); need(why, 'Enter a reason.'); await mutate(x.c, arr => ({ orders: upd(arr, x.o.id, o => ({ ...o, planRequest: { ...o.planRequest, status: 'Declined', reason: why, reviewedBy: account.name, reviewedAt: iso() } })), audit: `Declined payment plan request on ${x.o.type}: ${why}`, notice: { title: 'Payment Plan Request Declined', text: `${x.o.type}: ${why}` } })); note = 'Request declined.'; noteKind = 'ok'; closeDlg(); } }); }
+async function cancelPlan(x) { modal({ title: 'End payment plan', sub: `${x.o.type} · ${x.c.caseId}`, bk: x.key, ok: 'End plan', okCls: 'danger', body: '<p>The plan ends and normal due-date rules return. A late fee applies if the due date is more than 5 days past.</p>' + area('Reason (required)', 'x-why'),
+  onOk: async () => { const why = val('x-why'); need(why, 'Enter a reason.'); await mutate(x.c, arr => ({ orders: upd(arr, x.o.id, o => ({ ...o, schedule: { ...o.schedule, status: 'Cancelled', endedAt: iso(), endedBy: account.name } })), event: { description: `Payment plan ended for ${x.o.type}. ${why}` }, audit: `Ended payment plan on ${x.o.type}: ${why}`, notice: { title: 'Payment Plan Ended', text: `${x.o.type}: ${why}` } })); note = 'Payment plan ended.'; noteKind = 'ok'; closeDlg(); } }); }
+function garnishModal(x) {
+  const bal = F.balanceOf(x.o), ok = F.isPastDue(x.o, NOW) || x.o.schedule?.status === 'Defaulted' || F.typeKind(x.o.type) === 'judgment' || F.typeKind(x.o.type) === 'restitution';
+  modal({ title: 'Issue a garnishment', sub: `${x.o.type} · ${x.c.caseId} · balance ${money(bal)}`, bk: x.key, ok: 'Issue writ', okCls: 'good',
+    body: (ok ? '' : '<div class="alert-line">A garnishment can be issued once the order is past due or a payment plan is in default. Judgments and restitution can be garnished at any time.</div>') + g2(selF('Type', 'g-type', [['Wage garnishment', 'Wage garnishment'], ['Bank account garnishment', 'Bank account garnishment'], ['Tax refund intercept', 'Tax refund intercept']], 'Wage garnishment'), fld('Garnishee (employer or bank)', 'g-who'))
+      + fld('Garnishee address (optional)', 'g-addr') + g2(fld('Total that may be withheld ($)', 'g-lim', String(Math.max(0, bal)), { type: 'number', step: '0.01', min: 0.01, hint: `Up to the balance, ${money(bal)}.` }), fld('Amount per pay period ($, optional)', 'g-per', '', { type: 'number', step: '0.01', min: 0 })) + selF('Pay period', 'g-freq', [['pay period', 'Each pay period'], ['week', 'Weekly'], ['two weeks', 'Every two weeks'], ['month', 'Monthly']], 'pay period') + area('Authority or order reference (required)', 'x-why'),
+    onOk: async () => { need(ok, 'This order is not yet eligible for a garnishment.'); need(bal > 0, 'There is no balance to collect.'); const g = { id: F.newId('GAR'), type: val('g-type'), garnishee: val('g-who'), address: val('g-addr') || null, limit: r2(val('g-lim')), perPeriod: r2(val('g-per')) || null, frequency: val('g-freq'), status: 'Active', issuedAt: iso(), issuedBy: account.name, issuedByUid: account.uid, authority: val('x-why'), collected: 0 };
+      need(g.garnishee, 'Enter the garnishee.'); need(g.limit > 0 && g.limit <= bal + 0.004, `The limit must be more than $0 and no more than ${money(bal)}.`); need(g.authority, 'Enter the authority or order reference.');
+      await mutate(x.c, arr => ({ orders: upd(arr, x.o.id, o => ({ ...o, garnishments: [...o.garnishments, g] })), event: { description: `${g.type} issued to ${g.garnishee} for up to ${money(g.limit)} on ${x.o.type}. ${g.authority}` }, audit: `Issued ${g.type} to ${g.garnishee} for up to ${money(g.limit)}: ${g.authority}`, notice: { title: 'Notice of Garnishment', text: `A ${g.type.toLowerCase()} was issued to ${g.garnishee} for up to ${money(g.limit)} on ${x.o.type}.` } }));
+      note = `${g.type} issued to ${g.garnishee}.`; noteKind = 'ok'; closeDlg(); } });
+}
+function collectModal(x) {
+  const gs = (x.o.garnishments || []).filter(g => g.status === 'Active'), bal = F.balanceOf(x.o); if (!gs.length) return;
+  modal({ title: 'Record garnished funds', sub: `${x.o.type} · ${x.c.caseId}`, bk: x.key, ok: 'Record funds', okCls: 'good', body: selF('Garnishment', 'k-g', gs.map(g => [g.id, `${g.type} — ${g.garnishee} (${money(g.limit - g.collected)} left)`]), gs[0].id) + amountIn('k-n', bal) + fld('Reference (optional)', 'k-ref'),
+    onOk: async () => { const n = r2(val('k-n')); need(n > 0, 'Enter the amount received.'); let pay;
+      await mutate(x.c, (arr, d, at) => { const cur = arr.find(o => o.id === x.o.id), g = cur.garnishments.find(q => q.id === val('k-g')); need(g && g.status === 'Active', 'That garnishment is no longer active.'); need(n <= F.balanceOf(cur) + 0.004, `The balance is ${money(F.balanceOf(cur))}.`); need(n <= g.limit - g.collected + 0.004, `Only ${money(g.limit - g.collected)} remains under this writ.`);
+        pay = F.makePayment(cur, { amount: n, kind: 'garnishment', method: `Garnishment — ${g.garnishee}`, note: val('k-ref') || null, ...who(), date: at, balanceAfter: r2(F.balanceOf(cur) - n) });
+        return { orders: upd(arr, x.o.id, o => ({ ...o, payments: [...o.payments, pay], garnishments: o.garnishments.map(q => q.id === g.id ? { ...q, collected: r2(q.collected + n), ...(r2(q.collected + n) >= q.limit - 0.004 ? { status: 'Satisfied', endedAt: iso(at) } : {}) } : q) })), audit: `Recorded ${money(n)} garnished from ${g.garnishee} on ${x.o.type}` }; });
+      note = `${money(n)} recorded from garnishment.`; noteKind = 'ok'; receipt(pay, x.c, x.o, x.key); } });
+}
+function releaseModal(x, gid) { const g = x.o.garnishments.find(q => q.id === gid); modal({ title: 'Release garnishment', sub: `${g.type} · ${g.garnishee}`, bk: x.key, ok: 'Release', okCls: 'danger', body: '<p>The writ ends and nothing further is withheld.</p>' + area('Reason (required)', 'x-why'),
+  onOk: async () => { const why = val('x-why'); need(why, 'Enter a reason.'); await mutate(x.c, arr => ({ orders: upd(arr, x.o.id, o => ({ ...o, garnishments: o.garnishments.map(q => q.id === gid ? { ...q, status: 'Released', endedAt: iso(), endedBy: account.name, releaseReason: why } : q) })), event: { description: `Garnishment released: ${g.type} to ${g.garnishee} on ${x.o.type}. ${why}` }, audit: `Released ${g.type} to ${g.garnishee}: ${why}`, notice: { title: 'Garnishment Released', text: `The ${g.type.toLowerCase()} to ${g.garnishee} was released. ${why}` } })); note = 'Garnishment released.'; noteKind = 'ok'; closeDlg(); } }); }
+
+/* ── Order detail ───────────────────────────────────────────────────── */
+const pills = o => F.statusOf(o, NOW).map(([t, l]) => `<span class="pill ${t}">${esc(l)}</span>`).join('');
+function showOrder(key) {
+  const x = byKey(key); if (!x) { dlg.close(); draw(); return; } const o = x.o, bal = F.balanceOf(o), open = F.isOpen(o), ps = F.planState(o, NOW), adjT = F.adjOf(o), dl = F.lateDeadline(o), gs = o.garnishments || [], active = gs.some(g => g.status === 'Active');
+  const b = (a, l, cls = 'outline sm') => `<button class="btn ${cls}" type="button" data-a="${a}:${esc(key)}">${l}</button>`;
+  const lateWarn = open && F.lateEligible(o) && !o.lateFeeAt && dl && !(o.schedule?.status === 'Active') && dl > NOW ? `<div class="alert-line">A ${F.LATE_RATE * 100}% late fee (${money(bal * F.LATE_RATE)}) is added automatically after ${esc(fmtD(new Date(dl.getTime() - 1)))}.</div>` : '';
+  const acts = canAct ? [open ? b('pay', 'Take a payment', 'btn sm') : '', open ? b('plan', ps || o.schedule?.status === 'Defaulted' ? 'Change payment plan' : o.planRequest?.status === 'Requested' ? 'Review plan request' : 'Payment plan') : '', open ? b('credit', 'Apply a credit') : '', bal < -0.004 ? b('refund', 'Issue a refund') : '', b('correct', 'Correct an error'),
+    isJud && open ? b('modify', 'Reduce or modify') : '', isJud && open ? b('garnish', 'Garnishment') : '', active ? b('collect', 'Record garnished funds') : '', o.planRequest?.status === 'Requested' ? b('decline', 'Decline request') : '', o.schedule && ['Active', 'Defaulted'].includes(o.schedule.status) ? b('endplan', 'End plan') : ''].join('') : '';
+  modal({ title: `${o.type}${o.description ? ' — ' + o.description : ''}`, sub: `${caption(x.c)} · ${x.c.caseId} · ${o.payor || 'Payor not recorded'}`, wide: true, onOk: null,
+    body: `<div class="pills" style="margin-bottom:14px">${pills(o)}</div>${lateWarn}${ps ? `<div class="note">Payment plan: ${money(ps.installment)} ${o.schedule.frequency === 'monthly' ? 'every month' : o.schedule.frequency === 'weekly' ? 'every week' : 'every two weeks'}${ps.dueNow > 0 ? `. <b>${money(Math.min(bal, ps.dueNow))} is due now.</b>` : ''}${ps.next ? ` Next installment ${esc(fmtD(ps.next))}.` : ''}${o.schedule.status === 'Defaulted' ? ' <b>The plan is in default.</b>' : ''}</div>` : ''}${o.planRequest?.status === 'Requested' ? `<div class="note">Payment plan requested by ${esc(o.planRequest.requestedBy)}: ${money(o.planRequest.installment)} ${esc(o.planRequest.frequency)}, starting ${esc(fmtD(o.planRequest.startDate))}.</div>` : ''}
+      <dl class="amts"><div><dt>Original amount</dt><dd>${money(o.originalAmount)}</dd></div><div><dt>Fees, interest and changes</dt><dd>${adjT > 0 ? '+' : ''}${money(adjT)}</dd></div><div><dt>Paid</dt><dd>${money(F.paidOf(o))}</dd></div><div><dt>${bal < 0 ? 'Credit balance' : 'Balance'}</dt><dd class="owe">${money(Math.abs(bal))}</dd></div><div><dt>Due</dt><dd>${esc(fmtD(o.dueDate))}</dd></div>${F.rateOf(o) > 0 ? `<div><dt>Interest</dt><dd>${F.rateOf(o)}% per year</dd></div>` : ''}</dl>
+      ${acts ? `<div class="acts">${acts}</div>` : '<p class="m">Your role can view financial records but not change them.</p>'}${!isJud && canAct && open ? '<p class="m">Reductions, waivers, interest changes and garnishments require a judicial officer.</p>' : ''}
+      ${gs.length ? `<h4 class="sec">Garnishments</h4>` + gs.map(g => `<div class="${g.status === 'Active' ? 'alert-line red' : 'note'}"><b>${esc(g.type)}</b> to ${esc(g.garnishee)} — ${esc(g.status)}. Issued ${esc(fmtD(g.issuedAt))} by ${esc(g.issuedBy)}. Up to ${money(g.limit)}, ${money(g.collected)} collected${g.perPeriod ? `, ${money(g.perPeriod)} each ${esc(g.frequency)}` : ''}. ${esc(g.authority || '')} ${g.status === 'Active' && isJud ? `<button class="btn outline sm" type="button" data-a="release:${esc(key)}|${esc(g.id)}">Release</button>` : ''}</div>`).join('') : ''}
+      <h4 class="sec">Ledger</h4><div class="table-scroll"><table><thead><tr><th>Date</th><th>Entry</th><th class="num">Charges</th><th class="num">Payments and credits</th><th class="num">Balance</th></tr></thead><tbody>${F.ledger(o).map(r => `<tr><td>${esc(fmtD(r.date))}</td><td><b>${esc(r.label)}</b>${r.reversed ? ' <span class="pill plain">Reversed</span>' : ''}${r.auto ? ' <span class="pill plain">Automatic</span>' : ''}<small>${esc(r.desc)}${r.by ? ' · ' + esc(r.by) : ''}</small></td><td class="num">${r.charge ? money(r.charge) : ''}</td><td class="num">${r.credit ? money(r.credit) : ''}</td><td class="num"><b>${money(r.balance)}</b></td></tr>`).join('')}</tbody></table></div>` });
+}
+
+/* ── Page ───────────────────────────────────────────────────────────── */
+const CHIPS = [['outstanding', 'Outstanding', x => F.isOpen(x.o)], ['pastdue', 'Past due', x => F.isPastDue(x.o, NOW) || x.o.schedule?.status === 'Defaulted'], ['plans', 'Payment plans', x => x.o.schedule && ['Active', 'Defaulted'].includes(x.o.schedule.status)], ['requests', 'Plan requests', x => x.o.planRequest?.status === 'Requested'], ['garnished', 'Garnishments', x => (x.o.garnishments || []).some(g => g.status === 'Active')],
+  ['judgments', 'Judgments', x => F.typeKind(x.o.type) === 'judgment'], ['credits', 'Credits to refund', x => F.balanceOf(x.o) < -0.004], ['paid', 'Paid', x => !F.isOpen(x.o) && F.balanceOf(x.o) >= -0.004], ['all', 'All', () => true]];
+const scoped = () => items.filter(x => (!f.court || x.c.court === f.court) && (!f.type || x.o.type === f.type) && (!f.mine || mineOf(x)) && (!f.q || [x.c.caseId, caption(x.c), x.o.payor, x.o.type, x.o.description].join(' ').toLowerCase().includes(f.q.toLowerCase().trim())));
+const stat = (l, v, al) => `<div class="stat ${al ? 'alert-stat' : ''}"><span>${l}</span><b>${v}</b></div>`;
+function draw() {
+  $('page-subtitle').textContent = 'Fines, fees, restitution and judgments: payments, adjustments, plans and garnishments.';
+  $('page-action').innerHTML = canAct ? '<button class="btn" type="button" data-a="assess">Assess a fine or fee</button>' : '';
+  const all = scoped(), open = all.filter(x => F.isOpen(x.o)), mo = `${NOW.getFullYear()}-${String(NOW.getMonth() + 1).padStart(2, '0')}`, pays = all.flatMap(x => (x.o.payments || []).map(p => ({ p, x }))).sort((a, b) => new Date(b.p.date) - new Date(a.p.date));
+  const collected = r2(pays.filter(({ p }) => p.amount > 0 && /payment|garnishment/.test(p.kind || 'payment') && String(p.date).slice(0, 7) === mo).reduce((t, { p }) => t + p.amount, 0)), pastDue = r2(all.filter(CHIPS[1][2]).reduce((t, x) => t + Math.max(0, F.balanceOf(x.o)), 0)), credits = r2(all.filter(CHIPS[6][2]).reduce((t, x) => t - F.balanceOf(x.o), 0));
+  const types = [...new Set(items.map(x => x.o.type).filter(Boolean))].sort(), chipDef = CHIPS.find(c => c[0] === chip) || CHIPS[0], rows = all.filter(chipDef[2]);
+  root.innerHTML = (note ? `<div class="${noteKind === 'ok' ? 'ok-bar' : 'alert'}" role="status" style="margin-bottom:16px">${esc(note)}</div>` : '')
+    + `<div class="stats">${stat('Outstanding', money(open.reduce((t, x) => t + F.balanceOf(x.o), 0)))}${stat('Past due', money(pastDue), pastDue > 0)}${stat('Collected this month', money(collected))}${stat('Plan requests', all.filter(CHIPS[3][2]).length, all.some(CHIPS[3][2]))}${stat('Credits to refund', money(credits))}</div>
+    <div class="tools"><input class="in" id="f-q" type="search" placeholder="Search by case number, name, or type" aria-label="Search" value="${esc(f.q)}"><select class="in" id="f-type" aria-label="Type"><option value="">All types</option>${types.map(t => `<option${t === f.type ? ' selected' : ''}>${esc(t)}</option>`).join('')}</select>${scope.length > 1 ? `<select class="in" id="f-court" aria-label="Court"><option value="">Both courts</option>${scope.map(c => `<option${c === f.court ? ' selected' : ''}>${esc(c)}</option>`).join('')}</select>` : ''}${isJud ? `<label class="chk"><input type="checkbox" id="f-mine" ${f.mine ? 'checked' : ''}>My docket</label>` : ''}</div>
+    <div class="tabs" role="tablist">${[['orders', 'Orders', all.length], ['payments', 'Payments', pays.length]].map(([k, l, n]) => `<button type="button" role="tab" aria-selected="${tab === k}" class="${tab === k ? 'on' : ''}" data-a="tab:${k}">${l}<i>${n}</i></button>`).join('')}</div>
+    ${tab === 'orders' ? `<div class="chips">${CHIPS.map(([k, l, fn]) => `<button type="button" class="${chip === k ? 'on' : ''}" data-a="chip:${k}">${l}<i>${all.filter(fn).length}</i></button>`).join('')}</div>${rows.length ? `<section class="card flush"><div class="table-scroll"><table><thead><tr><th>Case</th><th>Order</th><th>Due</th><th class="num">Amount</th><th class="num">Paid</th><th class="num">Balance</th><th>Status</th></tr></thead><tbody>${rows.map(x => `<tr data-a="open:${esc(x.key)}"><td><b>${esc(x.c.caseId)}</b><small>${esc(caption(x.c))}</small></td><td>${esc(x.o.type)}<small>${esc(x.o.payor || '—')}${x.o.description ? ' · ' + esc(x.o.description) : ''}</small></td><td>${esc(fmtD(x.o.dueDate))}</td><td class="num">${money(x.o.amount)}</td><td class="num">${money(F.paidOf(x.o))}</td><td class="num"><b>${money(F.balanceOf(x.o))}</b></td><td><div class="pills">${pills(x.o)}</div></td></tr>`).join('')}</tbody></table></div></section>` : `<section class="card"><div class="empty"><strong>Nothing here</strong><p>${f.q || f.type ? 'Try a different search or clear a filter.' : 'No orders match this view.'}</p></div></section>`}`
+      : `${pays.length ? `<section class="card flush"><div class="table-scroll"><table><thead><tr><th>Date</th><th>Case</th><th>Order</th><th>Entry</th><th>Method</th><th class="num">Amount</th><th>By</th></tr></thead><tbody>${pays.slice(0, 200).map(({ p, x }) => `<tr data-a="open:${esc(x.key)}"><td>${esc(fmtDT(p.date))}</td><td><b>${esc(x.c.caseId)}</b></td><td>${esc(x.o.type)}<small>${esc(x.o.payor || '')}</small></td><td>${esc(F.kindLabel(p))}${p.reversed ? ' <span class="pill plain">Reversed</span>' : ''}<small>${esc(p.confirmation || '')}</small></td><td>${esc(p.method || '—')}</td><td class="num"><b>${money(p.amount)}</b></td><td>${esc(p.by || '—')}</td></tr>`).join('')}</tbody></table></div></section>` : '<section class="card"><div class="empty"><strong>No payments recorded</strong></div></section>'}`}`;
+}
+function act(a) { const [n, ...r] = a.split(':'), v = r.join(':'); try {
+  if (n === 'tab') { tab = v; note = ''; draw(); } else if (n === 'chip') { chip = v; draw(); } else if (n === 'open') { note = ''; showOrder(v); } else if (n === 'print') window.print(); else if (n === 'assess') assessModal();
+  else if (n === 'release') releaseModal(byKey(v.slice(0, v.lastIndexOf('|'))), v.slice(v.lastIndexOf('|') + 1));
+  else { const x = byKey(v); if (!x) return; ({ pay: paymentModal, plan: planModal, credit: creditModal, refund: refundModal, correct: correctModal, modify: modifyModal, garnish: garnishModal, collect: collectModal, decline: declineModal, endplan: cancelPlan })[n]?.(x); }
+} catch (e) { console.error(e); note = errText(e); noteKind = 'bad'; draw(); } }
+document.addEventListener('click', e => { if (dlg.contains(e.target)) return; const el = e.target.closest('[data-a]'); if (el) act(el.dataset.a); });
+document.addEventListener('input', e => { if (e.target.id === 'f-q') { f.q = e.target.value; draw(); const i = $('f-q'); i.focus(); i.setSelectionRange(i.value.length, i.value.length); } });
+document.addEventListener('change', e => { if (e.target.id === 'f-type') { f.type = e.target.value; draw(); } else if (e.target.id === 'f-court') { f.court = e.target.value; draw(); } else if (e.target.id === 'f-mine') { f.mine = e.target.checked; draw(); } });
+
+try { await load(); } catch (e) { console.error(e); root.innerHTML = '<div class="alert" role="alert"><strong>We could not load financial records.</strong><p>Refresh the page to try again.</p></div>'; return; }
+draw();
+if (canAct) { try { const n = await postDue(); if (n) { note = `Late fees, interest or plan defaults were posted on ${n} case${n === 1 ? '' : 's'}.`; noteKind = 'ok'; draw(); } } catch (e) { console.warn(e); } }
+}
+</script>
+</body>
+</html>
