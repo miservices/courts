@@ -81,7 +81,7 @@ const CSS = `
 .steps .on{border-top-color:var(--navy);color:var(--navy);font-weight:600}.steps .done{border-top-color:#2f7d4f;color:#154d2e}
 .opt{display:flex;gap:12px;align-items:flex-start;padding:14px 16px;border:1px solid var(--line);border-radius:4px;cursor:pointer;margin-bottom:10px;background:#fff}
 .opt:hover{border-color:var(--blue)}.opt.on{border-color:var(--navy);background:#eef3f9;box-shadow:inset 4px 0 0 var(--navy)}.opt input{margin-top:5px}
-.opt b{display:block}.nav{display:flex;justify-content:space-between;gap:12px;margin-top:4px}
+.opt:has(input:checked){border-color:var(--navy);background:#eef3f9;box-shadow:inset 4px 0 0 var(--navy)}.opt b{display:block}.nav{display:flex;justify-content:space-between;gap:12px;margin-top:4px}
 .tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:18px;flex-wrap:wrap}
 .tabs button{font:inherit;font-weight:600;background:none;border:0;border-bottom:3px solid transparent;padding:10px 16px;cursor:pointer;color:var(--muted)}
 .tabs button.on{color:var(--navy);border-bottom-color:var(--navy)}.tabs i{font-style:normal;font-weight:500;color:var(--muted);margin-left:6px}

@@ -56,7 +56,17 @@ if (!has(STAFF, role)) {
   const fmt = v => v ? new Date(v).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' }) : '—';
   const ago = v => { const m = Math.floor((Date.now() - new Date(v)) / 6e4); return m < 1 ? 'just now' : m < 60 ? m + 'm ago' : m < 1440 ? Math.floor(m / 60) + 'h ago' : Math.floor(m / 1440) + 'd ago'; };
   const money = n => '$' + Number(n || 0).toFixed(2), safe = u => /^https?:\/\//.test(u || '') ? u : '#';
-  const isFW = d => /fee waiver/i.test((d.documentType || '') + ' ' + (d.name || ''));
+  const isFW = d => /\bMC 20\b/.test((d.documentType || '') + ' ' + (d.name || ''));   // a fee waiver REQUEST (not a request for review of a denial)
+  const CLERKS = ['Deputy Clerk', 'County Clerk', 'Deputy Clerk of the Supreme Court', 'Clerk of the Supreme Court'];   // all appear on the docket as "Clerk"
+  const fwOpen = f => ['Pending clerk review', 'Referred to judge'].includes(f.feeWaiver?.status);
+  const officer = r => has(['Magistrate'], r) ? 'Magistrate' : has(['Justice', 'Chief Justice'], r) ? 'Justice' : 'Judge';   // chief judges appear as "Judge"
+  // The docket entry for one fee waiver decision. Clerk decisions are events; judge/magistrate decisions are orders.
+  const fwEvent = d => {
+    if (d.level === 'clerk') return { type: 'event', date: d.at, sealed: false, comment: null, description: `Clerk ${d.by} reviewed fee waiver request submitted. ` + (d.decision === 'granted' ? 'Request to waive fees is granted and fees are waived.' : 'Request to waive fees is denied and referred to a judge or magistrate for review.') };
+    return { type: 'order', date: d.at, sealed: false, judge: d.by, comment: (d.grounds || []).join(' ') || null,
+      description: `${d.title} ${d.by} reviewed fee waiver request submitted and denied by clerk. Following review, it is hereby ordered that ` + (d.decision === 'granted' ? 'the request is granted and fees are waived.'
+        : d.decision === 'denied_without' ? 'the request be denied without prejudice. Another fee waiver request can be submitted.' : 'the request be denied with prejudice. No more fee waiver requests except a request for review of denial may be submitted.') };
+  };
   const parties = f => Array.isArray(f.parties) ? f.parties : [];
   const title = f => f.filingType === 'new' ? `New ${f.caseType}: ${parties(f)[0]?.name || 'Party 1'} v. ${parties(f)[1]?.name || 'Party 2'}`
     : (c => c ? `${caption(c)} (${c.caseId})` : f.caseId || 'Existing case')(cases[f.caseFirestoreId]);
@@ -78,6 +88,9 @@ if (!has(STAFF, role)) {
     const ev = [...(existing || [])]; let n = ev.reduce((m, e) => Math.max(m, e.eventNumber || 0), 0) + 1;
     (f.documents || []).forEach(d => ev.push({ eventNumber: n++, type: 'filing', date: f.dateFiled, description: isFW(d) ? `Fee waiver filed: ${d.documentType || d.name}` : d.documentType || d.name || 'Document filed',
       comment: f.notesToClerk || null, documentLink: d.fileUrl || d.link || null, sealed: !!d.sealed, filedBy: f.filedBy, role: f.filerRole || null, confirmationNumber: f.confirmationNumber, docName: d.name }));
+    const reps = f.filingType === 'new' ? parties(f).filter(p => p.attorney) : [];
+    if (reps.length) { const a = reps[0].attorney; ev.push({ eventNumber: n++, type: 'appearance', date: f.dateFiled, description: `Appearance entered by ${a.name}${a.barNumber ? ' (Bar No. ' + a.barNumber + ')' : ''} as counsel for ${reps.map(p => p.name).join(' and ')}.`, filedBy: f.filedBy, role: f.filerRole || null, confirmationNumber: f.confirmationNumber, attorney: a }); }
+    (f.feeWaiver?.decisions || []).forEach(d => ev.push({ eventNumber: n++, ...fwEvent(d) }));
     return ev;
   }
   const log = (f, text) => [...(f.activityLog || []), { text, by: account.name, at: now() }];
@@ -103,7 +116,7 @@ if (!has(STAFF, role)) {
   const stat = (l, v, al) => `<div class="stat ${al ? 'alert-stat' : ''}"><span>${l}</span><b>${v}</b></div>`;
   const pill = s => `<span class="pill ${s === 'Accepted' ? 'done' : s === 'Rejected' ? 'bad' : s === 'Returned' ? 'mid' : 'warn'}">${esc(s)}</span>`;
   const list = () => {
-    const l = P.filter(f => f.court === court && st(f) === tab && (!q || [f.confirmationNumber, f.reservedCaseId, f.filedBy, f.caseId, f.caseType, title(f)].join(' ').toLowerCase().includes(q)));
+    const l = P.filter(f => f.court === court && (tab === 'Fee waivers' ? fwOpen(f) : st(f) === tab) && (!q || [f.confirmationNumber, f.reservedCaseId, f.filedBy, f.caseId, f.caseType, title(f)].join(' ').toLowerCase().includes(q)));
     const d = (a, b) => new Date(a.dateFiled) - new Date(b.dateFiled);
     l.sort(sort === 'oldest' ? d : (a, b) => d(b, a));
     if (sort === 'urgent' || tab === 'Pending') l.sort((a, b) => (b.urgent ? 1 : 0) - (a.urgent ? 1 : 0));
@@ -111,6 +124,42 @@ if (!has(STAFF, role)) {
   };
   const card = (h, body, cls = '') => `<section class="card ${cls}"><header><h3>${h}</h3></header>${body}</section>`;
   const dl = (rows, mb = 0) => `<dl class="details" style="margin-bottom:${mb}px">${rows.map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join('')}</dl>`;
+  const fwPill = t => `<span class="pill ${t === 'Granted' ? 'done' : /^Denied/.test(t) ? 'bad' : t === 'Referred to judge' ? 'mid' : 'warn'}">${esc(t)}</span>`;
+  const FW_GRANT = ['The party is enrolled in a qualifying state assistance program.', 'The party is represented by, or receiving assistance from, a qualifying legal services program.', 'The party’s current monetary holdings are less than $7,500.', 'Waiver of fees would benefit the general public.'];
+  const FW_WITHOUT = ['The required documentation was not provided.'];
+  const FW_WITH = ['The party does not qualify under the applicable grounds.', 'The documentation submitted does not establish eligibility.', 'The court finds that funds were withdrawn for the purpose of creating an appearance of indigence.'];
+  const sigRow = () => `<div class="cols"><label class="f"><span>Date</span><input readonly value="${new Date().toLocaleDateString('en-US')}"></label><label class="f"><span>Signature</span><input id="fw-sig" autocomplete="off" placeholder="Type your full name to sign"><small>Signing as ${esc(account.name)}.</small></label></div>`;
+  const grp = (val, head, list, other) => `<div class="sub" data-g="${val}" style="background:#fff"><label class="opt"><input type="radio" name="fwo" value="${val}"><div><b>${head}</b></div></label>${list.map((t, i) => `<label class="opt"><input type="checkbox" data-t="${esc(t)}"><div>${'abcd'[i]}. ${esc(t)}</div></label>`).join('')}${other ? `<label class="opt"><input type="checkbox" data-other><div>${'abcd'[list.length]}. Other:</div></label><input class="in" type="text" data-otext aria-label="Other reason" placeholder="Reason">` : ''}</div>`;
+  const clerkForm = f => `<div class="sub mt"><b>CLERK REVIEW</b><p style="margin:10px 0">I, <b>${esc(account.name)}</b>, a clerk of this court, having reviewed the Fee Waiver Request and any supporting documentation submitted pursuant to MCR 7.403, reasonably determine that:</p>
+    <label class="opt"><input type="radio" name="fwc" value="grant"><div><b>1. The Fee Waiver Request is GRANTED.</b></div></label>
+    <label class="opt"><input type="radio" name="fwc" value="deny"><div><b>2. The Fee Waiver Request is DENIED and is referred to a judge or magistrate for review.</b></div></label>${sigRow()}
+    <button class="btn" data-a="fwclerk:${f._id}">Submit clerk review</button></div>`;
+  const orderForm = f => `<div class="sub mt"><b>ORDER</b><p style="margin:10px 0"><b>IT IS ORDERED:</b></p>
+    ${grp('grant', '1. The request is GRANTED. Payment of filing fees and other applicable court fees is waived because:', FW_GRANT)}
+    ${grp('without', '2. The request to waive payment of filing fees and other applicable court fees is DENIED without prejudice because:', FW_WITHOUT, true)}
+    ${grp('with', '3. The request to waive payment of filing fees and other applicable court fees is DENIED with prejudice because: (Option C supersedes Option B)', FW_WITH, true)}
+    <p style="margin:10px 0"><b>IT IS SO ORDERED.</b></p>${sigRow()}<button class="btn" data-a="fworder:${f._id}">Enter order</button></div>`;
+  function fwCard(f) {
+    const w = f.feeWaiver; if (!w) return '';
+    const hist = (w.decisions || []).map(d => `<div class="note"><small>${d.level === 'clerk' ? 'Clerk review' : 'Order'} · ${esc(d.by)} · ${fmt(d.at)}</small>${esc(fwEvent(d).description)}${d.grounds?.length ? `<br><small>${esc(d.grounds.join(' '))}</small>` : ''}</div>`).join('');
+    const form = w.status === 'Pending clerk review' ? (has(CLERKS, role) ? clerkForm(f) : '<p style="color:var(--muted)">Waiting for a clerk to review this request.</p>')
+      : w.status === 'Referred to judge' ? (has(JUDGES, role) ? orderForm(f) : '<p style="color:var(--muted)">Referred to a judge or magistrate for review.</p>')
+      : w.status === 'Denied with prejudice' ? '<p class="mt">No more fee waiver requests may be filed in this case, except a request for review of the denial.</p>'
+      : w.status === 'Denied without prejudice' ? '<p class="mt">Another fee waiver request may be filed in this case.</p>' : '<p class="mt">Fees on this filing are waived.</p>';
+    return card(`Fee waiver review ${fwPill(w.status)}`, hist + form);
+  }
+  // Records a clerk or judge decision, and puts it on the docket if the case already exists (new-case filings carry it until the clerk accepts).
+  async function fwSave(f, dec) {
+    const status = dec.level === 'clerk' ? (dec.decision === 'granted' ? 'Granted' : 'Referred to judge') : dec.decision === 'granted' ? 'Granted' : dec.decision === 'denied_with' ? 'Denied with prejudice' : 'Denied without prejudice';
+    const id = f.linkedCaseFirestoreId || f.caseFirestoreId;
+    if (id) {
+      const ref = doc(db, colFor(f.court), id), d = (await getDoc(ref)).data(), ev = [...(d.events || [])];
+      ev.push({ eventNumber: ev.reduce((m, e) => Math.max(m, e.eventNumber || 0), 0) + 1, ...fwEvent(dec) });
+      await updateDoc(ref, { events: ev, 'dates.lastUpdated': dec.at, ...(status === 'Denied with prejudice' ? { feeWaiverBarred: true } : {}) });
+      if (cases[id]) { cases[id].events = ev; if (status === 'Denied with prejudice') cases[id].feeWaiverBarred = true; }
+    }
+    await persist(f, { feeWaiver: { status, decisions: [...(f.feeWaiver?.decisions || []), dec] }, ...(status === 'Granted' ? { feesWaived: true } : {}), activityLog: log(f, fwEvent(dec).description) });
+  }
   function detailView(f) {
     const docs = f.documents || [], total = docs.reduce((t, d) => t + (d.fee || 0), 0), s = st(f), c = cases[f.linkedCaseFirestoreId || f.caseFirestoreId];
     const ps = parties(f).map((p, i) => ({ ...p, pin: p.pin ?? f.partyIntake?.[i]?.pin }));
@@ -135,22 +184,22 @@ if (!has(STAFF, role)) {
     return `<div class="dhead"><button class="btn outline sm" data-a="close">Back to all filings</button>
         <div class="grow"><small>${esc(f.confirmationNumber || '—')} · ${f.filingType === 'new' ? 'New case' : 'Existing case'}${f.reservedCaseId ? ' · Reserved case no. ' + esc(f.reservedCaseId) : ''}</small><h3>${esc(title(f))}</h3></div>
         <div class="acts">${f.urgent ? '<span class="pill bad">Emergency</span>' : ''}${f.assignedJudge ? `<span class="pill plain">Forwarded to ${esc(f.assignedJudge)}</span>` : ''}${pill(s)}</div></div>
-      <div class="dgrid"><div>${caseCard}${docCard}${filing}${noteCard}${actCard}</div><aside class="dside">${side}</aside></div>`;
+      <div class="dgrid"><div>${fwCard(f)}${caseCard}${docCard}${filing}${noteCard}${actCard}</div><aside class="dside">${side}</aside></div>`;
   }
   const row = f => `<div class="q${f.urgent ? ' urg' : ''}"><button class="qh" data-a="open:${f._id}"><div>
       <small>${esc(f.confirmationNumber || '—')}${f.reservedCaseId ? ' · Case no. ' + esc(f.reservedCaseId) : ''}${f.urgent ? ' · <b style="color:#b3261e">Emergency</b>' : ''}${f.assignedJudge ? ' · forwarded to ' + esc(f.assignedJudge) : ''}</small>
       <b>${esc(title(f))}</b><small>${f.filingType === 'new' ? 'New case' : 'Existing case'} · ${esc(f.documentType || 'Document')} · filed by ${esc(f.filedBy || '—')} · ${ago(f.dateFiled)}</small></div>
-      <div>${pill(st(f))}</div></button></div>`;
+      <div>${tab === 'Fee waivers' ? fwPill(f.feeWaiver.status) : pill(st(f))}</div></button></div>`;
 
   function draw() {
     $('msg').innerHTML = msg ? `<div class="alert" role="alert" style="margin-bottom:16px"><strong>${esc(msg)}</strong></div>` : '';
     const f = open && P.find(x => x._id === open && scope.includes(x.court));
     $('queue').hidden = !!f; $('detail').hidden = !f;
     if (f) { $('detail').innerHTML = detailView(f); return; }
-    const inC = P.filter(f => f.court === court), cnt = t => inC.filter(f => st(f) === t).length, today = new Date().toDateString();
+    const inC = P.filter(f => f.court === court), cnt = t => inC.filter(f => t === 'Fee waivers' ? fwOpen(f) : st(f) === t).length, today = new Date().toDateString();
     $('stats').innerHTML = stat('Pending review', cnt('Pending')) + stat('Marked emergency', inC.filter(f => st(f) === 'Pending' && f.urgent).length, 1) + stat('Returned for correction', cnt('Returned'))
       + stat('Accepted today', inC.filter(f => f.status === 'Accepted' && f.reviewedAt && new Date(f.reviewedAt).toDateString() === today).length);
-    $('tabs').innerHTML = ['Pending', 'Returned', 'Accepted', 'Rejected'].map(t => `<button class="${t === tab ? 'on' : ''}" data-a="tab:${t}">${t}<i>${cnt(t)}</i></button>`).join('');
+    $('tabs').innerHTML = ['Pending', 'Fee waivers', 'Returned', 'Accepted', 'Rejected'].map(t => `<button class="${t === tab ? 'on' : ''}" data-a="tab:${t}">${t}<i>${cnt(t)}</i></button>`).join('');
     const l = list();
     $('list').innerHTML = l.length ? l.map(row).join('') : `<div class="empty"><strong>Nothing here</strong><p>${q ? 'No ' + tab.toLowerCase() + ' filings match your search.' : 'No ' + tab.toLowerCase() + ' filings for ' + esc(court) + '.'}</p></div>`;
   }
@@ -166,7 +215,7 @@ if (!has(STAFF, role)) {
         const sc = f.court === SUPREME_COURT, display = sc ? f.caseType : (DISPLAY[f.caseType] || 'Civil'), sf = sc ? null : SUBFIELD[display], caseId = f.reservedCaseId || await reserveCaseNumber(f.court, f.caseType), j = pickJudge(f.court, display, f.caseType);
         await setDoc(doc(db, colFor(f.court), caseId), { caseId, court: f.court, caseType: display, ...(f.lowerCourt ? { lowerCourt: f.lowerCourt } : {}), ...(sf ? { [sf]: f.caseType } : {}), status: sc ? (/^Appeal/.test(f.caseType) ? 'Pending' : 'Active') : display === 'Appellate' || display === 'Administrative' ? 'Pending' : 'Active',
           dates: { filed: f.dateFiled || now(), lastUpdated: now() }, parties: f.parties || [], judge: j?.name || null, judges: j ? [j.name] : [], judgeUid: j?.uid || null, hearings: [], financialOrders: [],
-          events: eventsFor(f, []), sealed: false, relatedUserIds: f.filedByUid ? [f.filedByUid] : [], docketSummary: null, intakeConfirmationNumber: f.confirmationNumber });
+          events: eventsFor(f, []), sealed: false, relatedUserIds: f.filedByUid ? [f.filedByUid] : [], docketSummary: null, intakeConfirmationNumber: f.confirmationNumber, filingCounter: 1, ...(f.feeWaiver?.status === 'Denied with prejudice' ? { feeWaiverBarred: true } : {}) });
         id = num = caseId;
       } else if (id && cases[id]) {
         await updateDoc(doc(db, colFor(f.court), id), { events: eventsFor(f, cases[id].events), 'dates.lastUpdated': now() });
@@ -186,6 +235,24 @@ if (!has(STAFF, role)) {
   const actions = {
     open: id => go(id),
     close: () => go(null),
+    fwclerk: async id => {
+      const f = P.find(x => x._id === id), v = document.querySelector('input[name="fwc"]:checked')?.value, sig = $('fw-sig')?.value.trim();
+      if (!v) return flash('Choose whether the fee waiver request is granted or denied.');
+      if (!sig || sig.toLowerCase() !== String(account.name).toLowerCase()) return flash('Type your full name exactly as shown to sign.');
+      try { await fwSave(f, { level: 'clerk', decision: v === 'grant' ? 'granted' : 'denied', by: account.name, byRole: role, byUid: account.uid, at: now(), signature: sig }); msg = ''; } catch (e) { console.error(e); msg = 'We could not save the clerk review. Try again.'; }
+      draw();
+    },
+    fworder: async id => {
+      const f = P.find(x => x._id === id), o = document.querySelector('input[name="fwo"]:checked')?.value, sig = $('fw-sig')?.value.trim();
+      if (!o) return flash('Choose whether the request is granted, denied without prejudice, or denied with prejudice.');
+      const g = document.querySelector(`[data-g="${o}"]`), grounds = []; let bad = false;
+      g.querySelectorAll('input[type=checkbox]:checked').forEach(c => { if (c.hasAttribute('data-other')) { const t = g.querySelector('[data-otext]').value.trim(); t ? grounds.push('Other: ' + t) : bad = true; } else grounds.push(c.dataset.t); });
+      if (!grounds.length) return flash('Check at least one reason for the order.');
+      if (bad) return flash('Describe the “Other” reason.');
+      if (!sig || sig.toLowerCase() !== String(account.name).toLowerCase()) return flash('Type your full name exactly as shown to sign.');
+      try { await fwSave(f, { level: 'judge', title: officer(role), decision: o === 'grant' ? 'granted' : o === 'with' ? 'denied_with' : 'denied_without', grounds, by: account.name, byRole: role, byUid: account.uid, at: now(), signature: sig }); msg = ''; } catch (e) { console.error(e); msg = 'We could not save the order. Try again.'; }
+      draw();
+    },
     tab: t => { tab = t; open = null; msg = ''; },
     accept: id => accept(P.find(f => f._id === id)),
     return: id => decide(P.find(f => f._id === id), 'Returned', 'returnReason'),
@@ -197,7 +264,7 @@ if (!has(STAFF, role)) {
   document.addEventListener('click', async e => {
     const el = e.target.closest('[data-a]'); if (!el) return; const [n, v] = el.dataset.a.split(':');
     const keep = open && $('reason-' + open)?.value;
-    if (n === 'accept' || n === 'return' || n === 'reject') { await actions[n](v); return; }
+    if (['accept', 'return', 'reject', 'fwclerk', 'fworder'].includes(n)) { await actions[n](v); return; }
     if (actions[n]) { await actions[n](v); draw(); const r = open && $('reason-' + open); if (r && keep) r.value = keep; }
   });
   window.addEventListener('hashchange', () => { open = location.hash.slice(1) || null; draw(); });

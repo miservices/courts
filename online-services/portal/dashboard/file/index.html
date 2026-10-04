@@ -28,11 +28,33 @@
 
 <script type="module">
 import { boot, db, app, $, esc, has, ATTY, STAFF, CASE_CODES, DISTRICT_COURT, SUPREME_COURT, reserveCaseNumber, reserveFilingNumber, colFor } from '/courts/online-services/portal/dashboard/assets/js/portal-shell.js';
-import { FORMS } from '/courts/online-services/portal/dashboard/assets/js/scao-forms.js';
 import { collection, getDocs, addDoc, query, where, doc, getDoc, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 
 const { account, role } = await boot({ id: 'filings', title: 'My filings', subtitle: 'File a new case, add to an existing one, enter an appearance, and track what you have submitted.' });
 const isAtty = has(ATTY, role), isPros = has(['Prosecuting Attorney'], role);
+
+/* ── SCAO forms: read live from the published Google Sheet (CSV) ─────── */
+const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQnHhVqcjdBGTNLl3_VmFuLQ77GQ-02-6UIW55zl5EV2sUrfxjaRrBDR-LAaFGEklpJ4d5XXJaFA75R/pub?gid=0&single=true&output=csv';
+let FORMS = [];
+function parseCSV(text) {
+  const rows = []; let col = '', row = [], inQ = false;
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i], nx = text[i + 1];
+    if (inQ) { if (ch === '"' && nx === '"') { col += '"'; i++; } else if (ch === '"') inQ = false; else col += ch; }
+    else if (ch === '"') inQ = true;
+    else if (ch === ',') { row.push(col.trim()); col = ''; }
+    else if (ch === '\n' || (ch === '\r' && nx === '\n')) { row.push(col.trim()); col = ''; if (row.some(c => c !== '')) rows.push(row); row = []; if (ch === '\r') i++; }
+    else col += ch;
+  }
+  if (col || row.length) { row.push(col.trim()); if (row.some(c => c !== '')) rows.push(row); }
+  return rows;
+}
+fetch(CSV_URL).then(r => { if (!r.ok) throw new Error('csv'); return r.text(); }).then(t => {
+  const rows = parseCSV(t), h = (rows[0] || []).map(x => x.toLowerCase().replace(/\s+/g, '_'));
+  FORMS = rows.slice(1).map(r => Object.fromEntries(h.map((k, i) => [k, r[i] || '']))).filter(o => o.form_number)
+    .map(o => ({ number: o.form_number, title: o.title, category: o.category || 'Other', description: o.description, court: o.court }));
+  if (S.step === 2) render();
+}).catch(() => {});
 
 /* ── Court data ─────────────────────────────────────────────────────── */
 const COURTS = {
@@ -42,13 +64,13 @@ const COURTS = {
 const PR = ['Plaintiff', 'Defendant'], PT = ['Petitioner', 'Respondent'], AP = ['Appellant', 'Appellee'];
 const ROLES = { 'Small Claims': PR, 'General Civil': PR, 'Civil Infraction': ['Defendant', 'Prosecuting Authority'], 'General Criminal': ['Prosecution', 'Defendant'], 'Special Proceedings': PT, 'General Appeal': AP, 'Administrative Appeal': PT,
   'Appeal (by right)': AP, 'Appeal (by application)': AP, 'Certified Question': PT, 'Disciplinary Proceeding': PT, 'Original Jurisdiction': PT };
-// What can be filed to OPEN a case. 'MC ##' entries come from scao-forms.js. A criminal case can only be opened with the Criminal Complaint Packet (MC 200).
+// What can be filed to OPEN a case. 'MC ##' entries come from your published forms CSV. A criminal case can only be opened with the Criminal Complaint Packet (MC 200).
 const INIT = { 'Small Claims': ['MC 84', 'MC 97A', 'MC 97B', 'MC 20'], 'General Civil': ['Complaint', 'MC 01A', 'MC 01B', 'MC 01C', 'MC 97A', 'MC 97B', 'MC 20'], 'Civil Infraction': ['Appeal of Civil Infraction', 'MC 20'], 'General Criminal': ['MC 200'],
   'Administrative Appeal': ['Petition for Review'], 'General Appeal': ['Application for Leave to Appeal', 'Notice of Appeal (as of right)'],
   'Special Proceedings': ['Application to Set Aside a Conviction or Arrest (MC 227)', 'Application for Writ of Habeas Corpus', 'Application for Writ of Garnishment', 'Petition for Order of Contempt', 'Petition', 'MC 452', 'MC 97A', 'MC 20'],
   'Appeal (by right)': ['Notice of Appeal (as of right)'], 'Appeal (by application)': ['Application for Leave to Appeal'], 'Certified Question': ['Certified Question'], 'Disciplinary Proceeding': ['Formal Complaint'],
   'Original Jurisdiction': ['Complaint', 'Petition for Writ of Mandamus', 'Petition for Writ of Prohibition', 'Petition for Superintending Control', 'Petition for Quo Warranto'] };
-// What can be filed in an EXISTING case besides the SCAO forms in scao-forms.js. Edit freely.
+// What can be filed in an EXISTING case besides the SCAO forms from your CSV. Edit freely.
 const DOCS = {
   'Motions': ['Motion (General)', 'Emergency Motion', 'Motion to Dismiss', 'Motion for Summary Disposition', 'Motion for Default Judgment', 'Motion to Set Aside Default', 'Motion for Reconsideration', 'Motion for Relief from Judgment', 'Motion to Amend', 'Motion to Adjourn or Continue',
     'Motion for Extension of Time', 'Motion to Compel', 'Motion in Limine', 'Motion to Suppress', 'Motion to Quash', 'Motion for New Trial', 'Motion for Protective Order', 'Motion for Stay', 'Motion to Intervene', 'Motion to Withdraw as Counsel',
@@ -64,15 +86,18 @@ const DOCS = {
   'Criminal': ['Waiver of Rights', 'Bond Document'],
   'Other': ['Other']
 };
-const FL = f => `${f.title} (${f.number})`, byNum = n => FORMS.find(f => f.number === n), formOf = v => FORMS.find(f => FL(f) === v);
+const FL = f => `${f.title} (${f.number})`, byNum = n => FORMS.find(f => f.number === n);
 const fOpt = (f, g) => ({ v: FL(f), g, d: f.description });
+const fits = (f, court) => { const c = String(f.court || '').toLowerCase(); return !c || c === 'all' || (c.includes('district') && court === DISTRICT_COURT) || (c.includes('supreme') && court === SUPREME_COURT); };
 const docOpts = () => {
-  if (S.type === 'new') return (INIT[S.ctype] || []).map(x => /^MC \d/.test(x) ? fOpt(byNum(x), 'Initiating documents') : { v: x, g: 'Initiating documents' });
-  if (S.type === 'appearance') return [fOpt(byNum('MC 02'), 'Appearance')];
+  if (S.type === 'new') return (INIT[S.ctype] || []).map(x => /^MC \d/.test(x) && byNum(x) ? fOpt(byNum(x), 'Initiating documents') : { v: x, g: 'Initiating documents' });
+  if (S.type === 'appearance') return [byNum('MC 02') ? fOpt(byNum('MC 02'), 'Appearance') : { v: 'Appearance (MC 02)', g: 'Appearance' }];
   const crim = /criminal/i.test(S.kase?.caseType || ''), skip = ['MC 02', 'MC 84', 'MC 200', 'MC 452'];   // these open a case or have their own flow
-  const order = crim ? ['Criminal', 'General', 'Civil', 'Personal Protection Proceedings'] : ['Civil', 'General', 'Criminal', 'Personal Protection Proceedings'];
-  const forms = S.kase?.court === DISTRICT_COURT ? order.flatMap(c => FORMS.filter(f => f.category === c && !skip.includes(f.number)).map(f => fOpt(f, 'SCAO forms · ' + c))) : [];
-  return [...forms, ...Object.entries(DOCS).flatMap(([g, l]) => l.map(v => ({ v, g })))];
+  const cats = [...new Set(FORMS.map(f => f.category))], pref = (crim ? ['Criminal', 'General', 'Civil'] : ['Civil', 'General', 'Criminal']).filter(c => cats.includes(c));
+  const forms = [...pref, ...cats.filter(c => !pref.includes(c))].flatMap(c => FORMS.filter(f => f.category === c && !skip.includes(f.number) && fits(f, S.kase?.court)).map(f => fOpt(f, 'SCAO forms · ' + c)));
+  const all = [...forms, ...Object.entries(DOCS).flatMap(([g, l]) => l.map(v => ({ v, g })))];
+  // After a fee waiver is denied with prejudice, only a request for review of the denial may be filed.
+  return S.kase?.feeWaiverBarred ? all.filter(x => !/\bMC 20\b/.test(x.v)) : all;
 };
 const fee = (t, court) => /fee waiver|Appearance|Litigant Identification|Summons|Extreme Risk/i.test(t) ? 0 : t === 'Complaint' ? (S.ctype === 'Original Jurisdiction' ? 150 : 75) : /Small Claims Complaint/.test(t) ? 30 : /Set Aside/.test(t) ? 40 : /Appeal of Civil/.test(t) ? 20 : /Criminal Complaint|Formal Complaint/.test(t) ? 0
   : /Notice of Appeal \(|Leave to Appeal|Petition for (Writ|Superintending|Quo)/.test(t) ? 100 : /Petition for Review/.test(t) ? 50 : court === SUPREME_COURT ? 50 : 25;
@@ -90,6 +115,11 @@ const byQ = (c, q) => (c.caseId + ' ' + partiesOf(c).map(p => p.name).join(' '))
 // How the signed-in user stands in an existing case: counsel of record for some parties, or a party themselves.
 const standing = c => { const ps = partiesOf(c), rep = ps.filter(attyOn), own = ps.find(p => lc(p.name) === lc(account.name));
   return rep.length ? { counsel: true, text: 'Attorney for ' + rep.map(p => p.name).join(' and '), reps: rep.map(p => p.name).join(', ') } : { counsel: false, text: own ? own.role : 'Party of Record', reps: null }; };
+
+// Which side of a case a role is on (null when it doesn't clearly belong to one). An attorney can represent only one side.
+const sideOf = r => /defendant|respondent|appellee/i.test(r || '') ? 1 : /plaintiff|petitioner|prosecut|appellant|applicant|complainant|claimant/i.test(r || '') ? 0 : null;
+const AUTH = ['City of Flint', 'County of Genesee', 'People of the State of Michigan'];
+const opposing = p => p.role === ROLES[S.ctype][1] || p.role === 'Cross-Defendant';   // when opening a case you can't be counsel for the other side
 
 /* ── State ──────────────────────────────────────────────────────────── */
 const blank = () => ({ step: 0, view: 'new', counsel: false, type: '', court: '', ctype: '', kase: null, repIds: [], lower: null, lq: '', touched: false, prefilled: false, parties: [], files: [], links: [],
@@ -110,7 +140,7 @@ const F = (label, inner, hint) => `<label class="f"><span>${label}</span>${inner
 const inp = (k, v, ph = '', t = 'text', ro) => `<input type="${t}" data-k="${k}" value="${esc(v)}" placeholder="${esc(ph)}" ${ro ? 'readonly' : ''}>`;
 const sel = (k, v, opts, ph, r, dis) => `<select data-k="${k}" ${r ? 'data-r' : ''} ${dis ? 'disabled' : ''}>${ph ? `<option value="">${ph}</option>` : ''}${opts.map(o => { const [ov, ol] = Array.isArray(o) ? o : [o, o]; return `<option value="${esc(ov)}"${ov === v ? ' selected' : ''}>${esc(ol)}</option>`; }).join('')}</select>`;
 const opt = (on, a, title, sub) => `<div class="opt${on ? ' on' : ''}" role="radio" aria-checked="${on}" tabindex="0" data-a="${a}"><input type="radio" tabindex="-1" ${on ? 'checked' : ''}><div><b>${title}</b><small>${sub}</small></div></div>`;
-const cb = (key, val) => { const fm = formOf(val); return `<div class="f"><span>Document type</span><div class="cb"><input class="cbi" data-cb="${key}" role="combobox" aria-label="Document type" aria-expanded="false" autocomplete="off" value="${esc(val)}" placeholder="Search by name or form number…"><div class="cbl" role="listbox" hidden></div></div>${fm ? `<small><a href="${esc(fm.formUrl)}" target="_blank" rel="noopener">View blank form</a> · <a href="${esc(fm.copyUrl)}" target="_blank" rel="noopener">Make a copy</a></small>` : ''}</div>`; };
+const cb = (key, val) => `<div class="f"><span>Document type</span><div class="cb"><input class="cbi" data-cb="${key}" role="combobox" aria-label="Document type" aria-expanded="false" autocomplete="off" value="${esc(val)}" placeholder="Search by name or form number…"><div class="cbl" role="listbox" hidden></div></div></div>`;
 const loading = '<div class="loading-inline"><span class="spin-sm"></span>Loading cases…</div>';
 const none = '<div class="empty"><strong>No matching cases</strong><p>Check the case number or try a party’s last name.</p></div>';
 const caseOpt = (c, a, on) => `<div class="opt${on ? ' on' : ''}" role="radio" aria-checked="${!!on}" tabindex="0" data-a="${a}:${esc(c._id)}"><input type="radio" tabindex="-1" ${on ? 'checked' : ''}><div><b>${esc(caption(c))}</b><small>${esc(c.caseId)} · ${esc(c.court)} · ${esc(c.civilSubtype || c.caseType || '')}</small></div><span class="pill live" style="margin-left:auto">${esc(c.status || '')}</span></div>`;
@@ -139,6 +169,7 @@ function initParties() {
   S.touched = false; S.prefilled = false; S.parties = [mkParty(r[0], 0), mkParty(r[1], 1)];
   // A prosecutor opening a criminal case: party 1 is always the People, a government party they represent.
   if (lockCounsel()) S.parties[0] = { role: r[0], kind: 'Government', name: 'People of the State of Michigan', pin: '', self: false, locked: true, mine: true };
+  if (S.ctype === 'Civil Infraction') S.parties[1] = { role: r[1], kind: 'Government', name: '', pin: '', self: false, mine: false };
   if (S.lower) prefillFromLower();
 }
 // Start the parties from the lower court case. The filer's own side becomes the first role; otherwise the first party's side does
@@ -155,12 +186,16 @@ function prefillFromLower() {
   S.parties = [a[0] || mkParty(roles[0], 0), b[0] || mkParty(roles[1], 1), ...a.slice(1), ...b.slice(1)]; S.prefilled = true;
 }
 function partyCard(p, i) {
+  const pa = S.ctype === 'Civil Infraction' && p.role === 'Prosecuting Authority'; if (pa) p.kind = 'Government';
+  const opp = opposing(p); if (opp) p.mine = false;
   const L = p.self || p.locked, kinds = ['Person', 'Business or organization', 'Government'];
-  const rep = S.counsel ? `<label class="opt${p.mine ? ' on' : ''}"><input type="checkbox" data-k="parties.${i}.mine" data-r ${p.mine ? 'checked' : ''} ${p.locked ? 'disabled' : ''}><div><b>I represent this party</b></div></label>` : '';
+  const rep = S.counsel ? `<label class="opt${p.mine ? ' on' : ''}"><input type="checkbox" data-k="parties.${i}.mine" data-r ${p.mine ? 'checked' : ''} ${p.locked || opp ? 'disabled' : ''}><div><b>I represent this party</b>${opp ? '<small>You cannot be counsel for the opposing party when opening a case.</small>' : ''}</div></label>` : '';
+  const who = pa
+    ? F('Prosecuting authority', sel(`parties.${i}.name`, p.name, AUTH, 'Select the prosecuting authority'), 'A traffic ticket issued under the Michigan Vehicle Code, or any other fine under a state statute, is brought by the <b>People of the State of Michigan</b>. If it was issued under a local county or municipal ordinance, choose the municipality (<b>City of Flint</b>) or the county (<b>County of Genesee</b>).')
+    : `<div class="cols">${F('Party type', sel(`parties.${i}.kind`, p.kind, kinds, '', 1, L))}${F(p.kind === 'Person' ? 'Full name' : 'Name', inp(`parties.${i}.name`, p.name, '', 'text', L))}</div>
+    ${p.kind === 'Person' ? F('Michigan PIN', inp(`parties.${i}.pin`, p.pin, 'Michigan PIN', 'text', L && !!p.pin), p.self && p.pin ? 'Filled in from your account and cannot be changed.' : 'Appears on the case record.') : ''}`;
   return `<div class="sub"><header><span>Party ${i + 1}${i < 2 ? ' · ' + esc(p.role) : ''}</span>${i >= 2 ? `<button class="btn outline sm" type="button" data-a="rmparty:${i}">Remove</button>` : ''}</header>
-    ${i >= 2 ? F('Role', sel(`parties.${i}.role`, p.role, [...ROLES[S.ctype], 'Third Party', 'Intervenor', 'Cross-Claimant', 'Cross-Defendant'])) : ''}
-    <div class="cols">${F('Party type', sel(`parties.${i}.kind`, p.kind, kinds, '', 1, L))}${F(p.kind === 'Person' ? 'Full name' : 'Name', inp(`parties.${i}.name`, p.name, '', 'text', L))}</div>
-    ${p.kind === 'Person' ? F('Michigan PIN', inp(`parties.${i}.pin`, p.pin, 'Michigan PIN', 'text', L && !!p.pin), p.self && p.pin ? 'Filled in from your account and cannot be changed.' : 'Appears on the case record.') : ''}
+    ${i >= 2 ? F('Role', sel(`parties.${i}.role`, p.role, [...ROLES[S.ctype], 'Third Party', 'Intervenor', 'Cross-Claimant', 'Cross-Defendant'], '', 1)) : ''}${who}
     ${p.self ? '<small style="margin-bottom:12px">Your name, party type and PIN come from your account.</small>' : ''}${p.locked ? '<small style="margin-bottom:12px">Prosecutors open criminal cases for the People of the State of Michigan.</small>' : ''}${rep}</div>`;
 }
 
@@ -187,8 +222,10 @@ const attyCard = () => !isAtty ? '' : `<section class="card"><header><h3>Attorne
 function repPanel() {
   const c = S.kase; if (!c) return '';
   if (!Array.isArray(c.parties)) return '<div class="alert" role="alert">This case record uses an older format. Ask the clerk to enter your appearance.</div>';
-  return `<section class="card"><header><h3>Who do you represent?</h3></header>${c.parties.map((p, i) => { const have = attyOn(p), on = S.repIds.includes(i) || have, cur = counselOf(p).map(a => a.name);
-    return `<label class="opt${on ? ' on' : ''}"><input type="checkbox" data-a="rep:${i}" ${on ? 'checked' : ''} ${have ? 'disabled' : ''}><div><b>${esc(p.name)}</b><small>${esc(p.role || '')} · ${have ? 'You are already counsel of record' : cur.length ? 'Current counsel: ' + esc(cur.join(', ')) + ' — you will be added alongside' : 'Self-represented'}</small></div></label>`; }).join('')}</section>`;
+  const held = new Set(c.parties.filter(attyOn).map(p => sideOf(p.role)).filter(x => x !== null)), want = new Set(S.repIds.map(i => sideOf(c.parties[i].role)).filter(x => x !== null));
+  return `<section class="card"><header><h3>Who do you represent?</h3></header><p style="margin:0 0 14px;color:var(--muted)">An attorney can represent only one side of a case. Once entered, an appearance can only be changed by court staff.</p>${c.parties.map((p, i) => {
+    const have = attyOn(p), s = sideOf(p.role), on = S.repIds.includes(i) || have, blocked = !on && s !== null && [...held, ...want].some(x => x !== s), cur = counselOf(p).map(a => a.name);
+    return `<label class="opt${on ? ' on' : ''}"><input type="checkbox" data-a="rep:${i}" ${on ? 'checked' : ''} ${have || blocked ? 'disabled' : ''}><div><b>${esc(p.name)}</b><small>${esc(p.role || '')} · ${have ? 'You are counsel of record' : blocked ? 'Unavailable: an attorney cannot represent both sides of a case' : cur.length ? 'Current counsel: ' + esc(cur.join(', ')) + ' — you will be added alongside' : 'Self-represented'}</small></div></label>`; }).join('')}</section>`;
 }
 function stepCase() {
   if (S.type === 'new') return lowerCard() + attyCard() + `<section class="card"><header><h3>Parties</h3></header>${S.prefilled ? '<p style="margin:0 0 14px;color:var(--muted)">Names are filled in from the lower court case. Check each role and edit anything that needs changing.</p>' : ''}${S.parties.map(partyCard).join('')}<button class="btn outline" type="button" data-a="addparty">Add another party</button></section>`;
@@ -217,7 +254,7 @@ function stepReview() {
     <dl class="details">${rows.map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join('')}
       ${d.map(x => `<div><dt>${esc(x.type)}</dt><dd>${esc(x.name)} · ${fee(x.type, courtOf()) ? money(fee(x.type, courtOf())) : 'No fee'}</dd></div>`).join('')}
       ${d.length ? `<div><dt>Estimated fees</dt><dd>${money(total)} — due in person within 14 days, not at filing</dd></div>` : ''}</dl>
-    ${notice()}${F('Confirmation email', inp('email', S.email, 'you@example.com', 'email'), 'We send updates here when the clerk accepts, returns, or rejects your filing.')}
+    ${notice()}${docs().some(x => /\bMC 20\b/.test(x.type)) ? '<div class="sub"><b>Fee waiver request</b><small style="color:var(--text);margin-top:4px">A clerk reviews your request. If it is denied, it is referred to a judge or magistrate for review.</small></div>' : ''}${F('Confirmation email', inp('email', S.email, 'you@example.com', 'email'), 'We send updates here when the clerk accepts, returns, or rejects your filing.')}
     ${F('Notes to the clerk (optional)', `<textarea data-k="notes">${esc(S.notes)}</textarea>`)}
     <label class="opt${S.cert ? ' on' : ''}"><input type="checkbox" data-k="cert" data-r ${S.cert ? 'checked' : ''}><div><b>This filing is accurate and complete</b><small>I certify the information and documents are true to the best of my knowledge. Once submitted, a filing cannot be edited.</small></div></label></section>`;
 }
@@ -262,6 +299,7 @@ function check() {
       if (S.court === SUPREME_COURT && /^Appeal/.test(S.ctype) && !S.lower) return 'Select the lower court case you are appealing.';
       if (S.parties.some(p => !p.name.trim() || (p.kind === 'Person' && !p.pin.trim()))) return 'Complete the name (and PIN for individuals) for every party.';
       if (S.counsel && !S.parties.some(p => p.mine)) return 'Check each party you represent.';
+      if (S.parties.some(p => p.mine && opposing(p))) return 'You cannot be counsel for the opposing party when opening a case.';
     }
   }
   if (S.step === 2) {
@@ -299,7 +337,8 @@ async function submit() {
       parties: isNew ? S.parties.map(p => ({ role: p.role, name: p.name.trim(), ...(p.kind === 'Person' && p.pin.trim() ? { pin: p.pin.trim() } : {}), selfRepresented: !p.mine, ...(p.mine ? { attorney: atty, attorneys: [atty] } : {}) })) : [],
       documents, totalFee: documents.reduce((t, d) => t + d.fee, 0), notesToClerk: S.notes.trim() || null, confirmationEmail: S.email.trim(), filerRole,
       filedBy: account.name, filedByUid: account.uid, isFilingAsCounsel: counsel, counselRepresents: counsel ? repNames : null, barNumber: counsel ? account.barNumber || null : null,
-      dateFiled: now, status: 'Pending', accepted: false, urgent: false };
+      dateFiled: now, status: 'Pending', accepted: false, urgent: false,
+      ...(documents.some(d => /\bMC 20\b/.test(d.documentType || '')) ? { feeWaiver: { status: 'Pending clerk review', decisions: [] } } : {}) };
     if (isNew) { obj.reservedCaseId = caseNo; if (S.lower && court === SUPREME_COURT) obj.lowerCourt = S.lower; }
     else {
       obj.caseId = S.kase.caseId; obj.caseFirestoreId = S.kase._id;
@@ -308,6 +347,7 @@ async function submit() {
       let n = events.reduce((m, e) => Math.max(m, e.eventNumber || 0), 0) + 1;
       if (ap) {
         if (!Array.isArray(d.parties)) throw new Error('older case format');
+        if (new Set([...d.parties.filter(attyOn), ...S.repIds.map(i => d.parties[i])].map(p => sideOf(p.role)).filter(x => x !== null)).size > 1) throw new Error('side-conflict');
         const names = [];
         patch.parties = d.parties.map((p, i) => { if (!S.repIds.includes(i)) return p; names.push(p.name); const cur = counselOf(p);
           return { ...p, selfRepresented: false, attorney: p.attorney || atty, attorneys: cur.some(a => lc(a.name) === lc(atty.name)) ? cur : [...cur, atty] }; });
@@ -315,7 +355,7 @@ async function submit() {
         events.push({ eventNumber: n++, type: 'appearance', date: now, description: `Appearance entered by ${account.name}${atty.barNumber ? ' (Bar No. ' + atty.barNumber + ')' : ''} as counsel for ${names.join(' and ')}.`,
           filedBy: account.name, role: filerRole, confirmationNumber: conf, attorney: atty, counselRepresents: names.join(', ') });
       }
-      documents.forEach(x => events.push({ eventNumber: n++, type: 'filing', date: now, description: /fee waiver/i.test(x.documentType || '') ? `Fee waiver filed: ${x.documentType}` : x.documentType || x.name,
+      documents.forEach(x => events.push({ eventNumber: n++, type: 'filing', date: now, description: /\bMC 20\b/.test(x.documentType || '') ? `Fee waiver request filed: ${x.documentType}` : x.documentType || x.name,
         comment: S.notes.trim() || null, documentLink: x.fileUrl || x.link || null, sealed: false, filedBy: account.name, role: filerRole, confirmationNumber: conf, docName: x.name }));
       await updateDoc(ref, { ...patch, events, 'dates.lastUpdated': now });
       Object.assign(obj, { status: 'Accepted', accepted: true, autoFiled: true, reviewedBy: 'System (Auto-Filed)', reviewedAt: now, linkedCaseId: S.kase.caseId, linkedCaseFirestoreId: S.kase._id,
@@ -323,7 +363,7 @@ async function submit() {
     }
     await addDoc(collection(db, 'pendingFilings'), obj);
     S.done = { conf, email: S.email.trim(), type: S.type, caseNo }; S.busy = false; loadMine(); render();
-  } catch (e) { console.error(e); S.busy = false; S.err = 'We could not submit your filing. Check your connection and try again.'; render(); }
+  } catch (e) { console.error(e); S.busy = false; S.err = e.message === 'side-conflict' ? 'An attorney cannot represent parties on both sides of a case.' : 'We could not submit your filing. Check your connection and try again.'; render(); }
 }
 
 /* ── Events ─────────────────────────────────────────────────────────── */
@@ -338,12 +378,12 @@ function addFiles(fl) {
 function cbRender(i, q) {
   const l = i.nextElementSibling, ql = lc(q), o = docOpts().filter(x => !ql || lc(x.v + ' ' + x.g + ' ' + (x.d || '')).includes(ql)); let g = '', h = '';
   o.forEach(x => { if (x.g !== g) { g = x.g; h += `<div class="cbg">${esc(g)}</div>`; } h += `<div class="cbo" role="option" data-pick="${esc(i.dataset.cb)}" data-v="${esc(x.v)}"><b>${esc(x.v)}</b>${x.d ? `<small>${esc(x.d)}</small>` : ''}</div>`; });
-  l.innerHTML = h || '<div class="cbn">No matching document types</div>'; l.hidden = false; i.setAttribute('aria-expanded', 'true');
+  l.innerHTML = h || '<div class="cbn">No matching document types</div>'; l.hidden = false; i.setAttribute('aria-expanded', 'true'); root.style.paddingBottom = '360px'; l.scrollIntoView({ block: 'nearest' });
 }
 root.addEventListener('focusin', e => { if (e.target.matches?.('.cbi')) { e.target.select(); cbRender(e.target, ''); } });
-root.addEventListener('focusout', e => { const i = e.target; if (i.matches?.('.cbi')) { i.nextElementSibling.hidden = true; i.setAttribute('aria-expanded', 'false'); i.value = get(i.dataset.cb) || ''; } });
-root.addEventListener('mousedown', e => { const o = e.target.closest('.cbo'); if (o) { e.preventDefault(); set(o.dataset.pick, o.dataset.v); render(); } });
-root.addEventListener('keydown', e => { if (!e.target.matches?.('.cbi')) return; if (e.key === 'Escape') e.target.blur(); if (e.key === 'Enter') { e.preventDefault(); const o = e.target.nextElementSibling.querySelector('.cbo'); if (o) { set(o.dataset.pick, o.dataset.v); render(); } } });
+root.addEventListener('focusout', e => { const i = e.target; if (i.matches?.('.cbi')) { i.nextElementSibling.hidden = true; i.setAttribute('aria-expanded', 'false'); root.style.paddingBottom = ''; i.value = get(i.dataset.cb) || ''; } });
+root.addEventListener('mousedown', e => { const o = e.target.closest('.cbo'); if (o) { e.preventDefault(); set(o.dataset.pick, o.dataset.v); root.style.paddingBottom = ''; render(); } });
+root.addEventListener('keydown', e => { if (!e.target.matches?.('.cbi')) return; if (e.key === 'Escape') e.target.blur(); if (e.key === 'Enter') { e.preventDefault(); const o = e.target.nextElementSibling.querySelector('.cbo'); if (o) { set(o.dataset.pick, o.dataset.v); root.style.paddingBottom = ''; render(); } } });
 root.addEventListener('input', e => {
   const t = e.target; if (t.matches?.('.cbi')) { cbRender(t, t.value); return; }
   const k = t.dataset.k; if (!k || t.type === 'checkbox') return; set(k, t.value); if (k.startsWith('parties.')) S.touched = true;

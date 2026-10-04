@@ -1037,14 +1037,18 @@ function eventHtml(e){
   const time = fmtTime(e.date);
   const link = safeUrl(e.documentLink);
 
-  let actions = '';
-  if (isFiling) {
-    if (sealed) actions = `<div class="sealed-note">🔒 Document sealed by court order. Not available for public access.</div>`;
-    else if (link) actions = `<div class="eacts">
-        <a class="btn alt sm" href="${esc(link)}" target="_blank" rel="noopener">Open</a>
-        <a class="btn alt sm" href="${esc(link)}" download target="_blank" rel="noopener">Download</a></div>`;
-    else actions = `<div class="nodoc">Document not available for public access</div>`;
+let actions = '';
+if (isFiling || isOrder) {
+  if (sealed) {
+    actions = `<div class="sealed-note">Document sealed by court order. Not available for public access.</div>`;
+  } else if (link) {
+    actions = `<div class="eacts">
+      <a class="btn alt sm" href="${esc(link)}" target="_blank" rel="noopener">Open</a>
+      <a class="btn alt sm" href="${esc(link)}" download target="_blank" rel="noopener">Download</a></div>`;
+  } else if (isFiling) {
+    actions = `<div class="nodoc">Document not available for public access</div>`;
   }
+}
   const meta = [];
   if (isFiling && hasVal(e.filedBy)) meta.push(`<strong>Filed by:</strong> ${esc(e.filedBy)}${e.role ? ' (' + esc(e.role) + ')' : ''}`);
   if (isOrder && hasVal(e.judge)) meta.push(`<strong>Judge:</strong> ${esc(e.judge)}`);
