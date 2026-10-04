@@ -32,6 +32,7 @@ await setPersistence(auth, browserLocalPersistence);
 /* Case numbers: YY-#-CODE (district, one running sequence per year) or "MSC #" (Supreme Court). */
 export const CASE_CODES = { 'Small Claims': 'SC', 'Civil Infraction': 'CI', 'General Civil': 'CV', 'Administrative Appeal': 'AA', 'General Appeal': 'GA', 'General Criminal': 'CR', 'Special Proceedings': 'SP',
   Expungement: 'SP', 'Special Proceeding': 'SP', Criminal: 'CR', Administrative: 'AA', Appellate: 'GA', Traffic: 'CI' };
+export const colFor = court => court === SUPREME_COURT ? 'mscCases' : 'cases';   // Supreme Court cases live in their own collection
 export async function reserveCaseNumber(court, caseType) {
   const sc = court === SUPREME_COURT, year = new Date().getFullYear(), ref = doc(db, 'caseNumberCounters', sc ? 'supreme' : 'district-' + year);
   const n = await runTransaction(db, async tx => { const s = await tx.get(ref); const v = (s.exists() ? s.data().value || 0 : 0) + 1; tx.set(ref, { value: v, ...(sc ? {} : { year }), updatedAt: new Date().toISOString() }); return v; });

@@ -40,7 +40,7 @@
 <div class="auth-loading-overlay" id="auth-overlay" role="status"><div class="alo-title">Online Portal</div><div class="spin"></div><div>Verifying your session…</div></div>
 
 <script type="module">
-import { boot, db, $, esc, has, STAFF, scopeOf, SUPREME_COURT, reserveCaseNumber } from '/courts/online-services/portal/dashboard/assets/js/portal-shell.js';
+import { boot, db, $, esc, has, STAFF, scopeOf, SUPREME_COURT, reserveCaseNumber, colFor } from '/courts/online-services/portal/dashboard/assets/js/portal-shell.js';
 import { collection, getDocs, getDoc, doc, updateDoc, setDoc, runTransaction } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 
 const { account, role } = await boot({ id: 'mfilings', title: 'Manage Filings', subtitle: 'Review, accept, return, reject, or forward documents submitted for e-filing.' });
@@ -65,10 +65,13 @@ if (!has(STAFF, role)) {
   /* ── Case-opening helpers ─────────────────────────────────────────── */
   const DISPLAY = { 'Civil Infraction': 'Traffic', 'General Criminal': 'Criminal', Criminal: 'Criminal', 'Administrative Appeal': 'Administrative', Administrative: 'Administrative', 'General Appeal': 'Appellate', Appellate: 'Appellate', 'Extraordinary Writ': 'Appellate' };
   const SUBFIELD = { Civil: 'civilSubtype', Administrative: 'administrativeSubtype', Appellate: 'appellateSubtype' };
+  // Supreme Court -> justices. Civil Infractions and Small Claims -> magistrates only (no fallback to judges).
+  // General Criminal and Special Proceedings -> magistrates, judges, chief judges. Everything else -> judges, chief judges.
   function pickJudge(ct, display, sub) {
-    const roles = ct === SUPREME_COURT ? ['Justice', 'Chief Justice'] : display === 'Criminal' || display === 'Traffic' || sub === 'Small Claims' ? ['Magistrate', 'Judge', 'Chief Judge'] : ['Judge', 'Chief Judge'];
+    const sc = ct === SUPREME_COURT, magOnly = !sc && (display === 'Traffic' || sub === 'Small Claims');
+    const roles = sc ? ['Justice', 'Chief Justice'] : magOnly ? ['Magistrate'] : display === 'Criminal' || sub === 'Special Proceedings' ? ['Magistrate', 'Judge', 'Chief Judge'] : ['Judge', 'Chief Judge'];
     let pool = judges.filter(j => has(roles, j.role));
-    if (!pool.length) pool = judges.filter(j => (ct === SUPREME_COURT) === has(['Justice', 'Chief Justice'], j.role));
+    if (!pool.length && !magOnly) pool = judges.filter(j => sc === has(['Justice', 'Chief Justice'], j.role));
     return pool.length ? pool[Math.floor(Math.random() * pool.length)] : null;
   }
   function eventsFor(f, existing) {
@@ -83,13 +86,13 @@ if (!has(STAFF, role)) {
   /* ── Load ─────────────────────────────────────────────────────────── */
   async function load() {
     root.querySelector('#list') && (root.querySelector('#list').innerHTML = '<div class="loading-inline"><span class="spin-sm"></span>Loading filings…</div>');
-    const [a, b, c] = await Promise.all([getDocs(collection(db, 'pendingFilings')), getDocs(collection(db, 'cases')), getDocs(collection(db, 'accounts')).catch(() => ({ docs: [] }))]);
-    P = a.docs.map(d => ({ ...d.data(), _id: d.id })); cases = {}; b.docs.forEach(d => cases[d.id] = { ...d.data(), _id: d.id });
+    const [a, b, m, c] = await Promise.all([getDocs(collection(db, 'pendingFilings')), getDocs(collection(db, 'cases')), getDocs(collection(db, 'mscCases')).catch(() => ({ docs: [] })), getDocs(collection(db, 'accounts')).catch(() => ({ docs: [] }))]);
+    P = a.docs.map(d => ({ ...d.data(), _id: d.id })); cases = {}; [...b.docs, ...m.docs].forEach(d => cases[d.id] = { ...d.data(), _id: d.id });
     judges = c.docs.map(d => ({ uid: d.id, name: d.data().name || 'Unnamed', role: d.data().role })).filter(j => has(JUDGES, j.role));
     // Filings in an already-open case never wait for a clerk: they are entered on the docket automatically.
     for (const f of P.filter(x => st(x) === 'Pending' && x.filingType !== 'new' && x.caseFirestoreId && cases[x.caseFirestoreId])) {
       try {
-        const ref = doc(db, 'cases', f.caseFirestoreId), events = eventsFor(f, cases[f.caseFirestoreId].events);
+        const ref = doc(db, colFor(f.court), f.caseFirestoreId), events = eventsFor(f, cases[f.caseFirestoreId].events);
         await updateDoc(ref, { events, 'dates.lastUpdated': now() }); cases[f.caseFirestoreId].events = events;
         await persist(f, { status: 'Accepted', accepted: true, autoFiled: true, reviewedBy: 'System (Auto-Filed)', reviewedAt: now(), linkedCaseId: f.caseId || null, linkedCaseFirestoreId: f.caseFirestoreId, activityLog: log(f, 'Automatically filed — filings in an existing case do not need clerk review') });
       } catch (e) { console.warn('Auto-file failed', f._id, e); }
@@ -160,13 +163,13 @@ if (!has(STAFF, role)) {
     try {
       let id = f.caseFirestoreId || null, num = f.caseId || null;
       if (f.filingType === 'new') {
-        const display = DISPLAY[f.caseType] || 'Civil', sf = SUBFIELD[display], caseId = f.reservedCaseId || await reserveCaseNumber(f.court, f.caseType), j = pickJudge(f.court, display, f.caseType);
-        await setDoc(doc(db, 'cases', caseId), { caseId, court: f.court, caseType: display, ...(sf ? { [sf]: f.caseType } : {}), status: display === 'Appellate' || display === 'Administrative' ? 'Pending' : 'Active',
+        const sc = f.court === SUPREME_COURT, display = sc ? f.caseType : (DISPLAY[f.caseType] || 'Civil'), sf = sc ? null : SUBFIELD[display], caseId = f.reservedCaseId || await reserveCaseNumber(f.court, f.caseType), j = pickJudge(f.court, display, f.caseType);
+        await setDoc(doc(db, colFor(f.court), caseId), { caseId, court: f.court, caseType: display, ...(sf ? { [sf]: f.caseType } : {}), status: sc ? (/^Appeal/.test(f.caseType) ? 'Pending' : 'Active') : display === 'Appellate' || display === 'Administrative' ? 'Pending' : 'Active',
           dates: { filed: f.dateFiled || now(), lastUpdated: now() }, parties: f.parties || [], judge: j?.name || null, judges: j ? [j.name] : [], judgeUid: j?.uid || null, hearings: [], financialOrders: [],
           events: eventsFor(f, []), sealed: false, relatedUserIds: f.filedByUid ? [f.filedByUid] : [], docketSummary: null, intakeConfirmationNumber: f.confirmationNumber });
         id = num = caseId;
       } else if (id && cases[id]) {
-        await updateDoc(doc(db, 'cases', id), { events: eventsFor(f, cases[id].events), 'dates.lastUpdated': now() });
+        await updateDoc(doc(db, colFor(f.court), id), { events: eventsFor(f, cases[id].events), 'dates.lastUpdated': now() });
       }
       await persist(f, { status: 'Accepted', accepted: true, reviewedBy: account.name, reviewedByUid: account.uid, reviewedByRole: role, reviewedAt: now(), linkedCaseId: num, linkedCaseFirestoreId: id, activityLog: log(f, 'Accepted' + (num ? ' — case ' + num : '')) });
       await load();

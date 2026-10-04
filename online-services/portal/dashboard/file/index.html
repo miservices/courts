@@ -27,7 +27,7 @@
 <div class="auth-loading-overlay" id="auth-overlay" role="status"><div class="alo-title">Online Portal</div><div class="spin"></div><div>Verifying your session…</div></div>
 
 <script type="module">
-import { boot, db, app, $, esc, has, ATTY, STAFF, CASE_CODES, DISTRICT_COURT, reserveCaseNumber } from '/courts/online-services/portal/dashboard/assets/js/portal-shell.js';
+import { boot, db, app, $, esc, has, ATTY, STAFF, CASE_CODES, DISTRICT_COURT, reserveCaseNumber, colFor } from '/courts/online-services/portal/dashboard/assets/js/portal-shell.js';
 import { collection, getDocs, addDoc, query, where, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 
 const { account, role } = await boot({ id: 'filings', title: 'My filings', subtitle: 'File a new case, add to an existing one, and track what you have submitted.' });
@@ -36,13 +36,14 @@ const { account, role } = await boot({ id: 'filings', title: 'My filings', subti
 const FW = 'Fee Waiver Request (MC 20)';
 const COURTS = {
   'Genesee Co. District Court': ['Small Claims', 'Civil Infraction', 'General Civil', 'Administrative Appeal', 'General Appeal', 'Special Proceedings', ...(has(STAFF, role) || role === 'Prosecuting Attorney' ? ['General Criminal'] : [])],
-  'Michigan Supreme Court': ['Appellate', 'Administrative Appeal', 'Original Action', 'Extraordinary Writ']
+  'Michigan Supreme Court': ['Appeal (by right)', 'Appeal (by application)', ...(has(['Magistrate', 'Judge', 'Chief Judge'], role) ? ['Certified Question'] : []), ...(has(['Legal Services User'], role) ? ['Disciplinary Proceeding'] : []), 'Original Jurisdiction']
 };
-const ROLES = { 'Small Claims': ['Plaintiff', 'Defendant'], 'General Civil': ['Plaintiff', 'Defendant'], 'Civil Infraction': ['Defendant', 'Prosecuting Authority'], 'General Criminal': ['Prosecution', 'Defendant'], 'Special Proceedings': ['Petitioner', 'Respondent'], 'General Appeal': ['Appellant', 'Appellee'], Appellate: ['Appellant', 'Appellee'], 'Administrative Appeal': ['Petitioner', 'Respondent'], 'Original Action': ['Plaintiff', 'Defendant'], 'Extraordinary Writ': ['Petitioner', 'Respondent'] };
+const ROLES = { 'Small Claims': ['Plaintiff', 'Defendant'], 'General Civil': ['Plaintiff', 'Defendant'], 'Civil Infraction': ['Defendant', 'Prosecuting Authority'], 'General Criminal': ['Prosecution', 'Defendant'], 'Special Proceedings': ['Petitioner', 'Respondent'], 'General Appeal': ['Appellant', 'Appellee'], 'Administrative Appeal': ['Petitioner', 'Respondent'],
+  'Appeal (by right)': ['Appellant', 'Appellee'], 'Appeal (by application)': ['Appellant', 'Appellee'], 'Certified Question': ['Petitioner', 'Respondent'], 'Disciplinary Proceeding': ['Petitioner', 'Respondent'], 'Original Jurisdiction': ['Petitioner', 'Respondent'] };
 const INIT = { 'Small Claims': ['Complaint (DC 84)', FW], 'General Civil': ['Complaint', 'Summons (MC 01)', FW], 'Civil Infraction': ['Appeal of Civil Infraction (DC 102)', FW], 'General Criminal': ['Criminal Complaint / Information'], 'Administrative Appeal': ['Petition for Review'], 'General Appeal': ['Application for Leave to Appeal', 'Notice of Appeal (as of right)'],
   'Special Proceedings': ['Application to Set Aside a Conviction or Arrest (MC 227)', 'Application for Writ of Habeas Corpus', 'Application for Writ of Garnishment', 'Petition for Order of Contempt', 'Petition', FW],
-  Appellate: ['Application for Leave to Appeal', 'Notice of Appeal (as of right)'], 'Administrative Appeal': ['Petition for Review'], 'Original Action': ['Complaint'],
-  'Extraordinary Writ': ['Petition for Writ of Mandamus', 'Petition for Writ of Prohibition', 'Petition for Superintending Control', 'Petition for Quo Warranto'] };
+  'Appeal (by right)': ['Notice of Appeal (as of right)'], 'Appeal (by application)': ['Application for Leave to Appeal'], 'Certified Question': ['Certified Question'], 'Disciplinary Proceeding': ['Formal Complaint'],
+  'Original Jurisdiction': ['Complaint', 'Petition for Writ of Mandamus', 'Petition for Writ of Prohibition', 'Petition for Superintending Control', 'Petition for Quo Warranto'] };
 const COMMON = ['Motion', 'Emergency Motion', 'Response / Answer', 'Brief', 'Reply Brief', 'Affidavit / Declaration', 'Proposed Order', 'Stipulation', FW, 'Notice of Appeal', 'Proof of Service', 'Notice', 'Other'];
 const EXTRA = ['Third Party', 'Intervenor', 'Cross-Claimant', 'Cross-Defendant'];
 const fee = (t, court) => /fee waiver/i.test(t) ? 0 : /^Complaint/.test(t) ? (/Original/.test(S.ctype) ? 150 : /DC 84/.test(t) ? 30 : 75) : /Set Aside/.test(t) ? 40 : /Appeal of Civil/.test(t) ? 20 : /Criminal Complaint/.test(t) ? 0
@@ -58,7 +59,7 @@ const isCounsel = has(ATTY, role);
 const courtOf = () => S.type === 'new' ? S.court : S.kase?.court;
 const mkParty = (r, i) => ({ role: r, kind: 'Person', name: i === 0 && !S.counsel ? (account.name || '') : '', pin: i === 0 && !S.counsel ? (account.mipassPin || '') : '', self: i === 0 && !S.counsel, mine: false });
 
-getDocs(collection(db, 'cases')).then(s => { cases = s.docs.map(d => ({ ...d.data(), _id: d.id })); if (S.step === 1) render(); }).catch(() => {});
+Promise.all([getDocs(collection(db, 'cases')), getDocs(collection(db, 'mscCases')).catch(() => ({ docs: [] }))]).then(r => { cases = r.flatMap(s => s.docs.map(d => ({ ...d.data(), _id: d.id }))); if (S.step === 1) render(); }).catch(() => {});
 const loadMine = () => getDocs(query(collection(db, 'pendingFilings'), where('filedByUid', '==', account.uid)))
   .then(s => { mine = s.docs.map(d => ({ ...d.data(), _id: d.id })).sort((a, b) => new Date(b.dateFiled) - new Date(a.dateFiled)); renderAction(); if (S.view === 'history') render(); }).catch(() => {});
 loadMine();
@@ -208,7 +209,7 @@ async function submit() {
     if (S.type === 'existing') { obj.caseId = S.kase.caseId; obj.caseFirestoreId = S.kase._id; }
     if (S.type === 'new') obj.reservedCaseId = await reserveCaseNumber(court, S.ctype);
     else {
-      const ref = doc(db, 'cases', S.kase._id), snap = await getDoc(ref), prev = snap.exists() ? snap.data().events || [] : [];
+      const ref = doc(db, colFor(S.kase.court), S.kase._id), snap = await getDoc(ref), prev = snap.exists() ? snap.data().events || [] : [];
       let n = prev.reduce((m, e) => Math.max(m, e.eventNumber || 0), 0) + 1;
       const events = [...prev, ...documents.map(d => ({ eventNumber: n++, type: 'filing', date: now, description: /fee waiver/i.test(d.documentType || '') ? `Fee waiver filed: ${d.documentType}` : d.documentType || d.name,
         comment: S.notes.trim() || null, documentLink: d.fileUrl || d.link || null, sealed: false, filedBy: account.name, role: filerRole, confirmationNumber: conf, docName: d.name }))];
