@@ -59,7 +59,7 @@ b{font-weight:600}
 .nm-empty{padding:18px 16px;color:var(--muted)}
 
 /* Page */
-.page-body{padding:28px 32px 64px;max-width:1280px}
+.page-body{padding:28px 32px 64px}
 .page-head{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:22px}
 .page-head h2{font-size:28px}
 .page-head p{color:var(--muted);margin-top:2px}

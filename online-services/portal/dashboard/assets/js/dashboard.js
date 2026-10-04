@@ -12,25 +12,36 @@ const PUBLIC = '/courts/';
 const ORIGIN = 'https://migovt.org';
 const BASE   = ORIGIN + '/courts/online-services/portal/dashboard/';
 
-/* ── Roles: who sees which sidebar pages (edit the lists here) ─────────── */
-const SELF   = ['Public User', 'Justice System User', 'Provisional Attorney', 'Licensed Attorney', 'Prosecuting Attorney'];
+/* ── Roles: who sees which pages (edit the lists here) ───────────────── */
+const SELF = ['Public User', 'Justice System User', 'Provisional Attorney', 'Licensed Attorney', 'Prosecuting Attorney', 'Legal Services User'];
 const ENFORCE = ['Justice System User', 'Prosecuting Attorney', 'Legal Services User'];
-const STAFF  = ['Court Reporter', 'Law Clerk', 'Judicial Assistant',
-                'Deputy Clerk', 'County Clerk', 'Court Administrator', 'Magistrate', 'Judge', 'Chief Judge',
-                'Deputy Clerk of the Supreme Court', 'Clerk of the Supreme Court', 'Reporter of Decisions',
-                'State Court Administrator', 'Justice', 'Chief Justice'];
+const STAFF = ['Court Reporter', 'Law Clerk', 'Judicial Assistant',
+               'Deputy Clerk', 'County Clerk', 'Court Administrator', 'Magistrate', 'Judge', 'Chief Judge',
+               'Deputy Clerk of the Supreme Court', 'Clerk of the Supreme Court', 'Reporter of Decisions',
+               'State Court Administrator', 'Justice', 'Chief Justice'];
 const SUPREME = ['Deputy Clerk of the Supreme Court', 'Clerk of the Supreme Court', 'Reporter of Decisions',
                  'State Court Administrator', 'Justice', 'Chief Justice'];
-const LEGACY = { 'portal user': 'Public User', 'bar member': 'Licensed Attorney' };   // roles saved by the old sign-up
+const DISTRICT = ['Deputy Clerk', 'County Clerk', 'Court Administrator', 'Magistrate', 'Judge', 'Chief Judge'];
+const JUDICIAL = ['Magistrate', 'Judge', 'Chief Judge', 'Justice', 'Chief Justice'];   // roles that get a "My docket"
+const DISTRICT_COURT = 'Genesee Co. District Court', SUPREME_COURT = 'Michigan Supreme Court';
+
 const ALL_ROLES = [...new Set([...SELF, ...ENFORCE, ...STAFF, ...SUPREME])];
 const roleKey = x => String(x || '').toLowerCase().replace(/[^a-z]/g, '');
+const has = (list, role) => list.some(r => roleKey(r) === roleKey(role));
 // Matches the saved role to a known one (ignoring case and spacing). An unrecognized role falls back to Public User.
 const roleOf = a => {
   const raw = String(a.role || '').trim();
-  const hit = ALL_ROLES.find(r => roleKey(r) === roleKey(raw)) || LEGACY[raw.toLowerCase()];
+  const hit = ALL_ROLES.find(r => roleKey(r) === roleKey(raw));
   if (!hit) console.warn('Portal: unrecognized role "' + raw + '", showing Public User pages.');
   return hit || 'Public User';
 };
+
+/* Public-site links in the sidebar. roles: 'all' or a list. */
+const LINKS = [
+  { label: 'Search cases',       href: '/courts/case-search/',                  roles: 'all' },
+  { label: 'Manual court forms', href: '/courts/forms-and-filing/forms/',       roles: 'all' },
+  { label: 'Filing information', href: '/courts/forms-and-filing/information/', roles: SELF }
+];
 
 /* ── Sidebar pages. roles: 'all' or a list. Paths are relative to BASE. ── */
 const NAV = [
@@ -56,12 +67,6 @@ const NAV = [
     { id: 'administration', label: 'Administration', path: 'administration/', roles: SUPREME } ] }
 ];
 const SETTINGS = { id: 'settings', label: 'Account Settings', path: 'settings/', roles: 'all' };   // always last
-const LINKS = [
-  { label: 'Search cases',       href: '/courts/case-search/' },
-  { label: 'Pay fines & fees',   href: '/courts/online-services/pay-fees/' },
-  { label: 'Court forms',        href: '/courts/forms-and-filing/forms/' },
-  { label: 'Filing information', href: '/courts/forms-and-filing/information/' }
-];
 
 const app  = getApps().length ? getApp() : initializeApp({
   apiKey: "AIzaSyA8sUFIq81cs6uQvqduardpGJ4R2DxO8NQ",
@@ -88,8 +93,7 @@ const statusPill = s => `<span class="pill ${/closed|paid/i.test(s) ? 'done' : '
 const empty = (t, p) => `<div class="empty"><strong>${esc(t)}</strong><p>${esc(p)}</p></div>`;
 const searchUrl = c => (/supreme/i.test(c.court) ? '/courts/supreme-court/case-search/' : '/courts/case-search/') + '?q=' + encodeURIComponent(c.id);
 
-/* ── Data: account + the cases linked to this person ─────────────────── */
-// A case is linked when the account name matches a party, or appears in an attorney field.
+/* ── Data ─────────────────────────────────────────────────────────────── */
 async function loadAccount(uid) {
   const s = await getDoc(doc(db, 'accounts', uid));
   return s.exists() ? { uid, ...s.data() } : null;
@@ -100,49 +104,63 @@ function peopleOf(c) {
   Object.values(c.parties || {}).forEach(v => Array.isArray(v) ? v.forEach(x => out.push(x)) : v && typeof v === 'object' && out.push(v));
   return out;
 }
+const nameKey = n => { const t = String(n || '').toLowerCase().replace(/^hon\.?\s+/, '').replace(/[.,]/g, '').trim().split(/\s+/); return t.length ? t[0] + ' ' + t[t.length - 1] : ''; };
 
-async function loadData(account) {
-  const me = norm(account.name);
+// Which courts a staff role works in. Court Reporter, Law Clerk, and Judicial Assistant see both.
+const scopeOf = role => has(DISTRICT, role) ? [DISTRICT_COURT] : has(SUPREME, role) ? [SUPREME_COURT] : [DISTRICT_COURT, SUPREME_COURT];
+
+async function loadData(account, role) {
+  const staff = has(STAFF, role), scope = scopeOf(role).map(norm), me = norm(account.name);
   const snap = await getDocs(collection(db, 'cases'));
   const cases = [], hearings = [], orders = [], filings = [], events = [];
 
   snap.docs.forEach(d => {
     const c = d.data(), people = peopleOf(c);
-    const party = people.find(x => norm(x.name) === me);
-    const atty = me && people.some(x => norm(x.attorney).includes(me));
-    if (!party && !atty) return;
-
     const p = c.parties || {};
     const a = p.appellant || p.primaryPetitioner || p.primaryPlaintiff;
     const b = p.appellee || p.respondent || p.primaryDefendant;
     const base = { id: c.caseId, court: c.court, caption: a && b ? `${a.name} v. ${b.name}` : c.caseId };
-    const role = party ? party.role : 'Attorney';
+    const judges = [c.judge, ...(c.judges || [])].filter(Boolean);
+    let role_ = '';
 
-    cases.push({ ...base, type: c.caseType, status: c.status, role, updated: c.dates?.closed || c.dates?.lastUpdated || c.dates?.filed });
+    if (staff) {
+      if (!scope.includes(norm(c.court))) return;                      // court-wide view for staff
+    } else {
+      const party = people.find(x => norm(x.name) === me);
+      const atty = me && people.some(x => norm(x.attorney).includes(me));
+      if (!party && !atty) return;                                     // personal view: only cases linked to this person
+      role_ = party ? party.role : 'Attorney';
+      if (party) (c.financialOrders || []).forEach(o => {
+        if (norm(o.owedBy) !== norm(role_)) return;
+        const paid = (o.payments || []).reduce((t, x) => t + Number(x.amount || 0), 0);
+        orders.push({ ...base, type: o.type, balance: /paid/i.test(o.status) ? 0 : Math.max(0, Number(o.amount || 0) - paid) });
+        (o.payments || []).forEach(x => events.push({ date: x.date, text: `Payment of $${x.amount} recorded in ${c.caseId}` }));
+      });
+    }
 
+    cases.push({ ...base, type: c.caseType, status: c.status, role: role_, judges, mine: judges.some(j => nameKey(j) === nameKey(account.name)),
+                 updated: c.dates?.closed || c.dates?.lastUpdated || c.dates?.filed });
     (c.hearings || []).forEach(h => {
-      hearings.push({ ...base, type: h.type, date: h.date });
+      hearings.push({ ...base, type: h.type, date: h.date, where: [h.courtroom && 'Courtroom ' + h.courtroom, h.officer].filter(Boolean).join(' · ') });
       events.push({ date: h.date, text: `${h.type} in ${c.caseId}: ${h.result || 'scheduled'}` });
     });
     (c.filings || []).forEach(f => {
       filings.push({ ...base, title: f.title, by: f.filedBy, date: f.dateFiled });
       events.push({ date: f.dateFiled, text: `${f.title} filed in ${c.caseId}` });
     });
-    if (party) (c.financialOrders || []).forEach(o => {
-      if (norm(o.owedBy) !== norm(role)) return;
-      const paid = (o.payments || []).reduce((t, x) => t + Number(x.amount || 0), 0);
-      orders.push({ ...base, type: o.type, balance: /paid/i.test(o.status) ? 0 : Math.max(0, Number(o.amount || 0) - paid) });
-      (o.payments || []).forEach(x => events.push({ date: x.date, text: `Payment of $${x.amount} recorded in ${c.caseId}` }));
-    });
   });
 
-  const now = new Date(), newest = (a, b) => new Date(b.date) - new Date(a.date);
-  cases.sort((a, b) => new Date(b.updated) - new Date(a.updated));
+  const now = new Date(), newest = (x, y) => new Date(y.date) - new Date(x.date);
+  const monthAgo = new Date(now - 30 * 864e5);
+  cases.sort((x, y) => new Date(y.updated) - new Date(x.updated));
   filings.sort(newest);
+  const active = cases.filter(c => !/closed/i.test(c.status));
   return {
-    cases, filings, orders,
-    active: cases.filter(c => !/closed/i.test(c.status)),
-    upcoming: hearings.filter(h => new Date(h.date) >= now).sort((a, b) => new Date(a.date) - new Date(b.date)),
+    staff, cases, filings, orders, active,
+    closed: cases.filter(c => /closed/i.test(c.status)),
+    mine: active.filter(c => c.mine),
+    upcoming: hearings.filter(h => new Date(h.date) >= now).sort((x, y) => new Date(x.date) - new Date(y.date)),
+    recentFilings: filings.filter(f => new Date(f.date) >= monthAgo),
     balance: orders.reduce((t, o) => t + o.balance, 0),
     notices: events.filter(e => new Date(e.date) <= now).sort(newest).slice(0, 8)
   };
@@ -171,7 +189,7 @@ const ICON = {
 };
 const svg = k => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICON[k]}</svg>`;
 
-const canSee = (item, role) => item.roles === 'all' || item.roles.some(r => norm(r) === norm(role));
+const canSee = (item, role) => item.roles === 'all' || has(item.roles, role);
 
 function renderSidebar(account) {
   const role = roleOf(account);
@@ -184,7 +202,7 @@ function renderSidebar(account) {
   const groups = NAV.map(g => ({ title: g.title, items: g.items.filter(i => canSee(i, role)) })).filter(g => g.items.length);
   const nav = groups.map(g => `${g.title ? `<div class="sb-label">${esc(g.title)}</div>` : ''}${g.items.map(link).join('')}`).join('');
 
-  console.info('Portal dashboard v3 | role:', role);
+  console.info('Portal dashboard v4 | role:', role);
   $('sidebar-root').innerHTML = `
     <a class="sb-brand" href="${BASE}">
       <svg viewBox="0 0 52 52" aria-hidden="true"><circle cx="26" cy="26" r="25" fill="#fff"/><g stroke="#10264a" stroke-width="2" stroke-linecap="round" fill="none"><path d="M26 11v26M17 15h18M19 38h14"/><path d="M17 15l-6 12h12zM35 15l-6 12h12z" stroke-width="1.6" stroke-linejoin="round"/></g></svg>
@@ -193,7 +211,7 @@ function renderSidebar(account) {
     <nav class="sb-nav" aria-label="Portal">
       ${nav}
       <div class="sb-label">Quick links</div>
-      ${LINKS.map(l => `<a href="${l.href}">${svg('link')}${esc(l.label)}</a>`).join('')}
+      ${LINKS.filter(l => canSee(l, role)).map(l => `<a href="${l.href}">${svg('link')}${esc(l.label)}</a>`).join('')}
       <div class="sb-bottom">${link(SETTINGS)}</div>
     </nav>
     <div class="sb-foot">
@@ -239,47 +257,63 @@ function renderNotifications(uid, notices) {
   document.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
 }
 
-/* ── Overview ─────────────────────────────────────────────────────────── */
-function renderOverview(account, d) {
-  const first = String(account.name || '').split(' ')[0] || 'there';
+/* ── Overview (what shows depends on the role) ───────────────────────── */
+const pageLink = (id, role) => {
+  for (const g of NAV) { const it = g.items.find(i => i.id === id && canSee(i, role)); if (it) return { label: it.label, href: BASE + it.path }; }
+  return null;
+};
+const welcome = (account, role, sub, actions) => `
+  <section class="welcome">
+    <div><h3>Welcome back, ${esc(String(account.name || '').split(' ')[0] || 'there')}</h3><p>${esc(sub)}</p></div>
+    <div class="quick">${actions.filter(Boolean).map(a => `<a href="${a.href}">${esc(a.label)}</a>`).join('')}</div>
+  </section>`;
+const stat = (label, val, alert) => `<div class="stat ${alert ? 'alert-stat' : ''}"><span>${esc(label)}</span><b>${val}</b></div>`;
+const casesTable = (list, withRole) => list.length
+  ? `<div class="table-scroll"><table><thead><tr><th>Case</th><th>Court</th>${withRole ? '<th>Your role</th>' : '<th>Type</th>'}<th>Status</th><th></th></tr></thead><tbody>
+      ${list.slice(0, 8).map(c => `<tr><td><b>${esc(c.caption)}</b><small>${esc(c.id)}${withRole ? ' · ' + esc(c.type) : ''}</small></td><td>${esc(c.court)}</td><td>${esc(withRole ? c.role : c.type)}</td><td>${statusPill(c.status)}</td><td class="r"><a href="${searchUrl(c)}">Details</a></td></tr>`).join('')}
+    </tbody></table></div>` : null;
+const hearingRows = (list, withWhere) => `<ul class="rows">${list.slice(0, 6).map(h => `<li><div><b>${esc(h.type)}</b><small>${esc(h.caption)} · ${esc(h.id)}${withWhere && h.where ? ' · ' + esc(h.where) : ''}</small></div><div class="r"><b>${fmtShort(h.date)}</b><small>${fmtTime(h.date)}</small></div></li>`).join('')}</ul>`;
+const filingRows = list => `<ul class="rows">${list.slice(0, 6).map(f => `<li><div><b>${esc(f.title)}</b><small>${esc(f.id)} · filed by ${esc(f.by)}</small></div><div class="r"><small>${fmtShort(f.date)}</small></div></li>`).join('')}</ul>`;
+const card = (title, linkObj, body) => `<section class="card"><header><h3>${title}</h3>${linkObj ? `<a href="${linkObj.href}">${esc(linkObj.label)}</a>` : ''}</header>${body}</section>`;
+
+// People who file and answer for their own cases: cases, hearings, fines, filings.
+function selfOverview(account, role, d) {
   const owing = d.orders.filter(o => o.balance > 0);
-
-  const hearings = d.upcoming.length
-    ? `<ul class="rows">${d.upcoming.slice(0, 5).map(h => `<li><div><b>${esc(h.type)}</b><small>${esc(h.caption)} · ${esc(h.id)}</small></div><div class="r"><b>${fmtShort(h.date)}</b><small>${fmtTime(h.date)}</small></div></li>`).join('')}</ul>`
-    : empty('No upcoming hearings', 'When a hearing is scheduled in one of your cases, it will appear here.');
-
   const fees = owing.length
     ? `<ul class="rows">${owing.slice(0, 4).map(o => `<li><div><b>${esc(o.type)}</b><small>${esc(o.id)}</small></div><div class="r"><b>${money(o.balance)}</b></div></li>`).join('')}</ul><a class="btn" href="/courts/online-services/pay-fees/">Pay fines and fees</a>`
     : empty('Nothing due', 'You have no unpaid fines or fees.');
-
-  const cases = d.cases.length
-    ? `<div class="table-scroll"><table><thead><tr><th>Case</th><th>Court</th><th>Your role</th><th>Status</th><th></th></tr></thead><tbody>
-        ${d.cases.slice(0, 8).map(c => `<tr><td><b>${esc(c.caption)}</b><small>${esc(c.id)} · ${esc(c.type)}</small></td><td>${esc(c.court)}</td><td>${esc(c.role)}</td><td>${statusPill(c.status)}</td><td class="r"><a href="${searchUrl(c)}">Details</a></td></tr>`).join('')}
-      </tbody></table></div>`
-    : empty('No cases linked to your account', 'Cases appear here when you are listed as a party or attorney. Use the case search to look up any public case.');
-
-  const filings = d.filings.length
-    ? `<ul class="rows">${d.filings.slice(0, 5).map(f => `<li><div><b>${esc(f.title)}</b><small>${esc(f.id)} · filed by ${esc(f.by)}</small></div><div class="r"><small>${fmtShort(f.date)}</small></div></li>`).join('')}</ul>`
-    : empty('No filings yet', 'Documents filed in your cases will be listed here.');
-
-  return `
-    <section class="welcome">
-      <div><h3>Welcome back, ${esc(first)}</h3><p>${esc(roleOf(account))}${account.barNumber ? ' · Bar No. ' + esc(account.barNumber) : ''}</p></div>
-      <div class="quick"><a href="/courts/online-services/pay-fees/">Pay a fine</a><a href="/courts/forms-and-filing/forms/">Court forms</a><a href="/courts/case-search/">Search cases</a></div>
-    </section>
-    <div class="stats">
-      <div class="stat"><span>Active cases</span><b>${d.active.length}</b></div>
-      <div class="stat"><span>Upcoming hearings</span><b>${d.upcoming.length}</b></div>
-      <div class="stat ${d.balance > 0 ? 'alert-stat' : ''}"><span>Balance due</span><b>${money(d.balance)}</b></div>
-      <div class="stat"><span>Filings on record</span><b>${d.filings.length}</b></div>
-    </div>
+  const actions = [
+    d.balance > 0 && { label: 'Pay a fine', href: '/courts/online-services/pay-fees/' },
+    { label: 'Manual court forms', href: '/courts/forms-and-filing/forms/' },
+    { label: 'Search cases', href: '/courts/case-search/' }
+  ];
+  const sub = role + (account.barNumber ? ' · Bar No. ' + account.barNumber : '');
+  return welcome(account, role, sub, actions) + `
+    <div class="stats">${stat('Active cases', d.active.length)}${stat('Upcoming hearings', d.upcoming.length)}${stat('Balance due', money(d.balance), d.balance > 0)}${stat('Filings on record', d.filings.length)}</div>
     <div class="grid2">
-      <section class="card"><header><h3>Upcoming hearings</h3><a href="/courts/online-services/docket/">Docket calendar</a></header>${hearings}</section>
-      <section class="card"><header><h3>Fines &amp; fees</h3><a href="/courts/online-services/pay-fees/">Pay online</a></header>${fees}</section>
+      ${card('Upcoming hearings', pageLink('hearings', role), d.upcoming.length ? hearingRows(d.upcoming) : empty('No upcoming hearings', 'When a hearing is scheduled in one of your cases, it will appear here.'))}
+      ${card('Fines &amp; fees', pageLink('financials', role), fees)}
     </div>
-    <section class="card"><header><h3>My cases</h3><a href="/courts/case-search/">Search cases</a></header>${cases}</section>
-    <section class="card"><header><h3>Recent filings</h3><a href="/courts/forms-and-filing/information/">How to file</a></header>${filings}</section>`;
+    ${card('My cases', pageLink('cases', role), casesTable(d.cases, true) || empty('No cases linked to your account', 'Cases appear here when you are listed as a party or attorney. Use the case search to look up any public case.'))}
+    ${card('Recent filings', pageLink('filings', role), d.filings.length ? filingRows(d.filings) : empty('No filings yet', 'Documents filed in your cases will be listed here.'))}`;
 }
+
+// Court staff: court-wide workload, no personal fines or filings.
+function staffOverview(account, role, d) {
+  const courts = scopeOf(role), label = courts.length === 1 ? courts[0] : 'Michigan Courts';
+  const judicial = has(JUDICIAL, role);
+  const actions = ['docket', 'mcases', 'reports', 'opinions'].map(id => pageLink(id, role));
+  const listing = judicial ? d.mine : d.active;
+  return welcome(account, role, role + ' · ' + label, actions) + `
+    <div class="stats">${stat('Active cases', d.active.length)}${stat('Upcoming hearings', d.upcoming.length)}${stat('Filings, last 30 days', d.recentFilings.length)}${judicial ? stat('My docket', d.mine.length) : stat('Closed cases', d.closed.length)}</div>
+    <div class="grid2">
+      ${card('Upcoming hearings', pageLink('docket', role), d.upcoming.length ? hearingRows(d.upcoming, true) : empty('No upcoming hearings', 'Scheduled hearings in ' + label + ' will appear here.'))}
+      ${card('Recent filings', pageLink('mfilings', role), d.filings.length ? filingRows(d.filings) : empty('No filings yet', 'Filings in ' + label + ' will appear here.'))}
+    </div>
+    ${card(judicial ? 'My docket' : 'Active cases', pageLink('mcases', role), casesTable(listing, false) || empty(judicial ? 'No cases assigned to you' : 'No active cases', judicial ? 'Active cases assigned to you will appear here.' : 'Open cases in ' + label + ' will appear here.'))}`;
+}
+
+function renderOverview(account, role, d) { return d.staff ? staffOverview(account, role, d) : selfOverview(account, role, d); }
 
 /* ── Start ────────────────────────────────────────────────────────────── */
 async function logout() { try { await signOut(auth); } finally { location.replace(SIGNIN); } }
@@ -292,14 +326,16 @@ onAuthStateChanged(auth, async user => {
   try { account = await loadAccount(user.uid); } catch (e) { console.error(e); }
   if (!account) { await logout(); return; }
 
+  const role = roleOf(account);
   renderSidebar(account);
   $('topbar-date').textContent = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
   $('auth-overlay').hidden = true;
 
   try {
-    const data = await loadData(account);
+    const data = await loadData(account, role);
     renderNotifications(user.uid, data.notices);
-    $('page-body').innerHTML = renderOverview(account, data);
+    $('page-subtitle').textContent = data.staff ? 'Court activity and your workload at a glance.' : 'Your cases, hearings, and balances at a glance.';
+    $('page-body').innerHTML = renderOverview(account, role, data);
   } catch (e) {
     console.error(e);
     $('page-body').innerHTML = '<div class="alert" role="alert"><strong>Something went wrong</strong><p>Your information could not be loaded. Refresh the page to try again.</p></div>';
