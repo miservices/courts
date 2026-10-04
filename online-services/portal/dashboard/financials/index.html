@@ -53,7 +53,7 @@ dialog>footer{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:10px;padd
 <div class="auth-loading-overlay" id="auth-overlay" role="status"><div class="alo-title">Online Portal</div><div class="spin"></div><div>Verifying your session…</div></div>
 
 <script type="module">
-import { boot, db, $, esc, has, SELF, colFor } from '/courts/online-services/portal/dashboard/assets/js/portal-shell.js?v=6';
+import { boot, db, $, esc, has, SELF, colFor } from '/courts/online-services/portal/dashboard/assets/js/portal-shell.js?v=7';
 import * as F from '/courts/online-services/portal/dashboard/assets/js/finance.js?v=1';
 import { collection, getDocs, doc, runTransaction } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 
@@ -79,10 +79,13 @@ function caption(c) {
 function link(c) {
   const me = norm(account.name), bar = String(account.barNumber || '').trim(), l = F.caseParties(c);
   const own = l.filter(p => norm(p.name) === me), clients = l.filter(p => counselOf(p).some(a => norm(a.name) === me || (bar && String(a.barNumber || '').trim() === bar)));
-  if (!own.length && !clients.length && !(c.relatedUserIds || []).includes(account.uid)) return null;
+  if (!own.length && !clients.length && !(c.relatedUserIds || []).includes(account.uid)) {
+    // Not a party: still mine if an order was assessed directly against my account (for example a contempt fine).
+    return (c.financialOrders || []).some(o => o.payorUid === account.uid) ? { names: new Set(), roles: new Set(), forClient: null, filer: false, direct: true } : null;
+  }
   return { names: new Set([...own, ...clients].map(p => norm(p.name))), roles: new Set([...own, ...clients].map(p => norm(p.role))), forClient: !own.length && clients.length ? clients.map(p => p.name).join(' and ') : null, filer: !own.length && !clients.length };
 }
-const mine = (o, lk) => lk.filer ? true : hv(o.payor) ? lk.names.has(norm(o.payor)) : hv(o.owedBy) ? lk.roles.has(norm(o.owedBy)) : !lk.forClient;
+const mine = (o, lk) => o.payorUid ? o.payorUid === account.uid : lk.direct ? false : lk.filer ? true : hv(o.payor) ? lk.names.has(norm(o.payor)) : hv(o.owedBy) ? lk.roles.has(norm(o.owedBy)) : !lk.forClient;
 
 /* ── Data ───────────────────────────────────────────────────────────── */
 let items = [], tab = 'owe', note = '', noteKind = 'ok';
@@ -169,7 +172,7 @@ function printRcpt() { window.print(); }
 const stat = (l, v, al) => `<div class="stat ${al ? 'alert-stat' : ''}"><span>${l}</span><b>${v}</b></div>`;
 function card(x) {
   const o = x.o, bal = F.balanceOf(o), open = F.isOpen(o), adj = F.adjOf(o), ps = F.planState(o, NOW), dl = F.lateDeadline(o);
-  const warn = open && F.lateEligible(o) && !o.lateFeeAt && dl && !o.schedule && dl > NOW && F.parseDay(o.dueDate) && (dl - NOW) < 14 * 864e5 ? `<div class="alert-line">A ${F.LATE_RATE * 100}% late fee (${money(bal * F.LATE_RATE)}) is added if this is not paid by ${esc(fmtD(new Date(dl.getTime() - 1)))}.</div>` : '';
+  const warn = open && F.lateEligible(o) && !o.lateFeeAt && dl && !o.schedule && dl > NOW && F.parseDay(o.dueDate) && (dl - NOW) < 14 * 864e5 ? `<div class="alert-line">A ${F.r2(F.lateRateOf(o) * 100)}% late fee (${money(bal * F.lateRateOf(o))}) is added if this is not paid by ${esc(fmtD(new Date(dl.getTime() - 1)))}.</div>` : '';
   return `<section class="card ord"><div class="top"><div><h3>${esc(o.type)}${o.description ? ` <span class="m">— ${esc(o.description)}</span>` : ''}</h3><small>${esc(caption(x.c))} · ${esc(x.c.caseId)}${x.lk.forClient ? ' · for ' + esc(x.lk.forClient) : ''}</small></div><div class="pills">${pills(o)}</div></div>${warn}
     <dl class="amts"><div><dt>Original amount</dt><dd>${money(o.originalAmount)}</dd></div>${adj ? `<div><dt>Late fees, interest and changes</dt><dd>${adj > 0 ? '+' : ''}${money(adj)}</dd></div>` : ''}<div><dt>Paid</dt><dd>${money(Math.max(0, F.paidOf(o)))}</dd></div><div><dt>${bal < 0 ? 'Credit on this account' : 'Balance due'}</dt><dd class="owe">${money(Math.abs(bal))}</dd></div>${o.dueDate && open && !ps ? `<div><dt>Due date</dt><dd>${esc(fmtD(o.dueDate))}</dd></div>` : ''}${ps?.next ? `<div><dt>Next payment</dt><dd>${money(ps.nextAmount)} on ${esc(fmtD(ps.next))}</dd></div>` : ''}</dl>
     <div class="acts">${open ? `<button class="btn" type="button" data-a="pay:${esc(x.key)}">Make a payment</button>` : ''}${open && !o.schedule && o.planRequest?.status !== 'Requested' && F.typeKind(o.type) !== 'restitution' ? `<button class="btn outline" type="button" data-a="plan:${esc(x.key)}">Request a payment plan</button>` : ''}<button class="btn outline" type="button" data-a="open:${esc(x.key)}">View details</button></div></section>`;

@@ -3,6 +3,7 @@
 import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
 import { getAuth, setPersistence, browserLocalPersistence, onAuthStateChanged, signOut }
   from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
+import { fillBadges, badgeCounts, BADGE_CSS } from "./badges.js?v=1";
 import { getFirestore, doc, getDoc, collection, getDocs }
   from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 
@@ -121,7 +122,7 @@ async function loadData(account, role) {
     const p = c.parties || {};
     const a = p.appellant || p.primaryPetitioner || p.primaryPlaintiff;
     const b = p.appellee || p.respondent || p.primaryDefendant;
-    const base = { id: c.caseId, court: c.court, caption: a && b ? `${a.name} v. ${b.name}` : c.caseId };
+    const base = { id: c.caseId, fid: d.id, court: c.court, caption: a && b ? `${a.name} v. ${b.name}` : c.caseId };
     const judges = [c.judge, ...(c.judges || [])].filter(Boolean);
     let role_ = '';
 
@@ -131,10 +132,11 @@ async function loadData(account, role) {
       const party = people.find(x => norm(x.name) === me);
       const counsel = x => [].concat(x.attorney || [], x.attorneys || [], x.counsel || []).map(a => norm(typeof a === 'string' ? a : (a && (a.name || '')) + ' ' + (a && (a.barNumber || ''))));
       const atty = me && people.some(x => counsel(x).some(t => t.includes(me)));
-      if (!party && !atty) return;                                     // personal view: only cases linked to this person
-      role_ = party ? party.role : 'Attorney';
-      if (party) (c.financialOrders || []).forEach(o => {
-        if (norm(o.payor || o.owedBy) !== norm(party.name) && norm(o.payor || o.owedBy) !== norm(role_)) return;
+      const direct = (c.financialOrders || []).some(o => o.payorUid === account.uid);   // for example a contempt fine on someone who is not a party
+      if (!party && !atty && !direct) return;                           // personal view: only cases linked to this person
+      role_ = party ? party.role : atty ? 'Attorney' : 'Payor';
+      if (party || direct) (c.financialOrders || []).forEach(o => {
+        if (o.payorUid ? o.payorUid !== account.uid : !party || (norm(o.payor || o.owedBy) !== norm(party.name) && norm(o.payor || o.owedBy) !== norm(role_))) return;
         const paid = (o.payments || []).reduce((t, x) => t + Number(x.amount || 0), 0);
         orders.push({ ...base, type: o.type, balance: /paid/i.test(o.status) ? 0 : Math.max(0, Number(o.amount || 0) - paid) });
         (o.payments || []).forEach(x => events.push({ date: x.date, text: `Payment of $${x.amount} recorded in ${c.caseId}` }));
@@ -199,7 +201,7 @@ function renderSidebar(account) {
   const here = location.pathname.replace(/index\.html$/, '').replace(/\/?$/, '/');
   const link = it => {
     const href = BASE + it.path, on = new URL(href).pathname === here;
-    return `<a href="${href}" class="${on ? 'active' : ''}" ${on ? 'aria-current="page"' : ''}>${svg(it.id)}${esc(it.label)}</a>`;
+    return `<a href="${href}" data-nav="${it.id}" class="${on ? 'active' : ''}" ${on ? 'aria-current="page"' : ''}>${svg(it.id)}${esc(it.label)}</a>`;
   };
 
   const groups = NAV.map(g => ({ title: g.title, items: g.items.filter(i => canSee(i, role)) })).filter(g => g.items.length);
@@ -270,29 +272,32 @@ const welcome = (account, role, sub, actions) => `
     <div><h3>Welcome back, ${esc(String(account.name || '').split(' ')[0] || 'there')}</h3><p>${esc(sub)}</p></div>
     <div class="quick">${actions.filter(Boolean).map(a => `<a href="${a.href}">${esc(a.label)}</a>`).join('')}</div>
   </section>`;
-const stat = (label, val, alert) => `<div class="stat ${alert ? 'alert-stat' : ''}"><span>${esc(label)}</span><b>${val}</b></div>`;
+let STAFF_VIEW = false;
+const stat = (label, val, alert, href) => href ? `<a class="stat ${alert ? 'alert-stat' : ''}" href="${href}"><span>${esc(label)}</span><b>${val}</b></a>` : `<div class="stat ${alert ? 'alert-stat' : ''}"><span>${esc(label)}</span><b>${val}</b></div>`;
+const caseHref = (c, staff) => BASE + (staff ? 'cases/manage/' : 'cases/') + '#' + encodeURIComponent(c.fid || c.id);
+const go = href => `data-href="${href}" tabindex="0" role="link"`;
 const casesTable = (list, withRole) => list.length
   ? `<div class="table-scroll"><table><thead><tr><th>Case</th><th>Court</th>${withRole ? '<th>Your role</th>' : '<th>Type</th>'}<th>Status</th><th></th></tr></thead><tbody>
-      ${list.slice(0, 8).map(c => `<tr><td><b>${esc(c.caption)}</b><small>${esc(c.id)}${withRole ? ' · ' + esc(c.type) : ''}</small></td><td>${esc(c.court)}</td><td>${esc(withRole ? c.role : c.type)}</td><td>${statusPill(c.status)}</td><td class="r"><a href="${searchUrl(c)}">Details</a></td></tr>`).join('')}
+      ${list.slice(0, 8).map(c => `<tr class="clk" ${go(caseHref(c, STAFF_VIEW))}><td><b>${esc(c.caption)}</b><small>${esc(c.id)}${withRole ? ' · ' + esc(c.type) : ''}</small></td><td>${esc(c.court)}</td><td>${esc(withRole ? c.role : c.type)}</td><td>${statusPill(c.status)}</td><td class="r"><a href="${searchUrl(c)}">Public record</a></td></tr>`).join('')}
     </tbody></table></div>` : null;
-const hearingRows = (list, withWhere) => `<ul class="rows">${list.slice(0, 6).map(h => `<li><div><b>${esc(h.type)}</b><small>${esc(h.caption)} · ${esc(h.id)}${withWhere && h.where ? ' · ' + esc(h.where) : ''}</small></div><div class="r"><b>${fmtShort(h.date)}</b><small>${fmtTime(h.date)}</small></div></li>`).join('')}</ul>`;
-const filingRows = list => `<ul class="rows">${list.slice(0, 6).map(f => `<li><div><b>${esc(f.title)}</b><small>${esc(f.id)} · filed by ${esc(f.by)}</small></div><div class="r"><small>${fmtShort(f.date)}</small></div></li>`).join('')}</ul>`;
+const hearingRows = (list, withWhere) => `<ul class="rows">${list.slice(0, 6).map(h => `<li class="clk" ${go(withWhere ? BASE + 'docket/#' + encodeURIComponent(h.id) : BASE + 'hearings/')}><div><b>${esc(h.type)}</b><small>${esc(h.caption)} · ${esc(h.id)}${withWhere && h.where ? ' · ' + esc(h.where) : ''}</small></div><div class="r"><b>${fmtShort(h.date)}</b><small>${fmtTime(h.date)}</small></div></li>`).join('')}</ul>`;
+const filingRows = list => `<ul class="rows">${list.slice(0, 6).map(f => `<li class="clk" ${go(caseHref(f, STAFF_VIEW))}><div><b>${esc(f.title)}</b><small>${esc(f.id)} · filed by ${esc(f.by)}</small></div><div class="r"><small>${fmtShort(f.date)}</small></div></li>`).join('')}</ul>`;
 const card = (title, linkObj, body) => `<section class="card"><header><h3>${title}</h3>${linkObj ? `<a href="${linkObj.href}">${esc(linkObj.label)}</a>` : ''}</header>${body}</section>`;
 
 // People who file and answer for their own cases: cases, hearings, fines, filings.
 function selfOverview(account, role, d) {
   const owing = d.orders.filter(o => o.balance > 0);
   const fees = owing.length
-    ? `<ul class="rows">${owing.slice(0, 4).map(o => `<li><div><b>${esc(o.type)}</b><small>${esc(o.id)}</small></div><div class="r"><b>${money(o.balance)}</b></div></li>`).join('')}</ul><a class="btn" href="/courts/online-services/pay-fees/">Pay fines and fees</a>`
+    ? `<ul class="rows">${owing.slice(0, 4).map(o => `<li class="clk" ${go(BASE + 'financials/')}><div><b>${esc(o.type)}</b><small>${esc(o.id)}</small></div><div class="r"><b>${money(o.balance)}</b></div></li>`).join('')}</ul><a class="btn" href="${BASE}financials/">Pay fines and fees</a>`
     : empty('Nothing due', 'You have no unpaid fines or fees.');
   const actions = [
-    d.balance > 0 && { label: 'Pay a fine', href: '/courts/online-services/pay-fees/' },
+    d.balance > 0 && { label: 'Pay a fine', href: BASE + 'financials/' },
     { label: 'Manual court forms', href: '/courts/forms-and-filing/forms/' },
     { label: 'Search cases', href: '/courts/case-search/' }
   ];
   const sub = role + (account.barNumber ? ' · Bar No. ' + account.barNumber : '');
   return welcome(account, role, sub, actions) + `
-    <div class="stats">${stat('Active cases', d.active.length)}${stat('Upcoming hearings', d.upcoming.length)}${stat('Balance due', money(d.balance), d.balance > 0)}${stat('Filings on record', d.filings.length)}</div>
+    <div class="stats">${stat('Active cases', d.active.length, false, BASE + 'cases/')}${stat('Upcoming hearings', d.upcoming.length, false, BASE + 'hearings/')}${stat('Balance due', money(d.balance), d.balance > 0, BASE + 'financials/')}${stat('Filings on record', d.filings.length, false, BASE + 'file/')}</div>
     <div class="grid2">
       ${card('Upcoming hearings', pageLink('hearings', role), d.upcoming.length ? hearingRows(d.upcoming) : empty('No upcoming hearings', 'When a hearing is scheduled in one of your cases, it will appear here.'))}
       ${card('Fines &amp; fees', pageLink('financials', role), fees)}
@@ -308,7 +313,7 @@ function staffOverview(account, role, d) {
   const actions = ['docket', 'mcases', 'reports', 'opinions'].map(id => pageLink(id, role));
   const listing = judicial ? d.mine : d.active;
   return welcome(account, role, role + ' · ' + label, actions) + `
-    <div class="stats">${stat('Active cases', d.active.length)}${stat('Upcoming hearings', d.upcoming.length)}${stat('Filings, last 30 days', d.recentFilings.length)}${judicial ? stat('My docket', d.mine.length) : stat('Closed cases', d.closed.length)}</div>
+    <div class="stats">${stat('Active cases', d.active.length, false, BASE + 'cases/manage/')}${stat('Upcoming hearings', d.upcoming.length, false, BASE + 'docket/')}${stat('Filings, last 30 days', d.recentFilings.length, false, BASE + 'file/manage/')}${judicial ? stat('My docket', d.mine.length, false, BASE + 'cases/manage/') : stat('Closed cases', d.closed.length, false, BASE + 'cases/manage/')}</div>
     <div class="grid2">
       ${card('Upcoming hearings', pageLink('docket', role), d.upcoming.length ? hearingRows(d.upcoming, true) : empty('No upcoming hearings', 'Scheduled hearings in ' + label + ' will appear here.'))}
       ${card('Recent filings', pageLink('mfilings', role), d.filings.length ? filingRows(d.filings) : empty('No filings yet', 'Filings in ' + label + ' will appear here.'))}
@@ -316,11 +321,12 @@ function staffOverview(account, role, d) {
     ${card(judicial ? 'My docket' : 'Active cases', pageLink('mcases', role), casesTable(listing, false) || empty(judicial ? 'No cases assigned to you' : 'No active cases', judicial ? 'Active cases assigned to you will appear here.' : 'Open cases in ' + label + ' will appear here.'))}`;
 }
 
-function renderOverview(account, role, d) { return d.staff ? staffOverview(account, role, d) : selfOverview(account, role, d); }
+function renderOverview(account, role, d) { STAFF_VIEW = !!d.staff; return d.staff ? staffOverview(account, role, d) : selfOverview(account, role, d); }
 
 /* ── Start ────────────────────────────────────────────────────────────── */
 async function logout() { try { await signOut(auth); } finally { location.replace(SIGNIN); } }
-document.addEventListener('click', e => { if (e.target.closest('[data-signout]')) logout(); });
+document.addEventListener('click', e => { if (e.target.closest('[data-signout]')) logout(); const el = e.target.closest('[data-href]'); if (el && !e.target.closest('a,button')) location.href = el.dataset.href; });
+document.addEventListener('keydown', e => { if (e.key === 'Enter') { const el = e.target.closest?.('[data-href]'); if (el) location.href = el.dataset.href; } });
 
 onAuthStateChanged(auth, async user => {
   if (!user) { location.replace(SIGNIN); return; }
@@ -330,7 +336,9 @@ onAuthStateChanged(auth, async user => {
   if (!account) { await logout(); return; }
 
   const role = roleOf(account);
+  document.head.insertAdjacentHTML('beforeend', `<style>${BADGE_CSS}.clk{cursor:pointer}.clk:hover{background:#f6f9fd}.clk:focus-visible{outline:2px solid #1f5fae;outline-offset:-2px}a.stat{display:block;text-decoration:none;color:inherit}a.stat:hover{border-color:#1f5fae;box-shadow:0 2px 8px rgba(16,38,74,.12)}.attn{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}.attn a{display:flex;align-items:center;gap:10px;background:#fdf6e7;border:1px solid #ecd9a8;color:#6e4a10;border-radius:6px;padding:10px 14px;text-decoration:none;font-weight:600}.attn a b{background:#c0392b;color:#fff;border-radius:10px;min-width:22px;text-align:center;padding:1px 7px;font-size:13px}</style>`);
   renderSidebar(account);
+  fillBadges(account, roleOf(account));
   $('topbar-date').textContent = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
   $('auth-overlay').hidden = true;
 
@@ -339,6 +347,10 @@ onAuthStateChanged(auth, async user => {
     renderNotifications(user.uid, data.notices);
     $('page-subtitle').textContent = data.staff ? 'Court activity and your workload at a glance.' : 'Your cases, hearings, and balances at a glance.';
     $('page-body').innerHTML = renderOverview(account, role, data);
+    badgeCounts(account, role).then(c => {   // what is waiting for this person to review, and only what is theirs to act on
+      const items = [['mfilings', 'to review in Manage Filings'], ['menforce', 'to review in Enforcement administration'], ['enforce', 'update' + 's in Enforcement services']].filter(([k]) => c[k] > 0);
+      if (!items.length) return; const html = `<div class="attn">${items.map(([k, t]) => { const p = pageLink(k, role); return p ? `<a href="${p.href}"><b>${c[k]}</b>${esc(k === 'enforce' ? c[k] === 1 ? 'update in Enforcement services' : 'updates in Enforcement services' : t)}</a>` : ''; }).join('')}</div>`;
+      $('page-body').insertAdjacentHTML('afterbegin', html); }).catch(() => {});
   } catch (e) {
     console.error(e);
     $('page-body').innerHTML = '<div class="alert" role="alert"><strong>Something went wrong</strong><p>Your information could not be loaded. Refresh the page to try again.</p></div>';

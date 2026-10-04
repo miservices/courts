@@ -701,6 +701,8 @@ function renderDetail(c){
   if (crimOrTraffic && c.sentencing?.length) sections.push(['sentencing','Dispositions and sentencing', buildSentencing(c)]);
   if (!crimOrTraffic && c.judgments?.length) sections.push(['judgments', judgmentsTitle(c), buildJudgments(c)]);
   if (!crimOrTraffic && c.adr?.length)       sections.push(['adr','Mediation and ADR', buildAdr(c)]);
+  if (c.warrants?.length)                    sections.push(['warrants','Warrants', buildWarrants(c)]);
+  if (c.supervision?.length)                 sections.push(['supervision','Supervision', buildSupervision(c)]);
   if (c.financialOrders?.length)             sections.push(['financials','Financial orders', buildFinancials(c)]);
   if (c.events?.length)                      sections.push(['events','Docket', buildEventsShell(c)]);
 
@@ -987,36 +989,76 @@ function buildAdr(c){
 
 function buildFinancials(c){
   const orders = c.financialOrders || [];
-  const paidOf = o => (o.payments || []).reduce((s,p) => s + (p.amount || 0), 0);
-  const totalOwed = orders.reduce((s,o) => s + (o.amount || 0), 0);
+  const r2 = n => Math.round((Number(n) || 0) * 100) / 100;
+  const paidOf = o => r2((o.payments || []).reduce((s,p) => s + Number(p.amount || 0), 0));
+  const adjOf = o => r2((o.adjustments || []).filter(a => !a.corrects).reduce((s,a) => s + Number(a.amount || 0), 0));
+  const balOf = o => r2(Number(o.amount || 0) - paidOf(o));
+  const totalOwed = orders.reduce((s,o) => s + Number(o.amount || 0), 0);
   const totalPaid = orders.reduce((s,o) => s + paidOf(o), 0);
-  const balance = Math.max(0, totalOwed - totalPaid);
+  const balance = Math.max(0, r2(totalOwed - totalPaid));
+  const KIND = { payment:'Payment', garnishment:'Payment (garnishment)', refund:'Refund', 'credit-in':'Credit applied', 'credit-out':'Credit moved', correction:'Correction' };
+  const AK = { 'late-fee':'Late fee', interest:'Interest', reduction:'Reduction', increase:'Increase', waiver:'Waiver', credit:'Court credit', correction:'Correction' };
+  const per = o => o.interest && Number(o.interest.rate) > 0 ? `${Number(o.interest.rate)}% per ${o.interest.per || 'year'}${o.interest.compound ? ', compounding' : ''}` : (/judgment/i.test(o.type || '') && !o.interest ? '5% per year' : null);
   return `<div class="panel">${heading('Financial orders', `${orders.length} order${orders.length === 1 ? '' : 's'}`)}
     <div class="fin-strip">
-      <div><div class="k">Total assessed</div><div class="v">${esc(fmtMoney(totalOwed) || '$0.00')}</div></div>
+      <div><div class="k">Total owed</div><div class="v">${esc(fmtMoney(totalOwed) || '$0.00')}</div></div>
       <div><div class="k">Total paid</div><div class="v" style="color:${totalPaid >= totalOwed && totalOwed > 0 ? '#256029' : '#7a4a00'}">${esc(fmtMoney(totalPaid) || '$0.00')}</div></div>
       <div><div class="k">Balance</div><div class="v" style="color:${balance <= 0 ? '#256029' : '#8f1d1d'}">${esc(fmtMoney(balance) || '$0.00')}</div></div>
     </div>
     ${orders.map(o => {
-      const paid = paidOf(o);
-      const full = o.amount && paid >= o.amount;
-      const tag = full ? ['green','Paid'] : paid > 0 ? ['amber','Partial'] : ['red','Unpaid'];
-      const due = hasVal(o.dueDate) ? fmtDate(o.dueDate) : fmtDate(addDays(o.assessmentDate, 21));
+      const paid = paidOf(o), bal = balOf(o), adj = adjOf(o), orig = r2(Number(o.amount || 0) - adj), now = new Date();
+      const dueD = hasVal(o.dueDate) ? new Date(String(o.dueDate).length <= 10 ? o.dueDate + 'T23:59:59' : o.dueDate) : null;
+      const tags = [];
+      if (bal < -0.004) tags.push(['blue','Credit balance']); else if (bal <= 0.004 && o.amount > 0) tags.push(['green','Paid in full']); else if (Number(o.amount) <= 0 && orig > 0) tags.push(['blue','Waived']);
+      else { if (o.schedule && o.schedule.status === 'Defaulted') tags.push(['red','Plan defaulted']); else if (o.schedule && o.schedule.status === 'Active') tags.push(['blue','Payment plan']); else if (dueD && dueD < now) tags.push(['red','Past due']); else tags.push([paid > 0 ? 'amber' : 'red', paid > 0 ? 'Partly paid' : 'Unpaid']); }
+      if ((o.garnishments || []).some(g => g.status === 'Active')) tags.push(['amber','Garnishment']);
+      const due = hasVal(o.dueDate) ? fmtDate(o.dueDate) : (o.id ? null : fmtDate(addDays(o.assessmentDate, 21)));
+      const rows = [
+        { t: new Date(o.assessmentDate).getTime() || 0, d: o.assessmentDate, l: 'Assessed', amt: orig, ord: 0 },
+        ...(o.adjustments || []).filter(a => !a.corrects).map(a => ({ t: new Date(a.date).getTime() || 0, d: a.date, l: AK[a.kind] || 'Adjustment', amt: Number(a.amount), ord: 1 })),
+        ...(o.payments || []).map(p => ({ t: new Date(p.date).getTime() || 0, d: p.date, l: KIND[p.kind || 'payment'] || 'Payment', m: p.method, amt: -Number(p.amount), ord: 2 }))
+      ].sort((x,y) => x.t - y.t || x.ord - y.ord);
       return `<div class="fin-order">
         <div class="fin-top">
           <div><strong style="color:#10264a">${esc(o.type)}</strong>${hasVal(o.description) ? `<div class="aka">${esc(o.description)}</div>` : ''}</div>
-          <div class="fin-right"><div class="fin-amt">${esc(fmtMoney(o.amount) || 'N/A')}</div><span class="tag ${tag[0]}">${tag[1]}</span></div>
+          <div class="fin-right"><div class="fin-amt">${esc(fmtMoney(Math.abs(bal)) || '$0.00')}</div><div class="aka">${bal < 0 ? 'credit' : 'balance'}</div>${tags.map(t => `<span class="tag ${t[0]}">${esc(t[1])}</span>`).join(' ')}</div>
         </div>
         <div class="grid">
-          <div class="item"><div class="k">Payor</div>${val(o.payor || o.owedBy)}</div>
+          <div class="item"><div class="k">Owed by</div>${val(o.payor || o.owedBy)}</div>
+          ${hasVal(o.payee) ? `<div class="item"><div class="k">Payable to</div>${val(o.payee)}</div>` : ''}
           <div class="item"><div class="k">Assessed</div>${val(fmtDate(o.assessmentDate))}</div>
           <div class="item"><div class="k">Due</div>${val(due)}</div>
+          <div class="item"><div class="k">Original amount</div>${val(fmtMoney(orig))}</div>
+          ${adj ? `<div class="item"><div class="k">Late fees, interest and changes</div>${val((adj > 0 ? '+' : '') + fmtMoney(adj))}</div>` : ''}
+          ${per(o) ? `<div class="item"><div class="k">Interest</div>${val(per(o))}</div>` : ''}
         </div>
-        ${(o.payments || []).length ? `<table class="tbl"><thead><tr><th>Payment date</th><th>Method</th><th class="amt">Amount</th></tr></thead><tbody>
-          ${o.payments.map(pm => `<tr><td>${esc(fmtDate(pm.date) || 'N/A')}</td><td>${esc(pm.method || '—')}</td><td class="amt">${esc(fmtMoney(pm.amount) || 'N/A')}</td></tr>`).join('')}
-          </tbody><tfoot><tr><td colspan="2">Payments total</td><td class="amt">${esc(fmtMoney(paid))}</td></tr></tfoot></table>` : ''}
+        ${rows.length > 1 ? `<table class="tbl"><thead><tr><th>Date</th><th>Entry</th><th class="amt">Amount</th></tr></thead><tbody>
+          ${rows.map(r => `<tr><td>${esc(fmtDate(r.d) || 'N/A')}</td><td>${esc(r.l)}${r.m ? ' · ' + esc(r.m) : ''}</td><td class="amt">${r.amt < 0 ? '−' : ''}${esc(fmtMoney(Math.abs(r.amt)) || '$0.00')}</td></tr>`).join('')}
+          </tbody><tfoot><tr><td colspan="2">Balance</td><td class="amt">${esc(fmtMoney(Math.abs(bal)) || '$0.00')}${bal < 0 ? ' credit' : ''}</td></tr></tfoot></table>` : ''}
       </div>`;
     }).join('')}</div>`;
+}
+
+/* ── Warrants and court-ordered supervision (summaries kept on the case; no probable-cause statements or personal details) ── */
+function buildWarrants(c){
+  const tag = s => s === 'Issued' ? 'red' : s === 'Executed' ? 'green' : 'amber';
+  return `<div class="panel">${heading('Warrants', `${c.warrants.length} warrant${c.warrants.length === 1 ? '' : 's'}`)}
+    ${c.warrants.map(w => `<div class="box"><div class="box-head"><div><strong style="color:#10264a">${esc(w.type)}</strong>${hasVal(w.subject) ? `<div class="aka">${esc(w.subject)}</div>` : ''}</div><span class="tag ${tag(w.status)}">${esc(w.status === 'Issued' ? 'Active' : w.status)}</span></div>
+      <div class="box-body"><div class="grid">
+        <div class="item"><div class="k">Issued</div>${val(fmtDate(w.issuedAt))}</div>
+        <div class="item"><div class="k">Issued by</div>${val(w.issuedBy)}</div>
+        ${w.bond ? `<div class="item"><div class="k">Bond</div>${val(fmtMoney(w.bond))}</div>` : ''}
+      </div></div></div>`).join('')}</div>`;
+}
+function buildSupervision(c){
+  const tag = s => s === 'Active' ? 'blue' : s === 'Completed' ? 'green' : s === 'Revoked' ? 'red' : 'amber';
+  return `<div class="panel">${heading('Community service, probation and pretrial supervision', `${c.supervision.length} order${c.supervision.length === 1 ? '' : 's'}`)}
+    ${c.supervision.map(o => `<div class="box"><div class="box-head"><div><strong style="color:#10264a">${esc(o.type)}</strong><div class="aka">${esc(o.subject)}</div></div><span class="tag ${tag(o.status)}">${esc(o.status)}</span></div>
+      <div class="box-body"><div class="grid">
+        <div class="item"><div class="k">Starts</div>${val(fmtDate(o.startDate))}</div>
+        ${o.endDate ? `<div class="item"><div class="k">${o.type === 'Community Service' ? 'Complete by' : 'Ends'}</div>${val(fmtDate(o.endDate))}</div>` : ''}
+        ${o.hours ? `<div class="item"><div class="k">Hours completed</div>${val((o.hoursCompleted || 0) + ' of ' + o.hours)}</div>` : ''}
+      </div></div></div>`).join('')}</div>`;
 }
 
 /* ── Docket (events): filter, search, sort ── */

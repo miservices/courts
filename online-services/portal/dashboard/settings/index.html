@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Account Settings | Online Portal</title>
+<link rel="icon" type="image/png" href="/courts/images/favicon.png">
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=Source+Serif+4:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/courts/online-services/portal/dashboard/assets/css/dashboard.css?v=5">
+<style>
+.m{color:var(--muted);font-weight:400}.mt{margin-top:14px}
+.tools{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px;align-items:center}.tools .in{flex:1;min-width:200px;width:auto}.tools select.in{flex:0 0 auto;min-width:0}
+.chk{display:flex;gap:8px;align-items:center;font-weight:600;color:var(--navy);white-space:nowrap}.chk input{width:18px;height:18px}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}.chips button{font:inherit;font-weight:600;font-size:14px;padding:6px 14px;border-radius:16px;border:1px solid var(--line);background:#fff;color:var(--navy);cursor:pointer}.chips button.on{background:var(--navy);color:#fff;border-color:var(--navy)}.chips i{font-style:normal;opacity:.75;margin-left:6px}
+.tabs i{font-style:normal;font-weight:500;color:var(--muted);margin-left:6px}
+tbody tr[data-a]{cursor:pointer}tbody tr[data-a]:hover{background:#f6f9fd}
+td small,th small{display:block;color:var(--muted);font-weight:400}.num{text-align:right;white-space:nowrap}th.num{text-align:right}.pills{display:flex;gap:6px;flex-wrap:wrap}
+.amts{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px 18px;margin-bottom:14px}.amts div{display:grid;gap:2px}.amts dt{font-size:13px;color:var(--muted)}.amts dd{font-weight:700;font-size:17px;color:var(--navy)}.amts dd.owe{font-size:22px}
+.alert-line{border-left:4px solid #b7791f;background:#fdf6e7;color:#6e4a10;border-radius:4px;padding:10px 14px;margin-bottom:10px}.alert-line.red{border-color:#b3261e;background:#fdf1f0;color:#7a1b13}
+.note{border-left:4px solid var(--navy);background:#eef3f9;border-radius:4px;padding:10px 14px;margin-bottom:12px;color:var(--navy)}
+.acts{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}.sec{margin:18px 0 8px;font-size:16px;color:var(--navy)}
+.kv{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px 22px;margin-bottom:6px;text-align:left}.kv dt{font-size:13px;color:var(--muted)}.kv dd{font-weight:600;overflow-wrap:anywhere}
+.rcpt{text-align:center;padding:6px 0 4px}.rcpt .big{font-family:var(--font-head);font-size:34px;color:var(--navy);font-weight:700;margin:6px 0}.rcpt .tick{width:54px;height:54px;border-radius:50%;background:#e4f3ea;color:#2f7d4f;font-size:30px;line-height:54px;margin:0 auto 6px}
+.quote{background:#f4f7fb;border-radius:4px;padding:10px 14px;margin-bottom:16px;color:var(--navy)}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:16px}@media(max-width:700px){.cols{grid-template-columns:1fr}}
+dialog{border:0;padding:0;border-radius:6px;width:min(660px,calc(100vw - 24px));max-height:calc(100vh - 48px);box-shadow:0 24px 60px rgba(9,22,40,.35);color:var(--text);font:inherit;overflow:hidden;margin:auto}
+dialog[open]{display:flex;flex-direction:column}dialog.wide{width:min(900px,calc(100vw - 24px))}dialog::backdrop{background:rgba(9,22,40,.55)}
+dialog>header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:16px 22px;border-bottom:1px solid var(--line);background:#f4f7fb}dialog>header h3{font-size:19px}dialog>header p{color:var(--muted);margin-top:2px}
+.x{font:inherit;font-size:22px;line-height:1;width:36px;height:36px;border:1px solid var(--line);border-radius:4px;background:#fff;cursor:pointer;color:var(--navy);flex-shrink:0}.x:hover{background:#eef3f9}
+#dlg-b{padding:20px 22px 6px;overflow:auto}#dlg-e{padding:0 22px 14px}#dlg-e .alert{margin:0}
+dialog>footer{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:10px;padding:14px 22px;border-top:1px solid var(--line);background:#f4f7fb}
+@media print{body>*:not(dialog){display:none!important}dialog{position:static!important;box-shadow:none!important;width:auto!important;max-height:none!important}dialog>footer,.x{display:none!important}}
+
+.m{color:var(--muted);font-weight:400}.card h3{margin-bottom:6px}.card+.card{margin-top:16px}
+.kv{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px 22px;margin-top:12px;text-align:left}.kv dt{font-size:13px;color:var(--muted)}.kv dd{font-weight:600;overflow-wrap:anywhere}
+.cols3{display:grid;grid-template-columns:2fr 1fr 1.2fr;gap:16px}@media(max-width:700px){.cols3{grid-template-columns:1fr}}
+.acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.tgl{display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-top:1px solid var(--line)}.tgl input{width:20px;height:20px;margin-top:3px}.tgl small{display:block;color:var(--muted)}
+.card .note,.card .alert{margin:10px 0}
+</style>
+</head>
+<body>
+<aside class="sidebar" id="sidebar-root" aria-label="Portal navigation"></aside>
+<div class="scrim" id="scrim" hidden></div>
+<div class="main">
+  <header class="topbar">
+    <div class="topbar-left">
+      <button class="menu-btn" id="menu-btn" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="sidebar-root"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+      <div><span class="topbar-eyebrow">Online Portal</span><span class="topbar-page-title" id="topbar-title">Account Settings</span></div>
+    </div>
+    <div class="topbar-right"><span class="topbar-date" id="topbar-date"></span><div class="notif-wrap" id="notif-root"></div></div>
+  </header>
+  <main class="page-body">
+    <div class="page-head"><div><h2 id="page-title">Account Settings</h2><p id="page-subtitle"></p></div><div id="page-action"></div></div>
+    <div id="page-body"><div class="loading-inline"><span class="spin-sm"></span>Loading your settings…</div></div>
+  </main>
+</div>
+<dialog id="dlg" aria-labelledby="dlg-t">
+  <header><div><h3 id="dlg-t"></h3><p id="dlg-w"></p></div><button class="x" type="button" aria-label="Close" data-close>×</button></header>
+  <div id="dlg-b"></div><div id="dlg-e"></div><footer id="dlg-f"></footer>
+</dialog>
+<div class="auth-loading-overlay" id="auth-overlay" role="status"><div class="alo-title">Online Portal</div><div class="spin"></div><div>Verifying your session…</div></div>
+
+<script type="module">
+import { boot, db, auth, $, esc, has, STAFF, SELF, ATTY } from '/courts/online-services/portal/dashboard/assets/js/portal-shell.js?v=7';
+import { doc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+import { EmailAuthProvider, reauthenticateWithCredential, updatePassword, verifyBeforeUpdateEmail } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
+
+const { account, role, user } = await boot({ id: 'settings', title: 'Account Settings', subtitle: 'Your contact details, security, and notification choices.' });
+const root = $('page-body'), staff = has(STAFF, role), atty = has(ATTY, role), enforce = has(['Justice System User', 'Prosecuting Attorney', 'Legal Services User'], role);
+const ymd = v => { if (!v) return ''; const d = v.toDate ? v.toDate() : new Date(v); return isNaN(d) ? String(v) : d.toISOString().slice(0, 10); };
+const dob = ymd(account.dob || account.dateOfBirth || account.birthDate || account.birthdate);
+const A = account.address && typeof account.address === 'object' ? account.address : {};
+const P = { filings: true, hearings: true, financial: true, enforcement: true, review: true, ...(account.notificationPrefs || {}) };
+const f = (label, id, v = '', o = {}) => `<label class="f"><span>${label}</span><input id="${id}" type="${o.type || 'text'}" value="${esc(v)}"${o.ac ? ` autocomplete="${o.ac}"` : ''}${o.ro ? ' readonly' : ''}${o.max ? ` maxlength="${o.max}"` : ''}>${o.hint ? `<small class="m">${o.hint}</small>` : ''}</label>`;
+const msg = (id, t, ok = true) => { $(id).innerHTML = t ? `<div class="${ok ? 'note' : 'alert'}" role="${ok ? 'status' : 'alert'}">${esc(t)}</div>` : ''; };
+const toggle = (id, label, hint) => `<label class="opt tgl"><input type="checkbox" id="${id}" ${P[id.slice(2)] ? 'checked' : ''}><div><b>${label}</b><small>${hint}</small></div></label>`;
+let pinShown = false;
+function draw() {
+  root.innerHTML = `
+  <section class="card"><h3>Profile</h3><p class="m">Your name and email identify you on cases, so changing them goes through the steps below.</p>
+    <dl class="kv"><div><dt>Name</dt><dd>${esc(account.name || '—')}</dd></div><div><dt>Account type</dt><dd>${esc(role)}</dd></div><div><dt>Email</dt><dd>${esc(user.email || account.email || '—')}</dd></div>
+    ${atty && account.barNumber ? `<div><dt>Bar number</dt><dd>${esc(account.barNumber)}</dd></div>` : ''}${dob ? `<div><dt>Date of birth</dt><dd>${esc(new Date(dob + 'T12:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }))}</dd></div>` : ''}${account.mipassPin ? `<div><dt>Michigan PIN</dt><dd>${pinShown ? esc(account.mipassPin) : '••••••••'} <button class="btn outline sm" type="button" id="pin">${pinShown ? 'Hide' : 'Show'}</button></dd></div>` : ''}</dl>
+    <p class="m" style="margin-top:12px">To correct your name, date of birth, bar number or account type, contact the clerk’s office. These come from your account record and cannot be edited here.</p></section>
+
+  <section class="card"><h3>Contact details</h3><div id="m-contact"></div>
+    <div class="cols">${f('Phone', 's-phone', account.phone || '', { type: 'tel', ac: 'tel' })}${f(atty || staff ? 'Firm, office or agency' : 'Organization (optional)', 's-org', account.organization || '', { ac: 'organization' })}</div>
+    ${f('Street address', 's-street', A.street || '', { ac: 'address-line1' })}${f('Apartment, suite or unit (optional)', 's-unit', A.unit || '', { ac: 'address-line2' })}
+    <div class="cols3">${f('City', 's-city', A.city || '', { ac: 'address-level2' })}${f('State', 's-state', A.state || 'MI', { ac: 'address-level1', max: 2 })}${f('ZIP code', 's-zip', A.zip || '', { ac: 'postal-code', max: 10 })}</div>
+    <div class="acts"><button class="btn" type="button" id="save-contact">Save contact details</button></div></section>
+
+  <section class="card"><h3>Notifications</h3><p class="m">Choose what the portal tells you about. Notices that the court is required to send you cannot be turned off.</p><div id="m-prefs"></div>
+    ${toggle('p-filings', 'Filings', 'Decisions on filings you submitted.')}${toggle('p-hearings', 'Hearings', 'Hearings scheduled, moved or cancelled in your cases.')}${toggle('p-financial', 'Fines and fees', 'Assessments, due dates, late fees and payment confirmations.')}
+    ${enforce || staff ? toggle('p-enforcement', 'Enforcement', staff ? 'Warrant rulings and supervision reports.' : 'Rulings on your warrant requests and reports returned to you.') : ''}${staff ? toggle('p-review', 'Items waiting for my review', 'The counts shown beside Manage Filings and Enforcement administration.') : ''}
+    <div class="acts"><button class="btn" type="button" id="save-prefs">Save choices</button></div></section>
+
+  <section class="card"><h3>Password</h3><div id="m-pass"></div>
+    <div class="cols3">${f('Current password', 'pw-cur', '', { type: 'password', ac: 'current-password' })}${f('New password', 'pw-new', '', { type: 'password', ac: 'new-password', hint: 'At least 8 characters.' })}${f('Confirm new password', 'pw-con', '', { type: 'password', ac: 'new-password' })}</div>
+    <div class="acts"><button class="btn" type="button" id="save-pass">Change password</button></div></section>
+
+  <section class="card"><h3>Email address</h3><div id="m-mail"></div><p class="m">We send a link to the new address. Your email does not change until you open it.</p>
+    <div class="cols">${f('New email address', 'em-new', '', { type: 'email', ac: 'email' })}${f('Current password', 'em-pw', '', { type: 'password', ac: 'current-password' })}</div>
+    <div class="acts"><button class="btn outline" type="button" id="save-mail">Send verification link</button></div></section>`;
+  $('pin')?.addEventListener('click', () => { pinShown = !pinShown; draw(); });
+  $('save-contact').onclick = saveContact; $('save-prefs').onclick = savePrefs; $('save-pass').onclick = savePass; $('save-mail').onclick = saveMail;
+}
+const val = id => ($(id)?.value || '').trim();
+const busy = (b, on, t) => { b.disabled = on; b.dataset.l = b.dataset.l || b.textContent; b.textContent = on ? t : b.dataset.l; };
+async function saveContact(e) {
+  const b = e.currentTarget, phone = val('s-phone'), zip = val('s-zip'), state = val('s-state').toUpperCase();
+  if (phone && phone.replace(/\D/g, '').length < 10) return msg('m-contact', 'Enter a phone number with area code.', false);
+  if (zip && !/^\d{5}(-\d{4})?$/.test(zip)) return msg('m-contact', 'Enter a 5-digit ZIP code.', false);
+  if (state && !/^[A-Z]{2}$/.test(state)) return msg('m-contact', 'Enter the two-letter state abbreviation.', false);
+  busy(b, true, 'Saving…');
+  try { const p = { phone: phone || null, organization: val('s-org') || null, address: { street: val('s-street'), unit: val('s-unit'), city: val('s-city'), state, zip } }; await updateDoc(doc(db, 'accounts', account.uid), p); Object.assign(account, p); msg('m-contact', 'Contact details saved.'); }
+  catch (er) { console.error(er); msg('m-contact', er?.code === 'permission-denied' ? 'Your account could not be updated. The Firestore rules must let people update their own contact fields. (permission-denied)' : 'We could not save that. Check your connection and try again.', false); }
+  busy(b, false);
+}
+async function savePrefs(e) {
+  const b = e.currentTarget, keys = ['filings', 'hearings', 'financial', 'enforcement', 'review'], p = { ...P }; keys.forEach(k => { const c = $('p-' + k); if (c) p[k] = c.checked; });
+  busy(b, true, 'Saving…');
+  try { await updateDoc(doc(db, 'accounts', account.uid), { notificationPrefs: p }); Object.assign(P, p); msg('m-prefs', 'Your choices are saved.'); }
+  catch (er) { console.error(er); msg('m-prefs', 'We could not save your choices. Try again.', false); }
+  busy(b, false);
+}
+const authErr = er => ['auth/wrong-password', 'auth/invalid-credential', 'auth/invalid-login-credentials'].includes(er?.code) ? 'That password is not correct.' : er?.code === 'auth/too-many-requests' ? 'Too many attempts. Wait a few minutes and try again.' : er?.code === 'auth/weak-password' ? 'Choose a stronger password.' : er?.code === 'auth/requires-recent-login' ? 'For your security, sign out and sign in again, then retry.' : er?.code === 'auth/email-already-in-use' ? 'That email address is already in use.' : er?.code === 'auth/invalid-email' ? 'Enter a valid email address.' : 'We could not complete that. Try again.';
+async function savePass(e) {
+  const b = e.currentTarget, cur = $('pw-cur').value, nw = $('pw-new').value, con = $('pw-con').value;
+  if (!cur) return msg('m-pass', 'Enter your current password.', false); if (nw.length < 8) return msg('m-pass', 'The new password must be at least 8 characters.', false); if (nw !== con) return msg('m-pass', 'The new passwords do not match.', false); if (nw === cur) return msg('m-pass', 'Choose a password you have not used just now.', false);
+  busy(b, true, 'Changing…');
+  try { await reauthenticateWithCredential(user, EmailAuthProvider.credential(user.email, cur)); await updatePassword(user, nw); ['pw-cur', 'pw-new', 'pw-con'].forEach(i => $(i).value = ''); msg('m-pass', 'Your password has been changed.'); }
+  catch (er) { console.error(er); msg('m-pass', authErr(er), false); }
+  busy(b, false);
+}
+async function saveMail(e) {
+  const b = e.currentTarget, em = val('em-new'), pw = $('em-pw').value;
+  if (!/^\S+@\S+\.\S+$/.test(em)) return msg('m-mail', 'Enter a valid email address.', false); if (!pw) return msg('m-mail', 'Enter your current password.', false);
+  busy(b, true, 'Sending…');
+  try { await reauthenticateWithCredential(user, EmailAuthProvider.credential(user.email, pw)); await verifyBeforeUpdateEmail(user, em); $('em-pw').value = ''; msg('m-mail', `We sent a link to ${em}. Open it to finish the change.`); }
+  catch (er) { console.error(er); msg('m-mail', authErr(er), false); }
+  busy(b, false);
+}
+draw();
+
+</script>
+</body>
+</html>

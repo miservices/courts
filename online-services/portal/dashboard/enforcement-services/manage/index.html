@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Enforcement administration | Online Portal</title>
+<link rel="icon" type="image/png" href="/courts/images/favicon.png">
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=Source+Serif+4:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/courts/online-services/portal/dashboard/assets/css/dashboard.css?v=5">
+<style>
+.m{color:var(--muted);font-weight:400}.mt{margin-top:14px}
+.tools{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px;align-items:center}.tools .in{flex:1;min-width:200px;width:auto}.tools select.in{flex:0 0 auto;min-width:0}
+.chk{display:flex;gap:8px;align-items:center;font-weight:600;color:var(--navy);white-space:nowrap}.chk input{width:18px;height:18px}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}.chips button{font:inherit;font-weight:600;font-size:14px;padding:6px 14px;border-radius:16px;border:1px solid var(--line);background:#fff;color:var(--navy);cursor:pointer}.chips button.on{background:var(--navy);color:#fff;border-color:var(--navy)}.chips i{font-style:normal;opacity:.75;margin-left:6px}
+.tabs i{font-style:normal;font-weight:500;color:var(--muted);margin-left:6px}
+tbody tr[data-a]{cursor:pointer}tbody tr[data-a]:hover{background:#f6f9fd}
+td small,th small{display:block;color:var(--muted);font-weight:400}.num{text-align:right;white-space:nowrap}th.num{text-align:right}.pills{display:flex;gap:6px;flex-wrap:wrap}
+.amts{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px 18px;margin-bottom:14px}.amts div{display:grid;gap:2px}.amts dt{font-size:13px;color:var(--muted)}.amts dd{font-weight:700;font-size:17px;color:var(--navy)}.amts dd.owe{font-size:22px}
+.alert-line{border-left:4px solid #b7791f;background:#fdf6e7;color:#6e4a10;border-radius:4px;padding:10px 14px;margin-bottom:10px}.alert-line.red{border-color:#b3261e;background:#fdf1f0;color:#7a1b13}
+.note{border-left:4px solid var(--navy);background:#eef3f9;border-radius:4px;padding:10px 14px;margin-bottom:12px;color:var(--navy)}
+.acts{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}.sec{margin:18px 0 8px;font-size:16px;color:var(--navy)}
+.kv{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px 22px;margin-bottom:6px;text-align:left}.kv dt{font-size:13px;color:var(--muted)}.kv dd{font-weight:600;overflow-wrap:anywhere}
+.rcpt{text-align:center;padding:6px 0 4px}.rcpt .big{font-family:var(--font-head);font-size:34px;color:var(--navy);font-weight:700;margin:6px 0}.rcpt .tick{width:54px;height:54px;border-radius:50%;background:#e4f3ea;color:#2f7d4f;font-size:30px;line-height:54px;margin:0 auto 6px}
+.quote{background:#f4f7fb;border-radius:4px;padding:10px 14px;margin-bottom:16px;color:var(--navy)}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:16px}@media(max-width:700px){.cols{grid-template-columns:1fr}}
+dialog{border:0;padding:0;border-radius:6px;width:min(660px,calc(100vw - 24px));max-height:calc(100vh - 48px);box-shadow:0 24px 60px rgba(9,22,40,.35);color:var(--text);font:inherit;overflow:hidden;margin:auto}
+dialog[open]{display:flex;flex-direction:column}dialog.wide{width:min(900px,calc(100vw - 24px))}dialog::backdrop{background:rgba(9,22,40,.55)}
+dialog>header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:16px 22px;border-bottom:1px solid var(--line);background:#f4f7fb}dialog>header h3{font-size:19px}dialog>header p{color:var(--muted);margin-top:2px}
+.x{font:inherit;font-size:22px;line-height:1;width:36px;height:36px;border:1px solid var(--line);border-radius:4px;background:#fff;cursor:pointer;color:var(--navy);flex-shrink:0}.x:hover{background:#eef3f9}
+#dlg-b{padding:20px 22px 6px;overflow:auto}#dlg-e{padding:0 22px 14px}#dlg-e .alert{margin:0}
+dialog>footer{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:10px;padding:14px 22px;border-top:1px solid var(--line);background:#f4f7fb}
+@media print{body>*:not(dialog){display:none!important}dialog{position:static!important;box-shadow:none!important;width:auto!important;max-height:none!important}dialog>footer,.x{display:none!important}}
+
+.plist{display:grid;gap:8px;padding:10px 12px;border:1px solid var(--line);border-radius:4px;background:#fafcfe}
+.stats .stat.alert-stat b{color:#b3261e}
+.sec{margin:16px 0 6px;font-size:16px;color:var(--navy)}
+.card h3{margin-bottom:10px}.tbar{display:flex;gap:12px;flex-wrap:wrap;justify-content:space-between;align-items:center;margin-bottom:10px}.tbar .in{max-width:280px}
+tbody tr[data-a]{cursor:pointer}tbody tr[data-a]:hover{background:#f6f9fd}
+.sh-head dd,.sh-head dt,.kv dd,.kv dt{margin:0}
+</style>
+</head>
+<body>
+<aside class="sidebar" id="sidebar-root" aria-label="Portal navigation"></aside>
+<div class="scrim" id="scrim" hidden></div>
+<div class="main">
+  <header class="topbar">
+    <div class="topbar-left">
+      <button class="menu-btn" id="menu-btn" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="sidebar-root"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+      <div><span class="topbar-eyebrow">Online Portal</span><span class="topbar-page-title" id="topbar-title">Enforcement administration</span></div>
+    </div>
+    <div class="topbar-right"><span class="topbar-date" id="topbar-date"></span><div class="notif-wrap" id="notif-root"></div></div>
+  </header>
+  <main class="page-body">
+    <div class="page-head"><div><h2 id="page-title">Enforcement administration</h2><p id="page-subtitle"></p></div><div id="page-action"></div></div>
+    <div id="page-body"><div class="loading-inline"><span class="spin-sm"></span>Loading enforcement administration…</div></div>
+  </main>
+</div>
+<dialog id="dlg" aria-labelledby="dlg-t">
+  <header><div><h3 id="dlg-t"></h3><p id="dlg-w"></p></div><button class="x" type="button" aria-label="Close" data-close>×</button></header>
+  <div id="dlg-b"></div><div id="dlg-e"></div><footer id="dlg-f"></footer>
+</dialog>
+<div class="auth-loading-overlay" id="auth-overlay" role="status"><div class="alo-title">Online Portal</div><div class="spin"></div><div>Verifying your session…</div></div>
+
+<script type="module">
+import { boot, db, $, esc, has, STAFF, DISTRICT, scopeOf, colFor, DISTRICT_COURT } from '/courts/online-services/portal/dashboard/assets/js/portal-shell.js?v=7';
+import { collection, getDocs, doc, runTransaction, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+import { partiesOf, caption, isDefendantSide, addEvent, iso, fmtD, fmtDT, uid, isJudicial, isChief, governs, presidingOf, reviewerUidOf, is } from '/courts/online-services/portal/dashboard/assets/js/court.js?v=1';
+
+const { account, role } = await boot({ id: 'menforce', title: 'Enforcement administration', subtitle: 'Warrants, supervision orders, and reports from probation, pretrial services and community service sites.' });
+const root = $('page-body');
+if (!has(STAFF, role)) root.innerHTML = '<section class="card"><div class="empty"><strong>Court staff only</strong></div></section>';
+else if (!has(DISTRICT, role)) root.innerHTML = '<section class="card"><div class="empty"><strong>District court only</strong><p>Warrants and supervision orders are handled in the district court.</p></div></section>';
+else await main();
+
+async function main() {
+/* ── Shared dialog and form helpers ─────────────────────────────────── */
+class UserError extends Error {} const bad = m => { throw new UserError(m); }, need = (c, m) => { if (!c) bad(m); };
+const errText = e => e instanceof UserError ? e.message : e?.code === 'permission-denied' ? 'Your account is not allowed to save this. The Firestore rules must allow this change. (permission-denied)' : `We could not save this. Check your connection and try again.${e?.code ? ' (' + e.code + ')' : ''}`;
+const dlg = $('dlg'); let dlgOk = null, dlgChange = null;
+function modal({ title, sub = '', body, ok = 'Save', okCls = '', wide = false, onOk, onChange, extra = '' }) {
+  dlgChange = onChange || null; $('dlg-t').textContent = title; $('dlg-w').textContent = sub; $('dlg-b').innerHTML = body; $('dlg-e').innerHTML = ''; dlg.classList.toggle('wide', wide); dlgOk = onOk;
+  $('dlg-f').innerHTML = `${extra}<button class="btn outline" type="button" data-close>${onOk ? 'Cancel' : 'Close'}</button>${onOk ? `<button class="btn ${okCls}" type="button" id="dlg-ok">${ok}</button>` : ''}`;
+  if (!dlg.open) dlg.showModal(); if (onOk) dlg.querySelector('#dlg-b input:not([type=hidden]):not([type=radio]):not([type=checkbox]):not([readonly]),#dlg-b select')?.focus();
+}
+const closeDlg = () => { dlg.close(); draw(); };
+async function runOk() { const b = $('dlg-ok'), label = b.textContent; b.disabled = true; b.textContent = 'Saving…'; $('dlg-e').innerHTML = '';
+  try { await dlgOk(); } catch (e) { if (!(e instanceof UserError)) console.error(e); $('dlg-e').innerHTML = `<div class="alert" role="alert">${esc(errText(e))}</div>`; b.disabled = false; b.textContent = label; } }
+dlg.addEventListener('click', e => { if (e.target === dlg || e.target.closest('[data-close]')) closeDlg(); else if (e.target.closest('#dlg-ok')) runOk(); else { const el = e.target.closest('[data-a]'); if (el) act(el.dataset.a); } });
+dlg.addEventListener('input', e => dlgChange?.(e)); dlg.addEventListener('change', e => dlgChange?.(e));
+const val = id => ($(id)?.value || '').trim();
+const fld = (label, id, v = '', o = {}) => `<label class="f"><span>${label}</span><input id="${id}" type="${o.type || 'text'}" value="${esc(v)}"${o.step ? ` step="${o.step}"` : ''}${o.min != null ? ` min="${o.min}"` : ''}${o.list ? ` list="${o.list}"` : ''}${o.ph ? ` placeholder="${esc(o.ph)}"` : ''}${o.ro ? ' readonly' : ''}>${o.hint ? `<small class="m">${o.hint}</small>` : ''}</label>`;
+const area = (label, id, v = '', ph = '') => `<label class="f"><span>${label}</span><textarea id="${id}" rows="4" placeholder="${esc(ph)}">${esc(v)}</textarea></label>`;
+const selF = (label, id, opts, v) => `<label class="f"><span>${label}</span><select id="${id}">${opts.map(o => { const [ov, ol] = Array.isArray(o) ? o : [o, o]; return `<option value="${esc(ov)}"${ov === v ? ' selected' : ''}>${esc(ol)}</option>`; }).join('')}</select></label>`;
+const g2 = (...c) => `<div class="cols">${c.join('')}</div>`, dlist = (id, l) => `<datalist id="${id}">${l.map(x => `<option value="${esc(x)}">`).join('')}</datalist>`;
+const chk = (id, label, on) => `<label class="chk"><input type="checkbox" id="${id}" ${on ? 'checked' : ''}> ${label}</label>`;
+const ymd = (d = new Date()) => { const z = new Date(d.getTime() - d.getTimezoneOffset() * 6e4); return z.toISOString().slice(0, 10); };
+const mapParties = (p, fn) => Array.isArray(p) ? p.map(fn) : p && typeof p === 'object' ? Object.fromEntries(Object.entries(p).map(([k, v]) => [k, Array.isArray(v) ? v.map(fn) : v && typeof v === 'object' && v.name ? fn(v) : v])) : p;
+const PILL = { Requested: 'mid', Issued: 'live', Denied: 'bad', Executed: 'done', Recalled: 'plain', Expired: 'plain', 'Pending review': 'mid', Accepted: 'done', Returned: 'warn', Active: 'live', Completed: 'done', Revoked: 'bad', Terminated: 'plain' };
+const pillOf = s => `<span class="pill ${PILL[s] || 'plain'}">${esc(s)}</span>`;
+const stat = (l, v, al) => `<div class="stat ${al ? 'alert-stat' : ''}"><span>${l}</span><b>${v}</b></div>`;
+const notAllowed = (t, m) => `<section class="card"><div class="empty"><strong>${t}</strong><p>${m}</p></div></section>`;
+// Updates one case in a transaction (adds docket events and summary fields) and returns the new case data.
+async function editCase(c, fn) {
+  const r = doc(db, colFor(c.court), c._id), at = new Date();
+  const next = await runTransaction(db, async tx => { const s = await tx.get(r); if (!s.exists()) bad('This case no longer exists.'); const d = s.data(), out = fn(d, at) || {}, p = { ...(out.patch || {}), dates: { ...(d.dates || {}), lastUpdated: iso(at) } };
+    if (out.event) p.events = addEvent(d.events, { judge: d.judge || null, enteredBy: account.name, enteredByRole: role, ...out.event }); tx.update(r, p); return { ...d, ...p }; });
+  Object.assign(c, next); return next;
+}
+
+const judicial = isJudicial(role), chief = isChief(role), scope = scopeOf(role);
+let cases = [], accts = [], warrants = [], orders = [], logs = [], returns = [], tab = 'requests', note = '', noteKind = 'ok', q = '', wf = 'Issued', of = 'Active', rv = judicial && !chief ? 'mine' : 'all';
+const safe = p => p.catch(() => ({ docs: [] })), rows = s => s.docs.map(d => ({ ...d.data(), _id: d.id }));
+async function load() {
+  const [a, b, w, o, l, r] = await Promise.all(['cases', 'accounts', 'warrants', 'supervisionOrders', 'supervisionLogs', 'serviceReturns'].map(n => safe(getDocs(collection(db, n)))));
+  cases = rows(a); accts = b.docs.map(d => ({ uid: d.id, ...d.data() })); warrants = rows(w).filter(x => !x.court || x.court === DISTRICT_COURT); orders = rows(o); logs = rows(l); returns = rows(r);
+}
+const ctx = () => ({ account, role, accts, scope });
+const caseById = id => cases.find(c => c._id === id || c.caseId === id), openCases = () => cases.filter(c => !/closed|disposed/i.test(c.status || ''));
+const caseLabel = c => `${c.caseId} — ${caption(c)}`, findCase = v => cases.find(c => caseLabel(c) === v || c.caseId === String(v).trim());
+const myCases = () => openCases().filter(c => governs(ctx(), c));
+const mineSet = () => { const s = new Set([account.uid]); accts.filter(a => a.supervisorUid === account.uid && is(['Magistrate'], a.role)).forEach(a => s.add(a.uid)); return s; };
+const forMe = l => judicial && ((l.reviewerUid && mineSet().has(l.reviewerUid)) || (chief && !l.reviewerUid));
+const money = n => '$' + Number(n || 0).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+const kvl = r => `<dl class="kv">${r.filter(x => x[1] !== undefined && x[1] !== null && x[1] !== '').map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join('')}</dl>`;
+const caseCell = (id, cs) => { const c = cs || caseById(id); return `<b>${esc(c?.caseId || id || '—')}</b>${c ? `<small>${esc(caption(c))}</small>` : ''}`; };
+const sumW = w => ({ id: w.id || w._id, type: w.type, subject: w.subject || null, status: w.status, issuedAt: w.decision?.at || null, bond: w.decision?.bond || null, issuedBy: w.decision?.by || null });
+const sumO = o => ({ id: o._id || o.id, type: o.type, subject: o.subject, status: o.status, hours: o.hours || null, hoursCompleted: o.hoursCompleted || 0, startDate: o.startDate || null, endDate: o.endDate || null });
+const upsert = (arr, item) => { const a = [...(arr || [])], k = a.findIndex(x => x.id === item.id); k < 0 ? a.push(item) : a[k] = { ...a[k], ...item }; return a; };
+
+/* ── Views ──────────────────────────────────────────────────────────── */
+const requestsList = () => warrants.filter(w => w.status === 'Requested').sort((x, y) => (y.urgency === 'Urgent') - (x.urgency === 'Urgent') || String(x.requestedAt).localeCompare(String(y.requestedAt)));
+const reviewList = () => logs.filter(l => l.status === 'Pending review' && (rv === 'all' || forMe(l))).sort((x, y) => String(x.createdAt).localeCompare(String(y.createdAt)));
+function draw() {
+  const rq = requestsList().length, rvMine = logs.filter(l => l.status === 'Pending review' && forMe(l)).length;
+  const tabs = [['requests', 'Warrant requests', rq], ['warrants', 'Warrants'], ['orders', 'Supervision orders'], ['reviews', 'Reports to review', rvMine], ['service', 'Service returns']];
+  $('page-action').innerHTML = judicial ? '<button class="btn outline" type="button" data-a="issue">Issue a warrant</button> <button class="btn" type="button" data-a="order">Order supervision</button>' : '';
+  root.innerHTML = `${note ? `<div class="${noteKind === 'ok' ? 'note' : 'alert-line red'}" role="status">${esc(note)}</div>` : ''}
+    <div class="stats">${stat('Warrant requests waiting', rq, rq > 0 && judicial)}${stat('Active warrants', warrants.filter(w => w.status === 'Issued').length)}${stat('Active supervision orders', orders.filter(o => o.status === 'Active').length)}${stat('Reports for me to review', rvMine, rvMine > 0)}</div>
+    <div class="tabs" role="tablist">${tabs.map(([k, l, n]) => `<button type="button" role="tab" aria-selected="${tab === k}" class="${tab === k ? 'on' : ''}" data-a="tab:${k}">${l}${n ? `<i>${n}</i>` : ''}</button>`).join('')}</div>
+    ${tab === 'requests' ? requestsView() : tab === 'warrants' ? warrantsView() : tab === 'orders' ? ordersView() : tab === 'reviews' ? reviewsView() : serviceView()}`;
+}
+const filt = (...v) => !q || v.join(' ').toLowerCase().includes(q.toLowerCase());
+const search = ph => `<input class="in" id="f-q" type="search" placeholder="${ph}" aria-label="Search" value="${esc(q)}">`;
+function requestsView() {
+  const l = requestsList().filter(w => filt(w.caseId, w.subject, w.type, w.requestedBy));
+  return `<section class="card"><div class="tbar"><div><h3>Warrant requests</h3><p class="m">Any judge or magistrate may rule on a request. The first ruling decides it.${judicial ? '' : ' Only judicial officers can rule.'}</p></div>${search('Search requests')}</div>
+    ${!l.length ? '<div class="empty"><strong>No requests waiting</strong></div>' : `<div class="table-scroll"><table><thead><tr><th>Warrant</th><th>Case</th><th>Requested by</th><th>Requested</th><th></th></tr></thead><tbody>${l.map(w => `<tr data-a="wopen:${esc(w._id)}"><td><b>${esc(w.type)}</b><small>${esc(w.subject || w.reference || '')}</small></td><td>${w.caseFirestoreId ? caseCell(w.caseFirestoreId) : '<span class="m">No case</span>'}</td><td>${esc(w.requestedBy)}<small>${esc(w.agency || w.requestedByRole || '')}</small></td><td>${esc(fmtD(w.requestedAt))}</td><td>${w.urgency === 'Urgent' ? '<span class="pill bad">Urgent</span>' : ''}</td></tr>`).join('')}</tbody></table></div>`}</section>`;
+}
+function warrantsView() {
+  const l = warrants.filter(w => w.status !== 'Requested' && (wf === 'All' || w.status === wf) && filt(w.caseId, w.subject, w.type, w.decision?.by)).sort((x, y) => String(y.decision?.at || '').localeCompare(String(x.decision?.at || '')));
+  return `<section class="card"><div class="tbar"><div class="chips" style="margin:0">${['Issued', 'Executed', 'Recalled', 'Denied', 'All'].map(k => `<button type="button" class="${wf === k ? 'on' : ''}" data-a="wf:${k}">${k}</button>`).join('')}</div>${search('Search by case, name or judge')}</div>
+    ${!l.length ? '<div class="empty"><strong>No warrants here</strong></div>' : `<div class="table-scroll"><table><thead><tr><th>Subject</th><th>Warrant</th><th>Case</th><th>Status</th><th>Decided</th><th class="num">Bond</th></tr></thead><tbody>${l.map(w => `<tr data-a="wopen:${esc(w._id)}"><td><b>${esc(w.subject || (w.type === 'Search Warrant' ? 'Search warrant' : '—'))}</b></td><td>${esc(w.type)}</td><td>${w.caseFirestoreId ? caseCell(w.caseFirestoreId) : '<span class="m">No case</span>'}</td><td>${pillOf(w.status)}</td><td>${esc(w.decision?.by || '—')}<small>${esc(fmtD(w.decision?.at))}</small></td><td class="num">${w.decision?.bond ? money(w.decision.bond) : '—'}</td></tr>`).join('')}</tbody></table></div>`}</section>`;
+}
+const progress = o => o.type === 'Community Service' ? `${o.hoursCompleted || 0} of ${o.hours} hours` : o.endDate ? `${fmtD(o.startDate)} to ${fmtD(o.endDate)}` : fmtD(o.startDate);
+function ordersView() {
+  const l = orders.filter(o => (of === 'All' || o.status === of) && filt(o.caseId, o.subject, o.type)).sort((x, y) => String(y.createdAt).localeCompare(String(x.createdAt)));
+  return `<section class="card"><div class="tbar"><div class="chips" style="margin:0">${['Active', 'Completed', 'Revoked', 'All'].map(k => `<button type="button" class="${of === k ? 'on' : ''}" data-a="of:${k}">${k}</button>`).join('')}</div>${search('Search by person or case')}</div>
+    ${!l.length ? `<div class="empty"><strong>No supervision orders</strong>${judicial ? '<p>Choose Order supervision to order community service, probation or pretrial services in one of your cases.</p>' : ''}</div>` : `<div class="table-scroll"><table><thead><tr><th>Person</th><th>Order</th><th>Case</th><th>Progress</th><th>Reports go to</th><th>Status</th></tr></thead><tbody>${l.map(o => `<tr data-a="oopen:${esc(o._id)}"><td><b>${esc(o.subject)}</b></td><td>${esc(o.type)}</td><td>${caseCell(o.caseFirestoreId)}</td><td>${esc(progress(o))}</td><td>${esc(o.judgeName || '—')}</td><td>${pillOf(o.status)}</td></tr>`).join('')}</tbody></table></div>`}</section>`;
+}
+const summary = x => x.type === 'community-service' ? `${x.f?.hours || 0} hours at ${x.f?.site || '—'}` : `Compliance: ${x.f?.compliance || '—'}`;
+const TYPE_LABEL = { 'community-service': 'Community service log', probation: 'Probation report', pretrial: 'Pretrial services report' };
+function reviewsView() {
+  const l = reviewList().filter(x => filt(x.caseId, x.subject, x.by));
+  return `<section class="card"><div class="tbar"><div><h3>Reports to review</h3><p class="m">Reports go to the judge or magistrate presiding over the case${chief ? '. As chief, you can also review reports with no presiding officer' : ''}.</p></div><div class="acts">${judicial ? `<select class="in" id="f-rv" aria-label="Which reports"><option value="mine" ${rv === 'mine' ? 'selected' : ''}>For me</option><option value="all" ${rv === 'all' ? 'selected' : ''}>Everyone's</option></select>` : ''}${search('Search')}</div></div>
+    ${!l.length ? '<div class="empty"><strong>Nothing to review</strong></div>' : `<div class="table-scroll"><table><thead><tr><th>Submitted</th><th>Report</th><th>Person</th><th>Details</th><th>Submitted by</th><th>Goes to</th></tr></thead><tbody>${l.map(x => `<tr data-a="lopen:${esc(x._id)}"><td>${esc(fmtD(x.createdAt))}</td><td>${esc(TYPE_LABEL[x.type] || x.type)}</td><td><b>${esc(x.subject)}</b><small>${esc(x.caseId || '')}</small></td><td>${esc(summary(x))}${x.f?.compliance === 'Major violation' ? ' <span class="pill bad">Major violation</span>' : ''}</td><td>${esc(x.by)}</td><td>${esc(x.reviewerName || '—')}</td></tr>`).join('')}</tbody></table></div>`}</section>`;
+}
+function serviceView() {
+  const l = [...returns].filter(r => filt(r.caseId, (r.parties || []).join(' '), r.by)).sort((x, y) => String(y.date).localeCompare(String(x.date))).slice(0, 200);
+  return `<section class="card"><div class="tbar"><h3>Service of process</h3>${search('Search by case or name')}</div>${!l.length ? '<div class="empty"><strong>No service has been logged</strong></div>' : `<div class="table-scroll"><table><thead><tr><th>Date</th><th>Case</th><th>Persons</th><th>Documents</th><th>Method</th><th>By</th><th>Result</th></tr></thead><tbody>${l.map(r => `<tr><td>${esc(fmtD(r.date))}</td><td>${caseCell(r.caseFirestoreId)}</td><td>${esc((r.parties || []).join(', '))}</td><td>${esc(r.documents || '—')}</td><td>${esc(r.method)}</td><td>${esc(r.by)}</td><td><span class="pill ${r.result === 'Served' ? 'done' : 'warn'}">${esc(r.result)}</span></td></tr>`).join('')}</tbody></table></div>`}</section>`;
+}
+
+/* ── Warrants ───────────────────────────────────────────────────────── */
+function warrantModal(w) {
+  const c = w.caseFirestoreId && caseById(w.caseFirestoreId), open = w.status === 'Requested', d = w.decision, canRule = judicial && open, canRecall = judicial && w.status === 'Issued' && (!c || governs(ctx(), c) || d?.byUid === account.uid);
+  const pres = c ? presidingOf(c, accts) : null, today = ymd(), exp5 = ymd(new Date(Date.now() + 5 * 864e5));
+  modal({ title: `${w.type}${w.subject ? ' — ' + w.subject : ''}`, sub: `${w.caseId ? w.caseId + ' · ' : ''}${w.status}`, onOk: canRule ? async () => {
+      const ruling = dlg.querySelector('input[name=w-ruling]:checked')?.value; need(ruling, 'Choose Issue or Deny.'); const notes = val('w-notes'); if (ruling === 'Denied') need(notes, 'Enter the reason the request is denied.');
+      const bond = ruling === 'Issued' && w.type !== 'Search Warrant' && val('w-bond') ? Number(val('w-bond')) : null, at = iso(), exp = ruling === 'Issued' ? val('w-exp') || null : null;
+      if (ruling === 'Issued' && w.type !== 'Search Warrant') need(w.caseFirestoreId, 'An arrest warrant must be linked to a case.');
+      const dec = { ruling, by: account.name, byUid: account.uid, role, at, notes: notes || null, bond }, wr = doc(db, 'warrants', w._id);
+      await runTransaction(db, async tx => { const s = await tx.get(wr); if (!s.exists() || s.data().status !== 'Requested') bad('Another judicial officer has already ruled on this request.'); tx.update(wr, { status: ruling, decision: dec, ...(exp ? { expiresAt: exp } : {}), seenByRequester: false }); });
+      Object.assign(w, { status: ruling, decision: dec, ...(exp ? { expiresAt: exp } : {}) });
+      if (c && ruling === 'Issued') await editCase(c, d0 => ({ ...(w.type === 'Search Warrant' ? {} : { patch: { warrants: upsert(d0.warrants, sumW(w)) } }), event: { description: `${w.type} issued${w.subject ? ' for ' + w.subject : ''}${bond ? `, bond ${money(bond)}` : ''}.`, comment: notes || null, sealed: w.type === 'Search Warrant' } }));
+      note = ruling === 'Issued' ? `${w.type} issued.` : 'The request was denied.'; noteKind = 'ok'; dlg.close(); draw(); } : null, ok: 'Enter ruling', okCls: 'good', wide: true,
+    extra: canRecall ? `<button class="btn outline" type="button" data-a="recall:${esc(w._id)}">Recall warrant</button>` : '',
+    body: `<div class="pills" style="margin-bottom:12px">${pillOf(w.status)} ${w.urgency === 'Urgent' ? '<span class="pill bad">Urgent</span>' : ''}</div>` + kvl([['Case', w.caseId ? `${w.caseId} — ${w.caseCaption || ''}` : w.reference ? 'No case: ' + w.reference : ''], ['Presiding officer', pres?.name || c?.judge], ['Requested by', `${w.requestedBy}${w.agency ? ', ' + w.agency : ''}`], ['Requested', fmtDT(w.requestedAt)], ['Offense', w.offense], ['Bond requested', w.requestedBond ? money(w.requestedBond) : ''], ['Place to be searched', w.place], ['Items to be seized', w.items], ['Expires', w.expiresAt ? fmtD(w.expiresAt) : '']])
+      + `<h4 class="sec">Probable cause</h4><p>${esc(w.probableCause)}</p>${w.supportLink ? `<p><a href="${esc(w.supportLink)}" target="_blank" rel="noopener">Supporting documents</a></p>` : ''}`
+      + (d && !canRule ? `<h4 class="sec">Ruling</h4>${kvl([['Decision', d.ruling], ['By', `${d.by}${d.role ? ', ' + d.role : ''}`], ['Date', fmtDT(d.at)], ['Bond', d.bond ? money(d.bond) : '']])}${d.notes ? `<p>${esc(d.notes)}</p>` : ''}` : '')
+      + ((w.returns || []).length ? `<h4 class="sec">Returns</h4>` + w.returns.map(r => `<div class="note"><small>${esc(fmtDT(r.at))} · ${esc(r.by)}</small><b>${esc(r.outcome)}</b>${r.notes ? '<br>' + esc(r.notes) : ''}</div>`).join('') : '')
+      + (canRule ? `<h4 class="sec">Your ruling</h4><label class="opt"><input type="radio" name="w-ruling" value="Issued"><div><b>Issue the warrant</b><small>${w.type === 'Search Warrant' ? 'The docket entry is sealed.' : 'The warrant is entered on the case docket.'}</small></div></label><label class="opt"><input type="radio" name="w-ruling" value="Denied"><div><b>Deny the request</b><small>Give the reason below. The requester is told.</small></div></label>`
+        + (w.type === 'Search Warrant' ? '' : fld('Bond ($, optional)', 'w-bond', w.requestedBond ?? '', { type: 'number', step: '0.01', min: 0 })) + fld('Expires (optional)', 'w-exp', w.type === 'Search Warrant' ? exp5 : '', { type: 'date', min: today }) + area('Findings or reason (required when denying)', 'w-notes') : '') });
+}
+function recallModal(w) {
+  const c = w.caseFirestoreId && caseById(w.caseFirestoreId);
+  modal({ title: 'Recall warrant', sub: `${w.type}${w.subject ? ' — ' + w.subject : ''}`, ok: 'Recall', okCls: 'bad', body: area('Reason (required)', 'rc-why', '', 'e.g. Person appeared voluntarily; warrant quashed.'),
+    onOk: async () => { const why = val('rc-why'); need(why, 'Enter the reason.'); const rec = { at: iso(), by: account.name, byUid: account.uid, reason: why };
+      await updateDoc(doc(db, 'warrants', w._id), { status: 'Recalled', recall: rec }); Object.assign(w, { status: 'Recalled', recall: rec });
+      if (c) await editCase(c, d => ({ patch: { warrants: (d.warrants || []).map(x => x.id === w.id ? { ...x, status: 'Recalled' } : x) }, event: { description: `${w.type} recalled${w.subject ? ' for ' + w.subject : ''}.`, comment: why, sealed: w.type === 'Search Warrant' } }));
+      note = 'Warrant recalled.'; noteKind = 'ok'; dlg.close(); draw(); } });
+}
+function issueModal() {
+  let c = null; const mine = myCases();
+  modal({ title: 'Issue a warrant', sub: 'For cases you preside over, or any case if you are the chief. The warrant is always linked to the case.', ok: 'Issue warrant', okCls: 'good', wide: true,
+    body: selF('Type', 'i-type', ['Arrest Warrant', 'Bench Warrant', 'Search Warrant'], 'Bench Warrant') + fld('Case', 'i-case', '', { ph: 'Start typing a case number or name', list: 'i-cases' }) + dlist('i-cases', mine.map(caseLabel))
+      + `<div id="i-pers">${selF('Person', 'i-subj', [['', 'Choose a case first']], '')}<div id="i-othrow" hidden>${fld('Full name', 'i-other')}</div>${g2(fld('Offense or reason', 'i-off', '', { ph: 'e.g. Failure to appear at hearing' }), fld('Bond ($, optional)', 'i-bond', '', { type: 'number', step: '0.01', min: 0 }))}</div>`
+      + `<div id="i-srch" hidden>${fld('Place, person or vehicle to be searched', 'i-place')}${fld('Items to be seized', 'i-items')}</div>` + fld('Expires (optional)', 'i-exp', '', { type: 'date' }) + area('Findings or notes', 'i-notes'),
+    onChange: e => { const id = e.target.id; if (id === 'i-type') { const s = e.target.value === 'Search Warrant'; $('i-pers').hidden = s; $('i-srch').hidden = !s; }
+      if (id === 'i-case') { c = mine.find(k => caseLabel(k) === e.target.value || k.caseId === e.target.value.trim()); const ps = c ? partiesOf(c) : [], def = ps.filter(isDefendantSide), rest = ps.filter(p => !isDefendantSide(p)); $('i-subj').innerHTML = c ? [...def, ...rest].map(p => `<option value="${esc(p.name)}">${esc(p.name)} — ${esc(p.role)}</option>`).join('') + '<option value="__other">Someone else</option>' : '<option value="">Choose a case first</option>'; }
+      if (id === 'i-subj') $('i-othrow').hidden = e.target.value !== '__other'; },
+    onOk: async () => { c = mine.find(k => caseLabel(k) === val('i-case') || k.caseId === val('i-case')); need(c, 'Choose one of your cases. A warrant must be linked to a case.'); const type = val('i-type'), search = type === 'Search Warrant', at = iso();
+      const w = { type, status: 'Issued', court: DISTRICT_COURT, caseId: c.caseId, caseFirestoreId: c._id, caseCaption: caption(c), requestedBy: account.name, requestedByUid: account.uid, requestedByRole: role, requestedAt: at, issuedOnOwnMotion: true, probableCause: val('i-notes') || 'Issued by the court on its own motion.', urgency: 'Normal', seenByRequester: true };
+      if (search) { need(val('i-place'), 'Say what or who is to be searched.'); need(val('i-items'), 'List the items to be seized.'); Object.assign(w, { place: val('i-place'), items: val('i-items') }); }
+      else { let s = val('i-subj'); if (s === '__other') s = val('i-other'); need(s, 'Choose or enter the person.'); need(val('i-off'), 'Enter the offense or reason.'); Object.assign(w, { subject: s, offense: val('i-off') }); }
+      const bond = !search && val('i-bond') ? Number(val('i-bond')) : null; w.decision = { ruling: 'Issued', by: account.name, byUid: account.uid, role, at, notes: val('i-notes') || null, bond }; if (val('i-exp')) w.expiresAt = val('i-exp');
+      const id = uid('WRT'); w.id = id; await setDoc(doc(db, 'warrants', id), w); warrants.push({ ...w, _id: id });
+      await editCase(c, d => ({ ...(search ? {} : { patch: { warrants: upsert(d.warrants, sumW(w)) } }), event: { description: `${type} issued${w.subject ? ' for ' + w.subject : ''}${bond ? `, bond ${money(bond)}` : ''}.`, comment: val('i-notes') || null, sealed: search } }));
+      note = `${type} issued in ${c.caseId}.`; noteKind = 'ok'; dlg.close(); draw(); } });
+}
+
+/* ── Supervision orders ─────────────────────────────────────────────── */
+const FREQ = ['Weekly', 'Every two weeks', 'Monthly'];
+function orderModal() {
+  let c = null; const mine = myCases();
+  if (!mine.length) { note = 'You do not preside over any open cases to order supervision in.'; noteKind = 'bad'; return draw(); }
+  modal({ title: 'Order supervision', sub: 'Community service, probation or pretrial services. Reports go to the judge or magistrate presiding over the case.', ok: 'Enter order', okCls: 'good', wide: true,
+    body: fld('Case', 'o-case', '', { ph: 'Start typing a case number or name', list: 'o-cases' }) + dlist('o-cases', mine.map(caseLabel))
+      + g2(selF('Person ordered', 'o-subj', [['', 'Choose a case first']], ''), selF('Type', 'o-type', ['Community Service', 'Probation', 'Pretrial Services'], 'Community Service')) + `<div id="o-othrow" hidden>${fld('Full name', 'o-other')}</div>`
+      + g2(fld('Starts', 'o-start', ymd(), { type: 'date' }), `<div id="o-hrs">${fld('Hours ordered', 'o-hours', '', { type: 'number', step: '0.5', min: 1 })}</div><div id="o-term" hidden>${fld('Term (months)', 'o-months', '12', { type: 'number', step: '1', min: 1 })}</div>`)
+      + `<div id="o-due">${fld('Hours must be completed by', 'o-end', '', { type: 'date' })}</div><div id="o-freq" hidden>${selF('Report', 'o-f', FREQ, 'Monthly')}</div>` + area('Conditions or terms', 'o-terms', '', 'e.g. No contact with the complainant; maintain employment.'),
+    onChange: e => { const id = e.target.id; if (id === 'o-type') { const t = e.target.value; $('o-hrs').hidden = t !== 'Community Service'; $('o-due').hidden = t !== 'Community Service'; $('o-term').hidden = t === 'Community Service'; $('o-freq').hidden = t === 'Community Service'; }
+      if (id === 'o-case') { c = mine.find(k => caseLabel(k) === e.target.value || k.caseId === e.target.value.trim()); const ps = c ? partiesOf(c) : [], def = ps.filter(isDefendantSide), rest = ps.filter(p => !isDefendantSide(p)); $('o-subj').innerHTML = c ? [...def, ...rest].map(p => `<option value="${esc(p.name)}">${esc(p.name)} — ${esc(p.role)}</option>`).join('') + '<option value="__other">Someone else</option>' : '<option value="">Choose a case first</option>'; }
+      if (id === 'o-subj') $('o-othrow').hidden = e.target.value !== '__other'; },
+    onOk: async () => { c = mine.find(k => caseLabel(k) === val('o-case') || k.caseId === val('o-case')); need(c, 'Choose one of your cases.'); let s = val('o-subj'); if (s === '__other') s = val('o-other'); need(s, 'Choose or enter the person.');
+      const type = val('o-type'), start = val('o-start'); need(start, 'Enter the start date.'); const cs = type === 'Community Service', hours = cs ? Number(val('o-hours')) : null; if (cs) need(hours > 0, 'Enter the hours ordered.');
+      let end = cs ? val('o-end') || null : null; if (!cs) { const m = Number(val('o-months')); need(m > 0, 'Enter the term in months.'); const d = new Date(start + 'T12:00:00'); d.setMonth(d.getMonth() + m); end = ymd(d); }
+      const pres = presidingOf(c, accts), id = uid('SUP'), o = { id, type, court: c.court, caseId: c.caseId, caseFirestoreId: c._id, subject: s, hours, hoursCompleted: 0, startDate: start, endDate: end, terms: val('o-terms') || null, frequency: cs ? null : val('o-f'), status: 'Active', judgeUid: pres?.uid || c.judgeUid || account.uid, judgeName: pres?.name || c.judge || account.name, orderedBy: account.name, orderedByUid: account.uid, createdAt: iso() };
+      await setDoc(doc(db, 'supervisionOrders', id), o); orders.push({ ...o, _id: id });
+      await editCase(c, d => ({ patch: { supervision: upsert(d.supervision, sumO(o)) }, event: { type: 'order', description: cs ? `${s} is ordered to complete ${hours} hours of community service${end ? ' by ' + fmtD(end) : ''}.` : type === 'Probation' ? `${s} is placed on probation for ${val('o-months')} months beginning ${fmtD(start)}.` : `${s} is released under pretrial services supervision beginning ${fmtD(start)}.`, comment: o.terms } }));
+      note = `${type} ordered for ${s}. Reports go to ${o.judgeName}.`; noteKind = 'ok'; dlg.close(); draw(); } });
+}
+function orderViewModal(o) {
+  const c = caseById(o.caseFirestoreId), can = judicial && o.status === 'Active' && (!c || governs(ctx(), c)), rel = logs.filter(l => l.orderId === o._id).sort((x, y) => String(y.createdAt).localeCompare(String(x.createdAt)));
+  modal({ title: `${o.type} — ${o.subject}`, sub: `${o.caseId} · ${o.status}`, onOk: null, wide: true, extra: can ? `<button class="btn outline" type="button" data-a="oend:${esc(o._id)}|Completed">Mark completed</button><button class="btn outline" type="button" data-a="oend:${esc(o._id)}|Terminated">Terminate</button><button class="btn bad" type="button" data-a="oend:${esc(o._id)}|Revoked">Revoke</button>` : '',
+    body: kvl([['Case', c ? caseLabel(c) : o.caseId], ['Progress', progress(o)], ['Report', o.frequency], ['Reports go to', o.judgeName], ['Ordered by', `${o.orderedBy}, ${fmtD(o.createdAt)}`], ['Terms', o.terms], ['Ended', o.endedAt ? `${fmtD(o.endedAt)} — ${o.endReason || ''}` : '']]) + `<h4 class="sec">Reports and logs</h4>` + (rel.length ? `<div class="table-scroll"><table><thead><tr><th>Date</th><th>Report</th><th>Details</th><th>By</th><th>Status</th></tr></thead><tbody>${rel.map(l => `<tr data-a="lopen:${esc(l._id)}"><td>${esc(fmtD(l.createdAt))}</td><td>${esc(TYPE_LABEL[l.type])}</td><td>${esc(summary(l))}</td><td>${esc(l.by)}</td><td>${pillOf(l.status)}</td></tr>`).join('')}</tbody></table></div>` : '<p class="m">Nothing has been submitted.</p>') });
+}
+function endModal(o, status) {
+  const c = caseById(o.caseFirestoreId);
+  modal({ title: `${status === 'Completed' ? 'Mark completed' : status === 'Revoked' ? 'Revoke' : 'Terminate'}: ${o.type}`, sub: o.subject, ok: 'Enter', okCls: status === 'Revoked' ? 'bad' : 'good', body: area('Reason or order reference (required)', 'e-why'),
+    onOk: async () => { const why = val('e-why'); need(why, 'Enter the reason.'); const p = { status, endedAt: iso(), endReason: why, endedBy: account.name };
+      await updateDoc(doc(db, 'supervisionOrders', o._id), p); Object.assign(o, p);
+      if (c) await editCase(c, d => ({ patch: { supervision: upsert(d.supervision, sumO(o)) }, event: { type: 'order', description: `${o.type} for ${o.subject} ${status === 'Completed' ? 'completed' : status === 'Revoked' ? 'revoked' : 'terminated'}.`, comment: why } }));
+      note = `${o.type} ${status.toLowerCase()}.`; noteKind = 'ok'; dlg.close(); draw(); } });
+}
+
+/* ── Review of supervision reports ──────────────────────────────────── */
+function logModal(l) {
+  const o = orders.find(x => x._id === l.orderId), c = caseById(l.caseFirestoreId), canReview = judicial && l.status === 'Pending review' && (forMe(l) || (c && governs(ctx(), c)));
+  const FIELDS = { 'community-service': [['date', 'Date worked'], ['hours', 'Hours worked'], ['site', 'Organization or site'], ['supervisor', 'Site supervisor'], ['work', 'Work performed']], probation: [['from', 'Period starts'], ['to', 'Period ends'], ['contact', 'Contact'], ['compliance', 'Compliance'], ['testing', 'Testing'], ['employment', 'Employment or school'], ['payments', 'Payments'], ['arrests', 'New arrests or charges'], ['notes', 'Notes']], pretrial: [['from', 'Period starts'], ['to', 'Period ends'], ['appearances', 'Court appearances'], ['contact', 'Contact'], ['compliance', 'Compliance'], ['recommendation', 'Recommendation'], ['notes', 'Notes']] };
+  modal({ title: TYPE_LABEL[l.type] || l.type, sub: `${l.subject} · ${l.caseId}`, wide: true, ok: 'Accept', okCls: 'good', extra: canReview ? '<button class="btn outline" type="button" data-a="lreturn:' + esc(l._id) + '">Return for correction</button>' : '',
+    onOk: canReview ? async () => {
+      const p = { status: 'Accepted', reviewedBy: account.name, reviewedByUid: account.uid, reviewedAt: iso(), reviewNote: val('rv-note') || null }; await updateDoc(doc(db, 'supervisionLogs', l._id), p); Object.assign(l, p);
+      if (o && l.type === 'community-service') { const done = Math.round(((o.hoursCompleted || 0) + Number(l.f.hours)) * 100) / 100, fin = done >= (o.hours || 0), op = { hoursCompleted: done, ...(fin ? { status: 'Completed', endedAt: iso(), endReason: 'All ordered hours completed.', endedBy: 'System' } : {}) };
+        await updateDoc(doc(db, 'supervisionOrders', o._id), op); Object.assign(o, op);
+        if (c) await editCase(c, d => ({ patch: { supervision: upsert(d.supervision, sumO(o)) }, event: { type: 'event', description: fin ? `${o.subject} completed the ${o.hours} hours of community service ordered.` : `Community service: ${l.f.hours} hours credited to ${o.subject} (${done} of ${o.hours}).`, comment: null } })); }
+      note = 'Report accepted.'; noteKind = 'ok'; dlg.close(); draw(); } : null,
+    body: `<div class="pills" style="margin-bottom:12px">${pillOf(l.status)} ${l.f?.compliance === 'Major violation' ? '<span class="pill bad">Major violation</span>' : ''}</div>` + kvl([['Submitted by', `${l.by}${l.role ? ', ' + l.role : ''}`], ['Submitted', fmtDT(l.createdAt)], ['Goes to', l.reviewerName], ...((FIELDS[l.type] || []).map(([k, lab]) => [lab, l.f?.[k]])), ...(o && l.type === 'community-service' ? [['Hours credited so far', `${o.hoursCompleted || 0} of ${o.hours}`]] : []), ['Review note', l.reviewNote], ['Reviewed by', l.reviewedBy ? `${l.reviewedBy}, ${fmtD(l.reviewedAt)}` : '']])
+      + (canReview ? area('Note to the submitter (optional when accepting, required when returning)', 'rv-note') : '') });
+}
+async function returnLog(l) {
+  const n = val('rv-note'); if (!n) { $('dlg-e').innerHTML = '<div class="alert" role="alert">Enter what needs to be corrected.</div>'; return; }
+  try { const p = { status: 'Returned', reviewedBy: account.name, reviewedByUid: account.uid, reviewedAt: iso(), reviewNote: n, seen: false }; await updateDoc(doc(db, 'supervisionLogs', l._id), p); Object.assign(l, p); note = 'Returned to the submitter.'; noteKind = 'ok'; dlg.close(); draw(); }
+  catch (e) { $('dlg-e').innerHTML = `<div class="alert" role="alert">${esc(errText(e))}</div>`; }
+}
+
+/* ── Events ─────────────────────────────────────────────────────────── */
+function act(a) {
+  const i = a.indexOf(':'), n = i < 0 ? a : a.slice(0, i), v = i < 0 ? '' : a.slice(i + 1);
+  if (n === 'tab') { tab = v; q = ''; note = ''; draw(); } else if (n === 'wf') { wf = v; draw(); } else if (n === 'of') { of = v; draw(); }
+  else if (n === 'issue') issueModal(); else if (n === 'order') orderModal();
+  else if (n === 'wopen') { const w = warrants.find(x => x._id === v); w && warrantModal(w); } else if (n === 'recall') { const w = warrants.find(x => x._id === v); w && recallModal(w); }
+  else if (n === 'oopen') { const o = orders.find(x => x._id === v); o && orderViewModal(o); } else if (n === 'oend') { const [id, st] = v.split('|'), o = orders.find(x => x._id === id); o && endModal(o, st); }
+  else if (n === 'lopen') { const l = logs.find(x => x._id === v); l && logModal(l); } else if (n === 'lreturn') { const l = logs.find(x => x._id === v); l && returnLog(l); }
+}
+root.addEventListener('click', e => { const el = e.target.closest('[data-a]'); if (el) act(el.dataset.a); });
+document.addEventListener('click', e => { const el = e.target.closest('#page-action [data-a]'); if (el) act(el.dataset.a); });
+document.addEventListener('input', e => { if (e.target.id === 'f-q') { q = e.target.value; draw(); const i = $('f-q'); i.focus(); i.setSelectionRange(i.value.length, i.value.length); } });
+document.addEventListener('change', e => { if (e.target.id === 'f-rv') { rv = e.target.value; draw(); } });
+try { await load(); } catch (e) { console.error(e); root.innerHTML = '<div class="alert" role="alert"><strong>We could not load this page.</strong><p>Refresh to try again.</p></div>'; throw e; }
+{ const h = decodeURIComponent(location.hash.slice(1)); if (h) { q = h; tab = 'warrants'; wf = 'All'; } }
+draw();
+}
+
+</script>
+</body>
+</html>

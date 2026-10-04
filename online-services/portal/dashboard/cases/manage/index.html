@@ -94,7 +94,8 @@ dialog>footer{display:flex;justify-content:flex-end;gap:10px;padding:14px 22px;b
 <div class="auth-loading-overlay" id="auth-overlay" role="status"><div class="alo-title">Online Portal</div><div class="spin"></div><div>Verifying your session…</div></div>
 
 <script type="module">
-import { boot, db, app, $, esc, has, STAFF, SUPREME, scopeOf, colFor, reserveFilingNumber, logAction, DISTRICT_COURT, SUPREME_COURT } from '/courts/online-services/portal/dashboard/assets/js/portal-shell.js?v=6';
+import { boot, db, app, $, esc, has, STAFF, SUPREME, scopeOf, colFor, reserveFilingNumber, logAction, DISTRICT_COURT, SUPREME_COURT } from '/courts/online-services/portal/dashboard/assets/js/portal-shell.js?v=7';
+import * as F from '/courts/online-services/portal/dashboard/assets/js/finance.js?v=1';
 import { collection, getDocs, getDoc, doc, query, where, updateDoc, setDoc, runTransaction } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 import { getStorage, ref as sRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-storage.js";
 
@@ -482,14 +483,13 @@ function judgmentsTab() {
 
 /* Financials */
 function financialsTab() {
-  const o = cur.financialOrders || [], b = balanceOf(cur);
-  return `<div class="sec-add"><span class="m">${o.length} order${o.length === 1 ? '' : 's'}</span>${btn('finorder:-1', 'Add a financial order', '')}</div>
-    <section class="card"><div class="fin3"><div><span>Total assessed</span><b>${money(b.owed)}</b></div><div><span>Total paid</span><b>${money(b.paid)}</b></div><div><span>Balance</span><b style="color:${b.bal > 0 ? '#b3261e' : '#154d2e'}">${money(b.bal)}</b></div></div>
-    ${!o.length ? empty('No financial orders on record') : o.map((x, i) => { const paid = (x.payments || []).reduce((s, p) => s + (p.amount || 0), 0), full = x.amount && paid >= x.amount;
-      return `<div class="item"><div class="ih"><div><h4>${esc(x.type)}</h4>${hv(x.description) ? `<small>${esc(x.description)}</small>` : ''}</div><div style="text-align:right"><b style="font-family:var(--font-head);font-size:20px">${x.amount != null ? money(x.amount) : 'N/A'}</b><br><span class="pill ${full ? 'done' : paid > 0 ? 'warn' : 'bad'}">${full ? 'Paid' : paid > 0 ? 'Partial' : 'Unpaid'}</span></div></div>
-        ${kv([['Payor', x.payor], ['Assessed', fmtDate(x.assessmentDate)], ['Due', fmtDate(x.dueDate)]])}
-        ${(x.payments || []).length ? `<div class="mt">${x.payments.map(p => `<small>${esc(fmtDate(p.date))}: ${money(p.amount)} (${esc(p.method || '—')})</small>`).join('')}</div>` : ''}
-        <div class="acts mt">${btn(`finorder:${i}`, 'Edit order')}${btn(`pay:${i}`, 'Record payment', 'good sm')}</div></div>`; }).join('')}</section>`;
+  const o = (cur.financialOrders || []).map((x, i) => F.accrue(F.normalize(x, F.idOf(cur, i)), new Date()).order), b = balanceOf(cur), MF = 'https://migovt.org/courts/online-services/portal/dashboard/financials/manage/#';
+  return `<div class="sec-add"><span class="m">${o.length} order${o.length === 1 ? '' : 's'}</span><a class="btn outline" href="${MF}assess:${encodeURIComponent(cur.caseId || cur._id)}">Assess a fine, fee or judgment</a><a class="btn" href="${MF}${encodeURIComponent(cur.caseId || cur._id)}">Manage financials</a></div>
+    <section class="card"><div class="fin3"><div><span>Total owed</span><b>${money(b.owed)}</b></div><div><span>Total paid</span><b>${money(b.paid)}</b></div><div><span>Balance</span><b style="color:${b.bal > 0 ? '#b3261e' : '#154d2e'}">${money(b.bal)}</b></div></div>
+    ${!o.length ? empty('No financial orders on record', 'Filing fees, fines, costs, restitution and judgments appear here once assessed.') : o.map(x => { const bal = F.balanceOf(x), adj = F.adjOf(x);
+      return `<div class="item"><div class="ih"><div><h4>${esc(x.type)}</h4>${hv(x.description) ? `<small>${esc(x.description)}</small>` : ''}</div><div style="text-align:right"><b style="font-family:var(--font-head);font-size:20px">${money(Math.abs(bal))}</b><small style="display:block">${bal < 0 ? 'credit' : 'balance'}</small><span class="pills">${F.statusOf(x).map(([c, l]) => `<span class="pill ${c}">${esc(l)}</span>`).join(' ')}</span></div></div>
+        ${kv([['Owed by', x.payor], ['Original amount', money(x.originalAmount)], ['Fees, interest and changes', adj ? (adj > 0 ? '+' : '') + money(adj) : ''], ['Paid', money(F.paidOf(x))], ['Assessed', fmtDate(x.assessmentDate)], ['Due', fmtDate(x.dueDate)], ['Interest', F.rateOf(x) > 0 ? F.interestText(x) : ''], ['Payment plan', x.schedule && ['Active', 'Defaulted'].includes(x.schedule.status) ? `${money(x.schedule.installment)} ${x.schedule.frequency} (${x.schedule.status})` : '']])}
+        <div class="acts mt"><a class="btn outline sm" href="${MF}${encodeURIComponent(cur.caseId || cur._id)}">Open in Manage Financials</a></div></div>`; }).join('')}</section>`;
 }
 
 /* Filings */
@@ -705,7 +705,7 @@ function judgmentModal(idx) {
       const makeFin = idx < 0 && $('jd-fin')?.checked && amount > 0, closeIt = idx < 0 && $('jd-close')?.checked, text = `${k.verb}: ${outcome}${matter ? ' — ' + matter : ''}${amount > 0 ? ` (${money(amount)})` : ''}`;
       await listChange('judgments', idx, old => ({ ...(old || {}), ...rec, ...(old ? {} : { enteredBy: account.name, enteredAt: now() }) }), idx >= 0 ? `Edited judgment entry: ${outcome}` : `${k.verb}: ${outcome}${matter ? ' — ' + matter : ''}`,
         idx >= 0 ? null : () => ({ type: 'order', date: now(), description: text, comment: relief, judge: cur.judge || null, enteredBy: account.name, enteredByRole: role }),
-        (res, d) => { const p = {}; if (makeFin) p.financialOrders = [...(d.financialOrders || []), { type: 'Money Judgment', amount, payor: against, dueDate: rec.effectiveDate, description: matter ? `Judgment: ${matter}` : 'Judgment', assessmentDate: now(), payments: [] }]; if (closeIt && !/closed|disposed/i.test(d.status || '')) p.status = 'Disposed'; return p; });
+        (res, d) => { const p = {}; if (makeFin) p.financialOrders = [...(d.financialOrders || []), { id: F.newId('FO'), type: 'Money Judgment', amount, originalAmount: amount, payor: against, dueDate: rec.effectiveDate, description: matter ? `Judgment: ${matter}` : 'Judgment', assessmentDate: now(), assessedBy: account.name, payments: [], adjustments: [], garnishments: [] }]; if (closeIt && !/closed|disposed/i.test(d.status || '')) p.status = 'Disposed'; return p; });
       if (idx < 0) await notify({ type: 'NEF', title: 'Notice of Entry of Order', text: `${text} was entered on the docket.` });
     } });
 }

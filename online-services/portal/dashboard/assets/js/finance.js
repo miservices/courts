@@ -13,7 +13,12 @@ export const parseDay = s => { if (!s) return null; if (s instanceof Date) retur
 const endOfDay = d => { const e = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23, 59, 59, 999); return e; };
 const addMonths = (d, n) => { const e = new Date(d); const day = e.getDate(); e.setDate(1); e.setMonth(e.getMonth() + n); e.setDate(Math.min(day, new Date(e.getFullYear(), e.getMonth() + 1, 0).getDate())); return e; };
 export const typeKind = t => /judgment/i.test(t || '') ? 'judgment' : /restitution/i.test(t || '') ? 'restitution' : /fine|fee|cost/i.test(t || '') ? 'fine-fee' : 'other';
-export const lateEligible = o => typeKind(o.type) === 'fine-fee';
+export const lateEligible = o => o.lateFee && o.lateFee.enabled != null ? !!o.lateFee.enabled : typeKind(o.type) === 'fine-fee';
+export const lateRateOf = o => o.lateFee && o.lateFee.rate != null && o.lateFee.rate !== '' ? Number(o.lateFee.rate) / 100 : LATE_RATE;
+export const graceOf = o => o.lateFee && o.lateFee.graceDays != null && o.lateFee.graceDays !== '' ? Number(o.lateFee.graceDays) : GRACE_DAYS;
+export const PERIODS = ['day', 'week', 'month', 'year'];
+const addPeriod = (d, per, n = 1) => per === 'day' ? new Date(d.getTime() + n * DAY) : per === 'week' ? new Date(d.getTime() + 7 * n * DAY) : per === 'year' ? addMonths(d, 12 * n) : addMonths(d, n);
+export const interestText = o => { const r = rateOf(o); if (!(r > 0)) return 'None'; const per = o.interest?.per || 'year'; return `${r}% per ${per}${o.interest?.compound ? ', compounding' : ''}`; };
 export const rateOf = o => o.interest && o.interest.rate != null && o.interest.rate !== '' ? Number(o.interest.rate) : typeKind(o.type) === 'judgment' ? JUDGMENT_RATE : 0;
 export const paidOf = o => r2((o.payments || []).reduce((t, p) => t + Number(p.amount || 0), 0));
 export const adjOf = o => r2((o.adjustments || []).filter(a => !a.corrects).reduce((t, a) => t + Number(a.amount || 0), 0));   // fees, interest and changes; a correction to the assessed amount (corrects: true) changes the original instead
@@ -30,7 +35,7 @@ export function normalize(o, id) {
   n.amount = r2(n.amount); n.originalAmount = r2(n.amount - adjOf(n));
   return n;
 }
-export const lateDeadline = o => { const d = parseDay(o.dueDate); return d ? new Date(endOfDay(d).getTime() + GRACE_DAYS * DAY) : null; };
+export const lateDeadline = o => { const d = parseDay(o.dueDate); return d ? new Date(endOfDay(d).getTime() + graceOf(o) * DAY) : null; };
 const dateK = (s, start, k) => s.frequency === 'weekly' ? new Date(start.getTime() + 7 * k * DAY) : s.frequency === 'biweekly' ? new Date(start.getTime() + 14 * k * DAY) : addMonths(start, k);
 export function planState(o, now = new Date()) {
   const s = o.schedule; if (!s || !['Active', 'Defaulted'].includes(s.status)) return null;
@@ -38,7 +43,7 @@ export function planState(o, now = new Date()) {
   const paid = Math.max(0, paidOf(o)), total = Number(o.amount || 0); let dueNow = 0, missed = null, next = null;
   for (let k = 0; k < 600; k++) {
     const d = dateK(s, start, k), cum = Math.min(total, inst * (k + 1));
-    if (d <= now) { dueNow = Math.max(dueNow, cum - paid); if (!missed && paid < cum - 0.005 && now > new Date(endOfDay(d).getTime() + GRACE_DAYS * DAY)) missed = d; if (cum >= total) break; }
+    if (d <= now) { dueNow = Math.max(dueNow, cum - paid); if (!missed && paid < cum - 0.005 && now > new Date(endOfDay(d).getTime() + graceOf(o) * DAY)) missed = d; if (cum >= total) break; }
     else { next = d; break; }
   }
   return { pastDue: !!missed, missedSince: missed, dueNow: r2(Math.max(0, dueNow)), next, nextAmount: next ? r2(Math.min(inst, Math.max(0, total - paid))) : 0, installment: inst };
@@ -46,21 +51,22 @@ export function planState(o, now = new Date()) {
 // Posts what has come due: a plan that fell more than 5 days behind is marked defaulted, the one-time 20% late fee, and monthly interest.
 export function accrue(input, now = new Date()) {
   const o = normalize(input, input.id), posted = []; let changed = false;
-  if (o.schedule?.status === 'Active') { const ps = planState(o, now); if (ps?.pastDue) { o.schedule = { ...o.schedule, status: 'Defaulted', defaultedAt: now.toISOString() }; posted.push({ kind: 'plan-default', amount: 0, reason: `Payment plan defaulted: the installment due ${ps.missedSince.toLocaleDateString('en-US')} was more than ${GRACE_DAYS} days late.` }); changed = true; } }
+  if (o.schedule?.status === 'Active') { const ps = planState(o, now); if (ps?.pastDue) { o.schedule = { ...o.schedule, status: 'Defaulted', defaultedAt: now.toISOString() }; posted.push({ kind: 'plan-default', amount: 0, reason: `Payment plan defaulted: the installment due ${ps.missedSince.toLocaleDateString('en-US')} was more than ${graceOf(o)} days late.` }); changed = true; } }
   const dl = lateDeadline(o), planOn = o.schedule?.status === 'Active';
   if (!o.lateFeeAt && lateEligible(o) && dl && now > dl && !planOn) {
     const paidBy = r2((o.payments || []).filter(p => { const d = parseDay(p.date); return d && d <= dl; }).reduce((t, p) => t + Number(p.amount || 0), 0)), basis = Math.max(0, r2(o.amount - paidBy));
     o.lateFeeAt = now.toISOString(); changed = true;
-    if (basis > 0) { const fee = r2(basis * LATE_RATE); o.adjustments.push({ id: uid('ADJ'), kind: 'late-fee', amount: fee, date: dl.toISOString(), reason: `Late fee of ${LATE_RATE * 100}% added: not paid within ${GRACE_DAYS} days after the due date.`, by: 'System', auto: true }); o.amount = r2(o.amount + fee); posted.push({ kind: 'late-fee', amount: fee, reason: 'Late fee' }); }
+    if (basis > 0) { const fee = r2(basis * lateRateOf(o)); o.adjustments.push({ id: uid('ADJ'), kind: 'late-fee', amount: fee, date: dl.toISOString(), reason: `Late fee of ${r2(lateRateOf(o) * 100)}% added: not paid within ${graceOf(o)} days after the due date.`, by: 'System', auto: true }); o.amount = r2(o.amount + fee); posted.push({ kind: 'late-fee', amount: fee, reason: 'Late fee' }); }
   }
-  const rate = rateOf(o);
+  const rate = rateOf(o), per = o.interest?.per || null, compound = !!o.interest?.compound;   // no period stored = older order: rate is per year, accrued monthly
   if (rate > 0) {
-    let from = parseDay(o.interest?.lastAccrued || o.assessmentDate || o.dueDate); let guard = 0;
-    while (from && addMonths(from, 1) <= now && guard++ < 120) {
-      const to = addMonths(from, 1), net = r2((o.adjustments || []).filter(a => a.kind === 'interest' || a.reversesKind === 'interest').reduce((t, a) => t + a.amount, 0)), principal = Math.max(0, r2(o.amount - net - paidOf(o)));
+    const step = per || 'month', startAt = o.interest?.lastAccrued || o.interest?.from || o.assessmentDate || o.dueDate;
+    let from = parseDay(startAt); let guard = 0;
+    while (from && addPeriod(from, step) <= now && guard++ < 400) {
+      const to = addPeriod(from, step), net = r2((o.adjustments || []).filter(a => a.kind === 'interest' || a.reversesKind === 'interest').reduce((t, a) => t + a.amount, 0)), principal = Math.max(0, r2(o.amount - (compound ? 0 : net) - paidOf(o)));
       if (principal <= 0) { from = to; o.interest = { ...(o.interest || {}), rate, lastAccrued: to.toISOString() }; changed = true; continue; }
-      const i = r2(principal * rate / 1200);
-      if (i > 0) { o.adjustments.push({ id: uid('ADJ'), kind: 'interest', amount: i, date: to.toISOString(), reason: `Interest at ${rate}% per year on ${money(principal)}.`, by: 'System', auto: true }); o.amount = r2(o.amount + i); posted.push({ kind: 'interest', amount: i, reason: 'Interest' }); }
+      const i = r2(per ? principal * rate / 100 : principal * rate / 1200);
+      if (i > 0) { o.adjustments.push({ id: uid('ADJ'), kind: 'interest', amount: i, date: to.toISOString(), reason: `Interest at ${rate}% per ${per || 'year'}${compound ? ' (compounding)' : ''} on ${money(principal)}.`, by: 'System', auto: true }); o.amount = r2(o.amount + i); posted.push({ kind: 'interest', amount: i, reason: 'Interest' }); }
       from = to; o.interest = { ...(o.interest || {}), rate, lastAccrued: to.toISOString() }; changed = true;
     }
   }

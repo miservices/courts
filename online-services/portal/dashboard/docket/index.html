@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Docket | Online Portal</title>
+<link rel="icon" type="image/png" href="/courts/images/favicon.png">
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=Source+Serif+4:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/courts/online-services/portal/dashboard/assets/css/dashboard.css?v=5">
+<style>
+.m{color:var(--muted);font-weight:400}.mt{margin-top:14px}
+.tools{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px;align-items:center}.tools .in{flex:1;min-width:200px;width:auto}.tools select.in{flex:0 0 auto;min-width:0}
+.chk{display:flex;gap:8px;align-items:center;font-weight:600;color:var(--navy);white-space:nowrap}.chk input{width:18px;height:18px}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}.chips button{font:inherit;font-weight:600;font-size:14px;padding:6px 14px;border-radius:16px;border:1px solid var(--line);background:#fff;color:var(--navy);cursor:pointer}.chips button.on{background:var(--navy);color:#fff;border-color:var(--navy)}.chips i{font-style:normal;opacity:.75;margin-left:6px}
+.tabs i{font-style:normal;font-weight:500;color:var(--muted);margin-left:6px}
+tbody tr[data-a]{cursor:pointer}tbody tr[data-a]:hover{background:#f6f9fd}
+td small,th small{display:block;color:var(--muted);font-weight:400}.num{text-align:right;white-space:nowrap}th.num{text-align:right}.pills{display:flex;gap:6px;flex-wrap:wrap}
+.amts{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px 18px;margin-bottom:14px}.amts div{display:grid;gap:2px}.amts dt{font-size:13px;color:var(--muted)}.amts dd{font-weight:700;font-size:17px;color:var(--navy)}.amts dd.owe{font-size:22px}
+.alert-line{border-left:4px solid #b7791f;background:#fdf6e7;color:#6e4a10;border-radius:4px;padding:10px 14px;margin-bottom:10px}.alert-line.red{border-color:#b3261e;background:#fdf1f0;color:#7a1b13}
+.note{border-left:4px solid var(--navy);background:#eef3f9;border-radius:4px;padding:10px 14px;margin-bottom:12px;color:var(--navy)}
+.acts{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}.sec{margin:18px 0 8px;font-size:16px;color:var(--navy)}
+.kv{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px 22px;margin-bottom:6px;text-align:left}.kv dt{font-size:13px;color:var(--muted)}.kv dd{font-weight:600;overflow-wrap:anywhere}
+.rcpt{text-align:center;padding:6px 0 4px}.rcpt .big{font-family:var(--font-head);font-size:34px;color:var(--navy);font-weight:700;margin:6px 0}.rcpt .tick{width:54px;height:54px;border-radius:50%;background:#e4f3ea;color:#2f7d4f;font-size:30px;line-height:54px;margin:0 auto 6px}
+.quote{background:#f4f7fb;border-radius:4px;padding:10px 14px;margin-bottom:16px;color:var(--navy)}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:16px}@media(max-width:700px){.cols{grid-template-columns:1fr}}
+dialog{border:0;padding:0;border-radius:6px;width:min(660px,calc(100vw - 24px));max-height:calc(100vh - 48px);box-shadow:0 24px 60px rgba(9,22,40,.35);color:var(--text);font:inherit;overflow:hidden;margin:auto}
+dialog[open]{display:flex;flex-direction:column}dialog.wide{width:min(900px,calc(100vw - 24px))}dialog::backdrop{background:rgba(9,22,40,.55)}
+dialog>header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:16px 22px;border-bottom:1px solid var(--line);background:#f4f7fb}dialog>header h3{font-size:19px}dialog>header p{color:var(--muted);margin-top:2px}
+.x{font:inherit;font-size:22px;line-height:1;width:36px;height:36px;border:1px solid var(--line);border-radius:4px;background:#fff;cursor:pointer;color:var(--navy);flex-shrink:0}.x:hover{background:#eef3f9}
+#dlg-b{padding:20px 22px 6px;overflow:auto}#dlg-e{padding:0 22px 14px}#dlg-e .alert{margin:0}
+dialog>footer{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:10px;padding:14px 22px;border-top:1px solid var(--line);background:#f4f7fb}
+@media print{body>*:not(dialog){display:none!important}dialog{position:static!important;box-shadow:none!important;width:auto!important;max-height:none!important}dialog>footer,.x{display:none!important}}
+
+.dk-hero{background:linear-gradient(135deg,#0d2347 0%,#17376b 60%,#1f4a8a 100%);color:#fff;border-radius:8px;padding:22px 26px;margin-bottom:18px;display:flex;gap:24px;flex-wrap:wrap;justify-content:space-between;align-items:center;position:relative;overflow:hidden}
+.dk-hero:after{content:"";position:absolute;right:-60px;top:-60px;width:240px;height:240px;border-radius:50%;border:2px solid rgba(255,255,255,.08);box-shadow:0 0 0 24px rgba(255,255,255,.04),0 0 0 54px rgba(255,255,255,.03)}
+.dk-hero h3{font-family:var(--font-head);font-size:13px;letter-spacing:.28em;font-weight:600;color:#b9cdee;text-transform:uppercase}
+.dk-hero .court{font-family:var(--font-head);font-size:28px;font-weight:700;line-height:1.15;margin:4px 0 2px}.dk-hero .day{color:#d6e2f6}
+.dk-nums{display:flex;gap:10px;flex-wrap:wrap;position:relative;z-index:1}.dk-nums div{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);border-radius:6px;padding:10px 16px;min-width:104px}.dk-nums b{display:block;font-family:var(--font-head);font-size:26px;line-height:1.1}.dk-nums span{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:#c3d4ef}.dk-nums .hot b{color:#ffd37a}
+.perm{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:9px 14px;border-radius:6px;margin-bottom:14px;font-size:14px}.perm.edit{background:#e8f4ec;color:#154d2e;border:1px solid #bfdcc9}.perm.view{background:#f1f4f9;color:#33465f;border:1px solid var(--line)}
+.week{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:14px}.week button{font:inherit;background:#fff;border:1px solid var(--line);border-radius:6px;padding:8px 4px;cursor:pointer;color:var(--navy);text-align:center}.week button small{display:block;color:var(--muted);font-size:12px}.week button b{display:block;font-family:var(--font-head);font-size:20px}.week button.on{background:var(--navy);color:#fff;border-color:var(--navy)}.week button.on small{color:#c3d4ef}.week button.today:not(.on){border-color:#b7791f;box-shadow:inset 0 -3px 0 #b7791f}.week button i{display:block;font-style:normal;font-size:12px;margin-top:2px;color:var(--muted)}.week button.on i{color:#c3d4ef}
+.datebar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px}.datebar .in{width:auto}.datebar h3{font-family:var(--font-head);color:var(--navy);margin-right:auto;font-size:20px}
+.sheet{background:#fff;border:1px solid #cdd7e5;border-radius:4px;box-shadow:0 1px 0 #fff inset,0 2px 8px rgba(16,38,74,.06);margin-bottom:18px;position:relative}
+.sheet:before{content:"";display:block;height:5px;background:repeating-linear-gradient(90deg,var(--navy) 0 14px,#b7791f 14px 18px)}
+.room-h{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:baseline;padding:14px 20px 10px;border-bottom:2px double #aebcd1}.room-h h4{font-family:var(--font-head);letter-spacing:.14em;text-transform:uppercase;font-size:15px;color:var(--navy)}.room-h span{color:var(--muted);font-size:14px}
+.call{display:grid;grid-template-columns:92px 1fr auto;gap:6px 18px;padding:13px 20px;border-bottom:1px dotted #c3cedf;cursor:pointer;align-items:start}.call:last-child{border-bottom:0}.call:hover{background:#f6f9fd}
+.call .t{font-variant-numeric:tabular-nums;font-weight:700;color:var(--navy);font-size:16px;line-height:1.3}.call .t small{display:block;font-weight:400;color:var(--muted);font-size:12px}
+.call .cn{font-size:13px;color:var(--muted);letter-spacing:.04em}.call .cap{font-family:var(--font-head);font-weight:600;font-size:17px;color:var(--navy);line-height:1.3}.call .mat{margin-top:2px}.call .atty{font-size:13px;color:var(--muted);margin-top:3px}
+.call .st{display:flex;flex-direction:column;gap:6px;align-items:flex-end}
+.stamp{display:inline-block;border:2px solid currentColor;border-radius:3px;padding:1px 8px;font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;transform:rotate(-2deg)}.stamp.live{color:#1f5fae}.stamp.done{color:#2f7d4f}.stamp.bad{color:#b3261e}.stamp.plain{color:#7a8798}
+.clash{color:#b3261e;font-size:13px;font-weight:600}
+@media(max-width:700px){.call{grid-template-columns:70px 1fr}.call .st{grid-column:1/-1;flex-direction:row;align-items:center}}
+.tools{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px;align-items:center}.tools .in{flex:1;min-width:180px;width:auto}.tools select.in{flex:0 0 auto;min-width:0}
+tbody tr[data-a]{cursor:pointer}tbody tr[data-a]:hover{background:#f6f9fd}td small,th small{display:block;color:var(--muted);font-weight:400}
+.reg{width:100%;border-collapse:collapse}.reg td,.reg th{padding:8px 10px;border-bottom:1px solid #dfe6f0;vertical-align:top;text-align:left}.reg td:first-child{width:56px;font-variant-numeric:tabular-nums;color:var(--muted)}.reg td:nth-child(2){white-space:nowrap;width:112px}
+.reg tr.sealed td{background:#fbf6ea}
+.sh-head{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px 24px;margin:6px 0 4px;text-align:left}.sh-head dt{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}.sh-head dd{font-weight:600;overflow-wrap:anywhere}
+.cap-big{font-family:var(--font-head);font-size:22px;color:var(--navy);text-align:center;line-height:1.3;padding:6px 0 2px}.cap-sub{text-align:center;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;font-size:12px}
+.over{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px}.over .card{margin:0}.over ul{list-style:none;margin:0;padding:0}.over li{display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid #e6ecf4;cursor:pointer}.over li:hover b{text-decoration:underline}.over li small{color:var(--muted)}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}.chips button{font:inherit;font-weight:600;font-size:14px;padding:6px 14px;border-radius:16px;border:1px solid var(--line);background:#fff;color:var(--navy);cursor:pointer}.chips button.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+.sh-head dd,.sh-head dt,.kv dd,.kv dt{margin:0}
+</style>
+</head>
+<body>
+<aside class="sidebar" id="sidebar-root" aria-label="Portal navigation"></aside>
+<div class="scrim" id="scrim" hidden></div>
+<div class="main">
+  <header class="topbar">
+    <div class="topbar-left">
+      <button class="menu-btn" id="menu-btn" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="sidebar-root"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+      <div><span class="topbar-eyebrow">Online Portal</span><span class="topbar-page-title" id="topbar-title">Docket</span></div>
+    </div>
+    <div class="topbar-right"><span class="topbar-date" id="topbar-date"></span><div class="notif-wrap" id="notif-root"></div></div>
+  </header>
+  <main class="page-body">
+    <div class="page-head"><div><h2 id="page-title">Docket</h2><p id="page-subtitle"></p></div><div id="page-action"></div></div>
+    <div id="page-body"><div class="loading-inline"><span class="spin-sm"></span>Loading the docket…</div></div>
+  </main>
+</div>
+<dialog id="dlg" aria-labelledby="dlg-t">
+  <header><div><h3 id="dlg-t"></h3><p id="dlg-w"></p></div><button class="x" type="button" aria-label="Close" data-close>×</button></header>
+  <div id="dlg-b"></div><div id="dlg-e"></div><footer id="dlg-f"></footer>
+</dialog>
+<div class="auth-loading-overlay" id="auth-overlay" role="status"><div class="alo-title">Online Portal</div><div class="spin"></div><div>Verifying your session…</div></div>
+
+<script type="module">
+import { boot, db, $, esc, has, STAFF, scopeOf, colFor, logAction } from '/courts/online-services/portal/dashboard/assets/js/portal-shell.js?v=7';
+import { collection, getDocs, doc, runTransaction } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+import { partiesOf, caption, addEvent, iso, nameKey, isChief, isJudicial, governs, presidingOf, is } from '/courts/online-services/portal/dashboard/assets/js/court.js?v=1';
+
+const { account, role } = await boot({ id: 'docket', title: 'Docket', subtitle: 'The court’s calendar and case register, with changes limited to the chief judge, the presiding judge, and a magistrate’s supervising judge.' });
+const root = $('page-body'), CM = 'https://migovt.org/courts/online-services/portal/dashboard/cases/manage/#', MH = 'https://migovt.org/courts/online-services/portal/dashboard/hearings/manage/';
+if (!has(STAFF, role)) root.innerHTML = '<section class="card"><div class="empty"><strong>Court staff only</strong></div></section>';
+else await main();
+
+async function main() {
+/* ── Shared dialog and form helpers ─────────────────────────────────── */
+class UserError extends Error {} const bad = m => { throw new UserError(m); }, need = (c, m) => { if (!c) bad(m); };
+const errText = e => e instanceof UserError ? e.message : e?.code === 'permission-denied' ? 'Your account is not allowed to save this. The Firestore rules must allow this change. (permission-denied)' : `We could not save this. Check your connection and try again.${e?.code ? ' (' + e.code + ')' : ''}`;
+const dlg = $('dlg'); let dlgOk = null, dlgChange = null;
+function modal({ title, sub = '', body, ok = 'Save', okCls = '', wide = false, onOk, onChange, extra = '' }) {
+  dlgChange = onChange || null; $('dlg-t').textContent = title; $('dlg-w').textContent = sub; $('dlg-b').innerHTML = body; $('dlg-e').innerHTML = ''; dlg.classList.toggle('wide', wide); dlgOk = onOk;
+  $('dlg-f').innerHTML = `${extra}<button class="btn outline" type="button" data-close>${onOk ? 'Cancel' : 'Close'}</button>${onOk ? `<button class="btn ${okCls}" type="button" id="dlg-ok">${ok}</button>` : ''}`;
+  if (!dlg.open) dlg.showModal(); if (onOk) dlg.querySelector('#dlg-b input:not([type=hidden]):not([type=radio]):not([type=checkbox]):not([readonly]),#dlg-b select')?.focus();
+}
+const closeDlg = () => { dlg.close(); draw(); };
+async function runOk() { const b = $('dlg-ok'), label = b.textContent; b.disabled = true; b.textContent = 'Saving…'; $('dlg-e').innerHTML = '';
+  try { await dlgOk(); } catch (e) { if (!(e instanceof UserError)) console.error(e); $('dlg-e').innerHTML = `<div class="alert" role="alert">${esc(errText(e))}</div>`; b.disabled = false; b.textContent = label; } }
+dlg.addEventListener('click', e => { if (e.target === dlg || e.target.closest('[data-close]')) closeDlg(); else if (e.target.closest('#dlg-ok')) runOk(); else { const el = e.target.closest('[data-a]'); if (el) act(el.dataset.a); } });
+dlg.addEventListener('input', e => dlgChange?.(e)); dlg.addEventListener('change', e => dlgChange?.(e));
+const val = id => ($(id)?.value || '').trim();
+const fld = (label, id, v = '', o = {}) => `<label class="f"><span>${label}</span><input id="${id}" type="${o.type || 'text'}" value="${esc(v)}"${o.step ? ` step="${o.step}"` : ''}${o.min != null ? ` min="${o.min}"` : ''}${o.list ? ` list="${o.list}"` : ''}${o.ph ? ` placeholder="${esc(o.ph)}"` : ''}${o.ro ? ' readonly' : ''}>${o.hint ? `<small class="m">${o.hint}</small>` : ''}</label>`;
+const area = (label, id, v = '', ph = '') => `<label class="f"><span>${label}</span><textarea id="${id}" rows="4" placeholder="${esc(ph)}">${esc(v)}</textarea></label>`;
+const selF = (label, id, opts, v) => `<label class="f"><span>${label}</span><select id="${id}">${opts.map(o => { const [ov, ol] = Array.isArray(o) ? o : [o, o]; return `<option value="${esc(ov)}"${ov === v ? ' selected' : ''}>${esc(ol)}</option>`; }).join('')}</select></label>`;
+const g2 = (...c) => `<div class="cols">${c.join('')}</div>`, dlist = (id, l) => `<datalist id="${id}">${l.map(x => `<option value="${esc(x)}">`).join('')}</datalist>`;
+const chk = (id, label, on) => `<label class="chk"><input type="checkbox" id="${id}" ${on ? 'checked' : ''}> ${label}</label>`;
+const ymd = (d = new Date()) => { const z = new Date(d.getTime() - d.getTimezoneOffset() * 6e4); return z.toISOString().slice(0, 10); };
+const mapParties = (p, fn) => Array.isArray(p) ? p.map(fn) : p && typeof p === 'object' ? Object.fromEntries(Object.entries(p).map(([k, v]) => [k, Array.isArray(v) ? v.map(fn) : v && typeof v === 'object' && v.name ? fn(v) : v])) : p;
+const PILL = { Requested: 'mid', Issued: 'live', Denied: 'bad', Executed: 'done', Recalled: 'plain', Expired: 'plain', 'Pending review': 'mid', Accepted: 'done', Returned: 'warn', Active: 'live', Completed: 'done', Revoked: 'bad', Terminated: 'plain' };
+const pillOf = s => `<span class="pill ${PILL[s] || 'plain'}">${esc(s)}</span>`;
+const stat = (l, v, al) => `<div class="stat ${al ? 'alert-stat' : ''}"><span>${l}</span><b>${v}</b></div>`;
+const notAllowed = (t, m) => `<section class="card"><div class="empty"><strong>${t}</strong><p>${m}</p></div></section>`;
+// Updates one case in a transaction (adds docket events and summary fields) and returns the new case data.
+async function editCase(c, fn) {
+  const r = doc(db, colFor(c.court), c._id), at = new Date();
+  const next = await runTransaction(db, async tx => { const s = await tx.get(r); if (!s.exists()) bad('This case no longer exists.'); const d = s.data(), out = fn(d, at) || {}, p = { ...(out.patch || {}), dates: { ...(d.dates || {}), lastUpdated: iso(at) } };
+    if (out.event) p.events = addEvent(d.events, { judge: d.judge || null, enteredBy: account.name, enteredByRole: role, ...out.event }); tx.update(r, p); return { ...d, ...p }; });
+  Object.assign(c, next); return next;
+}
+
+const scope = scopeOf(role), p2 = n => String(n).padStart(2, '0'), dayKey = d => `${d.getFullYear()}-${p2(d.getMonth() + 1)}-${p2(d.getDate())}`;
+const hv = v => v !== undefined && v !== null && String(v).trim() !== '', parse = s => { const d = new Date(s); return isNaN(d) ? null : d; };
+const fmtLong = d => d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }), fmtDate = d => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }), fmtTime = d => d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+const sd = s => { const d = parse(s); return d ? fmtDate(d) : '—'; };
+const roomLabel = v => /^\d+$/.test(String(v || '')) ? 'Courtroom ' + v : v || 'No courtroom (video or unassigned)';
+const MINS = { Arraignment: 15, 'Pretrial Conference': 20, 'Small Claims Hearing': 30, 'Motion Hearing': 30, 'Preliminary Examination': 60, 'Traffic Hearing': 15, 'Jury Trial': 480, 'Bench Trial': 240, 'Sentencing Hearing': 30, 'Oral Argument': 15 };
+const hMins = h => parseInt(h.minutes, 10) || MINS[h.type] || 30;
+const ctx = () => ({ account, role, accts, scope });
+let cases = [], accts = [], all = [], conflicts = new Map(), tab = 'daily', day = dayKey(new Date()), fRoom = '', fOfficer = '', fType = '', q = '', cs = { status: 'active', type: '', judge: '', q: '', n: 80 }, note = '', noteKind = 'ok', newest = true;
+const safe = p => p.catch(() => ({ docs: [] }));
+async function load() {
+  const [a, b] = await Promise.all([Promise.all(scope.map(ct => safe(getDocs(collection(db, colFor(ct)))))), safe(getDocs(collection(db, 'accounts')))]);
+  cases = a.flatMap(s => s.docs.map(d => ({ ...d.data(), _id: d.id }))); accts = b.docs.map(d => ({ uid: d.id, ...d.data() })); rebuild();
+}
+function rebuild() {
+  all = []; cases.forEach(c => (c.hearings || []).forEach((h, i) => { const when = parse(h.date); if (when) all.push({ key: `${c._id}~${i}`, c, h, when, mins: hMins(h) }); })); all.sort((x, y) => x.when - y.when);
+  conflicts = new Map(); const live = all.filter(x => !hv(x.h.result));
+  for (let i = 0; i < live.length; i++) for (let j = i + 1; j < live.length; j++) { const a = live[i], b = live[j]; if (b.when >= new Date(a.when.getTime() + a.mins * 6e4)) break;
+    const why = a.h.officer && a.h.officer === b.h.officer ? `${a.h.officer} is in two hearings at once` : a.h.courtroom && a.h.courtroom === b.h.courtroom && a.h.attendance !== 'video' && b.h.attendance !== 'video' ? `${roomLabel(a.h.courtroom)} is double-booked` : '';
+    if (why) { conflicts.set(a.key, why); conflicts.set(b.key, why); } }
+}
+const can = c => governs(ctx(), c);
+const stateOf = x => x.h.result === 'Cancelled' ? ['plain', 'Cancelled'] : hv(x.h.result) ? ['done', 'Held'] : x.when < new Date() ? ['bad', 'Needs result'] : ['live', 'Set'];
+const attys = c => [...new Set(partiesOf(c).flatMap(p => [...(p.attorneys || []), ...(p.attorney ? [p.attorney] : [])].map(a => a?.name).filter(Boolean)))].slice(0, 3);
+const isOpenC = c => !/closed|disposed|dismissed/i.test(c.status || '');
+const caseByRef = k => cases.find(c => c._id === k);
+
+/* ── Views ──────────────────────────────────────────────────────────── */
+function draw() {
+  const today = dayKey(new Date()), todays = all.filter(x => dayKey(x.when) === today && x.h.result !== 'Cancelled'), needs = all.filter(x => !hv(x.h.result) && x.when < new Date()).length, open = cases.filter(isOpenC).length;
+  const wr = cases.reduce((n, c) => n + (c.warrants || []).filter(w => w.status === 'Issued').length, 0);
+  const label = scope.length === 1 ? scope[0] : 'Michigan Courts';
+  root.innerHTML = `${note ? `<div class="${noteKind === 'ok' ? 'note' : 'alert-line red'}" role="status">${esc(note)}</div>` : ''}
+    <section class="dk-hero"><div><h3>Official docket</h3><div class="court">${esc(label)}</div><div class="day">${esc(fmtLong(new Date()))}</div></div>
+      <div class="dk-nums"><div><b>${todays.length}</b><span>On today</span></div><div><b>${open}</b><span>Open cases</span></div><div class="${needs ? 'hot' : ''}"><b>${needs}</b><span>Need a result</span></div><div class="${wr ? 'hot' : ''}"><b>${wr}</b><span>Active warrants</span></div></div></section>
+    <div class="perm ${isJudicial(role) ? 'edit' : 'view'}">${isChief(role) ? `<b>Chief ${scope[0] === 'Michigan Supreme Court' ? 'Justice' : 'Judge'}.</b> You can change anything on this docket.` : isJudicial(role) ? '<b>You can change</b> hearings and entries in cases you preside over, and cases heard by magistrates you supervise. Everything else is view only.' : '<b>View only.</b> Only the chief judge, the presiding judge, or a magistrate’s supervising judge can change the docket.'}</div>
+    <div class="tabs" role="tablist">${[['daily', 'Daily docket'], ['register', 'Case register'], ['oversight', 'Oversight']].map(([k, l]) => `<button type="button" role="tab" aria-selected="${tab === k}" class="${tab === k ? 'on' : ''}" data-a="tab:${k}">${l}</button>`).join('')}</div>
+    ${tab === 'daily' ? dailyView() : tab === 'register' ? registerView() : oversightView()}`;
+}
+const dayList = k => all.filter(x => dayKey(x.when) === k);
+function dailyView() {
+  const d0 = new Date(day + 'T12:00:00'), start = new Date(d0); start.setDate(d0.getDate() - d0.getDay());
+  const strip = Array.from({ length: 7 }, (_, i) => { const d = new Date(start); d.setDate(start.getDate() + i); const k = dayKey(d), n = dayList(k).filter(x => x.h.result !== 'Cancelled').length; return `<button type="button" class="${k === day ? 'on' : ''} ${k === dayKey(new Date()) ? 'today' : ''}" data-a="day:${k}"><small>${d.toLocaleDateString('en-US', { weekday: 'short' })}</small><b>${d.getDate()}</b><i>${n} hearing${n === 1 ? '' : 's'}</i></button>`; }).join('');
+  const base = dayList(day), rooms = [...new Set(base.map(x => x.h.courtroom || x.c.courtroomNumber || ''))].sort(), officers = [...new Set(base.map(x => x.h.officer).filter(Boolean))].sort(), types = [...new Set(base.map(x => x.h.type).filter(Boolean))].sort();
+  const l = base.filter(x => (!fRoom || (x.h.courtroom || x.c.courtroomNumber || '') === fRoom) && (!fOfficer || x.h.officer === fOfficer) && (!fType || x.h.type === fType) && (!q || [x.c.caseId, caption(x.c), x.h.type, x.h.officer].join(' ').toLowerCase().includes(q.toLowerCase())));
+  const by = {}; l.forEach(x => (by[x.h.courtroom || x.c.courtroomNumber || ''] ||= []).push(x));
+  const sheets = Object.keys(by).sort().map(r => { const items = by[r], offs = [...new Set(items.map(x => x.h.officer).filter(Boolean))];
+    return `<section class="sheet"><div class="room-h"><h4>${esc(roomLabel(r))}</h4><span>${offs.length ? esc(offs.join(' · ')) + ' · ' : ''}${items.length} matter${items.length === 1 ? '' : 's'}</span></div>${items.map(x => { const [st, stl] = stateOf(x), end = new Date(x.when.getTime() + x.mins * 6e4), a = attys(x.c); return `<div class="call" data-a="h:${esc(x.key)}"><div class="t">${esc(fmtTime(x.when))}<small>to ${esc(fmtTime(end))}</small></div><div><div class="cn">${esc(x.c.caseId)} · ${esc(x.c.caseType || '')}</div><div class="cap">${esc(caption(x.c))}</div><div class="mat"><b>${esc(x.h.type || 'Hearing')}</b>${x.h.attendance === 'video' ? ' · Video' : x.h.attendance === 'hybrid' ? ' · In person or video' : ''}${x.h.officer ? ` · ${esc(x.h.officer)}` : ''}</div>${a.length ? `<div class="atty">Counsel: ${esc(a.join('; '))}</div>` : ''}${conflicts.has(x.key) ? `<div class="clash">${esc(conflicts.get(x.key))}</div>` : ''}</div><div class="st"><span class="stamp ${st}">${stl}</span>${can(x.c) ? '' : '<small class="m">View only</small>'}</div></div>`; }).join('')}</section>`; }).join('');
+  return `<div class="week">${strip}</div>
+    <div class="datebar"><h3>${esc(fmtLong(d0))}</h3><button class="btn outline sm" type="button" data-a="step:-1">Previous day</button><button class="btn outline sm" type="button" data-a="step:1">Next day</button><button class="btn outline sm" type="button" data-a="day:${dayKey(new Date())}">Today</button><input class="in" type="date" id="f-day" value="${day}" aria-label="Go to date"></div>
+    <div class="tools"><input class="in" id="f-q" type="search" placeholder="Search by case, caption, hearing, or judge" value="${esc(q)}"><select class="in" id="f-room" aria-label="Courtroom"><option value="">All courtrooms</option>${rooms.map(r => `<option value="${esc(r)}" ${fRoom === r ? 'selected' : ''}>${esc(roomLabel(r))}</option>`).join('')}</select><select class="in" id="f-off" aria-label="Judicial officer"><option value="">All judicial officers</option>${officers.map(o => `<option ${fOfficer === o ? 'selected' : ''}>${esc(o)}</option>`).join('')}</select><select class="in" id="f-type" aria-label="Hearing type"><option value="">All hearing types</option>${types.map(o => `<option ${fType === o ? 'selected' : ''}>${esc(o)}</option>`).join('')}</select></div>
+    ${sheets || `<section class="card"><div class="empty"><strong>No hearings on ${esc(fmtDate(d0))}</strong><p>${base.length ? 'Nothing matches your filters.' : 'Use the week strip or date box to look at another day.'}</p></div></section>`}`;
+}
+function registerView() {
+  const judges = [...new Set(cases.map(c => c.judge).filter(Boolean))].sort(), types = [...new Set(cases.map(c => c.caseType).filter(Boolean))].sort();
+  const l = cases.filter(c => (cs.status === 'all' || (cs.status === 'active' ? isOpenC(c) : !isOpenC(c))) && (!cs.type || c.caseType === cs.type) && (!cs.judge || (cs.judge === '__none' ? !c.judge : c.judge === cs.judge)) && (!cs.q || [c.caseId, caption(c), c.judge, ...partiesOf(c).map(p => p.name)].join(' ').toLowerCase().includes(cs.q.toLowerCase()))).sort((x, y) => String(y.dates?.filed || '').localeCompare(String(x.dates?.filed || '')));
+  const nextH = c => (c.hearings || []).map(h => ({ h, w: parse(h.date) })).filter(x => x.w && x.w > new Date() && !hv(x.h.result)).sort((a, b) => a.w - b.w)[0];
+  return `<div class="tools"><input class="in" id="c-q" type="search" placeholder="Search by case number, caption, party, or judge" value="${esc(cs.q)}"><select class="in" id="c-status" aria-label="Status"><option value="active" ${cs.status === 'active' ? 'selected' : ''}>Open cases</option><option value="closed" ${cs.status === 'closed' ? 'selected' : ''}>Closed cases</option><option value="all" ${cs.status === 'all' ? 'selected' : ''}>All cases</option></select><select class="in" id="c-type" aria-label="Case type"><option value="">All case types</option>${types.map(t => `<option ${cs.type === t ? 'selected' : ''}>${esc(t)}</option>`).join('')}</select><select class="in" id="c-judge" aria-label="Judge"><option value="">All judges</option><option value="__none" ${cs.judge === '__none' ? 'selected' : ''}>Not assigned</option>${judges.map(j => `<option ${cs.judge === j ? 'selected' : ''}>${esc(j)}</option>`).join('')}</select></div>
+  <section class="card flush">${!l.length ? '<div class="empty"><strong>No cases match</strong></div>' : `<div class="table-scroll"><table><thead><tr><th>Case</th><th>Type</th><th>Judicial officer</th><th>Filed</th><th>Next hearing</th><th>Status</th></tr></thead><tbody>${l.slice(0, cs.n).map(c => { const n = nextH(c); return `<tr data-a="case:${esc(c._id)}"><td><b>${esc(c.caseId)}</b><small>${esc(caption(c))}</small></td><td>${esc(c.caseType || '—')}</td><td>${esc(c.judge || 'Not assigned')}${c.courtroomNumber ? `<small>Courtroom ${esc(c.courtroomNumber)}</small>` : ''}</td><td>${esc(sd(c.dates?.filed))}</td><td>${n ? `${esc(fmtDate(n.w))}<small>${esc(n.h.type || '')}</small>` : '<span class="m">None</span>'}</td><td><span class="pill ${isOpenC(c) ? 'live' : 'plain'}">${esc(c.status || '—')}</span></td></tr>`; }).join('')}</tbody></table></div>${l.length > cs.n ? `<div style="padding:12px;text-align:center"><button class="btn outline" type="button" data-a="more">Show more (${l.length - cs.n} left)</button></div>` : ''}`}</section>`;
+}
+function oversightView() {
+  const now = new Date(), needs = all.filter(x => !hv(x.h.result) && x.when < now).slice(-30).reverse(), clash = [...new Set([...conflicts.keys()])].map(k => all.find(x => x.key === k)).filter(Boolean).filter(x => x.when > now).slice(0, 30);
+  const nojudge = cases.filter(c => isOpenC(c) && !c.judge).slice(0, 30), wc = cases.filter(c => (c.warrants || []).some(w => w.status === 'Issued')).slice(0, 30), unserved = cases.filter(c => isOpenC(c) && partiesOf(c).some(p => /defendant|respondent/i.test(p.role || '') && !(p.served === true || (p.served === undefined && p.serviceDate)))).slice(0, 30);
+  const list = (items, f) => items.length ? `<ul>${items.map(f).join('')}</ul>` : '<p class="m">Nothing to show.</p>';
+  const hl = x => `<li data-a="h:${esc(x.key)}"><span><b>${esc(x.c.caseId)}</b> <small>${esc(x.h.type || 'Hearing')}</small></span><small>${esc(fmtDate(x.when))}</small></li>`, cl = (c, s) => `<li data-a="case:${esc(c._id)}"><span><b>${esc(c.caseId)}</b> <small>${esc(caption(c))}</small></span><small>${esc(s(c))}</small></li>`;
+  return `<div class="over"><section class="card"><h3>Hearings that need a result (${all.filter(x => !hv(x.h.result) && x.when < now).length})</h3>${list(needs, hl)}</section>
+    <section class="card"><h3>Double-booked hearings (${clash.length})</h3>${list(clash, x => `<li data-a="h:${esc(x.key)}"><span><b>${esc(x.c.caseId)}</b> <small>${esc(conflicts.get(x.key))}</small></span><small>${esc(fmtDate(x.when))}</small></li>`)}</section>
+    <section class="card"><h3>Open cases with no judicial officer (${cases.filter(c => isOpenC(c) && !c.judge).length})</h3>${list(nojudge, c => cl(c, k => sd(k.dates?.filed)))}</section>
+    <section class="card"><h3>Cases with an active warrant (${cases.filter(c => (c.warrants || []).some(w => w.status === 'Issued')).length})</h3>${list(wc, c => cl(c, k => (k.warrants || []).filter(w => w.status === 'Issued').map(w => w.type).join(', ')))}</section>
+    <section class="card"><h3>Open cases with a defendant not yet served (${cases.filter(c => isOpenC(c) && partiesOf(c).some(p => /defendant|respondent/i.test(p.role || '') && !(p.served === true || (p.served === undefined && p.serviceDate)))).length})</h3>${list(unserved, c => cl(c, k => sd(k.dates?.filed)))}</section></div>`;
+}
+
+/* ── Hearing detail and changes ─────────────────────────────────────── */
+const kvl = r => `<dl class="sh-head">${r.filter(x => x[1] !== undefined && x[1] !== null && x[1] !== '').map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join('')}</dl>`;
+function hearingModal(x) {
+  const c = x.c, [st, stl] = stateOf(x), edit = can(c) && !hv(x.h.result), pres = presidingOf(c, accts);
+  modal({ title: x.h.type || 'Hearing', sub: `${c.caseId} · ${caption(c)}`, onOk: null, wide: true,
+    extra: `<a class="btn outline" href="${CM}${encodeURIComponent(c._id)}">Open case</a>${edit ? `<button class="btn outline" type="button" data-a="resched:${esc(x.key)}">Reschedule</button><button class="btn bad" type="button" data-a="cancelh:${esc(x.key)}">Cancel hearing</button>` : ''}`,
+    body: `<div class="pills" style="margin-bottom:10px"><span class="stamp ${st}">${stl}</span></div>` + kvl([['Date', fmtLong(x.when)], ['Time', `${fmtTime(x.when)} to ${fmtTime(new Date(x.when.getTime() + x.mins * 6e4))}`], ['Courtroom', roomLabel(x.h.courtroom || c.courtroomNumber)], ['Judicial officer', x.h.officer || pres?.name || c.judge], ['Attendance', x.h.attendance === 'video' ? 'Video only' : x.h.attendance === 'hybrid' ? 'In person or by video' : 'In person'], ['Result', x.h.result], ['Notes', x.h.notes]])
+      + (conflicts.has(x.key) ? `<div class="alert-line red">${esc(conflicts.get(x.key))}</div>` : '') + (!can(c) ? '<p class="m">Only the chief judge, the presiding judge, or a magistrate’s supervising judge can change this hearing. To record a result, use Manage Hearings.</p>' : `<p class="m">To record the outcome of the hearing, use <a href="${MH}">Manage Hearings</a>.</p>`) });
+}
+const clashFor = (x, when, room, officer, mins) => { const end = new Date(when.getTime() + mins * 6e4); return all.filter(y => y.key !== x.key && !hv(y.h.result) && y.when < end && new Date(y.when.getTime() + y.mins * 6e4) > when).map(y => officer && y.h.officer === officer ? `${officer} is in ${y.c.caseId} at that time.` : room && (y.h.courtroom || y.c.courtroomNumber) === room && y.h.attendance !== 'video' ? `${roomLabel(room)} is booked for ${y.c.caseId} at that time.` : '').find(Boolean); };
+const cmNotice = async (c, n) => { try { const r = doc(db, 'caseManagement', c._id); await runTransaction(db, async tx => { const s = await tx.get(r), a = [...((s.exists() && s.data().notifications) || [])], next = [...a, { num: a.reduce((m, y) => Math.max(m, y.num || 0), 0) + 1, at: iso(), read: false, ...n }]; s.exists() ? tx.update(r, { notifications: next }) : tx.set(r, { tasks: [], notifications: next, internalNotes: [], auditLog: [], caseFirestoreId: c._id }); }); } catch (e) { console.warn('Notice not saved', e); } };
+function reschedModal(x) {
+  const c = x.c, d = x.when, loc = `${d.getFullYear()}-${p2(d.getMonth() + 1)}-${p2(d.getDate())}T${p2(d.getHours())}:${p2(d.getMinutes())}`;
+  modal({ title: 'Reschedule hearing', sub: `${c.caseId} · ${x.h.type || 'Hearing'}`, ok: 'Reschedule', okCls: 'good', body: fld('New date and time', 'r-when', loc, { type: 'datetime-local' }) + selF('Courtroom', 'r-room', [['', 'No courtroom (video)'], ['1', 'Courtroom 1'], ['2', 'Courtroom 2'], ['3', 'Courtroom 3'], ...(x.h.courtroom && !['1', '2', '3'].includes(String(x.h.courtroom)) ? [[x.h.courtroom, x.h.courtroom]] : [])], String(x.h.courtroom || '')) + area('Reason (required)', 'r-why'),
+    onOk: async () => { const nd = parse(val('r-when')), why = val('r-why'); need(nd, 'Choose the new date and time.'); need(why, 'Enter the reason.'); need(nd > new Date(), 'The new time must be in the future.'); const room = val('r-room'), cl = clashFor(x, nd, room, x.h.officer, x.mins); need(!cl, cl);
+      const old = x.h; await editCase(c, (d0, at) => { const arr = [...(d0.hearings || [])], k = arr.findIndex(h => JSON.stringify(h) === JSON.stringify(old)); if (k < 0) bad('Someone else changed this hearing. Reload and try again.'); arr[k] = { ...old, date: nd.toISOString(), courtroom: room || null, rescheduledFrom: old.date, rescheduledBy: account.name, rescheduledAt: iso(at) };
+        return { patch: { hearings: arr }, event: { description: `${old.type || 'Hearing'} rescheduled from ${parse(old.date).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' })} to ${nd.toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' })}${room ? ', ' + roomLabel(room) : ''}.`, comment: why } }; });
+      await cmNotice(c, { type: 'Notice of Hearing', title: 'Hearing Rescheduled', text: `${old.type || 'Hearing'} is now ${nd.toLocaleString('en-US', { dateStyle: 'full', timeStyle: 'short' })}${room ? ', ' + roomLabel(room) : ''}. ${why}` });
+      rebuild(); note = 'Hearing rescheduled. The parties have been notified.'; noteKind = 'ok'; day = dayKey(nd); dlg.close(); draw(); } });
+}
+function cancelModal(x) {
+  const c = x.c; modal({ title: 'Cancel hearing', sub: `${c.caseId} · ${x.h.type || 'Hearing'} on ${fmtDate(x.when)}`, ok: 'Cancel hearing', okCls: 'bad', body: area('Reason (required)', 'x-why'),
+    onOk: async () => { const why = val('x-why'); need(why, 'Enter the reason.'); const old = x.h;
+      await editCase(c, (d0, at) => { const arr = [...(d0.hearings || [])], k = arr.findIndex(h => JSON.stringify(h) === JSON.stringify(old)); if (k < 0) bad('Someone else changed this hearing. Reload and try again.'); arr[k] = { ...old, result: 'Cancelled', cancelReason: why, cancelledBy: account.name, cancelledAt: iso(at) }; return { patch: { hearings: arr }, event: { description: `${old.type || 'Hearing'} set for ${fmtDate(x.when)} cancelled.`, comment: why } }; });
+      await cmNotice(c, { type: 'Notice of Hearing', title: 'Hearing Cancelled', text: `${old.type || 'Hearing'} set for ${x.when.toLocaleString('en-US', { dateStyle: 'full', timeStyle: 'short' })} is cancelled. ${why}` });
+      rebuild(); note = 'Hearing cancelled. The parties have been notified.'; noteKind = 'ok'; dlg.close(); draw(); } });
+}
+
+/* ── Docket sheet for one case ──────────────────────────────────────── */
+function caseModal(c) {
+  const ev = [...(c.events || [])].sort((a, b) => newest ? (b.eventNumber || 0) - (a.eventNumber || 0) : (a.eventNumber || 0) - (b.eventNumber || 0)), ps = partiesOf(c), pres = presidingOf(c, accts);
+  const hs = (c.hearings || []).map(h => ({ h, w: parse(h.date) })).filter(x => x.w).sort((a, b) => a.w - b.w);
+  modal({ title: 'Docket sheet', sub: `${c.caseId} · ${c.court}`, onOk: null, wide: true, extra: `<a class="btn outline" href="${CM}${encodeURIComponent(c._id)}">Open in Case Management</a>${can(c) ? '<button class="btn" type="button" data-a="entry:' + esc(c._id) + '">Add a docket entry</button>' : ''}`,
+    body: `<div class="cap-sub">${esc(c.court)}</div><div class="cap-big">${esc(caption(c))}</div><div class="cap-sub">Case No. ${esc(c.caseId)}</div>`
+      + kvl([['Case type', c.caseType], ['Status', c.status], ['Judicial officer', pres?.name || c.judge], ['Courtroom', c.courtroomNumber ? 'Courtroom ' + c.courtroomNumber : ''], ['Filed', sd(c.dates?.filed)], ['Last activity', sd(c.dates?.lastUpdated)]])
+      + `<h4 class="sec">Parties</h4><div class="table-scroll"><table><thead><tr><th>Party</th><th>Role</th><th>Counsel</th><th>Service</th></tr></thead><tbody>${ps.map(p => { const a = [...(p.attorneys || []), ...(p.attorney ? [p.attorney] : [])].map(x => x?.name).filter(Boolean), sv = p.served === true || (p.served === undefined && p.serviceDate); return `<tr><td><b>${esc(p.name)}</b></td><td>${esc(p.role || '')}</td><td>${esc(a.join('; ') || (p.role && /defendant|respondent/i.test(p.role) ? 'Self-represented' : '—'))}</td><td>${/defendant|respondent/i.test(p.role || '') ? (sv ? `Served ${esc(sd(p.serviceDate))}` : 'Not served') : '—'}</td></tr>`; }).join('') || '<tr><td colspan="4" class="m">No parties recorded.</td></tr>'}</tbody></table></div>`
+      + ((c.warrants || []).length ? `<h4 class="sec">Warrants</h4>${c.warrants.map(w => `<div class="note"><b>${esc(w.type)}</b>${w.subject ? ' — ' + esc(w.subject) : ''} <span class="pill ${w.status === 'Issued' ? 'bad' : 'plain'}">${esc(w.status)}</span>${w.issuedAt ? `<small>Issued ${esc(sd(w.issuedAt))}${w.issuedBy ? ' by ' + esc(w.issuedBy) : ''}</small>` : ''}</div>`).join('')}` : '')
+      + ((c.supervision || []).length ? `<h4 class="sec">Supervision</h4>${c.supervision.map(o => `<div class="note"><b>${esc(o.type)}</b> — ${esc(o.subject)} <span class="pill ${o.status === 'Active' ? 'live' : 'plain'}">${esc(o.status)}</span>${o.hours ? `<small>${esc(o.hoursCompleted || 0)} of ${esc(o.hours)} hours</small>` : ''}</div>`).join('')}` : '')
+      + (hs.length ? `<h4 class="sec">Hearings</h4><div class="table-scroll"><table><thead><tr><th>Date</th><th>Hearing</th><th>Where</th><th>Result</th></tr></thead><tbody>${hs.map(x => `<tr><td>${esc(fmtDate(x.w))} ${esc(fmtTime(x.w))}</td><td>${esc(x.h.type || '')}<small>${esc(x.h.officer || '')}</small></td><td>${esc(roomLabel(x.h.courtroom))}</td><td>${esc(x.h.result || '—')}</td></tr>`).join('')}</tbody></table></div>` : '')
+      + `<h4 class="sec">Register of actions <button class="btn outline sm" type="button" data-a="flip:${esc(c._id)}">${newest ? 'Newest first' : 'Oldest first'}</button></h4><table class="reg"><thead><tr><th>No.</th><th>Date</th><th>Proceedings</th></tr></thead><tbody>${ev.map(e => `<tr class="${e.sealed ? 'sealed' : ''}"><td>${esc(e.eventNumber ?? '')}</td><td>${esc(sd(e.date))}</td><td>${esc(e.description || e.type || '')}${e.sealed ? ' <span class="pill warn">Sealed</span>' : ''}${e.comment ? `<small>${esc(e.comment)}</small>` : ''}${e.documentLink ? ` <a href="${esc(e.documentLink)}" target="_blank" rel="noopener">Document</a>` : ''}</td></tr>`).join('') || '<tr><td colspan="3" class="m">No entries.</td></tr>'}</tbody></table>` });
+}
+function entryModal(c) {
+  modal({ title: 'Add a docket entry', sub: `${c.caseId} · ${caption(c)}`, ok: 'Add entry', okCls: 'good', body: selF('Type', 'e-type', [['event', 'Event'], ['order', 'Order'], ['notice', 'Notice']], 'event') + area('Entry (required)', 'e-desc', '', 'What the docket should say.') + area('Comment (optional)', 'e-com') + chk('e-seal', 'Seal this entry (not shown on public case search)', false),
+    onOk: async () => { const d = val('e-desc'); need(d, 'Enter the docket entry.'); await editCase(c, () => ({ event: { type: val('e-type'), description: d, comment: val('e-com') || null, sealed: $('e-seal').checked } })); rebuild(); note = 'Docket entry added.'; noteKind = 'ok'; caseModal(c); draw(); } });
+}
+
+/* ── Events ─────────────────────────────────────────────────────────── */
+function act(a) {
+  const i = a.indexOf(':'), n = i < 0 ? a : a.slice(0, i), v = i < 0 ? '' : a.slice(i + 1);
+  if (n === 'tab') { tab = v; note = ''; draw(); } else if (n === 'day') { day = v; draw(); } else if (n === 'step') { const d = new Date(day + 'T12:00:00'); d.setDate(d.getDate() + Number(v)); day = dayKey(d); draw(); }
+  else if (n === 'h') { const x = all.find(y => y.key === v); x && hearingModal(x); } else if (n === 'resched') { const x = all.find(y => y.key === v); x && reschedModal(x); } else if (n === 'cancelh') { const x = all.find(y => y.key === v); x && cancelModal(x); }
+  else if (n === 'case') { const c = caseByRef(v); c && caseModal(c); } else if (n === 'entry') { const c = caseByRef(v); c && entryModal(c); } else if (n === 'flip') { newest = !newest; const c = caseByRef(v); c && caseModal(c); } else if (n === 'more') { cs.n += 80; draw(); }
+}
+const keep = id => { const i = $(id); if (i) { i.focus(); try { i.setSelectionRange(i.value.length, i.value.length); } catch { } } };
+root.addEventListener('click', e => { const el = e.target.closest('[data-a]'); if (el) act(el.dataset.a); });
+root.addEventListener('input', e => { const t = e.target; if (t.id === 'f-q') { q = t.value; draw(); keep('f-q'); } else if (t.id === 'c-q') { cs.q = t.value; cs.n = 80; draw(); keep('c-q'); } });
+root.addEventListener('change', e => { const t = e.target, m = { 'f-day': () => day = t.value || day, 'f-room': () => fRoom = t.value, 'f-off': () => fOfficer = t.value, 'f-type': () => fType = t.value, 'c-status': () => cs.status = t.value, 'c-type': () => cs.type = t.value, 'c-judge': () => cs.judge = t.value }; if (m[t.id]) { m[t.id](); draw(); } });
+try { await load(); } catch (e) { console.error(e); root.innerHTML = '<div class="alert" role="alert"><strong>We could not load the docket.</strong><p>Refresh to try again.</p></div>'; throw e; }
+{ const h = decodeURIComponent(location.hash.slice(1)); const c = h && cases.find(k => k.caseId === h || k._id === h); if (c) { tab = 'register'; cs.q = c.caseId; cs.status = 'all'; draw(); caseModal(c); } else draw(); }
+}
+
+</script>
+</body>
+</html>

@@ -55,7 +55,7 @@ dialog>footer{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:10px;padd
 <div class="auth-loading-overlay" id="auth-overlay" role="status"><div class="alo-title">Online Portal</div><div class="spin"></div><div>Verifying your session…</div></div>
 
 <script type="module">
-import { boot, db, $, esc, has, STAFF, OFFICERS, scopeOf, colFor, logAction, DISTRICT_COURT, SUPREME_COURT } from '/courts/online-services/portal/dashboard/assets/js/portal-shell.js?v=6';
+import { boot, db, $, esc, has, STAFF, OFFICERS, scopeOf, colFor, logAction, DISTRICT_COURT, SUPREME_COURT } from '/courts/online-services/portal/dashboard/assets/js/portal-shell.js?v=7';
 import * as F from '/courts/online-services/portal/dashboard/assets/js/finance.js?v=1';
 import { collection, getDocs, doc, runTransaction } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 
@@ -84,11 +84,11 @@ class UserError extends Error {} const bad = m => { throw new UserError(m); };
 const errText = e => e instanceof UserError ? e.message : e?.code === 'permission-denied' ? 'Your account is not allowed to change this record. The Firestore rules must let court staff update cases. (permission-denied)' : `We could not save this change. Check your connection and try again.${e?.code ? ' (' + e.code + ')' : ''}`;
 
 /* ── Data ───────────────────────────────────────────────────────────── */
-let cases = [], items = [], tab = 'orders', chip = 'outstanding', note = '', noteKind = 'ok', back = null;
+let accts = [], cases = [], items = [], tab = 'orders', chip = 'outstanding', note = '', noteKind = 'ok', back = null;
 const f = { q: '', type: '', court: '', mine: isJud };
 async function load() {
   const safe = p => p.catch(() => ({ docs: [] }));
-  const snaps = await Promise.all(scope.map(ct => safe(getDocs(collection(db, colFor(ct)))))); cases = snaps.flatMap(s => s.docs.map(d => ({ ...d.data(), _id: d.id }))); rebuild();
+  const snaps = await Promise.all(scope.map(ct => safe(getDocs(collection(db, colFor(ct)))))); cases = snaps.flatMap(s => s.docs.map(d => ({ ...d.data(), _id: d.id }))); accts = (await safe(getDocs(collection(db, 'accounts')))).docs.map(d => ({ uid: d.id, name: d.data().name || '', role: d.data().role || '', dob: d.data().dob || d.data().dateOfBirth || d.data().birthDate || d.data().birthdate || '', pin: d.data().mipassPin || '', email: d.data().email || '' })).filter(a => a.name); rebuild();
 }
 function rebuild() { items = []; cases.forEach(c => (c.financialOrders || []).forEach((o, i) => { const raw = F.normalize(o, F.idOf(c, i)), r = F.accrue(raw, NOW); items.push({ key: c._id + '|' + raw.id, c, o: r.order, due: r.posted }); })); }
 const byKey = k => items.find(x => x.key === k);
@@ -98,6 +98,12 @@ const mineOf = x => x.c.judgeUid === account.uid || nameKey(x.c.judge) === nameK
 async function cmUpdate(c, field, fn) {
   const r = doc(db, 'caseManagement', c._id);
   await runTransaction(db, async tx => { const s = await tx.get(r), next = fn([...((s.exists() && s.data()[field]) || [])]); if (s.exists()) tx.update(r, { [field]: next }); else tx.set(r, { tasks: [], notifications: [], internalNotes: [], auditLog: [], caseFirestoreId: c._id, [field]: next }); });
+}
+// Identity details for someone who is not a party (PIN, date of birth) live in the staff-only case-management record, never on the public case.
+async function savePayor(c, orderId, info) {
+  const r = doc(db, 'caseManagement', c._id);
+  await runTransaction(db, async tx => { const s = await tx.get(r), cur = (s.exists() && s.data().payors) || {}, next = { ...cur, [orderId]: info };
+    if (s.exists()) tx.update(r, { payors: next }); else tx.set(r, { tasks: [], notifications: [], internalNotes: [], auditLog: [], caseFirestoreId: c._id, payors: next }); });
 }
 const addAudit = async (c, action) => { try { await cmUpdate(c, 'auditLog', a => [...a, { action, by: account.name, byUid: account.uid, byRole: role, at: iso() }]); } catch (e) { console.warn('Audit entry not saved', e); } };
 const notify = async (c, n) => { try { await cmUpdate(c, 'notifications', a => [...a, { num: a.reduce((m, x) => Math.max(m, x.num || 0), 0) + 1, at: iso(), read: false, type: 'Financial Notice', ...n }]); await addAudit(c, `Auto-issued notice: ${n.title} — ${n.text}`); } catch (e) { console.warn('Notice not saved', e); } };
@@ -112,7 +118,7 @@ async function mutate(c, fn) {
     tx.update(r, p); return { ...d, ...p };
   });
   Object.assign(c, next); rebuild();
-  for (const p of posts) for (const q of p.posted) await notify(c, { title: q.kind === 'late-fee' ? 'Late Fee Added' : q.kind === 'interest' ? 'Interest Added' : 'Payment Plan Defaulted', text: `${p.order.type}: ${q.kind === 'late-fee' ? `a ${F.LATE_RATE * 100}% late fee of ${money(q.amount)} was added because the balance was not paid within ${F.GRACE_DAYS} days after the due date.` : q.kind === 'interest' ? `interest of ${money(q.amount)} was added.` : q.reason}` });
+  for (const p of posts) for (const q of p.posted) await notify(c, { title: q.kind === 'late-fee' ? 'Late Fee Added' : q.kind === 'interest' ? 'Interest Added' : 'Payment Plan Defaulted', text: `${p.order.type}: ${q.kind === 'late-fee' ? `a ${r2(F.lateRateOf(p.order) * 100)}% late fee of ${money(q.amount)} was added because the balance was not paid within ${F.graceOf(p.order)} days after the due date.` : q.kind === 'interest' ? `interest of ${money(q.amount)} was added.` : q.reason}` });
   if (out.audit) await addAudit(c, out.audit); if (out.notice) await notify(c, out.notice);
   if (out.event) { const n = (next.events || []).slice(-1)[0]?.eventNumber; await logAction(account, role, c.court, 'event-entry', { caseId: c.caseId, ref: `${c.caseId}:event:${n}` }); }
   return out;
@@ -165,35 +171,75 @@ function paymentModal(x) {
         return { orders: upd(arr, x.o.id, o => ({ ...o, payments: [...o.payments, pay] })), audit: `Recorded payment of ${money(amt)} (${val('p-meth')}) on ${x.o.type}` }; });
       receipt(pay, x.c, x.o, x.key); } });
 }
-function assessModal() {
-  const open = cases.filter(c => !/closed/i.test(c.status || '')); let c = null;
-  const parties = () => F.caseParties(c || {}).map(p => [p.name, `${p.name} — ${p.role}`]);
-  modal({ title: 'Assess a fine, fee or judgment', sub: 'Adds a new financial order to a case.', ok: 'Assess', okCls: 'good', wide: true,
-    body: fld('Case', 'a-case', '', { ph: 'Start typing a case number or name', list: 'a-cases', hint: 'Choose the case this is assessed in.' }) + dlist('a-cases', open.map(k => `${k.caseId} — ${caption(k)}`))
-      + g2(selF('Type', 'a-type', F.TYPES.map(t => [t, t]), 'Court Fine'), `<label class="f"><span>Who owes it</span><select id="a-payor"><option value="">Choose a case first</option></select></label>`)
-      + g2(fld('Amount ($)', 'a-amt', '', { type: 'number', step: '0.01', min: 0.01 }), fld('Due date', 'a-due', plus(30), { type: 'date', hint: 'A 20% late fee applies if a fine or fee is unpaid 5 days after this date.' }))
-      + fld('Description', 'a-desc', '', { ph: 'e.g. Speeding, 15 mph over' }) + `<div id="a-int" hidden>${fld('Interest rate (% per year)', 'a-rate', String(F.JUDGMENT_RATE), { type: 'number', step: '0.01', min: 0, hint: 'Simple interest posts each month on the unpaid balance.' })}</div>`,
-    onChange: e => { if (e.target.id === 'a-case') { const m = open.find(k => `${k.caseId} — ${caption(k)}` === e.target.value || k.caseId === e.target.value.trim()); if (m) { c = m; $('a-payor').innerHTML = parties().map(([v, l]) => `<option value="${esc(v)}">${esc(l)}</option>`).join(''); } }
-      if (e.target.id === 'a-type') { const k = F.typeKind(e.target.value); $('a-int').hidden = k !== 'judgment'; if (k === 'restitution' || k === 'judgment') $('a-due').value = ''; else if (!$('a-due').value) $('a-due').value = plus(30); } },
-    onOk: async () => { need(c, 'Choose a case from the list.'); const type = val('a-type'), amt = r2(val('a-amt')), payor = val('a-payor'); need(amt > 0, 'Enter the amount.'); need(payor, 'Choose who owes it.');
-      const due = val('a-due') || null, desc = val('a-desc') || null, k = F.typeKind(type), cc = c;
-      await mutate(cc, (arr, d, at) => { const o = { id: F.newId('FO'), type, description: desc, payor, amount: amt, originalAmount: amt, dueDate: due, assessmentDate: iso(at), assessedBy: account.name, payments: [], adjustments: [], garnishments: [], ...(k === 'judgment' ? { interest: { rate: r2(val('a-rate') || F.JUDGMENT_RATE), lastAccrued: null } } : {}) };
-        return { orders: [...arr, o], event: { description: `${k === 'judgment' ? 'Money judgment entered' : 'Financial assessment entered'}: ${type}${desc ? ' (' + desc + ')' : ''} of ${money(amt)} against ${payor}${due ? `, due ${fmtD(due)}` : ''}.` }, audit: `Assessed ${type} ${money(amt)} against ${payor}`,
+/* Interest and late-fee terms are shared by the assess and modify dialogs. */
+const PER = [['day', 'day'], ['week', 'week'], ['month', 'month'], ['year', 'year']];
+function interestFields(o, judgment) {
+  const i = o?.interest || {}, on = o ? F.rateOf(o) > 0 : !!judgment, per = i.per || ((o && F.rateOf(o) > 0) || (judgment && !o) ? 'year' : 'month'), rate = o ? (F.rateOf(o) || '') : judgment ? F.JUDGMENT_RATE : '';
+  return `<label class="chk mt"><input type="checkbox" id="i-on" ${on ? 'checked' : ''}> Charge interest</label><div id="i-box" ${on ? '' : 'hidden'}>`
+    + g2(fld('Interest rate (%)', 'i-rate', String(rate), { type: 'number', step: '0.001', min: 0 }), selF('Charged per', 'i-per', PER, per))
+    + g2(selF('Interest type', 'i-comp', [['simple', 'Simple (on the unpaid amount owed)'], ['compound', 'Compounding (interest on interest)']], i.compound ? 'compound' : 'simple'), fld('Interest starts', 'i-from', (i.from || '').slice(0, 10) || '', { type: 'date', hint: 'Leave blank to start from the date assessed.' }))
+    + '</div>';
+}
+function readInterest(prev) {
+  if (!$('i-on').checked) return { rate: 0, per: val('i-per') || 'month', lastAccrued: prev?.lastAccrued || null, from: prev?.from || null };
+  const rate = Number(val('i-rate')); need(val('i-rate') !== '' && rate > 0, 'Enter the interest rate, or untick Charge interest.');
+  const from = val('i-from') || null, per = val('i-per') || 'month', same = prev && prev.per === per && !!prev.compound === (val('i-comp') === 'compound') && (prev.from || null) === from;
+  return { rate, per, compound: val('i-comp') === 'compound', from, lastAccrued: same ? prev.lastAccrued || null : (from ? null : prev?.lastAccrued || null), setBy: account.name };
+}
+function lateFields(o) {
+  const l = o?.lateFee, mode = l ? (l.enabled === false ? 'none' : (l.rate != null || l.graceDays != null) ? 'custom' : 'std') : 'std';
+  return selF('Late fee', 'l-mode', [['std', `Standard (${F.LATE_RATE * 100}% once the balance is ${F.GRACE_DAYS} days past due; fines, fees and costs only)`], ['custom', 'Custom late fee'], ['none', 'No late fee']], mode)
+    + `<div id="l-box" ${mode === 'custom' ? '' : 'hidden'}>` + g2(fld('Late fee (% of the unpaid balance)', 'l-rate', String(l?.rate ?? F.LATE_RATE * 100), { type: 'number', step: '0.01', min: 0 }), fld('Charged after (days past due)', 'l-days', String(l?.graceDays ?? F.GRACE_DAYS), { type: 'number', step: '1', min: 0 })) + '</div>';
+}
+function readLate(prev) {
+  const m = val('l-mode'); if (m === 'std') return null;
+  if (m === 'none') return { enabled: false };
+  const rate = Number(val('l-rate')), days = Number(val('l-days')); need(val('l-rate') !== '' && rate >= 0 && val('l-days') !== '' && days >= 0, 'Enter the late-fee percentage and the number of days.');
+  return { enabled: true, rate, graceDays: days };
+}
+const termsChange = e => { if (e.target.id === 'i-on') $('i-box').hidden = !e.target.checked; if (e.target.id === 'l-mode') $('l-box').hidden = e.target.value !== 'custom'; };
+const acctLabel = a => `${a.name}${a.role ? ' — ' + a.role : ''}${a.email ? ' (' + a.email + ')' : ''}`;
+function assessModal(pre) {
+  const open = cases.filter(c => !/closed/i.test(c.status || '')); let c = pre || null;
+  const payorOpts = () => [...F.caseParties(c || {}).map(p => [p.name, `${p.name} — ${p.role}`]), ['__other', 'Someone else (not a party to this case)']];
+  modal({ title: 'Assess a fine, fee or judgment', sub: 'Adds a new financial order to a case. The person owing it does not have to be a party.', ok: 'Assess', okCls: 'good', wide: true,
+    body: fld('Case', 'a-case', pre ? `${pre.caseId} — ${caption(pre)}` : '', { ph: 'Start typing a case number or name', list: 'a-cases', hint: 'Choose the case this is assessed in.' }) + dlist('a-cases', open.map(k => `${k.caseId} — ${caption(k)}`))
+      + g2(selF('Type', 'a-type', F.TYPES.map(t => [t, t]), 'Court Fine'), `<label class="f"><span>Who owes it</span><select id="a-payor">${(pre ? payorOpts() : [['', 'Choose a case first']]).map(([v, l]) => `<option value="${esc(v)}">${esc(l)}</option>`).join('')}</select></label>`)
+      + `<div id="a-custom" hidden>${fld('Name this type of order', 'a-ctype', '', { ph: 'e.g. Contempt of court fine' })}</div>`
+      + `<div id="a-other" class="mt" hidden><div class="quote">Search the accounts by name. If the person has no account, enter their full name, PIN and date of birth so the balance can be matched to them.</div>`
+      + fld('Search accounts by name', 'o-q', '', { ph: 'Start typing a name', list: 'o-list' }) + dlist('o-list', accts.map(acctLabel))
+      + fld('Full name', 'o-name') + g2(fld('Michigan PIN', 'o-pin'), fld('Date of birth', 'o-dob', '', { type: 'date' })) + `<div id="o-hit" class="m"></div></div>`
+      + g2(fld('Amount ($)', 'a-amt', '', { type: 'number', step: '0.01', min: 0.01 }), fld('Due date', 'a-due', plus(30), { type: 'date', hint: 'Leave blank if there is no due date.' }))
+      + g2(fld('Description', 'a-desc', '', { ph: 'e.g. Speeding, 15 mph over' }), fld('Payable to (optional)', 'a-payee', '', { ph: 'Defaults to the court' }))
+      + interestFields(null, false) + lateFields(null),
+    onChange: e => { const id = e.target.id;
+      if (id === 'a-case') { const m = open.find(k => `${k.caseId} — ${caption(k)}` === e.target.value || k.caseId === e.target.value.trim()); if (m) { c = m; $('a-payor').innerHTML = payorOpts().map(([v, l]) => `<option value="${esc(v)}">${esc(l)}</option>`).join(''); } }
+      if (id === 'a-payor') $('a-other').hidden = e.target.value !== '__other';
+      if (id === 'o-q') { const a = accts.find(x => acctLabel(x) === e.target.value) || null; if (a) { $('o-name').value = a.name; if (a.pin) $('o-pin').value = a.pin; if (a.dob) $('o-dob').value = String(a.dob).slice(0, 10); $('o-hit').textContent = 'Linked to this person\'s account. They will see this balance under My financials.'; $('o-q').dataset.uid = a.uid; } else { delete $('o-q').dataset.uid; $('o-hit').textContent = ''; } }
+      if (id === 'a-type') { const k = F.typeKind(e.target.value); $('a-custom').hidden = e.target.value !== 'Other'; if (k === 'restitution' || k === 'judgment') $('a-due').value = ''; else if (!$('a-due').value) $('a-due').value = plus(30); if (k === 'judgment' && !$('i-on').checked) { $('i-on').checked = true; $('i-box').hidden = false; $('i-rate').value = F.JUDGMENT_RATE; $('i-per').value = 'year'; } }
+      termsChange(e); },
+    onOk: async () => { need(c, 'Choose a case from the list.'); let type = val('a-type'); if (type === 'Other') { type = val('a-ctype'); need(type, 'Name this type of order.'); }
+      const amt = r2(val('a-amt')); let payor = val('a-payor'), payorUid = null, ident = null; need(amt > 0, 'Enter the amount.'); need(payor, 'Choose who owes it.');
+      if (payor === '__other') { payor = val('o-name'); need(payor, 'Enter the full name of the person who owes this.'); payorUid = $('o-q').dataset.uid || null; ident = { name: payor, pin: val('o-pin') || null, dob: val('o-dob') || null, uid: payorUid, addedBy: account.name, at: iso() }; need(payorUid || ident.pin || ident.dob, 'Pick their account, or enter their PIN or date of birth so the balance can be matched to them.'); }
+      const due = val('a-due') || null, desc = val('a-desc') || null, k = F.typeKind(type), cc = c, interest = readInterest(null), lateFee = readLate(null), payee = val('a-payee') || null, id = F.newId('FO');
+      await mutate(cc, (arr, d, at) => { const o = { id, type, description: desc, payor, ...(payorUid ? { payorUid } : {}), ...(payee ? { payee } : {}), amount: amt, originalAmount: amt, dueDate: due, assessmentDate: iso(at), assessedBy: account.name, payments: [], adjustments: [], garnishments: [], ...(interest.rate > 0 ? { interest } : {}), ...(lateFee ? { lateFee } : {}) };
+        return { orders: [...arr, o], event: { description: `${k === 'judgment' ? 'Money judgment entered' : 'Financial assessment entered'}: ${type}${desc ? ' (' + desc + ')' : ''} of ${money(amt)} against ${payor}${due ? `, due ${fmtD(due)}` : ''}.` }, audit: `Assessed ${type} ${money(amt)} against ${payor}${payorUid || ident ? ' (not a party to the case)' : ''}`,
           notice: { title: 'Notice of Financial Assessment', text: `${type} of ${money(amt)} assessed against ${payor}${due ? `, due ${fmtD(due)}` : ''}. Payment can be made online under My financials.` } }; });
+      if (ident) { try { await savePayor(cc, id, ident); } catch (e) { console.warn('Payor details not saved', e); } }
       note = `${type} of ${money(amt)} assessed in ${cc.caseId}.`; noteKind = 'ok'; dlg.close(); draw(); } });
 }
 function modifyModal(x) {
   const bal = F.balanceOf(x.o);
-  modal({ title: 'Reduce or modify', sub: `${x.o.type} · ${x.c.caseId} · balance ${money(bal)}`, bk: x.key, ok: 'Enter modification', okCls: 'good',
-    body: [{ k: 'reduce', t: 'Reduce the amount owed' }, { k: 'waive', t: `Waive the balance (${money(bal)})` }, { k: 'increase', t: 'Increase the amount owed' }, { k: 'rate', t: 'Change the interest rate' }].map((o, i) => opt('m-mode', o, '', i === 0)).join('')
-      + `<div id="m-amt">${amountIn('m-n', bal)}</div><div id="m-rate" hidden>${fld('Interest rate (% per year)', 'm-r', String(F.rateOf(x.o)), { type: 'number', step: '0.01', min: 0, hint: 'Use 0 to stop interest.' })}</div>` + reasonIn(),
-    onChange: e => { if (e.target.name === 'm-mode') { const m = e.target.value; $('m-amt').hidden = m === 'waive' || m === 'rate'; $('m-rate').hidden = m !== 'rate'; } },
+  modal({ title: 'Reduce or modify', sub: `${x.o.type} · ${x.c.caseId} · balance ${money(bal)}`, bk: x.key, ok: 'Enter modification', okCls: 'good', wide: true,
+    body: [{ k: 'reduce', t: 'Reduce the amount owed' }, { k: 'waive', t: `Waive the balance (${money(bal)})` }, { k: 'increase', t: 'Increase the amount owed' }, { k: 'rate', t: 'Change the interest terms' }, { k: 'late', t: 'Change the late-fee terms' }, { k: 'due', t: 'Change the due date' }].map((o, i) => opt('m-mode', o, '', i === 0)).join('')
+      + `<div id="m-amt">${amountIn('m-n', bal)}</div><div id="m-rate" hidden>${interestFields(x.o, false)}</div><div id="m-late" hidden>${lateFields(x.o)}</div><div id="m-due" hidden>${fld('New due date', 'm-d', (x.o.dueDate || '').slice(0, 10), { type: 'date' })}</div>` + reasonIn(),
+    onChange: e => { if (e.target.name === 'm-mode') { const m = e.target.value; $('m-amt').hidden = !['reduce', 'increase'].includes(m); $('m-rate').hidden = m !== 'rate'; $('m-late').hidden = m !== 'late'; $('m-due').hidden = m !== 'due'; } termsChange(e); },
     onOk: async () => { const m = dlg.querySelector('input[name=m-mode]:checked').value, why = val('x-why'), n = r2(val('m-n')); need(why, 'Enter the reason or order reference.');
       if (m === 'reduce') { need(n > 0, 'Enter the amount.'); need(n <= bal + 0.004, `You can reduce it by up to ${money(bal)}. To go further, use Correct an error.`); } if (m === 'increase') need(n > 0, 'Enter the amount.'); if (m === 'waive') need(bal > 0, 'There is no balance to waive.');
-      const rate = r2(val('m-r')); if (m === 'rate') need(rate >= 0 && val('m-r') !== '', 'Enter the interest rate.');
-      const desc = m === 'reduce' ? `reduced by ${money(n)}` : m === 'waive' ? `waived (${money(bal)})` : m === 'increase' ? `increased by ${money(n)}` : `interest rate set to ${rate}%`;
+      const interest = m === 'rate' ? readInterest(x.o.interest) : null, lateFee = m === 'late' ? readLate(x.o.lateFee) : null, due = m === 'due' ? val('m-d') : null; if (m === 'due') need(due, 'Choose the new due date.');
+      const desc = m === 'reduce' ? `reduced by ${money(n)}` : m === 'waive' ? `waived (${money(bal)})` : m === 'increase' ? `increased by ${money(n)}` : m === 'rate' ? (interest.rate > 0 ? `interest set to ${interest.rate}% per ${interest.per}${interest.compound ? ', compounding' : ''}` : 'interest stopped') : m === 'late' ? (!lateFee ? 'late fee reset to the standard terms' : lateFee.enabled === false ? 'late fee turned off' : `late fee set to ${lateFee.rate}% after ${lateFee.graceDays} days`) : `due date changed to ${fmtD(due)}`;
       await mutate(x.c, (arr, d, at) => { const cur = arr.find(o => o.id === x.o.id), b = F.balanceOf(cur);
-        const orders = upd(arr, x.o.id, o => m === 'rate' ? { ...o, interest: { ...(o.interest || {}), rate, lastAccrued: o.interest?.lastAccrued || iso(at), setBy: account.name } } : (() => { const a = m === 'waive' ? adj('waiver', -Math.max(0, b), why) : adj(m === 'reduce' ? 'reduction' : 'increase', m === 'reduce' ? -n : n, why); return { ...o, adjustments: [...o.adjustments, a], amount: r2(o.amount + a.amount) }; })());
+        const orders = upd(arr, x.o.id, o => m === 'rate' ? { ...o, interest: { ...interest, lastAccrued: interest.lastAccrued || (interest.from ? null : o.interest?.lastAccrued || iso(at)) } } : m === 'late' ? (() => { const n2 = { ...o }; if (lateFee) n2.lateFee = lateFee; else delete n2.lateFee; return n2; })() : m === 'due' ? { ...o, dueDate: due, lateFeeAt: null } : (() => { const a = m === 'waive' ? adj('waiver', -Math.max(0, b), why) : adj(m === 'reduce' ? 'reduction' : 'increase', m === 'reduce' ? -n : n, why); return { ...o, adjustments: [...o.adjustments, a], amount: r2(o.amount + a.amount) }; })());
         return { orders, event: { description: `Order modifying financial obligation: ${x.o.type}${x.o.description ? ' (' + x.o.description + ')' : ''} ${desc}. ${why}` }, audit: `${x.o.type} ${desc}: ${why}`, notice: { title: 'Notice of Modified Financial Obligation', text: `${x.o.type} was ${desc}. ${why}` } }; });
       note = `${x.o.type} ${desc}.`; noteKind = 'ok'; closeDlg(); } });
 }
@@ -278,12 +324,12 @@ const pills = o => F.statusOf(o, NOW).map(([t, l]) => `<span class="pill ${t}">$
 function showOrder(key) {
   const x = byKey(key); if (!x) { dlg.close(); draw(); return; } const o = x.o, bal = F.balanceOf(o), open = F.isOpen(o), ps = F.planState(o, NOW), adjT = F.adjOf(o), dl = F.lateDeadline(o), gs = o.garnishments || [], active = gs.some(g => g.status === 'Active');
   const b = (a, l, cls = 'outline sm') => `<button class="btn ${cls}" type="button" data-a="${a}:${esc(key)}">${l}</button>`;
-  const lateWarn = open && F.lateEligible(o) && !o.lateFeeAt && dl && !(o.schedule?.status === 'Active') && dl > NOW ? `<div class="alert-line">A ${F.LATE_RATE * 100}% late fee (${money(bal * F.LATE_RATE)}) is added automatically after ${esc(fmtD(new Date(dl.getTime() - 1)))}.</div>` : '';
+  const lateWarn = open && F.lateEligible(o) && !o.lateFeeAt && dl && !(o.schedule?.status === 'Active') && dl > NOW ? `<div class="alert-line">A ${r2(F.lateRateOf(o) * 100)}% late fee (${money(bal * F.lateRateOf(o))}) is added automatically after ${esc(fmtD(new Date(dl.getTime() - 1)))}.</div>` : '';
   const acts = canAct ? [open ? b('pay', 'Take a payment', 'btn sm') : '', open ? b('plan', ps || o.schedule?.status === 'Defaulted' ? 'Change payment plan' : o.planRequest?.status === 'Requested' ? 'Review plan request' : 'Payment plan') : '', open ? b('credit', 'Apply a credit') : '', bal < -0.004 ? b('refund', 'Issue a refund') : '', b('correct', 'Correct an error'),
     isJud && open ? b('modify', 'Reduce or modify') : '', isJud && open ? b('garnish', 'Garnishment') : '', active ? b('collect', 'Record garnished funds') : '', o.planRequest?.status === 'Requested' ? b('decline', 'Decline request') : '', o.schedule && ['Active', 'Defaulted'].includes(o.schedule.status) ? b('endplan', 'End plan') : ''].join('') : '';
   modal({ title: `${o.type}${o.description ? ' — ' + o.description : ''}`, sub: `${caption(x.c)} · ${x.c.caseId} · ${o.payor || 'Payor not recorded'}`, wide: true, onOk: null,
     body: `<div class="pills" style="margin-bottom:14px">${pills(o)}</div>${lateWarn}${ps ? `<div class="note">Payment plan: ${money(ps.installment)} ${o.schedule.frequency === 'monthly' ? 'every month' : o.schedule.frequency === 'weekly' ? 'every week' : 'every two weeks'}${ps.dueNow > 0 ? `. <b>${money(Math.min(bal, ps.dueNow))} is due now.</b>` : ''}${ps.next ? ` Next installment ${esc(fmtD(ps.next))}.` : ''}${o.schedule.status === 'Defaulted' ? ' <b>The plan is in default.</b>' : ''}</div>` : ''}${o.planRequest?.status === 'Requested' ? `<div class="note">Payment plan requested by ${esc(o.planRequest.requestedBy)}: ${money(o.planRequest.installment)} ${esc(o.planRequest.frequency)}, starting ${esc(fmtD(o.planRequest.startDate))}.</div>` : ''}
-      <dl class="amts"><div><dt>Original amount</dt><dd>${money(o.originalAmount)}</dd></div><div><dt>Fees, interest and changes</dt><dd>${adjT > 0 ? '+' : ''}${money(adjT)}</dd></div><div><dt>Paid</dt><dd>${money(F.paidOf(o))}</dd></div><div><dt>${bal < 0 ? 'Credit balance' : 'Balance'}</dt><dd class="owe">${money(Math.abs(bal))}</dd></div><div><dt>Due</dt><dd>${esc(fmtD(o.dueDate))}</dd></div>${F.rateOf(o) > 0 ? `<div><dt>Interest</dt><dd>${F.rateOf(o)}% per year</dd></div>` : ''}</dl>
+      <dl class="amts"><div><dt>Original amount</dt><dd>${money(o.originalAmount)}</dd></div><div><dt>Fees, interest and changes</dt><dd>${adjT > 0 ? '+' : ''}${money(adjT)}</dd></div><div><dt>Paid</dt><dd>${money(F.paidOf(o))}</dd></div><div><dt>${bal < 0 ? 'Credit balance' : 'Balance'}</dt><dd class="owe">${money(Math.abs(bal))}</dd></div><div><dt>Due</dt><dd>${esc(fmtD(o.dueDate))}</dd></div>${F.rateOf(o) > 0 ? `<div><dt>Interest</dt><dd>${esc(F.interestText(o))}</dd></div>` : ''}${o.lateFee ? `<div><dt>Late fee</dt><dd>${o.lateFee.enabled === false ? 'None' : esc(o.lateFee.rate + '% after ' + o.lateFee.graceDays + ' days')}</dd></div>` : ''}${o.payee ? `<div><dt>Payable to</dt><dd>${esc(o.payee)}</dd></div>` : ''}${o.payorUid ? '<div><dt>Payor</dt><dd>Not a party to the case</dd></div>' : ''}</dl>
       ${acts ? `<div class="acts">${acts}</div>` : '<p class="m">Your role can view financial records but not change them.</p>'}${!isJud && canAct && open ? '<p class="m">Reductions, waivers, interest changes and garnishments require a judicial officer.</p>' : ''}
       ${gs.length ? `<h4 class="sec">Garnishments</h4>` + gs.map(g => `<div class="${g.status === 'Active' ? 'alert-line red' : 'note'}"><b>${esc(g.type)}</b> to ${esc(g.garnishee)} — ${esc(g.status)}. Issued ${esc(fmtD(g.issuedAt))} by ${esc(g.issuedBy)}. Up to ${money(g.limit)}, ${money(g.collected)} collected${g.perPeriod ? `, ${money(g.perPeriod)} each ${esc(g.frequency)}` : ''}. ${esc(g.authority || '')} ${g.status === 'Active' && isJud ? `<button class="btn outline sm" type="button" data-a="release:${esc(key)}|${esc(g.id)}">Release</button>` : ''}</div>`).join('') : ''}
       <h4 class="sec">Ledger</h4><div class="table-scroll"><table><thead><tr><th>Date</th><th>Entry</th><th class="num">Charges</th><th class="num">Payments and credits</th><th class="num">Balance</th></tr></thead><tbody>${F.ledger(o).map(r => `<tr><td>${esc(fmtD(r.date))}</td><td><b>${esc(r.label)}</b>${r.reversed ? ' <span class="pill plain">Reversed</span>' : ''}${r.auto ? ' <span class="pill plain">Automatic</span>' : ''}<small>${esc(r.desc)}${r.by ? ' · ' + esc(r.by) : ''}</small></td><td class="num">${r.charge ? money(r.charge) : ''}</td><td class="num">${r.credit ? money(r.credit) : ''}</td><td class="num"><b>${money(r.balance)}</b></td></tr>`).join('')}</tbody></table></div>` });
@@ -317,7 +363,11 @@ document.addEventListener('input', e => { if (e.target.id === 'f-q') { f.q = e.t
 document.addEventListener('change', e => { if (e.target.id === 'f-type') { f.type = e.target.value; draw(); } else if (e.target.id === 'f-court') { f.court = e.target.value; draw(); } else if (e.target.id === 'f-mine') { f.mine = e.target.checked; draw(); } });
 
 try { await load(); } catch (e) { console.error(e); root.innerHTML = '<div class="alert" role="alert"><strong>We could not load financial records.</strong><p>Refresh the page to try again.</p></div>'; return; }
-draw();
+{ // #CASENUMBER filters to that case; #assess:CASENUMBER opens the assess dialog for it
+  const h = decodeURIComponent(location.hash.slice(1)), m = /^assess:(.+)$/.exec(h), id = m ? m[1] : h;
+  if (id) { f.q = id; f.mine = false; }
+  draw(); if (m) { const c = cases.find(k => k.caseId === id || k._id === id); if (c) assessModal(c); }
+}
 if (canAct) { try { const n = await postDue(); if (n) { note = `Late fees, interest or plan defaults were posted on ${n} case${n === 1 ? '' : 's'}.`; noteKind = 'ok'; draw(); } } catch (e) { console.warn(e); } }
 }
 </script>

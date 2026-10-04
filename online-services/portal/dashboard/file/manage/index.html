@@ -40,7 +40,7 @@
 <div class="auth-loading-overlay" id="auth-overlay" role="status"><div class="alo-title">Online Portal</div><div class="spin"></div><div>Verifying your session…</div></div>
 
 <script type="module">
-import { boot, db, $, esc, has, STAFF, scopeOf, SUPREME_COURT, reserveCaseNumber, colFor, logAction } from '/courts/online-services/portal/dashboard/assets/js/portal-shell.js?v=6';
+import { boot, db, $, esc, has, STAFF, scopeOf, SUPREME_COURT, reserveCaseNumber, colFor, logAction } from '/courts/online-services/portal/dashboard/assets/js/portal-shell.js?v=7';
 import { collection, getDocs, getDoc, doc, updateDoc, setDoc, runTransaction } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 
 const { account, role } = await boot({ id: 'mfilings', title: 'Manage Filings', subtitle: 'Review, accept, return, reject, or forward documents submitted for e-filing.' });
@@ -93,6 +93,21 @@ if (!has(STAFF, role)) {
     (f.feeWaiver?.decisions || []).forEach(d => ev.push({ eventNumber: n++, ...fwEvent(d) }));
     return ev;
   }
+  /* ── Filing fees: every filing with a fee puts a Filing Fee order on the case, payable under My financials ── */
+  const feeId = f => `FEE-${f._id}`;
+  function feeOrders(f, existing) {
+    const list = [...(existing || [])], total = Math.round(((f.documents || []).reduce((t, d) => t + (Number(d.fee) || 0), 0) || Number(f.totalFee) || 0) * 100) / 100;
+    if (!(total > 0) || list.some(o => o.id === feeId(f))) return list;
+    const names = (f.documents || []).filter(d => Number(d.fee) > 0).map(d => d.documentType || d.name).filter(Boolean), at = now(), due = new Date(Date.now() + 14 * 864e5).toISOString().slice(0, 10);
+    const o = { id: feeId(f), type: 'Filing Fee', description: names.length ? names.join(', ') : 'Filing fee', payor: f.filedBy || 'Filer', ...(f.filedByUid ? { payorUid: f.filedByUid } : {}), amount: total, originalAmount: total, dueDate: due, assessmentDate: at, assessedBy: 'System', filingId: f._id, confirmationNumber: f.confirmationNumber || null, payments: [], adjustments: [], garnishments: [] };
+    if (f.feeWaiver?.status === 'Granted' || f.feesWaived) o.adjustments.push({ id: 'ADJ-' + feeId(f), kind: 'waiver', amount: -total, date: at, reason: 'Fee waiver granted (MC 20).', by: 'System', auto: true }), o.amount = 0;
+    list.push(o); return list;
+  }
+  // A fee waiver granted after the fee was assessed clears what is still unpaid on that filing's fee order.
+  function waiveFeeOrder(orders, f, at) {
+    return (orders || []).map(o => { if (o.id !== feeId(f)) return o; const paid = (o.payments || []).reduce((t, p) => t + Number(p.amount || 0), 0), bal = Math.round((Number(o.amount) - paid) * 100) / 100; if (bal <= 0) return o;
+      return { ...o, amount: Math.round((o.amount - bal) * 100) / 100, adjustments: [...(o.adjustments || []), { id: 'ADJ-W' + feeId(f), kind: 'waiver', amount: -bal, date: at, reason: 'Fee waiver granted (MC 20).', by: 'System', auto: true }] }; });
+  }
   const log = (f, text) => [...(f.activityLog || []), { text, by: account.name, at: now() }];
   async function persist(f, patch) { await updateDoc(doc(db, 'pendingFilings', f._id), patch); Object.assign(f, patch); }
 
@@ -129,7 +144,8 @@ if (!has(STAFF, role)) {
     for (const f of P.filter(x => st(x) === 'Pending' && x.filingType !== 'new' && x.caseFirestoreId && cases[x.caseFirestoreId])) {
       try {
         const ref = doc(db, colFor(f.court), f.caseFirestoreId), events = eventsFor(f, cases[f.caseFirestoreId].events);
-        await updateDoc(ref, { events, 'dates.lastUpdated': now() }); cases[f.caseFirestoreId].events = events;
+        const fresh = (await getDoc(ref)).data() || {}, financialOrders = feeOrders(f, fresh.financialOrders || cases[f.caseFirestoreId].financialOrders);
+        await updateDoc(ref, { events, financialOrders, 'dates.lastUpdated': now() }); cases[f.caseFirestoreId].events = events; cases[f.caseFirestoreId].financialOrders = financialOrders;
         await persist(f, { status: 'Accepted', accepted: true, autoFiled: true, reviewedBy: 'System (Auto-Filed)', reviewedAt: now(), linkedCaseId: f.caseId || null, linkedCaseFirestoreId: f.caseFirestoreId, activityLog: log(f, 'Automatically filed — filings in an existing case do not need clerk review') });
         await tasksAndNotices(f, f.caseFirestoreId);
       } catch (e) { console.warn('Auto-file failed', f._id, e); }
@@ -179,10 +195,12 @@ if (!has(STAFF, role)) {
     if (id) {
       const ref = doc(db, colFor(f.court), id), d = (await getDoc(ref)).data(), ev = [...(d.events || [])];
       ev.push({ eventNumber: ev.reduce((m, e) => Math.max(m, e.eventNumber || 0), 0) + 1, ...fwEvent(dec) });
-      await updateDoc(ref, { events: ev, 'dates.lastUpdated': dec.at, ...(status === 'Denied with prejudice' ? { feeWaiverBarred: true } : {}) });
+      const fo = status === 'Granted' ? waiveFeeOrder(d.financialOrders, f, dec.at) : d.financialOrders;
+      await updateDoc(ref, { events: ev, ...(fo ? { financialOrders: fo } : {}), 'dates.lastUpdated': dec.at, ...(status === 'Denied with prejudice' ? { feeWaiverBarred: true } : {}) });
       if (cases[id]) { cases[id].events = ev; if (status === 'Denied with prejudice') cases[id].feeWaiverBarred = true; }
     }
-    await persist(f, { feeWaiver: { status, decisions: [...(f.feeWaiver?.decisions || []), dec] }, ...(status === 'Granted' ? { feesWaived: true } : {}), activityLog: log(f, fwEvent(dec).description) });
+    const refJudge = status === 'Referred to judge' ? ((id && cases[id]?.judgeUid) || f.assignedJudgeUid || null) : f.feeWaiver?.judgeUid || null;   // the judge whose queue this referral appears in
+    await persist(f, { feeWaiver: { status, decisions: [...(f.feeWaiver?.decisions || []), dec], ...(refJudge ? { judgeUid: refJudge } : {}) }, ...(status === 'Granted' ? { feesWaived: true } : {}), activityLog: log(f, fwEvent(dec).description) });
   }
   function detailView(f) {
     const docs = f.documents || [], total = docs.reduce((t, d) => t + (d.fee || 0), 0), s = st(f), c = cases[f.linkedCaseFirestoreId || f.caseFirestoreId];
@@ -238,12 +256,13 @@ if (!has(STAFF, role)) {
       if (f.filingType === 'new') {
         const sc = f.court === SUPREME_COURT, display = sc ? f.caseType : (DISPLAY[f.caseType] || 'Civil'), sf = sc ? null : SUBFIELD[display], caseId = f.reservedCaseId || await reserveCaseNumber(f.court, f.caseType), j = pickJudge(f.court, display, f.caseType);
         await setDoc(doc(db, colFor(f.court), caseId), { caseId, court: f.court, caseType: display, ...(f.lowerCourt ? { lowerCourt: f.lowerCourt } : {}), ...(sf ? { [sf]: f.caseType } : {}), status: sc ? (/^Appeal/.test(f.caseType) ? 'Pending' : 'Active') : display === 'Appellate' || display === 'Administrative' ? 'Pending' : 'Active',
-          dates: { filed: f.dateFiled || now(), lastUpdated: now() }, parties: f.parties || [], judge: j?.name || null, judges: j ? [j.name] : [], judgeUid: j?.uid || null, courtroomNumber: j ? ({ 'Chief Judge': '1', Judge: '2', Magistrate: '3' }[j.role] || null) : null, ...(j ? { assignmentHistory: [{ at: now(), type: 'Initial assignment', method: 'By lot', from: null, to: j.name, toRole: j.role, reason: null, by: 'System', byRole: null }] } : {}), hearings: [], financialOrders: [],
+          dates: { filed: f.dateFiled || now(), lastUpdated: now() }, parties: f.parties || [], judge: j?.name || null, judges: j ? [j.name] : [], judgeUid: j?.uid || null, courtroomNumber: j ? ({ 'Chief Judge': '1', Judge: '2', Magistrate: '3' }[j.role] || null) : null, ...(j ? { assignmentHistory: [{ at: now(), type: 'Initial assignment', method: 'By lot', from: null, to: j.name, toRole: j.role, reason: null, by: 'System', byRole: null }] } : {}), hearings: [], financialOrders: feeOrders(f, []),
           events: eventsFor(f, []), sealed: false, relatedUserIds: f.filedByUid ? [f.filedByUid] : [], docketSummary: null, intakeConfirmationNumber: f.confirmationNumber, filingCounter: 1, ...(f.feeWaiver?.status === 'Denied with prejudice' ? { feeWaiverBarred: true } : {}) });
         id = num = caseId;
         await auditEntry(caseId, j ? `Case opened and randomly assigned to ${j.name} (${j.role})${({ 'Chief Judge': 1, Judge: 2, Magistrate: 3 })[j.role] ? ', Courtroom ' + ({ 'Chief Judge': 1, Judge: 2, Magistrate: 3 })[j.role] : ''}` : 'Case opened. No judicial officer was available to assign.');
       } else if (id && cases[id]) {
-        await updateDoc(doc(db, colFor(f.court), id), { events: eventsFor(f, cases[id].events), 'dates.lastUpdated': now() });
+        const ref = doc(db, colFor(f.court), id), fresh = (await getDoc(ref)).data() || {};
+        await updateDoc(ref, { events: eventsFor(f, cases[id].events), financialOrders: feeOrders(f, fresh.financialOrders || cases[id].financialOrders), 'dates.lastUpdated': now() });
       }
       await persist(f, { status: 'Accepted', accepted: true, reviewedBy: account.name, reviewedByUid: account.uid, reviewedByRole: role, reviewedAt: now(), linkedCaseId: num, linkedCaseFirestoreId: id, activityLog: log(f, 'Accepted' + (num ? ' — case ' + num : '')) });
       if (f.filingType !== 'new') await tasksAndNotices(f, id);
@@ -288,7 +307,7 @@ if (!has(STAFF, role)) {
     reject: id => decide(P.find(f => f._id === id), 'Rejected', 'rejectionReason'),
     urgent: async id => { const f = P.find(x => x._id === id); await persist(f, { urgent: !f.urgent, activityLog: log(f, f.urgent ? 'Removed emergency flag' : 'Marked as emergency') }).catch(() => msg = 'Could not update the emergency flag.'); },
     note: async id => { const f = P.find(x => x._id === id), t = $('note-' + id).value.trim(); if (t) await persist(f, { clerkNotes: [...(f.clerkNotes || []), { text: t, by: account.name, byUid: account.uid, at: now() }], activityLog: log(f, 'Added an internal note') }).catch(() => msg = 'Could not save the note.'); },
-    forward: async id => { const f = P.find(x => x._id === id), v = $('fwd-' + id).value; if (!v) { msg = 'Select a judicial officer to forward this filing to.'; return; } const [uid, name] = v.split('|'); await persist(f, { assignedJudge: name, assignedJudgeUid: uid, activityLog: log(f, `Forwarded to ${name} for review`) }).catch(() => msg = 'Could not forward this filing.'); }
+    forward: async id => { const f = P.find(x => x._id === id), v = $('fwd-' + id).value; if (!v) { msg = 'Select a judicial officer to forward this filing to.'; return; } const [uid, name] = v.split('|'); await persist(f, { assignedJudge: name, assignedJudgeUid: uid, ...(f.feeWaiver && ['Referred to judge'].includes(f.feeWaiver.status) ? { feeWaiver: { ...f.feeWaiver, judgeUid: uid } } : {}), activityLog: log(f, `Forwarded to ${name} for review`) }).catch(() => msg = 'Could not forward this filing.'); }
   };
   document.addEventListener('click', async e => {
     const el = e.target.closest('[data-a]'); if (!el) return; const [n, v] = el.dataset.a.split(':');

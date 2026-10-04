@@ -2,6 +2,7 @@
    Usage: const { account, role } = await boot({ id: 'filings', title: '...', subtitle: '...' }); */
 import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
 import { getAuth, setPersistence, browserLocalPersistence, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
+import { fillBadges, BADGE_CSS } from "./badges.js?v=1";
 import { getFirestore, doc, getDoc, runTransaction, collection, getDocs } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 
 const SIGNIN = '/courts/online-services/portal/', PUBLIC = '/courts/';
@@ -156,7 +157,7 @@ export async function logAction(actor, actorRole, court, type, { caseId, ref, ju
 }
 
 export function boot({ id, title, subtitle }) {
-  document.head.insertAdjacentHTML('beforeend', `<style>${CSS}</style>`);
+  document.head.insertAdjacentHTML('beforeend', `<style>${CSS}${BADGE_CSS}</style>`);
   return new Promise(resolve => {
     const off = onAuthStateChanged(auth, async user => {
       off();
@@ -164,7 +165,7 @@ export function boot({ id, title, subtitle }) {
       const s = await getDoc(doc(db, 'accounts', user.uid)).catch(() => null);
       if (!s?.exists()) { await signOut(auth).catch(() => {}); location.replace(SIGNIN); return; }
       const account = { uid: user.uid, ...s.data() }, role = roleOf(account), here = location.pathname.replace(/index\.html$/, '').replace(/\/?$/, '/');
-      const link = (i, l, p) => { const href = BASE + p, on = new URL(href).pathname === here; return `<a href="${href}" class="${on ? 'active' : ''}" ${on ? 'aria-current="page"' : ''}>${svg(i)}${esc(l)}</a>`; };
+      const link = (i, l, p) => { const href = BASE + p, on = new URL(href).pathname === here; return `<a href="${href}" data-nav="${i}" class="${on ? 'active' : ''}" ${on ? 'aria-current="page"' : ''}>${svg(i)}${esc(l)}</a>`; };
       const nav = NAV.map(([t, items]) => { const v = items.filter(i => ok(i[3], role)); return v.length ? (t ? `<div class="sb-label">${esc(t)}</div>` : '') + v.map(i => link(i[0], i[1], i[2])).join('') : ''; }).join('');
       $('sidebar-root').innerHTML = `
         <a class="sb-brand" href="${BASE}"><svg viewBox="0 0 52 52" aria-hidden="true"><circle cx="26" cy="26" r="25" fill="#fff"/><g stroke="#10264a" stroke-width="2" stroke-linecap="round" fill="none"><path d="M26 11v26M17 15h18M19 38h14"/><path d="M17 15l-6 12h12zM35 15l-6 12h12z" stroke-width="1.6" stroke-linejoin="round"/></g></svg><span><b>Online Portal</b><small>Michigan Courts</small></span></a>
@@ -182,6 +183,7 @@ export function boot({ id, title, subtitle }) {
       $('topbar-title').textContent = $('page-title').textContent = title;
       $('page-subtitle').textContent = subtitle; document.title = title + ' | Online Portal';
       $('auth-overlay').hidden = true;
+      fillBadges(account, role);
       resolve({ account, role, user });
     });
   });
