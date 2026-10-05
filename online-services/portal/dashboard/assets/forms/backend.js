@@ -6,7 +6,7 @@ import { collection, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, onSnaps
 import { getStorage, ref, uploadString, getBytes, deleteObject } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-storage.js";
 
 export function firebaseBackend({ db, app }) {
-  const storage = getStorage(app), COL = 'draftDocs';
+  const storage = getStorage(app), COL = 'draftDocs'; let pool = null, poolAt = 0;
   const path = (id, file) => `${COL}/${id}/${file}`;
   const data = s => s.exists() ? { id: s.id, ...s.data() } : null;
   return {
@@ -36,6 +36,20 @@ export function firebaseBackend({ db, app }) {
     async registerSelf({ uid, name, email, role }) {
       if (!uid || !name) return;
       await setDoc(doc(db, 'accountDirectory', uid), { uid, name, nameLower: name.trim().toLowerCase(), email: email || '', emailLower: (email || '').trim().toLowerCase(), role: role || '' }, { merge: true });
+    },
+    /* Type-ahead: accounts whose name or email matches what was typed so far. The account list is read once and
+       kept for a minute, so each keystroke is answered from memory. Only name, email, role and uid are used. */
+    async search(text, limit = 8) {
+      const q = String(text || '').trim().toLowerCase(); if (q.length < 1) return [];
+      if (!pool || Date.now() - poolAt > 60000) {
+        const m = new Map(), add = (id, d) => { const e = { uid: id, name: (d.name || '').trim(), email: (d.email || '').trim(), role: d.role || '' }; if (e.name || e.email) m.set(id, { ...(m.get(id) || {}), ...e }); };
+        try { (await getDocs(collection(db, 'accounts'))).docs.forEach(d => add(d.id, d.data())); } catch (e) { console.warn('Accounts unavailable', e); }
+        try { (await getDocs(collection(db, 'accountDirectory'))).docs.forEach(d => { if (!m.has(d.id)) add(d.id, d.data()); }); } catch (e) { console.warn('Directory unavailable', e); }
+        pool = [...m.values()]; poolAt = Date.now();
+      }
+      const score = p => { const n = p.name.toLowerCase(), e = p.email.toLowerCase();
+        if (n === q || e === q) return 0; if (n.startsWith(q)) return 1; if (n.split(/\s+/).some(w => w.startsWith(q))) return 2; if (e.startsWith(q)) return 3; if (n.includes(q)) return 4; if (e.includes(q)) return 5; return 9; };
+      return pool.map(p => [score(p), p]).filter(x => x[0] < 9).sort((a, b) => a[0] - b[0] || a[1].name.localeCompare(b[1].name)).slice(0, limit).map(x => x[1]);
     },
     /* Exact full name or exact email. */
     async find(text) {

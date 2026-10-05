@@ -77,6 +77,25 @@ dialog>footer{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:10px;padd
 .fd-doc a{flex:1;min-width:0;text-decoration:none;color:inherit;display:flex;flex-direction:column;gap:2px}.fd-doc a:hover b{text-decoration:underline}.fd-doc span{font-size:12px;color:#667}
 .sh{display:flex;flex-direction:column;gap:10px;min-width:min(520px,80vw)}.sh-row{display:flex;gap:8px}.sh-row input{flex:1;min-width:0}.sh input[type=text],.sh select{height:36px;padding:6px 8px;border:1px solid #b9c2cf;border-radius:6px;font-size:13px;font-family:inherit}
 .sh-list{list-style:none;margin:6px 0 0;padding:0}.sh-p{display:flex;align-items:center;gap:8px;padding:8px 0;border-top:1px solid #e3e7ee}.sh-p>span:first-child{flex:1}.sh-found{display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+.fd-bar{position:sticky;top:0;z-index:20;background:var(--bg,#e3e9f2);padding:8px 0;margin-top:-8px}
+.fd-back{display:inline-flex;align-items:center;gap:4px;height:36px;padding:0 14px 0 8px;border:1px solid var(--navy,#10264a);border-radius:6px;background:#fff;color:var(--navy,#10264a);font-weight:600;font-size:14px;text-decoration:none;white-space:nowrap}
+.fd-back:hover{background:var(--navy,#10264a);color:#fff}.fd-back:focus-visible{outline:3px solid #7fa9e6;outline-offset:2px}.fd-back svg{flex:none}
+dialog.cdlg{width:min(440px,calc(100vw - 24px))}
+.cdlg .cb{padding:22px 24px 10px}.cdlg h3{font-size:19px;margin:0 0 8px;color:var(--navy,#10264a)}.cdlg p{margin:0;color:var(--text,#1b2433);line-height:1.5;font-size:14.5px}
+.btn.danger{background:#a82424;border-color:#a82424;color:#fff}.btn.danger:hover{background:#8c1c1c;border-color:#8c1c1c}
+.sh-box{position:relative;flex:1;min-width:0}.sh-box input{width:100%;box-sizing:border-box}
+.sh-sg{position:absolute;left:0;right:0;top:calc(100% + 4px);z-index:30;max-height:290px;overflow-y:auto;background:#fff;border:1px solid #b9c2cf;border-radius:8px;box-shadow:0 12px 30px rgba(9,22,40,.25);padding:4px}
+.sh-sg[hidden]{display:none}
+.sg-i{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:6px;cursor:pointer}
+.sg-i[aria-selected=true],.sg-i:hover{background:#e8eef8}
+.sg-av{flex:none;width:32px;height:32px;border-radius:50%;background:var(--navy,#10264a);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.sg-t{display:flex;flex-direction:column;min-width:0}.sg-t b{font-size:14px;color:var(--navy,#10264a);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.sg-t small{font-size:12px;color:var(--muted,#5a667a);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sg-m{display:flex;align-items:center;gap:8px;padding:12px;font-size:13px;color:var(--muted,#5a667a)}
+#dlg-b:has(.sh-sg:not([hidden])){min-height:380px}
+.sh-f{display:block}
+.sh-row{align-items:flex-start}.sh-row>select{flex:0 0 130px;width:130px}.sh-box{flex:1 1 0;width:auto}
+.sh-row>select#sh-role{height:36px}
+.sh-box input#sh-q{display:block;width:100%;min-width:0;flex:none}
 </style>
 </head>
 <body>
@@ -92,7 +111,7 @@ dialog>footer{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:10px;padd
   </header>
   <main class="page-body">
     <div class="page-head"><div><h2 id="page-title">Document Drafting</h2><p id="page-subtitle"></p></div><div id="page-action"></div></div>
-    <div id="page-body"><div class="loading-inline"><span class="spin-sm"></span>Loading…</div></div>
+    <div id="page-body"><div class="loading-inline"><span class="spin-sm"></span>Opening Document Drafting…</div></div>
   </main>
 </div>
 <dialog id="dlg" aria-labelledby="dlg-t">
@@ -106,15 +125,32 @@ import { boot, db, app, $, esc } from '/courts/online-services/portal/dashboard/
 import { FORMS, byId, byNumber } from '/courts/online-services/portal/dashboard/assets/forms/registry.js?v=1';
 import { mountForm, formOf } from '/courts/online-services/portal/dashboard/assets/forms/engine.js?v=5';
 import { DraftSession, accessOf, roleIn } from '/courts/online-services/portal/dashboard/assets/forms/drafts.js?v=1';
-import { firebaseBackend } from '/courts/online-services/portal/dashboard/assets/forms/backend.js?v=1';
+import { firebaseBackend } from '/courts/online-services/portal/dashboard/assets/forms/backend.js?v=2';
 const { account, role, user } = await boot({ id: 'drafting', title: 'Document Drafting', subtitle: 'Prepare court forms. They save automatically, and you can share them to work on together.' });
 const root = $('page-body'), BASE = 'https://migovt.org/courts/online-services/portal/dashboard/document-drafting/', FORMS_PATH = '/courts/online-services/portal/dashboard/assets/forms/';
 const uid = account.uid, myName = (account.name || user?.email || 'Someone').trim(), be = firebaseBackend({ db, app });
 be.registerSelf({ uid, name: myName, email: user?.email || account.email || '', role }).catch(e => console.warn('Directory entry not saved', e));
-let cur = null, unList = null, pendingMd = null, gen = 0;
+let lastHash = location.hash, cur = null, unList = null, pendingMd = null, gen = 0;
 const when = t => { const d = t?.toDate ? t.toDate() : t ? new Date(t) : null; return d && !isNaN(d) ? d.toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' }) : ''; };
 const secs = t => (t?.toDate ? t.toDate() : t ? new Date(t) : new Date(0)).getTime();
-const notice = (m, bad = true) => `<section class="card"><div class="${bad ? 'alert' : 'note'}" role="${bad ? 'alert' : 'status'}">${esc(m)}</div><p><a class="btn outline sm" href="${BASE}#">All documents</a></p></section>`;
+const notice = (m, bad = true) => `<section class="card"><div class="${bad ? 'alert' : 'note'}" role="${bad ? 'alert' : 'status'}">${esc(m)}</div><p><a class="fd-back" href="${BASE}#"><svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true"><path d="M12.5 4 6.5 10l6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>All documents</a></p></section>`;
+
+/* ---------- portal-styled popups (replace the browser's confirm / alert) ---------- */
+const cd = document.createElement('dialog'); cd.id = 'dlg-c'; cd.className = 'cdlg'; cd.setAttribute('aria-labelledby', 'cdlg-t'); cd.setAttribute('aria-describedby', 'cdlg-m');
+cd.innerHTML = '<div class="cb"><h3 id="cdlg-t"></h3><p id="cdlg-m"></p></div><footer><button class="btn outline" type="button" data-v="0" id="cdlg-no"></button><button class="btn" type="button" data-v="1" id="cdlg-yes"></button></footer>';
+document.body.appendChild(cd); let cdDone = null;
+cd.addEventListener('click', e => { const b = e.target.closest('[data-v]'); if (b) cd.close(b.dataset.v); else if (e.target === cd && !cd.classList.contains('must')) cd.close('0'); });
+cd.addEventListener('cancel', e => { if (cd.classList.contains('must')) e.preventDefault(); });
+cd.addEventListener('close', () => { const f = cdDone; cdDone = null; f?.(cd.returnValue === '1'); cd.returnValue = ''; });
+/* ask({title, message, ok, cancel, danger, info}) resolves true when the OK button is pressed. info:true shows only one button. */
+function ask({ title, message, ok = 'OK', cancel = 'Cancel', danger = false, info = false }) {
+  return new Promise(res => {
+    if (cdDone) { cd.close('0'); }
+    cdDone = res; $('cdlg-t').textContent = title; $('cdlg-m').textContent = message;
+    const yes = $('cdlg-yes'), no = $('cdlg-no'); yes.textContent = ok; no.textContent = cancel; no.hidden = info; yes.className = 'btn' + (danger ? ' danger' : '');
+    cd.showModal(); (danger ? no : yes).focus();
+  });
+}
 
 /* ---------- leaving the page / switching documents ---------- */
 window.addEventListener('beforeunload', e => { const s = cur?.session; if (s && (s.hasPending() || s.isDirty())) { e.preventDefault(); e.returnValue = ''; } });
@@ -122,7 +158,7 @@ document.addEventListener('visibilitychange', () => { if (document.hidden) cur?.
 addEventListener('pagehide', () => cur?.session?.flush().catch(() => { }));
 async function closeCurrent() {
   if (!cur) return true; const { session, engine } = cur;
-  if (session) { await session.flush().catch(() => { }); if (session.isDirty() && !confirm('Your latest changes could not be saved. Leave anyway?')) return false; session.close(); }
+  if (session) { await session.flush().catch(() => { }); if (session.isDirty() && !(await ask({ title: 'Changes not saved', message: 'Your latest changes could not be saved. If you leave now they will be lost.', ok: 'Leave anyway', cancel: 'Stay here', danger: true }))) return false; session.close(); }
   engine?.destroy(); cur = null; return true;
 }
 
@@ -148,8 +184,8 @@ function library(msg = '') {
   }, e => { console.error(e); $('fd-mine').innerHTML = '<div class="alert" role="alert">We could not load your documents. Check your connection and try again.</div>'; });
   root.onclick = async e => {
     const b = e.target.closest('[data-del]'); if (!b) return;
-    if (!confirm(`Delete "${b.dataset.t}" for everyone it is shared with? This cannot be undone.`)) return;
-    try { await be.remove(b.dataset.del); } catch (er) { console.error(er); alert('We could not delete that document.'); }
+    if (!(await ask({ title: 'Delete this document?', message: `"${b.dataset.t}" will be deleted for you and for everyone it is shared with. This cannot be undone.`, ok: 'Delete', cancel: 'Keep it', danger: true }))) return;
+    try { await be.remove(b.dataset.del); } catch (er) { console.error(er); ask({ title: 'Could not delete', message: 'We could not delete that document. Check your connection and try again.', ok: 'Close', info: true }); }
   };
 }
 
@@ -173,7 +209,7 @@ async function editor({ form, docId, md0 }) {
   }
   if (my !== gen) return;
   const canEdit = access === 'edit', title0 = meta?.title || `${form.number} – ${new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
-  root.innerHTML = `<div class="fd-top"><a class="btn outline sm" href="${BASE}#" id="fd-back">All documents</a><input id="fd-title" class="fd-title" type="text" maxlength="120" aria-label="Document name" value="${esc(title0)}"${canEdit ? '' : ' readonly'}><span class="m">${esc(form.number)}${canEdit ? '' : ' · View only'}</span></div><div id="fd-host"><div class="loading-inline"><span class="spin-sm"></span>Loading form…</div></div>`;
+  root.innerHTML = `<div class="fd-top fd-bar"><a class="fd-back" href="${BASE}#" id="fd-back"><svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true"><path d="M12.5 4 6.5 10l6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>All documents</a><input id="fd-title" class="fd-title" type="text" maxlength="120" aria-label="Document name" value="${esc(title0)}"${canEdit ? '' : ' readonly'}><span class="m">${esc(form.number)}${canEdit ? '' : ' · View only'}</span></div><div id="fd-host"><div class="loading-inline"><span class="spin-sm"></span>Loading form…</div></div>`;
   try {
     const def = (await import(`${FORMS_PATH}${form.id}.js?v=5`)).default; if (my !== gen) return;
     let session = null;
@@ -184,7 +220,7 @@ async function editor({ form, docId, md0 }) {
       backend: be, adapter, uid, name: myName, formId: form.id, title: title0, docId, meta,
       onStatus: (t, k) => engine.setStatus(t, k),
       onConflict: (c, who) => engine.api.note(`${who} changed something you were also editing. Your version was kept.`, true),
-      onCreated: id => { history.replaceState(null, '', BASE + '#d/' + id); },
+      onCreated: id => { history.replaceState(null, '', BASE + (lastHash = '#d/' + id)); },
       onMeta: m => {
         if (!m) { root.innerHTML = notice('This document was deleted.'); return; }
         const t = $('fd-title'); if (t && document.activeElement !== t && m.title && t.value !== m.title) { t.value = m.title; session.title = m.title; }
@@ -193,6 +229,7 @@ async function editor({ form, docId, md0 }) {
       }
     });
     cur = { session, engine, form };
+    $('fd-back').onclick = e => { e.preventDefault(); if (location.hash && location.hash !== '#') location.hash = ''; else route(); };
     session.attach({ save: !docId && !!md0 });
     if (!canEdit) engine.setStatus('You can view this document. Changes by others appear here as they happen.', '');
     let tt = 0; $('fd-title').addEventListener('input', e => { clearTimeout(tt); tt = setTimeout(() => session.setTitle(e.target.value.trim() || title0), 500); });
@@ -210,34 +247,61 @@ async function openShare() {
 }
 function renderShare() {
   const s = cur?.session; if (!s || !s.meta) return; const m = s.meta, owner = m.ownerUid === uid;
+  const qEl = $('sh-q'), keep = qEl ? { v: qEl.value, f: document.activeElement === qEl, a: qEl.selectionStart, b: qEl.selectionEnd, r: $('sh-role')?.value } : null;
   $('dlg-t').textContent = 'Share'; $('dlg-w').textContent = m.title || 'Untitled';
   const people = (m.members || []).map(u => { const nm = m.names?.[u] || 'Unknown', r = m.ownerUid === u ? 'owner' : m.roles?.[u] || 'view';
     return `<li class="sh-p"><span><b>${esc(nm)}</b>${u === uid ? ' <small class="m">(you)</small>' : ''}</span>${r === 'owner' ? '<span class="m">Owner</span>' : owner ? `<select data-role="${esc(u)}" aria-label="Access for ${esc(nm)}"><option value="edit"${r === 'edit' ? ' selected' : ''}>Can edit</option><option value="view"${r === 'view' ? ' selected' : ''}>Can view</option></select><button class="btn outline sm" type="button" data-a="remove" data-uid="${esc(u)}">Remove</button>` : `<span class="m">${r === 'edit' ? 'Can edit' : 'Can view'}</span>`}</li>`; }).join('');
   $('dlg-b').innerHTML = `<div class="sh">
     <label class="f"><span>Anyone signed in with the link</span><select id="sh-link"${owner ? '' : ' disabled'}><option value="none"${m.linkAccess === 'none' ? ' selected' : ''}>Cannot open it (only people added below)</option><option value="view"${m.linkAccess === 'view' ? ' selected' : ''}>Can view</option><option value="edit"${m.linkAccess === 'edit' ? ' selected' : ''}>Can edit</option></select></label>
     <div class="sh-row"><input id="sh-url" type="text" readonly value="${esc(shareUrl())}" aria-label="Document link"><button class="btn outline" type="button" data-a="copy">Copy link</button></div>
-    ${owner ? `<label class="f"><span>Add people by full name or email</span></label><div class="sh-row"><input id="sh-q" type="text" autocomplete="off" placeholder="Full name or email"><select id="sh-role" aria-label="Access"><option value="edit">Can edit</option><option value="view">Can view</option></select><button class="btn" type="button" data-a="find">Add</button></div>` : '<p class="m">Only the owner can change who this is shared with.</p>'}
-    ${found.length ? `<div class="sh-found"><p class="m">More than one account matches. Choose one:</p>${found.map(p => `<button class="btn outline sm" type="button" data-a="pick" data-uid="${esc(p.uid)}" data-name="${esc(p.name)}">${esc(p.name)} · ${esc(p.role || 'Account')}${p.email ? ' · ' + esc(p.email.replace(/^(.).*(@.*)$/, '$1•••$2')) : ''}</button>`).join('')}</div>` : ''}
+    ${owner ? `<div class="f"><span id="sh-ql">Add people</span><div class="sh-row"><div class="sh-box"><input id="sh-q" type="text" autocomplete="off" spellcheck="false" placeholder="Start typing a name or email" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="sh-sg" aria-labelledby="sh-ql"><div id="sh-sg" class="sh-sg" role="listbox" hidden></div></div><select id="sh-role" aria-label="Access"><option value="edit">Can edit</option><option value="view">Can view</option></select></div></div>` : '<p class="m">Only the owner can change who this is shared with.</p>'}
     <ul class="sh-list">${people}</ul></div>`;
   $('dlg-e').innerHTML = shareMsg ? `<div class="${shareMsg.bad ? 'alert' : 'note'}" role="${shareMsg.bad ? 'alert' : 'status'}">${esc(shareMsg.t)}</div>` : '';
   $('dlg-f').innerHTML = '<button class="btn outline" type="button" data-close>Done</button>';
+  if (keep && $('sh-q')) { $('sh-q').value = keep.v; if (keep.r) $('sh-role').value = keep.r; if (keep.f) { $('sh-q').focus(); try { $('sh-q').setSelectionRange(keep.a, keep.b); } catch { } } suggest(true); }
 }
+
+/* ---------- type-ahead for adding people ---------- */
+let sg = [], sgi = -1, sgSeq = 0, sgT = 0;
+const initials = n => (n.match(/\b\p{L}/gu) || ['?']).slice(0, 2).join('').toUpperCase();
+const mask = e => e ? e.replace(/^(.{1,2}).*(@.*)$/, '$1•••$2') : '';
+function paintSuggest(state) {
+  const box = $('sh-sg'), q = $('sh-q'); if (!box || !q) return;
+  const open = state !== 'closed'; box.hidden = !open; q.setAttribute('aria-expanded', open ? 'true' : 'false'); if (!open) { q.removeAttribute('aria-activedescendant'); return; }
+  if (state === 'busy') box.innerHTML = '<div class="sg-m"><span class="spin-sm"></span>Searching…</div>';
+  else if (!sg.length) box.innerHTML = '<div class="sg-m">No matching accounts. People who are not listed can still open the link above.</div>';
+  else box.innerHTML = sg.map((p, i) => `<div class="sg-i" role="option" id="sg-${i}" data-i="${i}" aria-selected="${i === sgi}"><span class="sg-av" aria-hidden="true">${esc(initials(p.name || p.email))}</span><span class="sg-t"><b>${esc(p.name || p.email)}</b><small>${esc([p.role, mask(p.email)].filter(Boolean).join(' · '))}</small></span></div>`).join('');
+  if (sgi >= 0 && sg.length) { q.setAttribute('aria-activedescendant', 'sg-' + sgi); $('sg-' + sgi)?.scrollIntoView({ block: 'nearest' }); }
+}
+async function suggest(now) {
+  const q = $('sh-q'); if (!q) return; const text = q.value.trim(), seq = ++sgSeq; clearTimeout(sgT);
+  if (!text) { sg = []; sgi = -1; return paintSuggest('closed'); }
+  const run = async () => {
+    const had = new Set(cur?.session?.meta?.members || []);
+    let res = []; try { res = (await be.search(text)).filter(p => !had.has(p.uid)); } catch (e) { console.warn(e); }
+    if (seq !== sgSeq || !$('sh-q')) return; sg = res; sgi = res.length ? 0 : -1; paintSuggest('list');
+  };
+  if (now) return run(); paintSuggest('busy'); sgT = setTimeout(run, 140);
+}
+const chosen = i => { const p = sg[i]; if (p) { addPerson(p, $('sh-role').value); } };
+dlg.addEventListener('input', e => { if (e.target.id === 'sh-q') suggest(false); });
+dlg.addEventListener('focusin', e => { if (e.target.id === 'sh-q' && e.target.value.trim()) suggest(false); });
+dlg.addEventListener('keydown', e => {
+  if (e.target.id !== 'sh-q') return; const box = $('sh-sg');
+  if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { if (box.hidden) return suggest(true); e.preventDefault(); if (sg.length) { sgi = (sgi + (e.key === 'ArrowDown' ? 1 : -1) + sg.length) % sg.length; paintSuggest('list'); } }
+  else if (e.key === 'Enter') { e.preventDefault(); if (sgi >= 0) chosen(sgi); else if (e.target.value.trim()) suggest(true); }
+  else if (e.key === 'Escape' && !box.hidden) { e.preventDefault(); e.stopPropagation(); paintSuggest('closed'); }
+});
+dlg.addEventListener('mousedown', e => { if (e.target.closest('.sg-i')) e.preventDefault(); });   // keep focus in the field
+dlg.addEventListener('click', e => { const o = e.target.closest('.sg-i'); if (o) chosen(+o.dataset.i); else if (!e.target.closest('.sh-box')) paintSuggest('closed'); });
 const shMsg = (t, bad = false) => { shareMsg = { t, bad }; renderShare(); };
 async function addPerson(p, role) {
-  try { await cur.session.addMember(p.uid, p.name, role); found = []; shMsg(`${p.name} can now ${role === 'edit' ? 'edit' : 'view'} this document.`); } catch (e) { console.error(e); shMsg(e?.code === 'permission-denied' ? 'The Firestore rules do not allow sharing yet. (permission-denied)' : 'We could not share this. Try again.', true); }
+  try { await cur.session.addMember(p.uid, p.name || p.email, role); found = []; sg = []; sgi = -1; if ($('sh-q')) $('sh-q').value = ''; shMsg(`${p.name} can now ${role === 'edit' ? 'edit' : 'view'} this document.`); } catch (e) { console.error(e); shMsg(e?.code === 'permission-denied' ? 'The Firestore rules do not allow sharing yet. (permission-denied)' : 'We could not share this. Try again.', true); }
 }
 dlg.addEventListener('click', async e => {
   if (e.target === dlg || e.target.closest('[data-close]')) { dlg.close(); sharing = false; return; }
   const b = e.target.closest('[data-a]'); if (!b || !cur?.session) return; const a = b.dataset.a, s = cur.session;
   if (a === 'copy') { try { await navigator.clipboard.writeText(shareUrl()); shMsg('Link copied.'); } catch { $('sh-url').select(); shMsg('Press Ctrl+C to copy the link.'); } }
-  else if (a === 'find') {
-    const q = ($('sh-q').value || '').trim(), role = $('sh-role').value; if (!q) return shMsg('Type a full name or an email address.', true);
-    const had = new Set(s.meta.members || []); let res; try { res = (await be.find(q)).filter(p => !had.has(p.uid)); } catch { return shMsg('We could not search right now. Try again.', true); }
-    if (!res.length) return shMsg('No account found with that exact name or email, or they already have access. People can be found once they have opened Document Drafting. You can also send them the link above.', true);
-    if (res.length === 1) return addPerson(res[0], role);
-    found = res; shareMsg = null; renderShare();
-  }
-  else if (a === 'pick') addPerson({ uid: b.dataset.uid, name: b.dataset.name }, $('sh-role').value);
   else if (a === 'remove') { try { await s.removeMember(b.dataset.uid); shMsg('Removed.'); } catch (er) { console.error(er); shMsg('We could not remove them. Try again.', true); } }
 });
 dlg.addEventListener('change', async e => {
@@ -251,7 +315,8 @@ dlg.addEventListener('change', async e => {
 /* ---------- routing ---------- */
 async function route() {
   const h = location.hash.replace(/^#/, ''), my = ++gen;
-  if (!(await closeCurrent())) { return; }
+  if (!(await closeCurrent())) { history.replaceState(null, '', BASE + lastHash); return; }
+  lastHash = location.hash;
   unList?.(); unList = null; dlg.open && dlg.close(); sharing = false;
   if (my !== gen) return;
   const d = /^d\/(.+)$/.exec(h);
