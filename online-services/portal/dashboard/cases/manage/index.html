@@ -195,6 +195,7 @@ let cases = [], judges = [], cur = null, col = null, cm = null, cmExists = false
 let tab = 'overview', docketFilter = 'all', docketQ = '', docketNewest = false, note = '', noteKind = 'ok';
 const LS = { q: '', status: '', court: '', mine: isJudicial, shown: 40 };
 class UserError extends Error {}
+const canon = v => JSON.stringify(v, (k, x) => x && typeof x === 'object' && !Array.isArray(x) ? Object.fromEntries(Object.entries(x).sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0)) : x);   // same record, whatever order Firestore returns its fields in
 const bad = m => { throw new UserError(m); };
 
 /* ── Load & routing ─────────────────────────────────────────────────── */
@@ -290,7 +291,7 @@ async function listChange(field, idx, fn, audit, evFn, xFn) {
   const old = idx >= 0 ? (cur[field] || [])[idx] : null;
   await change(d => {
     const arr = [...(d[field] || [])]; let k = -1;
-    if (idx >= 0) { k = arr.findIndex(x => JSON.stringify(x) === JSON.stringify(old)); if (k < 0) bad('Someone else changed this record while you were editing it. Reload the case and try again.'); }
+    if (idx >= 0) { k = arr.findIndex(x => canon(x) === canon(old)); if (k < 0) bad('Someone else changed this record while you were editing it. Reload the case and try again.'); }
     const res = fn(idx >= 0 ? arr[k] : null, d);
     if (idx >= 0) { if (res === null) arr.splice(k, 1); else arr[k] = res; } else arr.push(res);
     const p = { [field]: arr }, ev = evFn && evFn(res, d); if (ev) p.events = withEvent(d, ev); if (xFn) Object.assign(p, xFn(res, d)); return p;

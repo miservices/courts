@@ -120,6 +120,7 @@ const pillOf = s => `<span class="pill ${PILL[s] || 'plain'}">${esc(s)}</span>`;
 const stat = (l, v, al) => `<div class="stat ${al ? 'alert-stat' : ''}"><span>${l}</span><b>${v}</b></div>`;
 const notAllowed = (t, m) => `<section class="card"><div class="empty"><strong>${t}</strong><p>${m}</p></div></section>`;
 // Updates one case in a transaction (adds docket events and summary fields) and returns the new case data.
+const canon = v => JSON.stringify(v, (k, x) => x && typeof x === 'object' && !Array.isArray(x) ? Object.fromEntries(Object.entries(x).sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0)) : x);   // same record, whatever order Firestore returns its fields in
 async function editCase(c, fn) {
   const r = doc(db, colFor(c.court), c._id), at = new Date();
   const next = await runTransaction(db, async tx => { const s = await tx.get(r); if (!s.exists()) bad('This case no longer exists.'); const d = s.data(), out = fn(d, at) || {}, p = { ...(out.patch || {}), dates: { ...(d.dates || {}), lastUpdated: iso(at) } };
@@ -214,7 +215,7 @@ function reschedModal(x) {
   const c = x.c, d = x.when, loc = `${d.getFullYear()}-${p2(d.getMonth() + 1)}-${p2(d.getDate())}T${p2(d.getHours())}:${p2(d.getMinutes())}`;
   modal({ title: 'Reschedule hearing', sub: `${c.caseId} · ${x.h.type || 'Hearing'}`, ok: 'Reschedule', okCls: 'good', body: fld('New date and time', 'r-when', loc, { type: 'datetime-local' }) + selF('Courtroom', 'r-room', [['', 'No courtroom (video)'], ['1', 'Courtroom 1'], ['2', 'Courtroom 2'], ['3', 'Courtroom 3'], ...(x.h.courtroom && !['1', '2', '3'].includes(String(x.h.courtroom)) ? [[x.h.courtroom, x.h.courtroom]] : [])], String(x.h.courtroom || '')) + area('Reason (required)', 'r-why'),
     onOk: async () => { const nd = parse(val('r-when')), why = val('r-why'); need(nd, 'Choose the new date and time.'); need(why, 'Enter the reason.'); need(nd > new Date(), 'The new time must be in the future.'); const room = val('r-room'), cl = clashFor(x, nd, room, x.h.officer, x.mins); need(!cl, cl);
-      const old = x.h; await editCase(c, (d0, at) => { const arr = [...(d0.hearings || [])], k = arr.findIndex(h => JSON.stringify(h) === JSON.stringify(old)); if (k < 0) bad('Someone else changed this hearing. Reload and try again.'); arr[k] = { ...old, date: nd.toISOString(), courtroom: room || null, rescheduledFrom: old.date, rescheduledBy: account.name, rescheduledAt: iso(at) };
+      const old = x.h; await editCase(c, (d0, at) => { const arr = [...(d0.hearings || [])], k = arr.findIndex(h => canon(h) === canon(old)); if (k < 0) bad('Someone else changed this hearing. Reload and try again.'); arr[k] = { ...old, date: nd.toISOString(), courtroom: room || null, rescheduledFrom: old.date, rescheduledBy: account.name, rescheduledAt: iso(at) };
         return { patch: { hearings: arr }, event: { description: `${old.type || 'Hearing'} rescheduled from ${parse(old.date).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' })} to ${nd.toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' })}${room ? ', ' + roomLabel(room) : ''}.`, comment: why } }; });
       await cmNotice(c, { type: 'Notice of Hearing', title: 'Hearing Rescheduled', text: `${old.type || 'Hearing'} is now ${nd.toLocaleString('en-US', { dateStyle: 'full', timeStyle: 'short' })}${room ? ', ' + roomLabel(room) : ''}. ${why}` });
       rebuild(); note = 'Hearing rescheduled. The parties have been notified.'; noteKind = 'ok'; day = dayKey(nd); dlg.close(); draw(); } });
@@ -222,7 +223,7 @@ function reschedModal(x) {
 function cancelModal(x) {
   const c = x.c; modal({ title: 'Cancel hearing', sub: `${c.caseId} · ${x.h.type || 'Hearing'} on ${fmtDate(x.when)}`, ok: 'Cancel hearing', okCls: 'bad', body: area('Reason (required)', 'x-why'),
     onOk: async () => { const why = val('x-why'); need(why, 'Enter the reason.'); const old = x.h;
-      await editCase(c, (d0, at) => { const arr = [...(d0.hearings || [])], k = arr.findIndex(h => JSON.stringify(h) === JSON.stringify(old)); if (k < 0) bad('Someone else changed this hearing. Reload and try again.'); arr[k] = { ...old, result: 'Cancelled', cancelReason: why, cancelledBy: account.name, cancelledAt: iso(at) }; return { patch: { hearings: arr }, event: { description: `${old.type || 'Hearing'} set for ${fmtDate(x.when)} cancelled.`, comment: why } }; });
+      await editCase(c, (d0, at) => { const arr = [...(d0.hearings || [])], k = arr.findIndex(h => canon(h) === canon(old)); if (k < 0) bad('Someone else changed this hearing. Reload and try again.'); arr[k] = { ...old, result: 'Cancelled', cancelReason: why, cancelledBy: account.name, cancelledAt: iso(at) }; return { patch: { hearings: arr }, event: { description: `${old.type || 'Hearing'} set for ${fmtDate(x.when)} cancelled.`, comment: why } }; });
       await cmNotice(c, { type: 'Notice of Hearing', title: 'Hearing Cancelled', text: `${old.type || 'Hearing'} set for ${x.when.toLocaleString('en-US', { dateStyle: 'full', timeStyle: 'short' })} is cancelled. ${why}` });
       rebuild(); note = 'Hearing cancelled. The parties have been notified.'; noteKind = 'ok'; dlg.close(); draw(); } });
 }

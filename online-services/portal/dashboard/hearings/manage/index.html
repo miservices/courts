@@ -71,7 +71,7 @@ dialog>footer{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:10px;padd
 <div class="auth-loading-overlay" id="auth-overlay" role="status"><div class="alo-title">Online Portal</div><div class="spin"></div><div>Verifying your session…</div></div>
 
 <script type="module">
-import { boot, db, $, esc, has, STAFF, scopeOf, colFor, logAction, DISTRICT_COURT, SUPREME_COURT } from '/courts/online-services/portal/dashboard/assets/js/portal-shell.js?v=6';
+import { boot, db, $, esc, has, STAFF, scopeOf, colFor, logAction, DISTRICT_COURT, SUPREME_COURT } from '/courts/online-services/portal/dashboard/assets/js/portal-shell.js?v=7';
 import { collection, getDocs, doc, runTransaction } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 
 const { account, role } = await boot({ id: 'mhearings', title: 'Manage Hearings', subtitle: 'Schedule, reschedule, and record the outcome of hearings.' });
@@ -112,6 +112,7 @@ const isMsc = c => c.court === SUPREME_COURT;
 const stateOf = x => x.h.result === 'Cancelled' ? 'cancelled' : hv(x.h.result) ? 'held' : x.when < new Date() ? 'needs' : 'upcoming';
 const PILL = { upcoming: ['live', 'Upcoming'], held: ['done', 'Held'], cancelled: ['plain', 'Cancelled'], needs: ['bad', 'Needs result'] };
 class UserError extends Error {}
+const canon = v => JSON.stringify(v, (k, x) => x && typeof x === 'object' && !Array.isArray(x) ? Object.fromEntries(Object.entries(x).sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0)) : x);   // same record, whatever order Firestore returns its fields in
 const bad = m => { throw new UserError(m); };
 const errText = e => e instanceof UserError ? e.message : e?.code === 'permission-denied' ? 'Your account is not allowed to change this record. The Firestore security rules must let court staff update cases and caseManagement. (permission-denied)' : `We could not save this change. Check your connection and try again.${e?.code ? ' (' + e.code + ')' : ''}`;
 
@@ -152,7 +153,7 @@ async function mutate(c, fn, audit) {
 }
 async function hearingMutate(c, old, fn, audit, evFn) {
   await mutate(c, d => { const arr = [...(d.hearings || [])]; let k = -1;
-    if (old) { k = arr.findIndex(x => JSON.stringify(x) === JSON.stringify(old)); if (k < 0) bad('Someone else changed this hearing while you were editing it. Reload and try again.'); }
+    if (old) { k = arr.findIndex(x => canon(x) === canon(old)); if (k < 0) bad('Someone else changed this hearing while you were editing it. Reload and try again.'); }
     const res = fn(old ? arr[k] : null); if (old) arr[k] = res; else arr.push(res); const p = { hearings: arr }, ev = evFn && evFn(res);
     if (ev) p.events = [...(d.events || []), { eventNumber: (d.events || []).reduce((m, x) => Math.max(m, x.eventNumber || 0), 0) + 1, sealed: false, ...ev }]; return p; }, audit);
   rebuild();
