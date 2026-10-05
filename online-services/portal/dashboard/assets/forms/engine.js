@@ -8,7 +8,10 @@
      contHeader(api)                      optional: HTML repeated at the top of continuation pages
      build(api)                           returns the document as a list of blocks (see paginate)
      md                                   how fields map to Markdown: { title, sections:[{name, fields, multi, groups}] }
-     prefill(api, account, role)          optional: fill in what we already know about the person
+     roles                                optional: [{id,label,hint,for:/regex of account roles/,fill(api,who)->{fieldId:value}}]
+                                        shown as "Fill in my details as" checkboxes; who = {name,org,title,badge,today}
+   Any text field marked data-font="std" (Caveat, Courier New) or data-font="judge" (adds Special Elite) gets a font
+   picker with bold and italic. In build(), print those values with api.fv(id, prefix) so the choice shows up.
    The preview lives in its own frame, so portal styles never touch the document and the document never touches the portal. */
 export const U = 1.3714, P = n => (n * U).toFixed(2) + 'px', B = '1.4px';
 export const esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
@@ -17,6 +20,7 @@ const norm = t => String(t || '').toLowerCase().replace(/\s+/g, ' ').trim();
 export const keyOf = s => String(s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
 
 const BASE_CSS = `@page{size:letter;margin:0}*{box-sizing:border-box}
+html{overflow-y:scroll}
 body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#e9ebee;color:#222}
 #pwrap{margin:16px auto}#preview{width:816px;transform-origin:top left}
 #measure{position:absolute;left:-9999px;top:0;visibility:hidden}
@@ -36,6 +40,8 @@ export function toMarkdown(def, api) {
       g.get(api).forEach((it, i) => { o.push('### ' + g.item + ' ' + (i + 1), ''); g.fields.forEach(([k, l]) => o.push('- ' + l + ': ' + String(it[k] ?? '').replace(/\r?\n/g, ' ').trim())); o.push(''); });
     });
   });
+  const st = Object.entries(api.styles()).filter(([, v]) => v.f || v.b || v.i);
+  if (st.length) { o.push('## Field styles', ''); st.forEach(([id, v]) => o.push('- ' + id + ': ' + [v.f, v.b && 'bold', v.i && 'italic'].filter(Boolean).join(', '))); o.push(''); }
   return o.join('\n');
 }
 export function formOf(text) {   // which form a saved .md belongs to, or null
@@ -46,7 +52,7 @@ export function formOf(text) {   // which form a saved .md belongs to, or null
 export function fromMarkdown(def, api, txt) {
   const lines = txt.replace(/\r/g, '').split('\n');
   if (keyOf(formOf(txt)) !== keyOf(def.number)) throw new Error(`This file is not a ${def.number} form (no "form: ${def.number}" found).`);
-  const single = {}, multi = {}, found = new Map(); let curGroup = null, curItem = null, i = 0, mode = '';
+  const single = {}, multi = {}, styles = {}, found = new Map(); let curGroup = null, curItem = null, i = 0, mode = '';
   const sl = {}, ml = {}, groups = []; def.md.sections.forEach(s => { (s.fields || []).forEach(([id, l]) => sl[norm(l)] = id); (s.multi || []).forEach(([id, l]) => ml[norm(l)] = id); (s.groups || []).forEach(g => groups.push(g)); });
   while (i < lines.length) {
     const ln = lines[i]; let m;
@@ -61,10 +67,11 @@ export function fromMarkdown(def, api, txt) {
         multi[ml[t]] = buf.join('\n').trim();
       }
     } else if ((m = ln.match(/^##\s+(.+?)\s*$/))) {
-      curGroup = groups.find(g => norm(g.heading) === norm(m[1])) || null; curItem = null; mode = 'sec'; if (curGroup && !found.has(curGroup)) found.set(curGroup, []);
+      curGroup = groups.find(g => norm(g.heading) === norm(m[1])) || null; curItem = null; mode = norm(m[1]) === 'field styles' ? 'sty' : 'sec'; if (curGroup && !found.has(curGroup)) found.set(curGroup, []);
     } else if ((m = ln.match(/^[-*]\s+(.+?):\s?(.*)$/))) {
       const k = norm(m[1]);
-      if (mode === 'item' && curItem) { const f = curGroup.fields.find(([, l]) => norm(l) === k); if (f) curItem[f[0]] = m[2].trim(); }
+      if (mode === 'sty') { const p = m[2].split(/[,;]/).map(x => x.trim()).filter(Boolean); styles[m[1].trim().toLowerCase()] = { f: p.find(x => !/^(bold|italic)$/i.test(x)) || '', b: p.some(x => /^bold$/i.test(x)), i: p.some(x => /^italic$/i.test(x)) }; }
+      else if (mode === 'item' && curItem) { const f = curGroup.fields.find(([, l]) => norm(l) === k); if (f) curItem[f[0]] = m[2].trim(); }
       else if (sl[k]) single[sl[k]] = m[2].trim();
     }
     i++;
@@ -72,19 +79,51 @@ export function fromMarkdown(def, api, txt) {
   Object.entries(single).forEach(([id, v]) => { const e = api.$(id); if (!e) return; if (e.type === 'checkbox') e.checked = /^(yes|true|x|1)$/i.test(v); else e.value = v; });
   Object.entries(multi).forEach(([id, v]) => { const e = api.$(id); if (e) e.value = v; });
   groups.forEach(g => g.set(api, found.get(g) || []));
+  api.setStyles(styles);
 }
 
 /* ---------- Mount a form into a host element ---------- */
+const FONTS = { std: ['Caveat', 'Courier New'], judge: ['Caveat', 'Courier New', 'Special Elite'] };
+const FCSS = { 'Caveat': "font-family:'Caveat',cursive;font-size:1.25em", 'Courier New': "font-family:'Courier New',Courier,monospace", 'Special Elite': "font-family:'Special Elite','Courier New',monospace" };
+const GFONTS = 'https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&family=Special+Elite&display=swap';
+const today = () => { const d = new Date(); return String(d.getMonth() + 1).padStart(2, '0') + '/' + String(d.getDate()).padStart(2, '0') + '/' + d.getFullYear(); };
+
 export async function mountForm(def, host, { account, role, md, onDirty } = {}) {
-  host.innerHTML = `<div class="fd-wrap"><div class="fd-panel" id="fd-panel"><h3>${esc(def.number)}</h3><small class="fd-hint">Fill in the fields. The document updates as you type and adds pages as needed.</small>${def.panel}
+  const who = { name: (account?.name || account?.displayName || '').trim(), org: account?.organization || '', title: account?.title || account?.jobTitle || '', badge: account?.badgeNumber || account?.badge || '', today: today() };
+  const roles = (def.roles || []).filter(r => !r.for || r.for.test(role || ''));
+  const roleBox = roles.length && who.name ? `<div class="fd-roles"><b>Fill in my details as</b><small class="fd-hint">${esc(who.name)}. Tick every role you hold on this form. Untick to clear what it filled in.</small>${roles.map(r => `<label class="chk"><input type="checkbox" data-role="${esc(r.id)}"> <span>${esc(r.label)}${r.hint ? ` <small class="fd-hint">${esc(r.hint)}</small>` : ''}</span></label>`).join('')}</div>` : '';
+  host.innerHTML = `<div class="fd-wrap"><div class="fd-panel" id="fd-panel"><h3>${esc(def.number)}</h3><small class="fd-hint">Fill in the fields. The document updates as you type and adds pages as needed.</small>${roleBox}${def.panel}
     <div class="fd-btns"><button type="button" class="btn" data-fd="pdf">Download PDF</button><button type="button" class="btn outline" data-fd="md">Download .md</button><button type="button" class="btn outline" data-fd="load">Load .md</button><button type="button" class="btn outline" data-fd="print">Print</button><input type="file" data-fd-file accept=".md,.markdown,.txt,text/markdown,text/plain" hidden></div><small class="fd-msg" id="fd-msg" role="status"></small></div>
     <div class="fd-view" id="fd-view"></div></div>`;
   const $ = id => host.querySelector('#' + id), qa = sel => [...host.querySelectorAll(sel)], k = { U, P, B };
+  const wrap = host.querySelector('.fd-wrap');
+
+  /* font pickers */
+  const sty = {}, bars = [];
+  qa('[data-font]').forEach(el => {
+    const bar = document.createElement('div'); bar.className = 'fd-fx'; bar.dataset.for = el.id;
+    bar.innerHTML = `<select class="fd-ff" aria-label="Font">${['', ...(FONTS[el.dataset.font] || FONTS.std)].map(f => `<option value="${f}">${f || 'Default font'}</option>`).join('')}</select><button type="button" class="fd-fb" aria-pressed="false" aria-label="Bold" title="Bold"><b>B</b></button><button type="button" class="fd-fi" aria-pressed="false" aria-label="Italic" title="Italic"><i>I</i></button>`;
+    el.insertAdjacentElement('afterend', bar); bars.push(bar); sty[el.id] = { f: '', b: false, i: false };
+  });
+  const readBar = bar => { sty[bar.dataset.for] = { f: bar.querySelector('select').value, b: bar.querySelector('.fd-fb').getAttribute('aria-pressed') === 'true', i: bar.querySelector('.fd-fi').getAttribute('aria-pressed') === 'true' }; };
+  const syncBar = bar => { const v = sty[bar.dataset.for] || {}; bar.querySelector('select').value = v.f || ''; bar.querySelector('.fd-fb').setAttribute('aria-pressed', !!v.b); bar.querySelector('.fd-fi').setAttribute('aria-pressed', !!v.i); };
+
   const frame = document.createElement('iframe'); frame.className = 'fd-frame'; frame.title = def.number + ' preview';
-  frame.srcdoc = `<!doctype html><html><head><meta charset="utf-8"><style>${BASE_CSS}${def.css(k)}</style></head><body><div id="pwrap"><div id="preview"></div></div><div id="measure" class="page" style="height:auto;box-shadow:none"><div class="pc" id="mbox" style="display:flow-root"></div></div></body></html>`;
+  frame.srcdoc = `<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="${GFONTS}"><style>${BASE_CSS}${def.css(k)}</style></head><body><div id="pwrap"><div id="preview"></div></div><div id="measure" class="page" style="height:auto;box-shadow:none"><div class="pc" id="mbox" style="display:flow-root"></div></div></body></html>`;
   await new Promise(res => { frame.onload = res; $('fd-view').appendChild(frame); });
   const fd = frame.contentDocument, fw = frame.contentWindow, preview = fd.getElementById('preview'), mbox = fd.getElementById('mbox'), pwrap = fd.getElementById('pwrap');
-  const api = { $, qa, esc, P, B, U, account, role, val: id => esc($(id).value.trim()), render: () => render(), note: (t, bad) => { const m = $('fd-msg'); m.textContent = t; m.style.color = bad ? '#b33' : '#287a3e'; } };
+  const val = id => esc($(id).value.trim());
+  const api = {
+    $, qa, esc, P, B, U, account, role, who, val,
+    fv(id, pre = '') {   // the value of a field in the font chosen for it
+      const v = val(id); if (!v) return ''; const s = sty[id];
+      if (!s || !(s.f || s.b || s.i)) return esc(pre) + v;
+      return `<span style="${s.f ? FCSS[s.f] + ';' : ''}${s.b ? 'font-weight:700;' : ''}${s.i ? 'font-style:italic;' : ''}">${esc(pre)}${v}</span>`;
+    },
+    styles: () => sty,
+    setStyles(m) { Object.keys(sty).forEach(id => sty[id] = { f: '', b: false, i: false, ...(m?.[id] || {}) }); bars.forEach(syncBar); },
+    render: () => render(), note: (t, bad) => { const m = $('fd-msg'); m.textContent = t; m.style.color = bad ? '#b33' : '#287a3e'; }
+  };
   const AVN = (def.usable ? def.usable(U) : 678 * U), meas = html => { mbox.innerHTML = html; return mbox.getBoundingClientRect().height; };
 
   /* Blocks: {html} stays whole; {txt, make(text, first)} may be split across pages; {pb:'new'|'cont'|'blank', html?} forces a new page. */
@@ -110,20 +149,40 @@ export async function mountForm(def, host, { account, role, md, onDirty } = {}) 
     }
     return pages;
   }
+  /* The preview scrolls inside its own frame (smoother than scrolling the whole portal page), and the panel scrolls on its own. */
+  const wide = () => matchMedia('(min-width:901px)').matches;
+  function size() { if (!wide()) { wrap.style.height = ''; return; } wrap.style.height = Math.max(480, innerHeight - wrap.getBoundingClientRect().top - 16) + 'px'; }
   function fit() {
-    const s = Math.min(1, (frame.clientWidth - 32) / 816); preview.style.transform = `scale(${s})`;
-    pwrap.style.width = (816 * s) + 'px'; pwrap.style.height = (preview.offsetHeight * s) + 'px'; frame.style.height = (preview.offsetHeight * s + 32) + 'px';
+    const s = Math.min(1, (fd.documentElement.clientWidth - 32) / 816); preview.style.transform = `scale(${s})`;
+    pwrap.style.width = (816 * s) + 'px'; pwrap.style.height = (preview.offsetHeight * s) + 'px';
   }
   function render() {
+    const keep = fd.documentElement.scrollTop;
     const pages = paginate(def.build(api));
     preview.innerHTML = pages.map(p => `<div class="page"><div class="pc">${p.join('')}</div><div class="foot">${esc(def.footer || def.number)}</div></div>`).join(''); fit();
+    fd.documentElement.scrollTop = keep;
   }
-  const ro = new ResizeObserver(() => fit()); ro.observe($('fd-view'));
+  let raf = 0; const later = () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(render); };
+  const ro = new ResizeObserver(() => { size(); fit(); }); ro.observe($('fd-view'));
+  addEventListener('resize', size); size();
+  fd.fonts?.addEventListener?.('loadingdone', later);
   if (def.init) def.init(api);
-  if (def.prefill && account) def.prefill(api, account, role);
   if (md) { try { fromMarkdown(def, api, md); api.note('Loaded your saved draft.'); } catch (e) { api.note(e.message, true); } }
   let dirty = false; const mark = () => { if (!dirty) { dirty = true; onDirty?.(); } };
-  $('fd-panel').addEventListener('input', () => { render(); mark(); });
+  const panel = $('fd-panel');
+  panel.addEventListener('input', e => { const bar = e.target.closest('.fd-fx'); if (bar) readBar(bar); later(); mark(); });
+  panel.addEventListener('click', e => {
+    const b = e.target.closest('.fd-fb,.fd-fi'); if (!b) return;
+    b.setAttribute('aria-pressed', b.getAttribute('aria-pressed') !== 'true'); readBar(b.closest('.fd-fx')); later(); mark();
+  });
+  /* Fill in my details as ... */
+  const applied = {};
+  panel.addEventListener('change', e => {
+    const c = e.target.closest('[data-role]'); if (!c) return; const r = roles.find(x => x.id === c.dataset.role); if (!r) return;
+    if (c.checked) { const got = {}; Object.entries(r.fill(api, who) || {}).forEach(([id, v]) => { const el = $(id); if (el && v) { el.value = v; got[id] = v; } }); applied[r.id] = got; }
+    else { Object.entries(applied[r.id] || {}).forEach(([id, v]) => { const el = $(id); if (el && el.value === v) el.value = ''; }); delete applied[r.id]; }
+    render(); mark();
+  });
   render();
 
   const fileName = ext => def.number.replace(/\s+/g, '_') + '.' + ext;
@@ -131,12 +190,13 @@ export async function mountForm(def, host, { account, role, md, onDirty } = {}) 
     const label = btn.textContent; btn.textContent = 'Generating…'; btn.disabled = true;
     try {
       if (!fw.html2pdf) await new Promise((res, rej) => { const s = fd.createElement('script'); s.src = H2P; s.onload = res; s.onerror = () => rej(new Error('load')); fd.head.appendChild(s); });
-      const wrap = fd.createElement('div'); wrap.style.cssText = 'position:absolute;left:-10000px;top:0;width:816px';
+      try { const used = [...new Set(Object.values(sty).map(v => v.f).filter(Boolean))]; await Promise.all(used.map(f => fd.fonts.load(`16px "${f}"`))); await fd.fonts.ready; } catch (e) { /* fall back to system fonts */ }
+      const holder = fd.createElement('div'); holder.style.cssText = 'position:absolute;left:-10000px;top:0;width:816px';
       const el = preview.cloneNode(true); el.style.transform = 'none'; el.id = 'pdfsrc';
       el.querySelectorAll('.page').forEach(p => { p.style.margin = '0'; p.style.boxShadow = 'none'; p.style.height = '1055px'; });
-      wrap.appendChild(el); fd.body.appendChild(wrap);
+      holder.appendChild(el); fd.body.appendChild(holder);
       try { await fw.html2pdf().set({ margin: 0, filename: fileName('pdf'), image: { type: 'jpeg', quality: .98 }, html2canvas: { scale: 2.5, useCORS: true, scrollY: 0 }, jsPDF: { unit: 'pt', format: 'letter', orientation: 'portrait' }, pagebreak: { mode: ['css'], after: '.page' } }).from(el).save(); }
-      finally { wrap.remove(); }
+      finally { holder.remove(); }
     } catch (e) { api.note('We could not make the PDF here. Choose Print and save as PDF instead.', true); }
     btn.textContent = label; btn.disabled = false;
   }
@@ -152,5 +212,5 @@ export async function mountForm(def, host, { account, role, md, onDirty } = {}) 
     try { fromMarkdown(def, api, await f.text()); render(); api.note('Loaded ' + f.name); mark(); } catch (er) { api.note(er.message, true); }
     e.target.value = '';
   });
-  return { api, destroy() { ro.disconnect(); host.innerHTML = ''; }, isDirty: () => dirty };
+  return { api, destroy() { ro.disconnect(); removeEventListener('resize', size); host.innerHTML = ''; }, isDirty: () => dirty };
 }

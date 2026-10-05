@@ -71,15 +71,15 @@ const panel = `
  <button class="btn outline" id="addc" type="button">+ Add count</button>
 
  <h2>Complaint signatures</h2>
- <div class="row"><div><label>Date (witness)</label><input type="text" id="d1"></div><div><label>Date (prosecutor)</label><input type="text" id="d2"></div></div>
- <label>Complaining witness' signature (typed)</label><input type="text" id="sig1">
- <label>Prosecutor's signature (typed)</label><input type="text" id="sig2">
+ <div class="row"><div><label>Date (witness)</label><input type="text" id="d1" data-font="std"></div><div><label>Date (prosecutor)</label><input type="text" id="d2" data-font="std"></div></div>
+ <label>Complaining witness' signature (typed)</label><input type="text" id="sig1" data-font="std">
+ <label>Prosecutor's signature (typed)</label><input type="text" id="sig2" data-font="std">
 
  <h2>Order (judge / magistrate)</h2>
  <label>Order</label>
  <select id="ordsel"><option value="0">— leave unchecked —</option><option value="1">1. Accepted – warrant shall issue</option><option value="2">2. Accepted – summons shall issue</option><option value="3">3. Rejected – no probable cause</option></select>
- <div class="row"><div><label>Date</label><input type="text" id="od"></div><div><label>Judge or Magistrate (type or print)</label><input type="text" id="jname"></div></div>
- <label>Judge / Magistrate signature (typed)</label><input type="text" id="jsig">
+ <div class="row"><div><label>Date</label><input type="text" id="od" data-font="judge"></div><div><label>Name (type or print)</label><input type="text" id="jname" data-font="judge"></div></div>
+ <label>Signature (typed)</label><input type="text" id="jsig" data-font="judge">
 
  <h2>Affidavit of probable cause</h2>
  <label>Affiant name</label><input type="text" id="aff">
@@ -92,7 +92,7 @@ const panel = `
  <div class="chk"><input type="checkbox" id="b5"> Other</div>
  <textarea id="other" rows="2" placeholder="Other (describe)"></textarea>
  <div class="row"><div><label>Agency</label><input type="text" id="agency"></div><div><label>Title</label><input type="text" id="title"></div></div>
- <div class="row"><div><label>Badge No.</label><input type="text" id="badge"></div><div><label>Name (type or print)</label><input type="text" id="aname"></div></div>
+ <div class="row"><div><label>Badge No.</label><input type="text" id="badge"></div><div><label>Name (type or print)</label><input type="text" id="aname" data-font="std"></div></div>
  <div class="row"><div><label>Date</label><input type="text" id="d3"></div><div><label>Electronic signature (/s/)</label><input type="text" id="esig"></div></div>
 `;
 
@@ -103,7 +103,7 @@ const cb=on=>`<div class="cb">${on?'✓':''}</div>`;
 
 
 function build(api){
- const {$,qa,P,B,esc}=api, V=api.val;
+ const {$,qa,P,B,esc}=api, V=api.val, F=api.fv;
  const seq=[];
  /* page 1: complaint */
  seq.push({html:hdr(P,B,'CRIMINAL COMPLAINT',V('judge'),V('caseno'))});
@@ -119,8 +119,8 @@ function build(api){
   seq.push({html:`<div class="cn ${i?'':'cn0'}"><div class="ct">COUNT ${i+1}: ${g('ch')?g('ch').toUpperCase():'[CHARGE NAME]'}</div><div class="cx">${blank(g('cl'),'[CLASSIFICATION]')}: punishable by imprisonment for not more than ${blank(g('mi'),'___')} minutes ${blank(g('se'),'___')} seconds, or a fine of not more than $${blank(g('fi'),'______')} or both.</div></div>`});
  });
  seq.push({html:`<div class="ip" style="padding-top:${P(37)}">The complaining witness asks that the defendant be apprehended and dealt with according to law.</div>
-  <div class="sr"><div class="sc" style="width:${P(98)}"><div class="sv lf">${V('d1')}</div><div class="sl">Date</div></div><div class="sc" style="margin-left:${P(199)};width:${P(99)}"><div class="sv lf">${V('d2')}</div><div class="sl">Date</div></div></div>
-  <div class="sr" style="margin-top:${P(35.5)}"><div class="sc" style="width:${P(197)}"><div class="sv lf">${V('sig1')?'/s/ '+V('sig1'):''}</div><div class="sl">Complaining witness’ signature</div></div><div class="sc" style="margin-left:${P(100)};width:${P(196)}"><div class="sv lf">${V('sig2')?'/s/ '+V('sig2'):''}</div><div class="sl">Prosecutor’s signature</div></div></div>
+  <div class="sr"><div class="sc" style="width:${P(98)}"><div class="sv lf">${F('d1')}</div><div class="sl">Date</div></div><div class="sc" style="margin-left:${P(199)};width:${P(99)}"><div class="sv lf">${F('d2')}</div><div class="sl">Date</div></div></div>
+  <div class="sr" style="margin-top:${P(35.5)}"><div class="sc" style="width:${P(197)}"><div class="sv lf">${F('sig1','/s/ ')}</div><div class="sl">Complaining witness’ signature</div></div><div class="sc" style="margin-left:${P(100)};width:${P(196)}"><div class="sv lf">${F('sig2','/s/ ')}</div><div class="sl">Prosecutor’s signature</div></div></div>
   <div class="dc">The complaining witness and prosecuting authority declare under the penalties of perjury that they have examined this document and that its contents are true to the best of their information, knowledge, and belief.</div>`});
 
  /* order page */
@@ -129,8 +129,8 @@ function build(api){
  seq.push({pb:'cont',html:`<div class="or"><div class="cap">Order section to be completed by judge/magistrate.</div><div class="ob">ORDER</div></div>
   <div class="b" style="margin-top:${P(12)};line-height:${P(12)}">IT IS ORDERED:</div>
   <div style="margin-top:${P(4.25)}">${oo(1,'The complaint is <b>ACCEPTED</b>. A warrant shall issue for the arrest of the defendant.')}${oo(2,'The complaint is <b>ACCEPTED</b>. A summons shall issue requiring the defendant to appear before the court.')}${oo(3,'The criminal complaint is <b>REJECTED</b> because probable cause has not been established.')}</div>
-  <div class="sr" style="margin-top:${P(72)}"><div class="sc" style="margin-left:${P(3)};width:${P(98)}"><div class="sv lf">${V('od')}</div><div class="sl">Date</div></div><div class="sc" style="margin-left:${P(182)};width:${P(213)}"><div class="sv lf">${V('jname')}</div><div class="sl">Judge or Magistrate (type or print)</div></div></div>
-  <div class="sr" style="margin-top:${P(41.5)}"><div class="sc" style="margin-left:${P(283)};width:${P(213)}"><div class="sv lf">${V('jsig')?'/s/ '+V('jsig'):''}</div><div class="sl">Signature</div></div></div>`});
+  <div class="sr" style="margin-top:${P(72)}"><div class="sc" style="margin-left:${P(3)};width:${P(98)}"><div class="sv lf">${F('od')}</div><div class="sl">Date</div></div><div class="sc" style="margin-left:${P(182)};width:${P(213)}"><div class="sv lf">${F('jname')}</div><div class="sl">Judge or Magistrate (type or print)</div></div></div>
+  <div class="sr" style="margin-top:${P(41.5)}"><div class="sc" style="margin-left:${P(283)};width:${P(213)}"><div class="sv lf">${F('jsig','/s/ ')}</div><div class="sl">Signature</div></div></div>`});
 
  /* blank page */
  seq.push({pb:'blank',html:`<div class="c" style="padding-top:${P(314)}"><div class="b" style="font-size:${P(19.4)};line-height:${P(22)}">THIS PAGE IS INTENTIONALLY LEFT BLANK</div><div style="margin-top:${P(20.5)};font-size:${P(11.8)};line-height:${P(15)}">COMPLAINT ON PREVIOUS PAGE(S)<br>AFFIDAVIT OF PROBABLE CAUSE ON NEXT PAGE(S)</div></div>`});
@@ -145,7 +145,7 @@ function build(api){
  const oth=V('other');
  seq.push({html:`<div class="ap b" style="padding-top:${P(24)}">The facts contained in this affidavit are based upon: <span style="font-size:${P(7.5)};font-weight:normal">(select all that apply)</span></div>
   <div style="margin-top:${P(3.75)}">${it(1,'My personal observations.')}${it(2,'Statements made by witnesses or victims.')}${it(3,'Physical evidence.')}${it(4,'Records or documents.')}${it(5,'Other:',oth?' '+oth:'')}</div>
-  <div class="at"><div><div class="lb">Agency</div><div class="vv">${V('agency')}</div></div><div><div class="lb">Title</div><div class="vv">${V('title')}</div></div><div><div class="lb">Badge No.</div><div class="vv">${V('badge')}</div></div><div><div class="lb">Name (type or print)</div><div class="vv">${V('aname')}</div></div></div>
+  <div class="at"><div><div class="lb">Agency</div><div class="vv">${V('agency')}</div></div><div><div class="lb">Title</div><div class="vv">${V('title')}</div></div><div><div class="lb">Badge No.</div><div class="vv">${V('badge')}</div></div><div><div class="lb">Name (type or print)</div><div class="vv">${F('aname')}</div></div></div>
   <div class="ad"><div style="width:${P(208)};padding-left:${P(5)};font-size:${P(7.5)};line-height:${P(9.3)};padding-top:${P(0)}">I declare under the penalties of perjury that this affidavit has been examined by me and that its contents are true to the best of my information, knowledge and belief.</div>
    <div class="sc" style="margin-left:${P(25)};width:${P(70)}"><div class="sv lf">${V('d3')}</div><div class="sl">Date</div></div>
    <div class="sc" style="margin-left:${P(26)};width:${P(162)}"><div class="sv" style="text-align:left;padding-left:${P(6)}">${V('esig')?'/s/ '+V('esig'):''}</div><div class="sl" style="padding-left:${P(6)}">Affiant electronic signature</div></div></div>`});
@@ -158,7 +158,7 @@ function addCount(api) {
   d.innerHTML = `<div class="top"><b class="cn-n"></b><button type="button" class="rm">Remove</button></div>
  <label>Charge name</label><input type="text" class="f-ch">
  <label>Classification (e.g. Misdemeanor)</label><input type="text" class="f-cl">
- <div class="row"><div><label>Minutes</label><input type="text" class="f-mi"></div><div><label>Seconds</label><input type="text" class="f-se"></div><div><label>Fine $</label><input type="text" class="f-fi"></div></div>`;
+ <div class="row r3"><div><label>Minutes</label><input type="text" class="f-mi"></div><div><label>Seconds</label><input type="text" class="f-se"></div><div><label>Fine $</label><input type="text" class="f-fi"></div></div>`;
   d.querySelector('.rm').onclick = () => { d.remove(); numberCounts(api); api.render(); };
   api.$('counts').appendChild(d); numberCounts(api); return d;
 }
@@ -171,10 +171,12 @@ export default {
   init(api) { addCount(api); api.$('addc').onclick = () => { addCount(api); api.render(); }; },
   contHeader: api => `<div class="ch">Case Number: <span class="u">${api.val('caseno')}</span></div>`,
   build,
-  prefill(api, a, role) {
-    const name = [a.firstName, a.lastName].filter(Boolean).join(' ') || a.displayName || a.name || '';
-    if (name && !api.$('aff').value) { api.$('aff').value = name; api.$('aname').value = name; }
-  },
+  roles: [
+    { id: 'cw', label: 'Complaining witness', fill: (api, w) => ({ cw: w.name, sig1: w.name, d1: w.today }) },
+    { id: 'affiant', label: 'Affiant', hint: 'usually the complaining witness too', fill: (api, w) => ({ aff: w.name, aname: w.name, esig: w.name, d3: w.today, agency: w.org, title: w.title, badge: w.badge }) },
+    { id: 'prosecutor', label: 'Prosecutor', fill: (api, w) => ({ sig2: w.name, d2: w.today }) },
+    { id: 'judge', label: 'Judge or magistrate', for: /judge|magistrate/i, fill: (api, w) => ({ jname: w.name, jsig: w.name, od: w.today }) }
+  ],
   md: { title: 'Criminal Complaint and Affidavit of Probable Cause', sections: [
     { name: 'Parties and venue', fields: [['judge','Judge'],['caseno','Case No.'],['def','Defendant full name'],['victim','Victim or complainant'],['cw','Complaining witness'],['codef','Co-defendants'],['city','City/Twp/Village'],['county','County'],['date','Date on or about']],
       multi: [['wit','Witnesses']],
