@@ -37,6 +37,9 @@ export function firebaseBackend({ db, app }) {
       if (!uid || !name) return;
       await setDoc(doc(db, 'accountDirectory', uid), { uid, name, nameLower: name.trim().toLowerCase(), email: email || '', emailLower: (email || '').trim().toLowerCase(), role: role || '' }, { merge: true });
     },
+    /* The person's favorite fonts follow them across devices (kept on their own directory entry). */
+    async getFavs(uid) { try { const s = await getDoc(doc(db, 'accountDirectory', uid)); return s.exists() && Array.isArray(s.data().fontFavs) ? s.data().fontFavs : []; } catch (e) { console.warn('Favorites unavailable', e); return null; } },
+    async setFavs(uid, list) { await setDoc(doc(db, 'accountDirectory', uid), { fontFavs: list }, { merge: true }); },
     /* Type-ahead: accounts whose name or email matches what was typed so far. The account list is read once and
        kept for a minute, so each keystroke is answered from memory. Only name, email, role and uid are used. */
     async search(text, limit = 8) {

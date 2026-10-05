@@ -59,7 +59,8 @@ const css = ({ U, P, B }) => `
 const panel = `
  <h2>Header</h2>
  <div class="row"><div><label>Judge</label><input type="text" id="judge"></div><div><label>Case No.</label><input type="text" id="caseno"></div></div>
- <label>Defendant's full name and address</label><textarea id="def" rows="3" placeholder="Name, then street address, city, state, ZIP"></textarea>
+ <label>Defendant's name</label><input type="text" id="defn" placeholder="e.g. John Doe">
+ <label>Defendant's address</label><textarea id="defa" rows="2" placeholder="Street, city, state ZIP"></textarea>
  <label>Victim or complainant</label><input type="text" id="victim">
  <label>Complaining witness</label><input type="text" id="cw">
  <label>Co-defendant(s) (if known)</label><input type="text" id="codef">
@@ -72,15 +73,15 @@ const panel = `
  <button class="btn outline" id="addc" type="button">+ Add count</button>
 
  <h2>Complaint signatures</h2>
- <div class="row"><div><label>Date (witness)</label><input type="text" id="d1" data-font="std"></div><div><label>Date (prosecutor)</label><input type="text" id="d2" data-font="std"></div></div>
- <label>Complaining witness' signature (typed)</label><input type="text" id="sig1" data-font="std">
- <label>Prosecutor's signature (typed)</label><input type="text" id="sig2" data-font="std">
+ <div class="row"><div><label>Date (witness)</label><input type="text" id="d1" data-font="date"></div><div><label>Date (prosecutor)</label><input type="text" id="d2" data-font="date"></div></div>
+ <label>Complaining witness' signature (typed)</label><input type="text" id="sig1" data-font="sig">
+ <label>Prosecutor's signature (typed)</label><input type="text" id="sig2" data-font="sig">
 
  <h2>Order (judge / magistrate)</h2>
  <label>Order</label>
  <select id="ordsel"><option value="0">— leave unchecked —</option><option value="1">1. Accepted – warrant shall issue</option><option value="2">2. Accepted – summons shall issue</option><option value="3">3. Rejected – no probable cause</option></select>
- <div class="row"><div><label>Date</label><input type="text" id="od" data-font="judge"></div><div><label>Name (type or print)</label><input type="text" id="jname" data-font="judge"></div></div>
- <label>Signature (typed)</label><input type="text" id="jsig" data-font="judge">
+ <div class="row"><div><label>Date</label><input type="text" id="od" data-font="date"></div><div><label>Name (type or print)</label><input type="text" id="jname" data-font="sig"></div></div>
+ <label>Signature (typed)</label><input type="text" id="jsig" data-font="sig">
 
  <h2>Affidavit of probable cause</h2>
  <label>Affiant name</label><input type="text" id="aff">
@@ -93,8 +94,8 @@ const panel = `
  <div class="chk"><input type="checkbox" id="b5"> Other</div>
  <textarea id="other" rows="2" placeholder="Other (describe)"></textarea>
  <div class="row"><div><label>Agency</label><input type="text" id="agency"></div><div><label>Title</label><input type="text" id="title"></div></div>
- <div class="row"><div><label>Badge No.</label><input type="text" id="badge"></div><div><label>Name (type or print)</label><input type="text" id="aname"></div></div>
- <div class="row"><div><label>Date</label><input type="text" id="d3"></div><div><label>Electronic signature (/s/)</label><input type="text" id="esig"></div></div>
+ <div class="row"><div><label>Badge No.</label><input type="text" id="badge"></div><div><label>Name (type or print)</label><input type="text" id="aname" data-font="none"></div></div>
+ <div class="row"><div><label>Date</label><input type="text" id="d3" data-font="none"></div><div><label>Electronic signature (/s/)</label><input type="text" id="esig" data-font="none"></div></div>
 `;
 
 const hdr=(P,B,mid,j,c)=>`<div class="hd"><div class="h1"><div class="b" style="padding-left:${P(33.5)}">STATE OF MICHIGAN</div><div class="r">THE DISTRICT COURT FOR</div><div class="r">GENESEE COUNTY</div></div><div class="h2">${mid}</div><div class="h3"><div><b>JUDGE</b><span class="jv">${j}</span></div><div><b>CASE NO.</b><span class="jv">${c}</span></div></div></div>`;
@@ -109,7 +110,7 @@ function build(api){
  /* page 1: complaint */
  seq.push({html:hdr(P,B,'CRIMINAL COMPLAINT',E('judge'),E('caseno'))});
  seq.push({html:`<div class="pt"><div class="c1">THE PEOPLE OF THE<br>STATE OF MICHIGAN</div><div class="c2">v</div>
-   <div class="c3">${cell('Defendant’s full name and address',E('def',{multi:true}))}</div>
+   <div class="c3">${cell('Defendant’s full name and address',`<div>${E('defn')}</div><div>${E('defa',{multi:true})}</div>`)}</div>
    <div class="c4"><div>${cell('Victim or complainant',E('victim'))}</div><div>${cell('Complaining witness',E('cw'))}</div></div></div>
    <div class="cd">${cell('Co-defendant(s) (if known)',E('codef'))}</div>
    <div class="cr"><div>${cell('City/Twp/Village',E('city'))}</div><div>${cell('County',E('county'))}</div><div>${cell('Date: on or about',E('date'))}</div></div>
@@ -179,9 +180,10 @@ export default {
     { id: 'prosecutor', label: 'Prosecutor', fill: (api, w) => ({ sig2: w.name, d2: w.today }) },
     { id: 'judge', label: 'Judge or magistrate', for: /judge|magistrate/i, fill: (api, w) => ({ jname: w.name, jsig: w.name, od: w.today }) }
   ],
-  md: { alias: { 'defendant full name': 'def' }, title: 'Criminal Complaint and Affidavit of Probable Cause', sections: [
-    { name: 'Parties and venue', fields: [['judge','Judge'],['caseno','Case No.'],['victim','Victim or complainant'],['cw','Complaining witness'],['codef','Co-defendants'],['city','City/Twp/Village'],['county','County'],['date','Date on or about']],
-      multi: [['def','Defendant full name and address'],['wit','Witnesses']],
+  md: { alias: { 'defendant full name': 'def' }, malias: { 'defendant full name and address': 'def' },
+    migrate: r => { const d = r.multi.def ?? r.single.def; if (d !== undefined && r.single.defn === undefined && r.multi.defa === undefined) { const [n, ...rest] = String(d).split('\n'); r.single.defn = n.trim(); r.multi.defa = rest.join('\n').trim(); } delete r.multi.def; delete r.single.def; }, title: 'Criminal Complaint and Affidavit of Probable Cause', sections: [
+    { name: 'Parties and venue', fields: [['judge','Judge'],['caseno','Case No.'],['victim','Victim or complainant'],['cw','Complaining witness'],['defn','Defendant name'],['codef','Co-defendants'],['city','City/Twp/Village'],['county','County'],['date','Date on or about']],
+      multi: [['defa','Defendant address'],['wit','Witnesses']],
       groups: [{ heading: 'Counts', item: 'Count', fields: CNT,
         get: api => api.qa('.cnt').map(c => Object.fromEntries(CNT.map(([k]) => [k, c.querySelector('.f-' + k).value.trim()]))),
         set(api, items) { api.$('counts').innerHTML = ''; (items.length ? items : [{}]).forEach(it => { const d = addCount(api); CNT.forEach(([k]) => d.querySelector('.f-' + k).value = it[k] || ''); }); numberCounts(api); } }] },
