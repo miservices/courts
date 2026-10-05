@@ -59,7 +59,7 @@ const css = ({ U, P, B }) => `
 const panel = `
  <h2>Header</h2>
  <div class="row"><div><label>Judge</label><input type="text" id="judge"></div><div><label>Case No.</label><input type="text" id="caseno"></div></div>
- <label>Defendant's full name</label><input type="text" id="def">
+ <label>Defendant's full name and address</label><textarea id="def" rows="3" placeholder="Name, then street address, city, state, ZIP"></textarea>
  <label>Victim or complainant</label><input type="text" id="victim">
  <label>Complaining witness</label><input type="text" id="cw">
  <label>Co-defendant(s) (if known)</label><input type="text" id="codef">
@@ -109,7 +109,7 @@ function build(api){
  /* page 1: complaint */
  seq.push({html:hdr(P,B,'CRIMINAL COMPLAINT',E('judge'),E('caseno'))});
  seq.push({html:`<div class="pt"><div class="c1">THE PEOPLE OF THE<br>STATE OF MICHIGAN</div><div class="c2">v</div>
-   <div class="c3">${cell('Defendant’s full name',E('def'))}</div>
+   <div class="c3">${cell('Defendant’s full name and address',E('def',{multi:true}))}</div>
    <div class="c4"><div>${cell('Victim or complainant',E('victim'))}</div><div>${cell('Complaining witness',E('cw'))}</div></div></div>
    <div class="cd">${cell('Co-defendant(s) (if known)',E('codef'))}</div>
    <div class="cr"><div>${cell('City/Twp/Village',E('city'))}</div><div>${cell('County',E('county'))}</div><div>${cell('Date: on or about',E('date'))}</div></div>
@@ -179,9 +179,9 @@ export default {
     { id: 'prosecutor', label: 'Prosecutor', fill: (api, w) => ({ sig2: w.name, d2: w.today }) },
     { id: 'judge', label: 'Judge or magistrate', for: /judge|magistrate/i, fill: (api, w) => ({ jname: w.name, jsig: w.name, od: w.today }) }
   ],
-  md: { title: 'Criminal Complaint and Affidavit of Probable Cause', sections: [
-    { name: 'Parties and venue', fields: [['judge','Judge'],['caseno','Case No.'],['def','Defendant full name'],['victim','Victim or complainant'],['cw','Complaining witness'],['codef','Co-defendants'],['city','City/Twp/Village'],['county','County'],['date','Date on or about']],
-      multi: [['wit','Witnesses']],
+  md: { alias: { 'defendant full name': 'def' }, title: 'Criminal Complaint and Affidavit of Probable Cause', sections: [
+    { name: 'Parties and venue', fields: [['judge','Judge'],['caseno','Case No.'],['victim','Victim or complainant'],['cw','Complaining witness'],['codef','Co-defendants'],['city','City/Twp/Village'],['county','County'],['date','Date on or about']],
+      multi: [['def','Defendant full name and address'],['wit','Witnesses']],
       groups: [{ heading: 'Counts', item: 'Count', fields: CNT,
         get: api => api.qa('.cnt').map(c => Object.fromEntries(CNT.map(([k]) => [k, c.querySelector('.f-' + k).value.trim()]))),
         set(api, items) { api.$('counts').innerHTML = ''; (items.length ? items : [{}]).forEach(it => { const d = addCount(api); CNT.forEach(([k]) => d.querySelector('.f-' + k).value = it[k] || ''); }); numberCounts(api); } }] },

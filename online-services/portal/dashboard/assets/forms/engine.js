@@ -89,7 +89,7 @@ export function fromMarkdown(def, api, txt) {
       const k = norm(m[1]);
       if (mode === 'sty') { const p = m[2].split(/[,;]/).map(x => x.trim()).filter(Boolean); styles[m[1].trim().toLowerCase()] = { f: p.find(x => !/^(bold|italic|\d+(\.\d+)?\s*pt)$/i.test(x)) || '', s: parseFloat((p.find(x => /^\d+(\.\d+)?\s*pt$/i.test(x)) || '0')) || 0, b: p.some(x => /^bold$/i.test(x)), i: p.some(x => /^italic$/i.test(x)) }; }
       else if (mode === 'item' && curItem) { const f = curGroup.fields.find(([, l]) => norm(l) === k); if (f) curItem[f[0]] = m[2].trim(); }
-      else if (sl[k]) single[sl[k]] = m[2].trim();
+      else if (sl[k] || def.md.alias?.[k]) single[sl[k] || def.md.alias[k]] = m[2].trim();
     }
     i++;
   }
