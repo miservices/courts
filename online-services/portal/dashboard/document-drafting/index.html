@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Document Drafting | Online Portal</title>
+<link rel="icon" type="image/png" href="/courts/images/favicon.png">
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=Source+Serif+4:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/courts/online-services/portal/dashboard/assets/css/dashboard.css?v=5">
+<style>
+.m{color:var(--muted);font-weight:400}.mt{margin-top:14px}
+.tools{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px;align-items:center}.tools .in{flex:1;min-width:200px;width:auto}.tools select.in{flex:0 0 auto;min-width:0}
+.chk{display:flex;gap:8px;align-items:center;font-weight:600;color:var(--navy);white-space:nowrap}.chk input{width:18px;height:18px}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}.chips button{font:inherit;font-weight:600;font-size:14px;padding:6px 14px;border-radius:16px;border:1px solid var(--line);background:#fff;color:var(--navy);cursor:pointer}.chips button.on{background:var(--navy);color:#fff;border-color:var(--navy)}.chips i{font-style:normal;opacity:.75;margin-left:6px}
+.tabs i{font-style:normal;font-weight:500;color:var(--muted);margin-left:6px}
+tbody tr[data-a]{cursor:pointer}tbody tr[data-a]:hover{background:#f6f9fd}
+td small,th small{display:block;color:var(--muted);font-weight:400}.num{text-align:right;white-space:nowrap}th.num{text-align:right}.pills{display:flex;gap:6px;flex-wrap:wrap}
+.amts{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px 18px;margin-bottom:14px}.amts div{display:grid;gap:2px}.amts dt{font-size:13px;color:var(--muted)}.amts dd{font-weight:700;font-size:17px;color:var(--navy)}.amts dd.owe{font-size:22px}
+.alert-line{border-left:4px solid #b7791f;background:#fdf6e7;color:#6e4a10;border-radius:4px;padding:10px 14px;margin-bottom:10px}.alert-line.red{border-color:#b3261e;background:#fdf1f0;color:#7a1b13}
+.note{border-left:4px solid var(--navy);background:#eef3f9;border-radius:4px;padding:10px 14px;margin-bottom:12px;color:var(--navy)}
+.acts{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}.sec{margin:18px 0 8px;font-size:16px;color:var(--navy)}
+.kv{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px 22px;margin-bottom:6px;text-align:left}.kv dt{font-size:13px;color:var(--muted)}.kv dd{font-weight:600;overflow-wrap:anywhere}
+.rcpt{text-align:center;padding:6px 0 4px}.rcpt .big{font-family:var(--font-head);font-size:34px;color:var(--navy);font-weight:700;margin:6px 0}.rcpt .tick{width:54px;height:54px;border-radius:50%;background:#e4f3ea;color:#2f7d4f;font-size:30px;line-height:54px;margin:0 auto 6px}
+.quote{background:#f4f7fb;border-radius:4px;padding:10px 14px;margin-bottom:16px;color:var(--navy)}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:16px}@media(max-width:700px){.cols{grid-template-columns:1fr}}
+dialog{border:0;padding:0;border-radius:6px;width:min(660px,calc(100vw - 24px));max-height:calc(100vh - 48px);box-shadow:0 24px 60px rgba(9,22,40,.35);color:var(--text);font:inherit;overflow:hidden;margin:auto}
+dialog[open]{display:flex;flex-direction:column}dialog.wide{width:min(900px,calc(100vw - 24px))}dialog::backdrop{background:rgba(9,22,40,.55)}
+dialog>header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:16px 22px;border-bottom:1px solid var(--line);background:#f4f7fb}dialog>header h3{font-size:19px}dialog>header p{color:var(--muted);margin-top:2px}
+.x{font:inherit;font-size:22px;line-height:1;width:36px;height:36px;border:1px solid var(--line);border-radius:4px;background:#fff;cursor:pointer;color:var(--navy);flex-shrink:0}.x:hover{background:#eef3f9}
+#dlg-b{padding:20px 22px 6px;overflow:auto}#dlg-e{padding:0 22px 14px}#dlg-e .alert{margin:0}
+dialog>footer{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:10px;padding:14px 22px;border-top:1px solid var(--line);background:#f4f7fb}
+@media print{body>*:not(dialog){display:none!important}dialog{position:static!important;box-shadow:none!important;width:auto!important;max-height:none!important}dialog>footer,.x{display:none!important}}
+
+.fd-lib{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
+.fd-item{display:flex;flex-direction:column;gap:6px;padding:16px;border:1px solid var(--line,#d9dee7);border-radius:10px;background:#fff;text-decoration:none;color:inherit}
+.fd-item:hover{border-color:#1f3a68;box-shadow:0 2px 8px rgba(20,40,80,.12)}
+.fd-item b{font-size:15px}.fd-item .n{font-size:12px;font-weight:600;color:#1f3a68;letter-spacing:.04em}.fd-item p{margin:0;font-size:13px;color:#566}
+.fd-grp{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:#667;margin:18px 0 8px}
+.fd-top{display:flex;gap:10px;align-items:center;margin-bottom:12px;flex-wrap:wrap}
+.fd-wrap{display:flex;gap:14px;align-items:flex-start}
+.fd-panel{width:380px;flex:none;max-height:calc(100vh - 170px);overflow:auto;background:#fff;border:1px solid #d9dee7;border-radius:10px;padding:16px}
+.fd-panel h3{margin:0 0 4px;font-size:16px}.fd-hint{color:#667;font-size:12px}
+.fd-panel h2{font-size:12px;text-transform:uppercase;letter-spacing:.05em;margin:18px 0 6px;color:#345;border-bottom:1px solid #dde;padding-bottom:3px}
+.fd-panel label{display:block;font-size:11px;color:#555;margin:7px 0 2px}
+.fd-panel input[type=text],.fd-panel textarea,.fd-panel select{width:100%;padding:6px 7px;border:1px solid #bcc;border-radius:4px;font:13px inherit;box-sizing:border-box}
+.fd-panel textarea{resize:vertical}.fd-panel .row{display:flex;gap:6px}.fd-panel .row>div{flex:1}
+.fd-panel .chk{display:flex;gap:6px;align-items:center;font-size:13px;color:#222;margin:4px 0}.fd-panel .chk input{margin:0}
+.fd-panel .cnt{border:1px solid #dde;border-radius:5px;padding:6px 8px;margin-bottom:8px}
+.fd-panel .cnt .top{display:flex;justify-content:space-between;align-items:center;font-size:12px}
+.fd-panel .cnt .rm{background:none;color:#b33;border:0;padding:0;font-size:12px;cursor:pointer}
+.fd-btns{position:sticky;bottom:-16px;background:#fff;padding:10px 0;display:flex;flex-wrap:wrap;gap:8px;border-top:1px solid #dde;margin-top:14px}
+.fd-btns .btn{flex:1 1 46%}.fd-msg{display:block;min-height:16px;margin-top:6px;font-size:12px}
+.fd-view{flex:1;min-width:0}.fd-frame{width:100%;border:1px solid #d9dee7;border-radius:10px;background:#e9ebee;min-height:400px;display:block}
+@media(max-width:900px){.fd-wrap{flex-direction:column}.fd-panel{width:100%;max-height:none}}
+</style>
+</head>
+<body>
+<aside class="sidebar" id="sidebar-root" aria-label="Portal navigation"></aside>
+<div class="scrim" id="scrim" hidden></div>
+<div class="main">
+  <header class="topbar">
+    <div class="topbar-left">
+      <button class="menu-btn" id="menu-btn" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="sidebar-root"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+      <div><span class="topbar-eyebrow">Online Portal</span><span class="topbar-page-title" id="topbar-title">Document Drafting</span></div>
+    </div>
+    <div class="topbar-right"><span class="topbar-date" id="topbar-date"></span><div class="notif-wrap" id="notif-root"></div></div>
+  </header>
+  <main class="page-body">
+    <div class="page-head"><div><h2 id="page-title">Document Drafting</h2><p id="page-subtitle"></p></div><div id="page-action"></div></div>
+    <div id="page-body"><div class="loading-inline"><span class="spin-sm"></span>Loading…</div></div>
+  </main>
+</div>
+<dialog id="dlg" aria-labelledby="dlg-t">
+  <header><div><h3 id="dlg-t"></h3><p id="dlg-w"></p></div><button class="x" type="button" aria-label="Close" data-close>×</button></header>
+  <div id="dlg-b"></div><div id="dlg-e"></div><footer id="dlg-f"></footer>
+</dialog>
+<div class="auth-loading-overlay" id="auth-overlay" role="status"><div class="alo-title">Online Portal</div><div class="spin"></div><div>Verifying your session…</div></div>
+
+<script type="module">
+import { boot, $, esc } from '/courts/online-services/portal/dashboard/assets/js/portal-shell.js?v=7';
+import { FORMS, byId, byNumber } from '/courts/online-services/portal/dashboard/assets/forms/registry.js?v=1';
+import { mountForm, formOf } from '/courts/online-services/portal/dashboard/assets/forms/engine.js?v=1';
+const { account, role } = await boot({ id: 'drafting', title: 'Document Drafting', subtitle: 'Prepare court forms, then save them as a PDF or a .md file you can reopen later.' });
+const root = $('page-body'), BASE = 'https://migovt.org/courts/online-services/portal/dashboard/document-drafting/';
+let cur = null, pendingMd = null, gen = 0;
+window.addEventListener('beforeunload', e => { if (cur?.isDirty()) { e.preventDefault(); e.returnValue = ''; } });
+const leave = () => !cur?.isDirty() || confirm('You have changes that are not saved to a PDF or .md file. Leave anyway?');
+
+function library(msg = '') {
+  const groups = [...new Set(FORMS.map(f => f.group))];
+  root.innerHTML = `<section class="card"><div class="fd-top"><h3 style="margin:0;flex:1">Forms</h3><button class="btn outline" type="button" id="fd-open">Open a saved .md</button><input type="file" id="fd-file" accept=".md,.markdown,.txt,text/markdown,text/plain" hidden></div>
+    <div id="fd-msg" role="alert" style="color:#b33;font-size:13px;min-height:16px">${esc(msg)}</div>
+    ${groups.map(g => `<div class="fd-grp">${esc(g)}</div><div class="fd-lib">${FORMS.filter(f => f.group === g).map(f => `<a class="fd-item" href="${BASE}#${f.id}" data-id="${f.id}"><span class="n">${esc(f.number)}</span><b>${esc(f.title)}</b><p>${esc(f.summary || '')}</p></a>`).join('')}</div>`).join('')}</section>`;
+  $('fd-open').onclick = () => $('fd-file').click();
+  $('fd-file').onchange = async e => {
+    const f = e.target.files[0]; if (!f) return; const t = await f.text(), n = formOf(t), form = n && byNumber(n);
+    if (!form) { $('fd-msg').textContent = n ? `This file is for form "${n}", which is not available here.` : 'We could not tell which form this file is for. Saved files start with "form: <number>".'; return; }
+    pendingMd = t; location.hash = form.id;
+  };
+}
+async function editor(form) {
+  const my = ++gen;
+  root.innerHTML = `<div class="fd-top"><a class="btn outline sm" href="${BASE}" id="fd-back">All forms</a><b>${esc(form.number)}</b><span class="m">${esc(form.title)}</span></div><div id="fd-host"><div class="loading-inline"><span class="spin-sm"></span>Loading form…</div></div>`;
+  $('fd-back').onclick = e => { if (!leave()) e.preventDefault(); };
+  try {
+    const def = (await import(`/courts/online-services/portal/dashboard/assets/forms/${form.id}.js?v=1`)).default;
+    if (my !== gen) return;
+    const md = pendingMd; pendingMd = null;
+    cur = await mountForm(def, $('fd-host'), { account, role, md });
+  } catch (e) { console.error(e); if (my === gen) $('fd-host').innerHTML = '<div class="alert" role="alert">We could not load this form. Refresh the page and try again.</div>'; }
+}
+let first = true;
+async function route() {
+  const id = location.hash.replace(/^#/, ''), form = id && byId(id);
+  if (!first && cur && !leave()) { history.back(); return; }
+  first = false; cur?.destroy(); cur = null;
+  if (form) await editor(form); else library(id ? 'That form was not found.' : '');
+}
+window.addEventListener('hashchange', route); route();
+
+</script>
+</body>
+</html>
