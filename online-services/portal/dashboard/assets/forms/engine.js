@@ -110,7 +110,7 @@ export async function mountForm(def, host, { account, role, md, onDirty } = {}) 
   const who = { name: (account?.name || account?.displayName || '').trim(), org: account?.organization || '', title: account?.title || account?.jobTitle || '', badge: account?.badgeNumber || account?.badge || '', today: today() };
   const roles = (def.roles || []).filter(r => !r.for || r.for.test(role || ''));
   const roleBox = roles.length && who.name ? `<div class="fd-roles"><b>Fill in my details as</b><small class="fd-hint">${esc(who.name)}. Tick every role you hold on this form. Untick to clear what it filled in.</small>${roles.map(r => `<label class="chk"><input type="checkbox" data-role="${esc(r.id)}"> <span>${esc(r.label)}${r.hint ? ` <small class="fd-hint">${esc(r.hint)}</small>` : ''}</span></label>`).join('')}</div>` : '';
-  host.innerHTML = `<div class="fd-wrap"><div class="fd-panel" id="fd-panel"><h3>${esc(def.number)}</h3><small class="fd-hint">Fill in the fields. The document updates as you type and adds pages as needed.</small>${roleBox}${def.panel}
+  host.innerHTML = `<div class="fd-wrap"><div class="fd-panel" id="fd-panel"><h3>${esc(def.number)}</h3><small class="fd-hint">Fill in the fields. The document updates as you type and adds pages as needed.</small><div class="fd-tools"><button type="button" class="btn outline sm" data-fd="undo" title="Undo (Ctrl+Z)" disabled>Undo</button><button type="button" class="btn outline sm" data-fd="redo" title="Redo (Ctrl+Y)" disabled>Redo</button><details class="fd-keys"><summary>Shortcuts</summary><dl><dt>Ctrl+Z</dt><dd>Undo</dd><dt>Ctrl+Y or Ctrl+Shift+Z</dt><dd>Redo</dd><dt>Ctrl+B</dt><dd>Bold</dd><dt>Ctrl+I</dt><dd>Italic</dd><dt>Ctrl+Shift+&gt; or &lt;</dt><dd>Larger or smaller text</dd><dt>Ctrl+S</dt><dd>Save .md</dd><dt>Ctrl+O</dt><dd>Open .md</dd><dt>Ctrl+P</dt><dd>Print</dd><dt>Tab</dt><dd>Next field</dd><dt>Esc</dt><dd>Close the font bar</dd></dl><small class="fd-hint">Bold, italic and size apply to fields that have font options (size needs a font other than the default). On a Mac, use Command instead of Ctrl.</small></details></div>${roleBox}${def.panel}
     <div class="fd-btns"><button type="button" class="btn" data-fd="pdf">Download PDF</button><button type="button" class="btn outline" data-fd="md">Download .md</button><button type="button" class="btn outline" data-fd="load">Load .md</button><button type="button" class="btn outline" data-fd="print">Print</button><input type="file" data-fd-file accept=".md,.markdown,.txt,text/markdown,text/plain" hidden></div><small class="fd-msg" id="fd-msg" role="status"></small></div>
     <div class="fd-view" id="fd-view"></div></div>`;
   const $ = id => host.querySelector('#' + id), qa = sel => [...host.querySelectorAll(sel)], k = { U, P, B };
@@ -120,14 +120,14 @@ export async function mountForm(def, host, { account, role, md, onDirty } = {}) 
   const sty = {}, bars = [];
   qa('[data-font]').forEach(el => {
     const bar = document.createElement('div'); bar.className = 'fd-fx'; bar.dataset.for = el.id;
-    bar.innerHTML = `<select class="fd-ff" aria-label="Font">${['', ...(FONTS[el.dataset.font] || FONTS.std)].map(f => `<option value="${f}">${f || 'Default font'}</option>`).join('')}</select><select class="fd-fs" aria-label="Size in points" disabled><option value="">Size</option>${FSIZES.map(n => `<option value="${n}">${n} pt</option>`).join('')}</select><button type="button" class="fd-fb" aria-pressed="false" aria-label="Bold" title="Bold"><b>B</b></button><button type="button" class="fd-fi" aria-pressed="false" aria-label="Italic" title="Italic"><i>I</i></button>`;
+    bar.innerHTML = `<select class="fd-ff" aria-label="Font">${['', ...(FONTS[el.dataset.font] || FONTS.std)].map(f => `<option value="${f}">${f || 'Default font'}</option>`).join('')}</select><select class="fd-fs" aria-label="Size in points" disabled><option value="">Size</option>${FSIZES.map(n => `<option value="${n}">${n} pt</option>`).join('')}</select><button type="button" class="fd-fb" aria-pressed="false" aria-label="Bold" title="Bold (Ctrl+B)"><b>B</b></button><button type="button" class="fd-fi" aria-pressed="false" aria-label="Italic" title="Italic (Ctrl+I)"><i>I</i></button>`;
     el.insertAdjacentElement('afterend', bar); bars.push(bar); sty[el.id] = { f: '', s: 0, b: false, i: false };
   });
   const readBar = bar => { const f = bar.querySelector('.fd-ff').value; sty[bar.dataset.for] = { f, s: f ? parseFloat(bar.querySelector('.fd-fs').value) || 0 : 0, b: bar.querySelector('.fd-fb').getAttribute('aria-pressed') === 'true', i: bar.querySelector('.fd-fi').getAttribute('aria-pressed') === 'true' }; };
   const syncBar = bar => { const v = sty[bar.dataset.for] || {}; bar.querySelector('.fd-ff').value = v.f || ''; const z = bar.querySelector('.fd-fs'); z.disabled = !v.f; z.value = v.f && v.s ? String(v.s) : ''; bar.querySelector('.fd-fb').setAttribute('aria-pressed', !!v.b); bar.querySelector('.fd-fi').setAttribute('aria-pressed', !!v.i); };
 
   const frame = document.createElement('iframe'); frame.className = 'fd-frame'; frame.title = def.number + ' preview';
-  frame.srcdoc = `<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="${GFONTS}"><style>${BASE_CSS}${def.css(k)}</style></head><body><div id="pwrap"><div id="preview"></div></div><div id="measure" class="page" style="height:auto;box-shadow:none"><div class="pc" id="mbox" style="display:flow-root"></div></div><div id="tb" hidden><span class="tn"></span><span class="fx"><select class="tf" aria-label="Font"></select><select class="ts" aria-label="Size in points"></select><button type="button" class="tbb" aria-pressed="false" aria-label="Bold"><b>B</b></button><button type="button" class="tbi" aria-pressed="false" aria-label="Italic"><i>I</i></button></span></div></body></html>`;
+  frame.srcdoc = `<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="${GFONTS}"><style>${BASE_CSS}${def.css(k)}</style></head><body><div id="pwrap"><div id="preview"></div></div><div id="measure" class="page" style="height:auto;box-shadow:none"><div class="pc" id="mbox" style="display:flow-root"></div></div><div id="tb" hidden><span class="tn"></span><span class="fx"><select class="tf" aria-label="Font"></select><select class="ts" aria-label="Size in points"></select><button type="button" class="tbb" aria-pressed="false" aria-label="Bold" title="Bold (Ctrl+B)"><b>B</b></button><button type="button" class="tbi" aria-pressed="false" aria-label="Italic" title="Italic (Ctrl+I)"><i>I</i></button></span></div></body></html>`;
   await new Promise(res => { frame.onload = res; $('fd-view').appendChild(frame); });
   const fd = frame.contentDocument, fw = frame.contentWindow, preview = fd.getElementById('preview'), mbox = fd.getElementById('mbox'), pwrap = fd.getElementById('pwrap');
   const val = id => esc($(id).value.trim());
@@ -150,7 +150,7 @@ export async function mountForm(def, host, { account, role, md, onDirty } = {}) 
     seg: 0,
     styles: () => sty,
     setStyles(m) { Object.keys(sty).forEach(id => sty[id] = { f: '', s: 0, b: false, i: false, ...(m?.[id] || {}) }); bars.forEach(syncBar); },
-    render: () => render(), note: (t, bad) => { const m = $('fd-msg'); m.textContent = t; m.style.color = bad ? '#b33' : '#287a3e'; }
+    render: () => { render(); commit(false); }, note: (t, bad) => { const m = $('fd-msg'); m.textContent = t; m.style.color = bad ? '#b33' : '#287a3e'; }
   };
   const AVN = (def.usable ? def.usable(U) : 678 * U), meas = html => { mbox.innerHTML = html; return mbox.getBoundingClientRect().height; };
 
@@ -233,10 +233,14 @@ export async function mountForm(def, host, { account, role, md, onDirty } = {}) 
     const caret = caretOf(el);
     if (el.dataset.off !== undefined) { const off = +el.dataset.off, len = +el.dataset.len; tgt.value = tgt.value.slice(0, off) + text + tgt.value.slice(off + len); el.dataset.len = text.length; active = { key, abs: off + caret }; }
     else { tgt.value = text; active = { key, idx: fieldsOf(key).indexOf(el), caret }; }
-    editing = true; mark(); later();
+    editing = true; mark(); commit(true); later();
   }
   function setStyle(key, patch) {
-    const cur = sty[key]; if (!cur) return; const n = { ...cur, ...patch }; if (!n.f) n.s = 0; sty[key] = n; bars.forEach(syncBar); editing = true; mark(); render();
+    const cur = sty[key]; if (!cur) return; const n = { ...cur, ...patch }; if (!n.f) n.s = 0; sty[key] = n; bars.forEach(syncBar); mark(); commit(false); if (editing) render(); else later();
+  }
+  function stepSize(key, dir) {
+    const cur = sty[key]; if (!cur || !cur.f) return; const base = cur.s || 10;
+    const next = dir > 0 ? FSIZES.find(n => n > base) : [...FSIZES].reverse().find(n => n < base); if (next) setStyle(key, { s: next });
   }
   preview.addEventListener('input', e => { if (e.isComposing) return; const el = e.target.closest?.('[data-f]'); if (el) fromPreview(el); });
   preview.addEventListener('compositionend', e => { const el = e.target.closest?.('[data-f]'); if (el) fromPreview(el); });
@@ -258,21 +262,58 @@ export async function mountForm(def, host, { account, role, md, onDirty } = {}) 
     if (e.key === 'Escape') { el.blur(); editing = false; active = null; tb.hidden = true; }
   });
   preview.addEventListener('click', e => {
-    const c = e.target.closest?.('[data-chk]'); if (c) { const i = $(c.dataset.chk); if (i) { i.checked = !i.checked; mark(); render(); } return; }
-    const o = e.target.closest?.('[data-sel]'); if (o) { const [id, v] = o.dataset.sel.split('='), i = $(id); if (i) { if (i.value === v) i.selectedIndex = 0; else i.value = v; mark(); render(); } }
+    const c = e.target.closest?.('[data-chk]'); if (c) { const i = $(c.dataset.chk); if (i) { i.checked = !i.checked; mark(); render(); commit(false); } return; }
+    const o = e.target.closest?.('[data-sel]'); if (o) { const [id, v] = o.dataset.sel.split('='), i = $(id); if (i) { if (i.value === v) i.selectedIndex = 0; else i.value = v; mark(); render(); commit(false); } }
   });
   fd.addEventListener('mousedown', e => { if (!e.target.closest('[data-f],#tb')) { editing = false; active = null; tb.hidden = true; } });
   tb.addEventListener('mousedown', e => { if (!e.target.closest('select')) e.preventDefault(); });
   tb.addEventListener('change', e => {
     if (!active) return; const f = tb.querySelector('.tf').value, z = parseFloat(tb.querySelector('.ts').value) || 0;
-    setStyle(active.key, e.target.classList.contains('tf') ? { f, s: 0 } : { s: z });
+    editing = true; setStyle(active.key, e.target.classList.contains('tf') ? { f, s: 0 } : { s: z });
   });
   tb.addEventListener('click', e => {
     const b = e.target.closest('button'); if (!b || !active) return; const cur = sty[active.key] || {};
-    setStyle(active.key, b.classList.contains('tbb') ? { b: !cur.b } : { i: !cur.i });
+    editing = true; setStyle(active.key, b.classList.contains('tbb') ? { b: !cur.b } : { i: !cur.i });
   });
   fd.addEventListener('scroll', () => { const el = active && fieldsOf(active.key)[active.idx || 0] || fd.activeElement?.closest?.('[data-f]'); if (!tb.hidden && el) placeTb(el); }, true);
   fw.addEventListener('blur', () => setTimeout(() => { if (!fd.hasFocus()) { editing = false; tb.hidden = true; } }, 250));
+  /* ---- undo / redo: one history for the whole form (every field, count and font choice) ---- */
+  let hist = [], hi = 0, lastAt = 0, lastTyping = false;
+  function getState() {
+    const f = {}, mm = {}, g = [];
+    def.md.sections.forEach(sec => { (sec.fields || []).forEach(([id]) => { const e = $(id); if (e) f[id] = e.type === 'checkbox' ? e.checked : e.value; }); (sec.multi || []).forEach(([id]) => { const e = $(id); if (e) mm[id] = e.value; }); (sec.groups || []).forEach(x => g.push(x.get(api))); });
+    return JSON.stringify({ f, m: mm, g, s: sty });
+  }
+  function setState(str) {
+    const st = JSON.parse(str); let gi = 0;
+    def.md.sections.forEach(sec => { (sec.fields || []).forEach(([id]) => { const e = $(id); if (e && id in st.f) { if (e.type === 'checkbox') e.checked = !!st.f[id]; else e.value = st.f[id]; } }); (sec.multi || []).forEach(([id]) => { const e = $(id); if (e && id in st.m) e.value = st.m[id]; }); (sec.groups || []).forEach(x => x.set(api, st.g[gi++] || [])); });
+    api.setStyles(st.s);
+  }
+  function updUndo() { const u = host.querySelector('[data-fd=undo]'), r = host.querySelector('[data-fd=redo]'); if (u) u.disabled = hi <= 0; if (r) r.disabled = hi >= hist.length - 1; }
+  function commit(typing) {
+    const s2 = getState(); if (s2 === hist[hi]) return; const now = Date.now();
+    if (typing && lastTyping && now - lastAt < 900 && hi > 0 && hi === hist.length - 1) hist[hi] = s2;
+    else { hist.length = hi + 1; hist.push(s2); hi++; if (hist.length > 300) { hist.shift(); hi--; } }
+    lastAt = now; lastTyping = typing; updUndo();
+  }
+  function jump(d) {
+    const n = hi + d; if (n < 0 || n >= hist.length) return; hi = n; lastTyping = false; setState(hist[hi]); mark(); render(); updUndo();
+  }
+  const undo = () => jump(-1), redo = () => jump(1);
+  const focusKey = () => { const a = document.activeElement; if (a && panel.contains(a) && a !== document.body) return sty[a.id] ? a.id : null; return editing && active ? active.key : null; };
+  function onKey(e) {
+    if (!host.isConnected || !(e.ctrlKey || e.metaKey) || e.altKey) return;
+    if (e.target?.closest?.('dialog,[data-fd-file]')) return;
+    const k = e.key.toLowerCase();
+    if (k === 'z' && !e.shiftKey) { undo(); e.preventDefault(); }
+    else if (k === 'y' || (k === 'z' && e.shiftKey)) { redo(); e.preventDefault(); }
+    else if (k === 'b' || k === 'i') { const key = focusKey(); if (key && sty[key]) { setStyle(key, k === 'b' ? { b: !sty[key].b } : { i: !sty[key].i }); e.preventDefault(); } }
+    else if (e.shiftKey && (e.key === '>' || e.key === '<' || e.key === '.' || e.key === ',')) { const key = focusKey(); if (key && sty[key]) { stepSize(key, e.key === '>' || e.key === '.' ? 1 : -1); e.preventDefault(); } }
+    else if (k === 's' && !e.shiftKey) { saveMd(); e.preventDefault(); }
+    else if (k === 'o' && !e.shiftKey) { host.querySelector('[data-fd-file]').click(); e.preventDefault(); }
+    else if (k === 'p' && !e.shiftKey) { fw.focus(); fw.print(); e.preventDefault(); }
+  }
+  document.addEventListener('keydown', onKey); fd.addEventListener('keydown', onKey);
   let raf = 0; const later = () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(render); };
   const ro = new ResizeObserver(() => { size(); fit(); }); ro.observe($('fd-view'));
   addEventListener('resize', size); size();
@@ -281,10 +322,11 @@ export async function mountForm(def, host, { account, role, md, onDirty } = {}) 
   if (md) { try { fromMarkdown(def, api, md); api.note('Loaded your saved draft.'); } catch (e) { api.note(e.message, true); } }
   let dirty = false; const mark = () => { if (!dirty) { dirty = true; onDirty?.(); } };
   const panel = $('fd-panel');
-  panel.addEventListener('input', e => { const bar = e.target.closest('.fd-fx'); if (bar) { readBar(bar); syncBar(bar); } later(); mark(); });
+  panel.addEventListener('focusin', () => { editing = false; active = null; tb.hidden = true; });
+  panel.addEventListener('input', e => { const bar = e.target.closest('.fd-fx'); if (bar) { readBar(bar); syncBar(bar); } later(); mark(); commit(!bar); });
   panel.addEventListener('click', e => {
     const b = e.target.closest('.fd-fb,.fd-fi'); if (!b) return;
-    b.setAttribute('aria-pressed', b.getAttribute('aria-pressed') !== 'true'); readBar(b.closest('.fd-fx')); syncBar(b.closest('.fd-fx')); later(); mark();
+    b.setAttribute('aria-pressed', b.getAttribute('aria-pressed') !== 'true'); readBar(b.closest('.fd-fx')); syncBar(b.closest('.fd-fx')); later(); mark(); commit(false);
   });
   /* Fill in my details as ... */
   const applied = {};
@@ -292,9 +334,10 @@ export async function mountForm(def, host, { account, role, md, onDirty } = {}) 
     const c = e.target.closest('[data-role]'); if (!c) return; const r = roles.find(x => x.id === c.dataset.role); if (!r) return;
     if (c.checked) { const got = {}; Object.entries(r.fill(api, who) || {}).forEach(([id, v]) => { const el = $(id); if (el && v) { el.value = v; got[id] = v; } }); applied[r.id] = got; }
     else { Object.entries(applied[r.id] || {}).forEach(([id, v]) => { const el = $(id); if (el && el.value === v) el.value = ''; }); delete applied[r.id]; }
-    render(); mark();
+    render(); mark(); commit(false);
   });
   render();
+  hist = [getState()]; hi = 0; updUndo();
 
   const fileName = ext => def.number.replace(/\s+/g, '_') + '.' + ext;
   async function pdf(btn) {
@@ -312,17 +355,19 @@ export async function mountForm(def, host, { account, role, md, onDirty } = {}) 
     } catch (e) { api.note('We could not make the PDF here. Choose Print and save as PDF instead.', true); }
     btn.textContent = label; btn.disabled = false;
   }
-  host.querySelector('.fd-btns').addEventListener('click', e => {
+  function saveMd() { const blob = new Blob([toMarkdown(def, api)], { type: 'text/markdown' }), l = document.createElement('a'); l.href = URL.createObjectURL(blob); l.download = fileName('md'); document.body.appendChild(l); l.click(); setTimeout(() => { URL.revokeObjectURL(l.href); l.remove(); }, 500); api.note('Saved ' + fileName('md')); dirty = false; }
+  host.addEventListener('click', e => {
     const b = e.target.closest('[data-fd]'); if (!b) return; const a = b.dataset.fd;
-    if (a === 'pdf') pdf(b);
+    if (a === 'undo') undo(); else if (a === 'redo') redo();
+    else if (a === 'pdf') pdf(b);
     else if (a === 'print') { fw.focus(); fw.print(); }
     else if (a === 'load') host.querySelector('[data-fd-file]').click();
-    else if (a === 'md') { const blob = new Blob([toMarkdown(def, api)], { type: 'text/markdown' }), l = document.createElement('a'); l.href = URL.createObjectURL(blob); l.download = fileName('md'); document.body.appendChild(l); l.click(); setTimeout(() => { URL.revokeObjectURL(l.href); l.remove(); }, 500); api.note('Saved ' + fileName('md')); dirty = false; }
+    else if (a === 'md') saveMd();
   });
   host.querySelector('[data-fd-file]').addEventListener('change', async e => {
     const f = e.target.files[0]; if (!f) return;
-    try { fromMarkdown(def, api, await f.text()); render(); api.note('Loaded ' + f.name); mark(); } catch (er) { api.note(er.message, true); }
+    try { fromMarkdown(def, api, await f.text()); render(); api.note('Loaded ' + f.name); mark(); commit(false); } catch (er) { api.note(er.message, true); }
     e.target.value = '';
   });
-  return { api, destroy() { ro.disconnect(); removeEventListener('resize', size); host.innerHTML = ''; }, isDirty: () => dirty };
+  return { api, destroy() { document.removeEventListener('keydown', onKey); ro.disconnect(); removeEventListener('resize', size); host.innerHTML = ''; }, isDirty: () => dirty };
 }

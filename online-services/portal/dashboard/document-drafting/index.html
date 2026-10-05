@@ -61,6 +61,10 @@ dialog>footer{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:10px;padd
 .fd-btns .btn{flex:1 1 46%}.fd-msg{display:block;min-height:16px;margin-top:2px;font-size:12px}
 .fd-view{flex:1;min-width:0}.fd-frame{width:100%;height:100%;border:1px solid #d9dee7;border-radius:10px;background:#e9ebee;display:block}
 @media(max-width:900px){.fd-wrap{flex-direction:column;height:auto!important}.fd-panel{width:100%;max-height:70vh}.fd-view{height:85vh}}
+.fd-tools{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:10px 0 2px}
+.fd-keys{flex:1 0 100%;font-size:12px;color:#445}.fd-keys summary{cursor:pointer;color:#1f3a68;font-weight:600}
+.fd-keys dl{display:grid;grid-template-columns:auto 1fr;gap:3px 12px;margin:8px 0}.fd-keys dt{font-weight:600;white-space:nowrap}.fd-keys dd{margin:0}
+.fd-tools .btn[disabled]{opacity:.45;cursor:default}
 </style>
 </head>
 <body>
@@ -88,7 +92,7 @@ dialog>footer{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:10px;padd
 <script type="module">
 import { boot, $, esc } from '/courts/online-services/portal/dashboard/assets/js/portal-shell.js?v=7';
 import { FORMS, byId, byNumber } from '/courts/online-services/portal/dashboard/assets/forms/registry.js?v=1';
-import { mountForm, formOf } from '/courts/online-services/portal/dashboard/assets/forms/engine.js?v=3';
+import { mountForm, formOf } from '/courts/online-services/portal/dashboard/assets/forms/engine.js?v=4';
 const { account, role } = await boot({ id: 'drafting', title: 'Document Drafting', subtitle: 'Prepare court forms, then save them as a PDF or a .md file you can reopen later.' });
 const root = $('page-body'), BASE = 'https://migovt.org/courts/online-services/portal/dashboard/document-drafting/';
 let cur = null, pendingMd = null, gen = 0;
@@ -112,7 +116,7 @@ async function editor(form) {
   root.innerHTML = `<div class="fd-top"><a class="btn outline sm" href="${BASE}" id="fd-back">All forms</a><b>${esc(form.number)}</b><span class="m">${esc(form.title)}</span></div><div id="fd-host"><div class="loading-inline"><span class="spin-sm"></span>Loading form…</div></div>`;
   $('fd-back').onclick = e => { if (!leave()) e.preventDefault(); };
   try {
-    const def = (await import(`/courts/online-services/portal/dashboard/assets/forms/${form.id}.js?v=3`)).default;
+    const def = (await import(`/courts/online-services/portal/dashboard/assets/forms/${form.id}.js?v=4`)).default;
     if (my !== gen) return;
     const md = pendingMd; pendingMd = null;
     cur = await mountForm(def, $('fd-host'), { account, role, md });

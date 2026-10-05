@@ -31,9 +31,10 @@ const css = ({ U, P, B }) => `
 .cn{width:${P(496)};padding:${P(20)} 0 0 ${P(1)}}.cn0{padding-top:${P(16)}}
 .ct{font-weight:bold;line-height:${P(12)}}
 .cx{margin-top:${P(1.75)};line-height:${P(16.5)}}
-.sr{display:flex;align-items:flex-end;margin-top:${P(37)}}
-.sc{flex:none}
-.sv{min-height:${P(14)};line-height:${P(14)};border-bottom:${B} solid #000;text-align:center;overflow:hidden;white-space:nowrap}
+.sr{display:flex;align-items:stretch;margin-top:${P(37)}}
+.sc{flex:none;display:flex;flex-direction:column}
+.sv{flex:1 1 auto;display:flex;align-items:flex-end;min-height:${P(14)};line-height:${P(14)};border-bottom:${B} solid #000;text-align:center;overflow:hidden;white-space:nowrap}
+.sv .in{flex:1;min-width:0}
 .lf{text-align:left;padding-left:${P(5)}}
 .sl{font-size:${P(7.7)};line-height:${P(9)};padding:${P(5.5)} 0 0 ${P(5)}}
 .dc{width:${P(496)};padding:${P(20)} 0 0 ${P(1)};font-size:${P(6.8)};line-height:${P(10)}}
@@ -92,7 +93,7 @@ const panel = `
  <div class="chk"><input type="checkbox" id="b5"> Other</div>
  <textarea id="other" rows="2" placeholder="Other (describe)"></textarea>
  <div class="row"><div><label>Agency</label><input type="text" id="agency"></div><div><label>Title</label><input type="text" id="title"></div></div>
- <div class="row"><div><label>Badge No.</label><input type="text" id="badge"></div><div><label>Name (type or print)</label><input type="text" id="aname" data-font="std"></div></div>
+ <div class="row"><div><label>Badge No.</label><input type="text" id="badge"></div><div><label>Name (type or print)</label><input type="text" id="aname"></div></div>
  <div class="row"><div><label>Date</label><input type="text" id="d3"></div><div><label>Electronic signature (/s/)</label><input type="text" id="esig"></div></div>
 `;
 
@@ -119,8 +120,8 @@ function build(api){
   seq.push({html:`<div class="cn ${i?'':'cn0'}"><div class="ct">COUNT ${i+1}: ${e('ch','[CHARGE NAME]','text-transform:uppercase')}</div><div class="cx">${e('cl','[CLASSIFICATION]')}: punishable by imprisonment for not more than ${e('mi','___')} minutes ${e('se','___')} seconds, or a fine of not more than $${e('fi','______')} or both.</div></div>`});
  });
  seq.push({html:`<div class="ip" style="padding-top:${P(37)}">The complaining witness asks that the defendant be apprehended and dealt with according to law.</div>
-  <div class="sr"><div class="sc" style="width:${P(98)}"><div class="sv lf">${E('d1')}</div><div class="sl">Date</div></div><div class="sc" style="margin-left:${P(199)};width:${P(99)}"><div class="sv lf">${E('d2')}</div><div class="sl">Date</div></div></div>
-  <div class="sr" style="margin-top:${P(35.5)}"><div class="sc" style="width:${P(197)}"><div class="sv lf">${E('sig1',{pre:'/s/ '})}</div><div class="sl">Complaining witness’ signature</div></div><div class="sc" style="margin-left:${P(100)};width:${P(196)}"><div class="sv lf">${E('sig2',{pre:'/s/ '})}</div><div class="sl">Prosecutor’s signature</div></div></div>
+  <div class="sr"><div class="sc" style="width:${P(98)}"><div class="sv lf"><div class="in">${E('d1')}</div></div><div class="sl">Date</div></div><div class="sc" style="margin-left:${P(199)};width:${P(99)}"><div class="sv lf"><div class="in">${E('d2')}</div></div><div class="sl">Date</div></div></div>
+  <div class="sr" style="margin-top:${P(35.5)}"><div class="sc" style="width:${P(197)}"><div class="sv lf"><div class="in">${E('sig1',{pre:'/s/ '})}</div></div><div class="sl">Complaining witness’ signature</div></div><div class="sc" style="margin-left:${P(100)};width:${P(196)}"><div class="sv lf"><div class="in">${E('sig2',{pre:'/s/ '})}</div></div><div class="sl">Prosecutor’s signature</div></div></div>
   <div class="dc">The complaining witness and prosecuting authority declare under the penalties of perjury that they have examined this document and that its contents are true to the best of their information, knowledge, and belief.</div>`});
 
  /* order page */
@@ -129,8 +130,8 @@ function build(api){
  seq.push({pb:'cont',html:`<div class="or"><div class="cap">Order section to be completed by judge/magistrate.</div><div class="ob">ORDER</div></div>
   <div class="b" style="margin-top:${P(12)};line-height:${P(12)}">IT IS ORDERED:</div>
   <div style="margin-top:${P(4.25)}">${oo(1,'The complaint is <b>ACCEPTED</b>. A warrant shall issue for the arrest of the defendant.')}${oo(2,'The complaint is <b>ACCEPTED</b>. A summons shall issue requiring the defendant to appear before the court.')}${oo(3,'The criminal complaint is <b>REJECTED</b> because probable cause has not been established.')}</div>
-  <div class="sr" style="margin-top:${P(72)}"><div class="sc" style="margin-left:${P(3)};width:${P(98)}"><div class="sv lf">${E('od')}</div><div class="sl">Date</div></div><div class="sc" style="margin-left:${P(182)};width:${P(213)}"><div class="sv lf">${E('jname')}</div><div class="sl">Judge or Magistrate (type or print)</div></div></div>
-  <div class="sr" style="margin-top:${P(41.5)}"><div class="sc" style="margin-left:${P(283)};width:${P(213)}"><div class="sv lf">${E('jsig',{pre:'/s/ '})}</div><div class="sl">Signature</div></div></div>`});
+  <div class="sr" style="margin-top:${P(72)}"><div class="sc" style="margin-left:${P(3)};width:${P(98)}"><div class="sv lf"><div class="in">${E('od')}</div></div><div class="sl">Date</div></div><div class="sc" style="margin-left:${P(182)};width:${P(213)}"><div class="sv lf"><div class="in">${E('jname')}</div></div><div class="sl">Judge or Magistrate (type or print)</div></div></div>
+  <div class="sr" style="margin-top:${P(41.5)}"><div class="sc" style="margin-left:${P(283)};width:${P(213)}"><div class="sv lf"><div class="in">${E('jsig',{pre:'/s/ '})}</div></div><div class="sl">Signature</div></div></div>`});
 
  /* blank page */
  seq.push({pb:'blank',html:`<div class="c" style="padding-top:${P(314)}"><div class="b" style="font-size:${P(19.4)};line-height:${P(22)}">THIS PAGE IS INTENTIONALLY LEFT BLANK</div><div style="margin-top:${P(20.5)};font-size:${P(11.8)};line-height:${P(15)}">COMPLAINT ON PREVIOUS PAGE(S)<br>AFFIDAVIT OF PROBABLE CAUSE ON NEXT PAGE(S)</div></div>`});
@@ -147,8 +148,8 @@ function build(api){
   <div style="margin-top:${P(3.75)}">${it(1,'My personal observations.')}${it(2,'Statements made by witnesses or victims.')}${it(3,'Physical evidence.')}${it(4,'Records or documents.')}${it(5,'Other: ',oth)}</div>
   <div class="at"><div><div class="lb">Agency</div><div class="vv">${E('agency')}</div></div><div><div class="lb">Title</div><div class="vv">${E('title')}</div></div><div><div class="lb">Badge No.</div><div class="vv">${E('badge')}</div></div><div><div class="lb">Name (type or print)</div><div class="vv">${E('aname')}</div></div></div>
   <div class="ad"><div style="width:${P(208)};padding-left:${P(5)};font-size:${P(7.5)};line-height:${P(9.3)};padding-top:${P(0)}">I declare under the penalties of perjury that this affidavit has been examined by me and that its contents are true to the best of my information, knowledge and belief.</div>
-   <div class="sc" style="margin-left:${P(25)};width:${P(70)}"><div class="sv lf">${E('d3')}</div><div class="sl">Date</div></div>
-   <div class="sc" style="margin-left:${P(26)};width:${P(162)}"><div class="sv" style="text-align:left;padding-left:${P(6)}">${E('esig',{pre:'/s/ '})}</div><div class="sl" style="padding-left:${P(6)}">Affiant electronic signature</div></div></div>`});
+   <div class="sc" style="margin-left:${P(25)};width:${P(70)}"><div class="sv lf"><div class="in">${E('d3')}</div></div><div class="sl">Date</div></div>
+   <div class="sc" style="margin-left:${P(26)};width:${P(162)}"><div class="sv" style="text-align:left;padding-left:${P(6)}"><div class="in">${E('esig',{pre:'/s/ '})}</div></div><div class="sl" style="padding-left:${P(6)}">Affiant electronic signature</div></div></div>`});
  return seq;
 }
 
