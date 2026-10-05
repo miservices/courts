@@ -7,6 +7,7 @@
 <link rel="icon" type="image/png" href="/courts/images/favicon.png">
 <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=Source+Serif+4:wght@500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/courts/online-services/portal/dashboard/assets/css/dashboard.css?v=5">
+<style>.f .unk{display:flex;flex-direction:row;align-items:center;gap:8px;margin-top:8px;font-weight:600;cursor:pointer}.f .unk input{width:18px;height:18px;min-height:0;padding:0;margin:0;flex:none}.sel-case{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.sel-case>div{flex:1;min-width:220px}.sel-case small{display:block;color:var(--muted)}</style>
 </head>
 <body>
 <aside class="sidebar" id="sidebar-root" aria-label="Portal navigation"></aside>
@@ -199,7 +200,7 @@ function prefillFromLower() {
   const a = lp.filter(p => side(p.role) === first).map(p => mk(p, 0)), b = lp.filter(p => side(p.role) !== first).map(p => mk(p, 1));
   S.parties = [a[0] || mkParty(roles[0], 0), b[0] || mkParty(roles[1], 1), ...a.slice(1), ...b.slice(1)]; S.prefilled = true;
 }
-const unk = (k, on) => `<label style="display:flex;gap:8px;align-items:center;margin-top:8px;font-weight:600"><input type="checkbox" data-k="${k}" data-r ${on ? 'checked' : ''}> Unknown</label>`;
+const unk = (k, on) => `<label class="unk"><input type="checkbox" data-k="${k}" data-r ${on ? 'checked' : ''}> Unknown</label>`;
 function idFields(p, i, L) {
   const canU = !p.self && !p.locked, pinU = canU && p.pinUnknown, dobU = canU && p.dobUnknown, pinLock = L && !!p.pin && !pinU, dobLock = p.self && !!acctDob;
   return `<div class="cols"><label class="f"><span>Michigan PIN</span><input type="text" data-k="parties.${i}.pin" value="${esc(pinU ? '' : p.pin)}" placeholder="${pinU ? 'Unknown' : 'Michigan PIN'}" ${pinLock || pinU ? 'readonly' : ''}>${canU ? unk(`parties.${i}.pinUnknown`, pinU) : ''}<small>${pinLock ? 'Filled in from your account and cannot be changed.' : 'Appears on the case record.'}</small></label>
@@ -249,13 +250,16 @@ function repPanel() {
 }
 function stepCase() {
   if (S.type === 'new') return lowerCard() + attyCard() + `<section class="card"><header><h3>Parties</h3></header>${S.prefilled ? '<p style="margin:0 0 14px;color:var(--muted)">Names are filled in from the lower court case. Check each role and edit anything that needs changing.</p>' : ''}${S.parties.map(partyCard).join('')}<button class="btn outline" type="button" data-a="addparty">Add another party</button></section>`;
-  const ap = S.type === 'appearance';
-  return `<section class="card"><header><h3>${ap ? 'Find the case' : 'Choose the case'}</h3></header>${F(ap ? 'Search any case' : 'Search your cases', inp('q', S.q, 'Case number or party name', 'search'), ap ? 'Search by case number or a party’s name.' : 'Only cases where you are a party or attorney are listed.')}<div id="cl">${caseList()}</div></section>`
+  const ap = S.type === 'appearance', c = S.kase;
+  const draft = S.fromDraft && S.files[0] ? `<div class="sub"><b>${esc(S.files[0].file.name)}</b> is ready to file.<small style="color:var(--text);margin-top:4px">Choose the case below. When you continue, the document is added to that case, and its case number and judge are filled in for you.</small></div>` : '';
+  const picked = c ? `<section class="card"><header><h3>Selected case</h3></header><div class="sel-case"><div><b>${esc(caption(c))}</b><small>${esc(c.caseId)} · ${esc(c.court)} · ${esc(c.civilSubtype || c.caseType || '')}</small></div><button class="btn outline sm" type="button" data-a="clearcase">Choose a different case</button></div></section>` : '';
+  if (c) return draft + picked + (ap ? repPanel() : `<div class="sub"><b>You are filing as:</b> ${esc(standing(c).text)}</div>`);
+  return draft + `<section class="card"><header><h3>${ap ? 'Find the case' : 'Choose the case'}</h3></header>${F(ap ? 'Search any case' : 'Search your cases', inp('q', S.q, 'Case number or party name', 'search'), ap ? 'Search by case number or a party’s name.' : 'Only cases where you are a party or attorney are listed.')}<div id="cl">${caseList()}</div></section>`
     + (ap ? repPanel() : S.kase ? `<div class="sub"><b>You are filing as:</b> ${esc(standing(S.kase).text)}</div>` : '');
 }
 function stepDocs() {
   const o = S.type === 'appearance';
-  return `<section class="card"><header><h3>Documents${o ? ' <small style="display:inline;font-weight:400">optional</small>' : ''}</h3></header>
+  return (S.kase ? `<div class="sub"><b>Filing in:</b> ${esc(caption(S.kase))} · ${esc(S.kase.caseId)}</div>` : '') + `<section class="card"><header><h3>Documents${o ? ' <small style="display:inline;font-weight:400">optional</small>' : ''}</h3></header>
     <p style="margin:0 0 14px;color:var(--muted)">${o ? 'Your appearance is recorded when you submit. You may also attach a signed Appearance (MC 02).' : 'Upload PDFs of 5 MB or less (MCR 2.119). Documents with photographs or scanned images go in through Google Drive instead.'}</p>
     <div class="drop" id="dz"><input class="vh" type="file" id="fi" accept="application/pdf,.pdf,.md,text/markdown" multiple><label for="fi" class="btn">Choose files</label><p class="big">or drag and drop them here</p><p>PDF files (up to 5 MB) or court forms saved as .md from Document Drafting</p></div>
     ${S.files.map((f, i) => `<div class="sub"><header><span>${esc(f.file.name)} <small style="display:inline">· ${f.md ? 'Court form ' + esc(f.md.number) : (f.file.size / 1048576).toFixed(2) + ' MB'}</small></span><button class="btn outline sm" type="button" data-a="rmfile:${i}">Remove</button></header>${cb(`files.${i}.type`, f.type)}</div>`).join('')}
@@ -274,7 +278,7 @@ function stepReview() {
     <dl class="details">${rows.map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join('')}
       ${d.map(x => `<div><dt>${esc(x.type)}</dt><dd>${esc(x.name)} · ${fee(x.type, courtOf()) ? money(fee(x.type, courtOf())) : 'No fee'}</dd></div>`).join('')}
       ${d.length ? `<div><dt>Estimated fees</dt><dd>${money(total)} — due in person within 14 days, not at filing</dd></div>` : ''}</dl>
-    ${notice()}${docs().some(x => /\bMC 20\b/.test(x.type)) ? '<div class="sub"><b>Fee waiver request</b><small style="color:var(--text);margin-top:4px">A clerk reviews your request. If it is denied, it is referred to a judge or magistrate for review.</small></div>' : ''}${F('Confirmation email', inp('email', S.email, 'you@example.com', 'email'), 'We send updates here when the clerk accepts, returns, or rejects your filing.')}
+    ${notice()}${docs().some(x => /\bMC 20\b/.test(x.type)) ? '<div class="sub"><b>Fee waiver request</b><small style="color:var(--text);margin-top:4px">A clerk reviews your request. If it is denied, it is referred to a judge or magistrate for review.</small></div>' : ''}${F('Confirmation email', inp('email', account.email || S.email, 'you@example.com', 'email', !!account.email), account.email ? 'Taken from your account and cannot be changed here. We send updates to this address when the clerk accepts, returns, or rejects your filing.' : 'We send updates here when the clerk accepts, returns, or rejects your filing.')}
     ${F('Notes to the clerk (optional)', `<textarea data-k="notes">${esc(S.notes)}</textarea>`)}
     <label class="opt${S.cert ? ' on' : ''}"><input type="checkbox" data-k="cert" data-r ${S.cert ? 'checked' : ''}><div><b>This filing is accurate and complete</b><small>I certify the information and documents are true to the best of my knowledge. Once submitted, a filing cannot be edited.</small></div></label></section>`;
 }
@@ -324,15 +328,10 @@ function check() {
   }
   if (S.step === 2) {
     if (S.type !== 'appearance' && !S.files.length && !S.links.length) return 'Add at least one PDF or Google Drive link.';
-    for (const f of S.files) if (f.md) {
-      const cn = f.md.caseNo;
-      if (S.type === 'new' && cn) return `${f.file.name} already names case ${cn}. To open a new case, clear the case on the form in Document Drafting and save it again.`;
-      if (S.type !== 'new' && S.kase && cn && cn !== S.kase.caseId) return `${f.file.name} is for case ${cn}, but you selected ${S.kase.caseId}. Choose the matching case or change the case on the form.`;
-    }
     if (S.files.some(f => !f.type) || S.links.some(l => !l.type)) return 'Choose a document type for every document.';
     if (S.links.some(l => !/^https?:\/\//.test(l.url.trim()))) return 'Every Google Drive entry needs a valid link.';
   }
-  if (S.step === 3) { if (!/^\S+@\S+\.\S+$/.test(S.email.trim())) return 'Enter a valid email address.'; if (!S.cert) return 'Certify that the filing is accurate and complete.'; }
+  if (S.step === 3) { if (!/^\S+@\S+\.\S+$/.test((account.email || S.email).trim())) return 'Enter a valid email address.'; if (!S.cert) return 'Certify that the filing is accurate and complete.'; }
   return '';
 }
 
@@ -366,7 +365,7 @@ async function submit() {
 
     const obj = { confirmationNumber: conf, filingType: S.type, court, caseType: isNew ? S.ctype : S.kase.caseType || '', documentType: documents[0]?.documentType || 'Appearance (MC 02)',
       parties: isNew ? S.parties.map(p => ({ role: p.role, name: p.name.trim(), ...(p.kind === 'Person' && p.pin.trim() ? { pin: p.pin.trim() } : p.kind === 'Person' && p.pinUnknown ? { pinUnknown: true } : {}), ...(p.kind === 'Person' && p.dob ? { dob: new Date(p.dob + 'T12:00:00').toISOString() } : p.kind === 'Person' && p.dobUnknown ? { dobUnknown: true } : {}), selfRepresented: !p.mine, ...(p.mine ? { attorney: atty, attorneys: [atty] } : {}) })) : [],
-      documents, totalFee: documents.reduce((t, d) => t + d.fee, 0), notesToClerk: S.notes.trim() || null, confirmationEmail: S.email.trim(), filerRole,
+      documents, totalFee: documents.reduce((t, d) => t + d.fee, 0), notesToClerk: S.notes.trim() || null, confirmationEmail: (account.email || S.email).trim(), filerRole,
       filedBy: account.name, filedByUid: account.uid, isFilingAsCounsel: counsel, counselRepresents: counsel ? repNames : null, barNumber: counsel ? account.barNumber || null : null,
       dateFiled: now, status: 'Pending', accepted: false, urgent: false,
       ...(documents.some(d => /\bMC 20\b/.test(d.documentType || '')) ? { feeWaiver: { status: 'Pending clerk review', decisions: [] } } : {}) };
@@ -405,7 +404,7 @@ async function submit() {
       });
       await setDoc(cref, { ...cd, tasks, notifications, caseFirestoreId: S.kase._id, lastUpdated: now }, { merge: true });
     } catch (e) { console.warn('Could not write case-management record', e); }
-    S.done = { conf, email: S.email.trim(), type: S.type, caseNo }; S.busy = false; loadMine(); render();
+    S.done = { conf, email: (account.email || S.email).trim(), type: S.type, caseNo }; S.busy = false; loadMine(); render();
   } catch (e) { console.error(e); S.busy = false; S.err = e.message === 'side-conflict' ? 'An attorney cannot represent parties on both sides of a case.' : 'We could not submit your filing. Check your connection and try again.'; render(); }
 }
 
@@ -457,6 +456,7 @@ const act = a => {
   const [n, v] = a.split(':');
   if (n === 'type') { S.type = v; S.kase = null; S.repIds = []; S.q = ''; S.files = []; S.links = []; S.err = ''; if (v !== 'new') { S.court = ''; S.ctype = ''; S.parties = []; S.counsel = false; S.lower = null; } }
   else if (n === 'case') { S.kase = cases.find(c => c._id === v); S.repIds = []; }
+  else if (n === 'clearcase') { S.kase = null; S.repIds = []; S.q = ''; }
   else if (n === 'rep') { const i = +v; S.repIds = S.repIds.includes(i) ? S.repIds.filter(x => x !== i) : [...S.repIds, i]; }
   else if (n === 'lower') { S.lower = lowerFrom(cases.find(c => c._id === v)); prefillFromLower(); }
   else if (n === 'clearlower') { S.lower = null; S.lq = ''; }
@@ -496,11 +496,7 @@ async function fromDraft(id) {
       if (!isAtty) throw new Error('Only attorneys can enter an appearance.');
       S.type = 'appearance'; S.step = 1;
     } else { S.type = 'existing'; S.step = 1; }
-    if (S.type !== 'new') {
-      if (!kase) throw new Error(cn ? `Case ${cn} was not found.` : 'Choose a case on the form in Document Drafting first.');
-      if (S.type === 'existing' && !isMine(kase)) throw new Error('You can only file in a case where you are a party or attorney. Case ' + cn + ' is not one of yours.');
-      S.kase = kase; S.step = S.type === 'appearance' ? 1 : 2;
-    }
+    if (S.type !== 'new' && kase && (S.type === 'appearance' || isMine(kase))) S.kase = kase;   // older drafts may already name a case; otherwise the person chooses it on the next screen
     const cf = byNum(form.number);
     S.files.push({ file: new File([text], nm, { type: 'text/markdown' }), type: cf ? FL(cf) : form.number === 'MC 02' ? 'Appearance (MC 02)' : '', md: { text, number: form.number, caseNo: cn } });
     S.view = 'new';

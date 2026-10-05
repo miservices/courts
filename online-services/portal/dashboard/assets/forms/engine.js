@@ -33,6 +33,7 @@ body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#e9ebee;color:#2
 #preview .sv [data-f]{white-space:pre}
 #preview [data-f]:hover{background:rgba(255,214,102,.5)}
 #preview [data-f]:focus{outline:2px solid #1f3a68;background:rgba(31,58,104,.09)}
+#preview [data-sys]{background:none!important;outline:none!important;cursor:default!important}#preview [data-sys]:empty::before{content:none!important}
 #preview [data-f]:empty{display:inline-block;min-width:3.5em;min-height:1em;vertical-align:bottom}
 #preview [data-f]:empty::before{content:attr(data-ph);color:#8a6d00;font:italic 400 .8em Arial,sans-serif;white-space:nowrap}
 #preview [data-chk],#preview [data-sel]{cursor:pointer}
@@ -127,8 +128,9 @@ const TYPES = [
 export const FONT_TYPES = TYPES;
 const STAFF_RE = /clerk|judge|justice|magistrate|judicial|court reporter|court administrator|reporter of decisions/i, ATTY_RE = /attorney/i;
 /* Courier New is for court staff; the stamp font is for attorneys and court staff. */
-export const fontAllowed = (f, role) => f === 'Courier New' ? STAFF_RE.test(role || '') : f === 'Special Elite' ? STAFF_RE.test(role || '') || ATTY_RE.test(role || '') : true;
-export const fontLock = f => f === 'Courier New' ? 'Court staff only' : f === 'Special Elite' ? 'Attorneys and court staff only' : '';
+/* kind: 'body' | 'date' | 'sig'. The stamp font is for dates and signatures only, never body text. */
+export const fontAllowed = (f, role, kind) => f === 'Courier New' ? STAFF_RE.test(role || '') : f === 'Special Elite' ? kind !== 'body' && (STAFF_RE.test(role || '') || ATTY_RE.test(role || '')) : true;
+export const fontLock = (f, kind) => f === 'Courier New' ? 'Court staff only' : f === 'Special Elite' ? (kind === 'body' ? 'Dates and signatures only' : 'Attorneys and court staff only') : '';
 export const FONT_WARNING = 'Your default text font has to be readable. Most judges do not accept cursive fonts, and a few do not accept any handwriting font. Use Arial unless you know your judge allows something else.';
 const FB = { hand: 'cursive', stamp: "'Courier New',monospace", cursive: 'cursive' };
 const SCALE = { 'Caveat': 1.25, 'Reenie Beanie': 1.35, 'Indie Flower': 1.05, 'Schoolbell': 1.05, 'Cedarville Cursive': 1.2, 'Alex Brush': 1.4, 'Satisfy': 1.15, 'Allura': 1.45, 'Kaushan Script': 1.1, 'Great Vibes': 1.45, 'Mrs Saint Delafield': 1.7, 'Arizonia': 1.35, 'Corinthia': 1.8, 'Herr Von Muellerhoff': 1.7, 'Mr De Haviland': 1.6, 'Whisper': 1.55, 'Water Brush': 1.45, 'Mr Dafoe': 1.2 };
@@ -160,14 +162,14 @@ const FP_CSS = `.fp{position:fixed;z-index:2147483000;width:320px;max-width:calc
 const today = () => { const d = new Date(); return String(d.getMonth() + 1).padStart(2, '0') + '/' + String(d.getDate()).padStart(2, '0') + '/' + d.getFullYear(); };
 
 export async function mountForm(def, host, { account, role, md, onDirty, onEdit, readOnly = false, actions = [], onAction, favs: favList, onFavs, onFontNotice, onNote } = {}) {
-  const allow = f => fontAllowed(f, role);
+  const allow = (f, key) => fontAllowed(f, role, key ? kindOf(key) : undefined);
   const who = { name: (account?.name || account?.displayName || '').trim(), org: account?.organization || '', title: account?.title || account?.jobTitle || '', badge: account?.badgeNumber || account?.badge || '', bar: account?.barNumber || account?.barNo || '', today: today() };
   const roles = (def.roles || []).filter(r => !r.for || r.for.test(role || ''));
   const roleBox = roles.length && who.name ? `<div class="fd-roles"><b>Fill in my details as</b><small class="fd-hint">${esc(who.name)}. Tick every role you hold on this form. Untick to clear what it filled in.</small>${roles.map(r => `<label class="chk"><input type="checkbox" data-role="${esc(r.id)}"> <span>${esc(r.label)}${r.hint ? ` <small class="fd-hint">${esc(r.hint)}</small>` : ''}</span></label>`).join('')}</div>` : '';
   const hasD = /data-font="date"/.test(def.panel), hasS = /data-font="(sig|std|judge)"/.test(def.panel);
   const dfRow = (k, t, h) => `<div class="fd-dr"><b>${t}</b>${h ? ` <small class="fd-hint">${h}</small>` : ''}<div class="fd-fx" data-for="~${k}"></div></div>`;
   const dfBox = `<details class="fd-dfl"><summary>Document fonts</summary><small class="fd-hint">One font for each kind of text across the whole document. Any date or signature field can still use its own font below.</small>${dfRow('body', 'Default text', 'fields like "The defendant did the following"')}${hasD ? dfRow('date', 'Date blocks') : ''}${hasS ? dfRow('sig', 'Signature blocks', 'and name blocks (type or print)') : ''}</details><div class="fd-warn" id="fd-warn" role="note" hidden>${esc(FONT_WARNING)}</div>`;
-  const caseCard = `<div class="fd-case" id="fd-case"><b>Case</b><div class="fd-cv" id="fd-cv"></div>${readOnly ? '' : '<div class="fd-cbt"><button type="button" class="btn outline sm" data-fd="case" id="fd-cpick">Choose case</button><button type="button" class="btn outline sm" data-fd="clearcase" id="fd-cclear">Clear</button></div>'}<small class="fd-hint">${def.opensCase ? 'Leave this empty if this form opens a new case. The case number is assigned when you file.' : 'The case number and judge come from the court record. They cannot be typed in.'}</small></div>`;
+  const caseCard = `<div class="fd-case" id="fd-case"><b>Case</b><div class="fd-cv" id="fd-cv"></div><small class="fd-hint">The case number and judge are added by the court system when this is filed. They cannot be typed in.</small></div>`;
   host.innerHTML = `<div class="fd-wrap"><div class="fd-panel" id="fd-panel"><h3>${esc(def.number)}</h3><small class="fd-hint">Fill in the fields. The document updates as you type and adds pages as needed.</small><div class="fd-tools"><button type="button" class="btn outline sm" data-fd="undo" title="Undo (Ctrl+Z)" disabled>Undo</button><button type="button" class="btn outline sm" data-fd="redo" title="Redo (Ctrl+Y)" disabled>Redo</button><details class="fd-keys"><summary>Shortcuts</summary><dl><dt>Ctrl+Z</dt><dd>Undo</dd><dt>Ctrl+Y or Ctrl+Shift+Z</dt><dd>Redo</dd><dt>Ctrl+B</dt><dd>Bold</dd><dt>Ctrl+I</dt><dd>Italic</dd><dt>Ctrl+Shift+&gt; or &lt;</dt><dd>Larger or smaller text</dd><dt>Ctrl+S</dt><dd>Save</dd><dt>Ctrl+P</dt><dd>Print</dd><dt>Tab</dt><dd>Next field</dd><dt>Esc</dt><dd>Close the font bar</dd></dl><small class="fd-hint">Bold, italic and size apply to fields that have font options (size needs a font other than the default). On a Mac, use Command instead of Ctrl.</small></details></div><fieldset class="fd-fs0"${readOnly ? ' disabled' : ''}>${roleBox}${dfBox}${def.panel}</fieldset>
     <div class="fd-status" id="fd-status" role="status" aria-live="polite"></div><div class="fd-people" id="fd-people"></div>
     <div class="fd-btns">${actions.includes('save') ? '<button type="button" class="btn" data-fd="save">Save</button>' : ''}${actions.includes('share') ? '<button type="button" class="btn outline" data-fd="share">Share</button>' : ''}${actions.includes('file') ? '<button type="button" class="btn" data-fd="file">File</button>' : ''}<div class="fd-dl"><button type="button" class="btn outline" data-fd="download" aria-haspopup="menu" aria-expanded="false">Download</button><div class="fd-menu" role="menu" hidden><button type="button" role="menuitem" data-fd="pdf">PDF document</button><button type="button" role="menuitem" data-fd="md">Markdown file (.md)</button></div></div><button type="button" class="btn outline" data-fd="print">Print</button></div><small class="fd-msg" id="fd-msg" role="status"></small></div>
@@ -183,7 +185,7 @@ export async function mountForm(def, host, { account, role, md, onDirty, onEdit,
     [cnE, jdE].forEach(e => { if (e) { e.readOnly = true; e.tabIndex = -1; } });
     const row = cnE.closest('.row') || cnE.parentElement; row.style.display = 'none'; row.insertAdjacentHTML('beforebegin', caseCard);
   }
-  const paintCase = () => { const v = $('fd-cv'); if (!v || !cnE) return; const c = cnE.value.trim(), j = jdE?.value.trim() || ''; v.innerHTML = c ? `<b>${esc(c)}</b>${j ? `<span>${esc(j)}</span>` : ''}` : '<span class="m">No case chosen</span>'; const x = $('fd-cclear'), pk = $('fd-cpick'); if (x) x.hidden = !c; if (pk) pk.textContent = c ? 'Change case' : 'Choose case'; };
+  const paintCase = () => { const v = $('fd-cv'); if (!v || !cnE) return; const c = cnE.value.trim(), j = jdE?.value.trim() || ''; v.innerHTML = c ? `<b>${esc(c)}</b>${j ? `<span>${esc(j)}</span>` : ''}` : '<span class="m">' + (def.opensCase ? 'Assigned when the case is opened' : 'Added when you file') + '</span>'; };
 
   /* font pickers: sty[id] for each field with options, sty['~body'|'~date'|'~sig'] for the document-wide defaults */
   const sty = {}, bars = [];
@@ -194,6 +196,7 @@ export async function mountForm(def, host, { account, role, md, onDirty, onEdit,
     el.insertAdjacentElement('afterend', bar); bars.push(bar); sty[el.id] = blankSt();
   });
   qa('.fd-fx[data-for^="~"]').forEach(bar => { bar.innerHTML = barInner(); bars.push(bar); sty[bar.dataset.for] = blankSt(); });
+  const kindOf = key => key === '~body' ? 'body' : key === '~date' ? 'date' : key === '~sig' ? 'sig' : catOf(key);
   const catOf = key => { if (key[0] === '~') return null; const v = src(key)?.dataset?.font; return v === 'none' ? null : v === 'date' ? 'date' : v ? 'sig' : 'body'; };
   /* what a field actually looks like: its own choice where it made one, otherwise the document default for its kind */
   const effOf = key => {
@@ -231,8 +234,8 @@ export async function mountForm(def, host, { account, role, md, onDirty, onEdit,
        blank  what prints when the field is empty (the form's own blank line, e.g. "___")
        style  extra inline style (e.g. text-transform) */
     ed(key, o = {}) {
-      const e = src(key), raw = o.text !== undefined ? o.text : (e ? String(e.value || '').replace(/\r/g, '') : ''), blank = !raw && o.blank, st = styleOf(key) + (o.style || '');
-      const body = `<span data-f="${esc(key)}" data-ph="${esc(o.ph || (e ? labelOf(e) : key))}"${o.off !== undefined ? ` data-off="${o.off}" data-len="${raw.length}"` : ''}${o.multi ? ' data-multi="1"' : ''}${blank ? ' data-blank="1"' : ''}${st ? ` style="${esc(st)}"` : ''} ${readOnly ? '' : ` contenteditable="${PLAIN}"`} spellcheck="false">${esc(blank ? o.blank : raw)}${o.multi && raw.endsWith('\n') ? '\n' : ''}</span>`;
+      const e = src(key), raw = o.text !== undefined ? o.text : (e ? String(e.value || '').replace(/\r/g, '') : ''), blank = !raw && o.blank, sys = key === 'caseno' || key === 'judge', st = (sys ? fontCss('Special Elite') + ';' : styleOf(key)) + (o.style || '');   // case number and judge are stamped by the system
+      const body = `<span data-f="${esc(key)}" data-ph="${esc(o.ph || (e ? labelOf(e) : key))}"${o.off !== undefined ? ` data-off="${o.off}" data-len="${raw.length}"` : ''}${o.multi ? ' data-multi="1"' : ''}${blank ? ' data-blank="1"' : ''}${sys ? ' data-sys="1"' : ''}${st ? ` style="${esc(st)}"` : ''} ${readOnly || sys ? '' : ` contenteditable="${PLAIN}"`} spellcheck="false">${esc(blank ? o.blank : raw)}${o.multi && raw.endsWith('\n') ? '\n' : ''}</span>`;
       const fx = effOf(key).f, pre = o.pre && /\/s\//.test(o.pre) && fx && typeOf(fx) !== 'default' ? '' : o.pre;   // a styled signature is not prefixed with /s/
       return raw && pre ? esc(pre) + body : body;
     },
@@ -328,7 +331,7 @@ export async function mountForm(def, host, { account, role, md, onDirty, onEdit,
   }
   function setStyle(key, patch) {
     const cur = sty[key]; if (!cur) return;
-    if (patch.f && !allow(patch.f)) { api.note(fontLock(patch.f) + ': ' + patch.f + ' is not available to your account.', true); return; }
+    if (patch.f && !allow(patch.f, key)) { api.note(fontLock(patch.f, kindOf(key)) + ': ' + patch.f + ' is not available here.', true); return; }
     const n = { ...cur, ...patch };   // the size you chose stays when you pick another font
     n.t = normT(n.t, n.f); sty[key] = n; bars.forEach(syncBar); if (active && sty[active.key]) paintTb(active.key);
     if (key === '~body' && patch.f && typeOf(patch.f) !== 'default' && patch.f !== cur.f) onFontNotice?.(typeOf(patch.f), patch.f, FONT_WARNING);
@@ -471,8 +474,8 @@ export async function mountForm(def, host, { account, role, md, onDirty, onEdit,
     const sample = () => { const v = String(key[0] === '~' ? '' : src(key)?.value || '').trim().split('\n')[0].slice(0, 28); return v || (key === '~body' ? 'Sample text' : key === '~date' || catOf(key) === 'date' ? '10/04/2026' : 'Jane Q. Public'); };
     const paint = () => {
       const keepTop = el.querySelector('.fp-list')?.scrollTop || 0, s = sty[key], types = parseTypes(s.t), smp = esc(sample());
-      const row = f => !allow(f) ? `<div class="fp-r"><button type="button" class="fp-o" role="option" disabled aria-disabled="true" data-f="${esc(f)}"><span class="fp-s" style="${fontCss(f)}">${smp}</span><small>${esc(f)} · ${esc(fontLock(f))}</small></button></div>` : `<div class="fp-r"><button type="button" class="fp-o" role="option" data-f="${esc(f)}" aria-selected="${s.f === f}"><span class="fp-s" style="${fontCss(f)}">${smp}</span><small>${esc(f)}</small></button><button type="button" class="fp-f" data-fav="${esc(f)}" aria-pressed="${favs.has(f)}" aria-label="${favs.has(f) ? 'Remove ' + esc(f) + ' from favorites' : 'Add ' + esc(f) + ' to favorites'}" title="${favs.has(f) ? 'Remove from favorites' : 'Save as a favorite'}">${STAR}</button></div>`;
-      const fl = TYPES.flatMap(t => t.fonts).filter(f => favs.has(f) && allow(f));
+      const row = f => !allow(f, key) ? `<div class="fp-r"><button type="button" class="fp-o" role="option" disabled aria-disabled="true" data-f="${esc(f)}"><span class="fp-s" style="${fontCss(f)}">${smp}</span><small>${esc(f)} · ${esc(fontLock(f, kindOf(key)))}</small></button></div>` : `<div class="fp-r"><button type="button" class="fp-o" role="option" data-f="${esc(f)}" aria-selected="${s.f === f}"><span class="fp-s" style="${fontCss(f)}">${smp}</span><small>${esc(f)}</small></button><button type="button" class="fp-f" data-fav="${esc(f)}" aria-pressed="${favs.has(f)}" aria-label="${favs.has(f) ? 'Remove ' + esc(f) + ' from favorites' : 'Add ' + esc(f) + ' to favorites'}" title="${favs.has(f) ? 'Remove from favorites' : 'Save as a favorite'}">${STAR}</button></div>`;
+      const fl = TYPES.flatMap(t => t.fonts).filter(f => favs.has(f) && allow(f, key));
       const dd = key[0] === '~' ? '' : `<button type="button" class="fp-o fp-d" role="option" data-f="" aria-selected="${!s.f}"><span>Use document default</span><small>${esc(effOf(key).d?.f || 'Arial')}</small></button>`;
       el.innerHTML = `<div class="fp-types" role="group" aria-label="Text types">${TYPES.map(t => `<button type="button" class="fp-t" data-t="${t.id}" aria-pressed="${types.includes(t.id)}">${t.label}</button>`).join('')}</div><div class="fp-list" role="listbox" aria-label="Fonts">${dd}${fl.length ? `<div class="fp-h">Favorites</div>${fl.map(row).join('')}` : ''}${TYPES.filter(t => types.includes(t.id)).map(t => `<div class="fp-h">${t.label}</div>${t.fonts.map(row).join('')}`).join('')}</div>`;
       el.querySelector('.fp-list').scrollTop = keepTop;
@@ -534,7 +537,6 @@ export async function mountForm(def, host, { account, role, md, onDirty, onEdit,
     else if (a === 'pdf') pdf(b);
     else if (a === 'print') { fw.focus(); fw.print(); }
     else if (a === 'md') saveMd();
-    else if (a === 'case') onAction?.('case'); else if (a === 'clearcase') setCase(null);
     else if (a === 'save' || a === 'share' || a === 'file') onAction?.(a);
   });
   const statusEl = $('fd-status'), peopleEl = $('fd-people');

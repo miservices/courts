@@ -81,7 +81,7 @@ async function open() {
   catch (e) { console.error(e); if (my !== token) return; return card(e?.code === 'storage/object-not-found' ? 'Document not found' : e?.code === 'storage/unauthorized' ? 'You do not have access' : 'We could not open this document', e?.code === 'storage/object-not-found' ? 'This document may have been removed.' : e?.code === 'storage/unauthorized' ? 'Your account is not allowed to view this document.' : 'Check your connection and try again.'); }
   if (my !== token) return;
   try {
-    const [{ byNumber }, { formOf, mountForm }] = await Promise.all([import(FORMS + 'registry.js?v=2'), import(FORMS + 'engine.js?v=8')]);
+    const [{ byNumber }, { formOf, mountForm }] = await Promise.all([import(FORMS + 'registry.js?v=2'), import(FORMS + 'engine.js?v=9')]);
     const num = formOf(text), form = num && byNumber(num);
     if (!form) return card('This document cannot be shown', num ? `It was prepared on form "${num}", which this viewer does not support yet.` : 'We could not tell which form this file is for.');
     const def = (await import(`${FORMS}${form.id}.js?v=8`)).default; if (my !== token) return;

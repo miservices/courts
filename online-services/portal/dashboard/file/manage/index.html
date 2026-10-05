@@ -40,7 +40,7 @@
 <div class="auth-loading-overlay" id="auth-overlay" role="status"><div class="alo-title">Online Portal</div><div class="spin"></div><div>Verifying your session…</div></div>
 
 <script type="module">
-import { boot, db, $, esc, has, STAFF, scopeOf, SUPREME_COURT, reserveCaseNumber, colFor, logAction } from '/courts/online-services/portal/dashboard/assets/js/portal-shell.js?v=7';
+import { boot, app, db, $, esc, has, STAFF, scopeOf, SUPREME_COURT, reserveCaseNumber, colFor, logAction } from '/courts/online-services/portal/dashboard/assets/js/portal-shell.js?v=7';
 import { collection, getDocs, getDoc, doc, updateDoc, setDoc, runTransaction } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 
 const { account, role } = await boot({ id: 'mfilings', title: 'Manage Filings', subtitle: 'Review, accept, return, reject, or forward documents submitted for e-filing.' });
@@ -249,6 +249,19 @@ if (!has(STAFF, role)) {
   const go = id => { open = id; msg = ''; if (id) location.hash = id; else history.pushState(null, '', location.pathname + location.search); window.scrollTo({ top: 0 }); };
 
   /* ── Actions ──────────────────────────────────────────────────────── */
+  // Court forms filed as .md carry the case number and judge. A new case only gets both once the clerk accepts it, so they are written into the .md here.
+  const honor = n => { const w = String(n || '').split(/,|;| and /)[0].trim().replace(/^(hon\.?|honorable|chief judge|chief justice|judge|magistrate|justice)\s+/i, '').split(/\s+/).filter(Boolean); if (!w.length) return ''; if (w.length === 1) return 'Hon. ' + w[0]; let l = w.length - 1; while (l > 0 && /^(jr|sr|ii|iii|iv)\.?$/i.test(w[l])) l--; return 'Hon. ' + w[0][0].toUpperCase() + '. ' + w[l]; };
+  const mdSet = (t, label, v) => String(t).replace(new RegExp('^(- ' + label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ':)[ \\t]*.*$', 'mi'), (_, a) => v ? a + ' ' + v : a);
+  async function stampDocs(f, caseNo, judgeName) {
+    const mds = (f.documents || []).filter(d => d.type === 'md' && d.storagePath); if (!mds.length) return;
+    try {
+      const st = await import('https://www.gstatic.com/firebasejs/11.0.0/firebase-storage.js'), sto = st.getStorage(app);
+      for (const d of mds) {
+        const r = st.ref(sto, d.storagePath), t = new TextDecoder().decode(await st.getBytes(r));
+        await st.uploadBytes(r, new Blob([mdSet(mdSet(t, 'Case No.', caseNo), 'Judge', honor(judgeName))], { type: 'text/markdown' }), { contentType: 'text/markdown' });
+      }
+    } catch (e) { console.warn('Could not update the filed document with the case number and judge', e); }
+  }
   async function accept(f) {
     busy = true; msg = ''; draw();
     try {
@@ -259,6 +272,7 @@ if (!has(STAFF, role)) {
           dates: { filed: f.dateFiled || now(), lastUpdated: now() }, parties: f.parties || [], judge: j?.name || null, judges: j ? [j.name] : [], judgeUid: j?.uid || null, courtroomNumber: j ? ({ 'Chief Judge': '1', Judge: '2', Magistrate: '3' }[j.role] || null) : null, ...(j ? { assignmentHistory: [{ at: now(), type: 'Initial assignment', method: 'By lot', from: null, to: j.name, toRole: j.role, reason: null, by: 'System', byRole: null }] } : {}), hearings: [], financialOrders: feeOrders(f, []),
           events: eventsFor(f, []), sealed: false, relatedUserIds: f.filedByUid ? [f.filedByUid] : [], docketSummary: null, intakeConfirmationNumber: f.confirmationNumber, filingCounter: 1, ...(f.feeWaiver?.status === 'Denied with prejudice' ? { feeWaiverBarred: true } : {}) });
         id = num = caseId;
+        await stampDocs(f, caseId, j?.name || '');
         await auditEntry(caseId, j ? `Case opened and randomly assigned to ${j.name} (${j.role})${({ 'Chief Judge': 1, Judge: 2, Magistrate: 3 })[j.role] ? ', Courtroom ' + ({ 'Chief Judge': 1, Judge: 2, Magistrate: 3 })[j.role] : ''}` : 'Case opened. No judicial officer was available to assign.');
       } else if (id && cases[id]) {
         const ref = doc(db, colFor(f.court), id), fresh = (await getDoc(ref)).data() || {};

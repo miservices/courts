@@ -137,7 +137,7 @@ dialog.cdlg{width:min(440px,calc(100vw - 24px))}
 <script type="module">
 import { boot, db, app, $, esc } from '/courts/online-services/portal/dashboard/assets/js/portal-shell.js?v=7';
 import { FORMS, byId, byNumber } from '/courts/online-services/portal/dashboard/assets/forms/registry.js?v=2';
-import { mountForm, formOf, fontAllowed, fontLock, fontCss, GFONTS, FONT_TYPES, FONT_WARNING } from '/courts/online-services/portal/dashboard/assets/forms/engine.js?v=8';
+import { mountForm, formOf, fontAllowed, fontLock, fontCss, GFONTS, FONT_TYPES, FONT_WARNING } from '/courts/online-services/portal/dashboard/assets/forms/engine.js?v=9';
 import { DraftSession, accessOf, roleIn } from '/courts/online-services/portal/dashboard/assets/forms/drafts.js?v=1';
 import { firebaseBackend } from '/courts/online-services/portal/dashboard/assets/forms/backend.js?v=4';
 const { account, role, user } = await boot({ id: 'drafting', title: 'Document Drafting', subtitle: 'Prepare court forms. They save automatically, and you can share them to work on together.' });
@@ -233,10 +233,10 @@ async function editor({ form, docId, md0 }) {
     if (favCache === null) { favCache = await be.getFavs(uid); if (favCache === null) { try { favCache = JSON.parse(localStorage.getItem('fd-font-favs') || '[]'); } catch { favCache = []; } } if (my !== gen) return; }
     const engine = await mountForm(def, $('fd-host'), { account, role, favs: favCache, onFavs: l => { favCache = l; try { localStorage.setItem('fd-font-favs', JSON.stringify(l)); } catch { } be.setFavs(uid, l).catch(e => console.warn('Favorites not saved', e)); }, md: text ?? md0, readOnly: !canEdit, actions: canEdit ? ['save', 'share', 'file'] : ['share'], onEdit: () => session?.touch(),
       onFontNotice: () => ask({ title: 'Keep your text readable', message: FONT_WARNING, ok: 'I understand', info: true }),
-      onAction: a => a === 'save' ? session.save(true) : a === 'share' ? openShare() : a === 'case' ? openCases(engine) : fileIt(def) });
+      onAction: a => a === 'save' ? session.save(true) : a === 'share' ? openShare() : fileIt(def) });
     if (my !== gen) { engine.destroy(); return; }
     if (!docId && !md0 && settings?.fonts) {   // a brand new document starts with the person's own default fonts
-      const m = {}; Object.entries({ body: '~body', date: '~date', sig: '~sig' }).forEach(([k, id]) => { const v = settings.fonts[k]; if (v?.f && fontAllowed(v.f, role)) m[id] = { f: v.f, s: +v.s || 0 }; });
+      const m = {}; Object.entries({ body: '~body', date: '~date', sig: '~sig' }).forEach(([k, id]) => { const v = settings.fonts[k]; if (v?.f && fontAllowed(v.f, role, k)) m[id] = { f: v.f, s: +v.s || 0 }; });
       if (Object.keys(m).length) { engine.api.setStyles(m); engine.api.render(); }
     }
     const adapter = { getMd: engine.getMd, stateFromMd: engine.stateFromMd, curState: engine.curState, applyState: engine.applyState, setPeople: engine.setPeople };
@@ -336,43 +336,10 @@ dlg.addEventListener('change', async e => {
   } catch (er) { console.error(er); shMsg('We could not change that. Try again.', true); }
 });
 
-/* ---------- choosing the case (number and judge come from the court record) ---------- */
-const FILE_URL = 'https://migovt.org/courts/online-services/portal/dashboard/file/';
-const honor = n => {
-  const t = String(n || '').split(/,|;| and /)[0].trim().replace(/^(hon\.?|honorable|chief judge|chief justice|judge|magistrate|justice)\s+/i, ''), w = t.split(/\s+/).filter(Boolean);
-  if (!w.length) return ''; if (w.length === 1) return 'Hon. ' + w[0];
-  let l = w.length - 1; while (l > 0 && /^(jr|sr|ii|iii|iv)\.?$/i.test(w[l])) l--;
-  return 'Hon. ' + w[0][0].toUpperCase() + '. ' + w[l];
-};
-const judgeOf = c => c.judge || (Array.isArray(c.judges) ? c.judges[0] : '') || '';
-const partiesOf = c => (Array.isArray(c.parties) ? c.parties : Object.values(c.parties || {}).flat()).filter(p => p && typeof p === 'object' && p.name);
-const capOf = c => { const p = partiesOf(c); return p[0] && p[1] ? `${p[0].name} v. ${p[1].name}` : c.caseId; };
-let caseList = [], caseEngine = null;
-async function openCases(engine) {
-  caseEngine = engine; sharing = false;
-  $('dlg-t').textContent = 'Choose a case'; $('dlg-w').textContent = 'The case number and judge are taken from the court record.';
-  $('dlg-b').innerHTML = '<div class="f"><span id="cs-ql">Case number or party name</span><input id="cs-q" type="text" autocomplete="off" spellcheck="false" aria-labelledby="cs-ql"></div><div id="cs-l" class="cs-l" aria-live="polite"><p class="m">Loading cases…</p></div>';
-  $('dlg-e').innerHTML = ''; $('dlg-f').innerHTML = '<button class="btn outline" type="button" data-close>Cancel</button>';
-  if (!dlg.open) dlg.showModal(); $('cs-q').focus();
-  try { caseList = await be.cases(); } catch (e) { console.error(e); caseList = []; }
-  paintCases();
-}
-function paintCases() {
-  const box = $('cs-l'), q = ($('cs-q')?.value || '').trim().toLowerCase(); if (!box) return;
-  if (q.length < 2) { box.innerHTML = '<p class="m">Start typing a case number or a party\u2019s name.</p>'; return; }
-  const l = caseList.filter(c => !c.sealed && ((c.caseId || '') + ' ' + partiesOf(c).map(p => p.name).join(' ')).toLowerCase().includes(q)).slice(0, 8);
-  box.innerHTML = l.length ? l.map(c => `<button type="button" class="cs-i" data-cs="${esc(c._id)}"><b>${esc(capOf(c))}</b><small>${esc(c.caseId)} \u00b7 ${esc(c.court || '')}${judgeOf(c) ? ' \u00b7 ' + esc(honor(judgeOf(c))) : ''}</small></button>`).join('') : '<p class="m">No matching cases.</p>';
-}
-dlg.addEventListener('input', e => { if (e.target.id === 'cs-q') paintCases(); });
-dlg.addEventListener('click', e => {
-  const b = e.target.closest('[data-cs]'); if (!b || !caseEngine) return; const c = caseList.find(x => x._id === b.dataset.cs); if (!c) return;
-  caseEngine.setCase({ caseno: c.caseId, judge: honor(judgeOf(c)) }); dlg.close();
-});
-
 /* ---------- File: hand the saved document to the filing screen ---------- */
+const FILE_URL = 'https://migovt.org/courts/online-services/portal/dashboard/file/';
 async function fileIt(def) {
   const s = cur?.session, e = cur?.engine; if (!s || !e) return;
-  if (!e.getCase().caseno && !def.opensCase) { await ask({ title: 'Choose a case first', message: 'Pick the case this document is for before you file it. The case number and judge come from the court record.', ok: 'OK', info: true }); return; }
   try { if (!s.docId) await s.save(true); else await s.flush(); } catch (er) { console.warn(er); }
   if (!s.docId || s.isDirty()) { await ask({ title: 'Could not save yet', message: 'This document has to be saved before it can be filed. Check your connection and try again.', ok: 'OK', info: true }); return; }
   location.href = FILE_URL + '#from=' + encodeURIComponent(s.docId);
@@ -383,7 +350,7 @@ async function settingsView() {
   if (favCache === null) { favCache = await be.getFavs(uid); if (favCache === null) { try { favCache = JSON.parse(localStorage.getItem('fd-font-favs') || '[]'); } catch { favCache = []; } } }
   if (!document.getElementById('fd-gfonts')) { const l = document.createElement('link'); l.id = 'fd-gfonts'; l.rel = 'stylesheet'; l.href = GFONTS; document.head.appendChild(l); }
   const cfg = settings?.fonts || {}, sizes = [8, 9, 10, 11, 12, 13, 14, 15, 16];
-  const fontSel = (k, first) => `<select id="st-${k}-f" aria-label="Font">${first}${FONT_TYPES.map(t => `<optgroup label="${esc(t.label)}">${t.fonts.filter(f => !(k === 'body' && f === 'Arial') && f !== 'Arial').map(f => { const ok = fontAllowed(f, role); return `<option value="${esc(f)}"${ok ? '' : ' disabled'}${cfg[k]?.f === f ? ' selected' : ''}>${esc(f)}${ok ? '' : ' (' + esc(fontLock(f)) + ')'}</option>`; }).join('')}</optgroup>`).join('')}</select>`;
+  const fontSel = (k, first) => `<select id="st-${k}-f" aria-label="Font">${first}${FONT_TYPES.map(t => `<optgroup label="${esc(t.label)}">${t.fonts.filter(f => !(k === 'body' && f === 'Arial') && f !== 'Arial').map(f => { const ok = fontAllowed(f, role, k); return `<option value="${esc(f)}"${ok ? '' : ' disabled'}${cfg[k]?.f === f ? ' selected' : ''}>${esc(f)}${ok ? '' : ' (' + esc(fontLock(f, k)) + ')'}</option>`; }).join('')}</optgroup>`).join('')}</select>`;
   const row = (k, t, h, first) => `<div class="st-r"><div class="st-t"><b>${t}</b><small class="fd-hint">${h}</small></div>${fontSel(k, first)}<select id="st-${k}-s" aria-label="Size in points"><option value="">Auto size</option>${sizes.map(n => `<option value="${n}"${+cfg[k]?.s === n ? ' selected' : ''}>${n} pt</option>`).join('')}</select><div class="st-p" id="st-${k}-p"></div></div>`;
   root.innerHTML = `<div class="fd-top fd-bar"><a class="fd-back" href="${BASE}#"><svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true"><path d="M12.5 4 6.5 10l6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>All documents</a><h3 style="margin:0">Document builder settings</h3></div>
     <section class="card"><h3>Document fonts</h3><p class="m">New documents start with these fonts. You can still change fonts inside any document.</p>
