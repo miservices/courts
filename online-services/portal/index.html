@@ -116,6 +116,14 @@ main{padding:36px 0 72px}
   .page-header h1{font-size:29px}
   .panel{padding:24px 22px}
 }
+.st[hidden]{display:none!important}
+.field input[type=password]{width:100%;font:inherit;color:#1b2433;background:#fff;border:1px solid #8a97ad;border-radius:4px;padding:10px 12px}
+.field input[type=password]:focus{outline:3px solid #5b9be0;outline-offset:1px;border-color:#1f5fae}
+.link{background:none;border:0;font:inherit;color:#1f5fae;text-decoration:underline;cursor:pointer;padding:0}
+.center{text-align:center;margin-top:14px}
+.signin .done{display:flex;gap:10px;align-items:center;color:#154d2e;font-weight:600}
+.signin .done svg{width:22px;height:22px;flex:none}
+.ver{font-size:14px;margin:0 0 6px;color:#5a667a}
 </style>
 </head>
 <body>
@@ -163,96 +171,62 @@ main{padding:36px 0 72px}
       </div>
     </div>
 
-    <aside class="signin" aria-live="polite">
+    <aside class="signin" id="signin" aria-live="polite">
 
-      <!-- Start: sign in with MiGOVT -->
-      <div id="step-start">
-        <h2>Sign in</h2>
-        <p class="lead">The Online Portal uses your MiGOVT account to confirm who you are. You'll go to MiGOVT to sign in, then come right back here.</p>
+      <!-- Checking for an existing session -->
+      <div class="st" id="st-check">
+        <h2>Online Portal</h2>
+        <p class="lead">Checking whether you're already signed in.</p>
+        <div class="status loading" role="status"><div class="spin"></div><div><strong>One moment…</strong><p>Looking for your session.</p></div></div>
+      </div>
 
-        <div class="status loading" id="s0-loading" hidden role="status">
-          <div class="spin"></div>
-          <div><strong id="s0-loading-title">Checking your account…</strong><p id="s0-loading-msg">Looking you up in the portal.</p></div>
-        </div>
-        <div class="status error" id="s0-error" hidden role="alert">
-          <div><strong>Sign-in failed</strong><p id="s0-error-msg">Something went wrong. Please try again.</p></div>
-        </div>
-
-        <button class="btn btn-primary" id="s0-btn" type="button" onclick="goMigovt()">Sign in with MiGOVT</button>
+      <!-- Start: one button for everyone -->
+      <div class="st" id="st-start" hidden>
+        <h2>Sign in or create your account</h2>
+        <p class="lead">The portal uses your MiGOVT account to confirm who you are. Continue with MiGOVT and you'll come right back here. If this is your first visit, your portal account is set up for you automatically.</p>
+        <div class="status error" id="start-error" hidden role="alert"><div><strong id="start-error-t">Sign-in failed</strong><p id="start-error-m"></p></div></div>
+        <button class="btn btn-primary" id="go" type="button">Continue with MiGOVT</button>
         <div class="or">or</div>
-        <a class="btn btn-outline" href="https://migovt.org/signup/">Create a MiGOVT account</a>
-        <p class="small">New to the portal? Sign in with MiGOVT and you'll be guided through setting up your portal account. Need help? Visit <a href="https://migovt.org/courts/self-help/">Self Help</a>.</p>
+        <a class="btn btn-outline" id="mk" href="https://migovt.org/signup/">Create a MiGOVT account</a>
+        <p class="small">You need a MiGOVT account first. It takes a few minutes. Need help? Visit <a href="https://migovt.org/courts/self-help/">Self Help</a>.</p>
       </div>
 
-      <!-- Returning user -->
-      <div id="step-auto" hidden>
-        <h2>Welcome back</h2>
-        <p class="lead">We found your portal account. Signing you in now.</p>
-        <div class="usercard"><div class="av" aria-hidden="true">&#10003;</div><div><b id="sal-name">—</b><span id="sal-role">—</span></div></div>
-        <div class="status loading" id="sal-loading" role="status"><div class="spin"></div><div><strong>Signing you in…</strong><p>Confirming your account.</p></div></div>
-        <div class="status success" id="sal-success" hidden role="status"><div><strong>Signed in</strong><p>Taking you to your dashboard…</p></div></div>
-        <div class="status error" id="sal-error" hidden role="alert"><div><strong>Sign-in error</strong><p id="sal-error-msg"></p></div></div>
-        <button class="btn btn-outline" id="sal-retry" type="button" hidden onclick="goMigovt()">Try again with MiGOVT</button>
+      <!-- Working: signing in or setting up -->
+      <div class="st" id="st-work" hidden>
+        <h2 id="w-title">Signing you in</h2>
+        <div class="usercard" id="w-card" hidden><div class="av" id="w-av" aria-hidden="true"></div><div><b id="w-name"></b><span id="w-sub"></span></div></div>
+        <div class="status loading" id="w-load" role="status"><div class="spin"></div><div><strong id="w-t">Checking your account…</strong><p id="w-m">Looking you up in the portal.</p></div></div>
+        <div class="done" id="w-ok" hidden role="status"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M7.5 12.5l3 3 6-6.5"/></svg><span>Signed in. Taking you to your dashboard…</span></div>
       </div>
 
-      <!-- New user, step 1: email -->
-      <div id="step-1" hidden>
-        <div class="steps-ind" id="ind-1"></div>
-        <h2>Contact information</h2>
-        <p class="lead">We'll use this email for case notifications and filing updates.</p>
-        <div class="usercard"><div class="av" aria-hidden="true">&#10003;</div><div><b id="s1-name">—</b><span>Verified by MiGOVT</span></div></div>
-        <div class="field" id="f-email-w">
-          <label for="f-email">Email address</label>
-          <input type="email" id="f-email" autocomplete="email" placeholder="you@example.com">
-          <div class="err">Enter a valid email address.</div>
-        </div>
-        <div class="field" id="f-email2-w">
-          <label for="f-email2">Confirm email address</label>
-          <input type="email" id="f-email2" autocomplete="email" placeholder="you@example.com">
-          <div class="err">The email addresses don't match.</div>
-        </div>
-        <button class="btn btn-primary" type="button" onclick="stepEmailNext()">Continue</button>
+      <!-- Password was changed in Settings, so the automatic sign-in no longer works -->
+      <div class="st" id="st-pass" hidden>
+        <h2>Enter your password</h2>
+        <p class="lead" id="p-lead">You changed your portal password, so enter it to continue.</p>
+        <div class="status error" id="p-error" hidden role="alert"><div><strong>That didn't work</strong><p id="p-error-m"></p></div></div>
+        <form id="p-form" novalidate>
+          <div class="field" id="p-w"><label for="p-pw">Portal password</label><input type="password" id="p-pw" autocomplete="current-password"><div class="err">Enter your password.</div></div>
+          <button class="btn btn-primary" id="p-btn" type="submit">Continue</button>
+        </form>
+        <p class="center small"><button class="link" type="button" id="p-back">Start over with MiGOVT</button></p>
       </div>
 
-      <!-- New user, step 2: role -->
-      <div id="step-2" hidden>
-        <div class="steps-ind" id="ind-2"></div>
-        <h2>Your role</h2>
-        <p class="lead">Choose how you'll use the Online Portal.</p>
-        <fieldset class="roles">
-          <legend class="visually-hidden" style="position:absolute;left:-9999px">Role</legend>
-          <label class="role"><input type="radio" name="role" value="public" onchange="selectRole('public')"><span class="box"><b>Public user</b><span>Cases, fines, and filings</span></span></label>
-          <label class="role"><input type="radio" name="role" value="bar" onchange="selectRole('bar')"><span class="box"><b>Bar member</b><span>Licensed attorney</span></span></label>
-        </fieldset>
-
-        <div id="bar-panel" hidden>
-          <div class="status note"><p>Your bar number is checked against the State Bar of Michigan member registry. Your MiGOVT identity must match the record on file.</p></div>
-          <div class="field" id="f-bar-w">
-            <label for="f-bar">Michigan bar number</label>
-            <input type="text" id="f-bar" placeholder="Example: P12345" autocomplete="off" oninput="clearBarResult()">
-            <div class="err" id="f-bar-err">Enter your bar number.</div>
-          </div>
-          <div class="status loading" id="bar-loading" hidden role="status"><div class="spin"></div><div><strong>Checking the registry…</strong></div></div>
-          <div class="status success" id="bar-success" hidden role="status"><div><strong id="bar-success-name">—</strong><p id="bar-success-detail"></p></div></div>
-          <div class="status error" id="bar-error" hidden role="alert"><div><strong>Verification failed</strong><p id="bar-error-msg"></p></div></div>
-          <button class="btn btn-outline" id="bar-btn" type="button" onclick="verifyBarNumber()" style="margin-bottom:14px">Verify bar number</button>
-        </div>
-
-        <div class="status error" id="s2-error" hidden role="alert"><div><strong>Error</strong><p id="s2-error-msg"></p></div></div>
-        <div class="btn-row">
-          <button class="btn btn-outline" type="button" onclick="goToStep(1)">Back</button>
-          <button class="btn btn-primary" type="button" onclick="stepRoleNext()">Continue</button>
-        </div>
+      <!-- Only shown if the bar registry could not be checked automatically -->
+      <div class="st" id="st-bar" hidden>
+        <h2>Are you an attorney?</h2>
+        <p class="lead">We couldn't check the State Bar registry automatically. If you're a licensed attorney, enter your bar number. Otherwise continue as a public user.</p>
+        <div class="status error" id="b-error" hidden role="alert"><div><strong>Verification failed</strong><p id="b-error-m"></p></div></div>
+        <div class="field" id="b-w"><label for="b-num">Michigan bar number</label><input type="text" id="b-num" placeholder="Example: P12345" autocomplete="off"><div class="err">Enter your bar number.</div></div>
+        <button class="btn btn-primary" id="b-verify" type="button">Verify and continue</button>
+        <div class="or">or</div>
+        <button class="btn btn-outline" id="b-public" type="button">Continue as a public user</button>
       </div>
 
-      <!-- New user, step 3: creating -->
-      <div id="step-3" hidden>
-        <h2>Creating your account</h2>
-        <p class="lead">Setting up your Online Portal account. This only takes a moment.</p>
-        <div class="status loading" id="s3-loading" role="status"><div class="spin"></div><div><strong id="s3-title">Creating account…</strong><p id="s3-msg">Please wait.</p></div></div>
-        <div class="status error" id="s3-error" hidden role="alert"><div><strong>Account creation failed</strong><p id="s3-error-msg"></p></div></div>
-        <div class="status success" id="s3-success" hidden role="status"><div><strong>Account created</strong><p>Taking you to your dashboard…</p></div></div>
-        <button class="btn btn-outline" id="s3-retry" type="button" hidden onclick="retryAccount()">Try again</button>
+      <!-- Something went wrong -->
+      <div class="st" id="st-err" hidden>
+        <h2>We couldn't finish</h2>
+        <div class="status error" role="alert"><div><strong id="e-t">Sign-in failed</strong><p id="e-m">Something went wrong. Please try again.</p></div></div>
+        <button class="btn btn-primary" id="e-retry" type="button">Try again with MiGOVT</button>
       </div>
 
     </aside>
@@ -260,249 +234,141 @@ main{padding:36px 0 72px}
   </div>
 </main>
 
-<!-- Firebase: default app, so the dashboard shares the same auth session -->
 <script type="module">
   import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
-  import { getAuth, setPersistence, browserLocalPersistence, createUserWithEmailAndPassword, signInWithEmailAndPassword }
+  import { getAuth, setPersistence, browserLocalPersistence, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut }
     from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
-  import { getFirestore, doc, getDoc, setDoc, query, collection, where, getDocs, serverTimestamp }
+  import { getFirestore, doc, getDoc, setDoc, query, collection, where, getDocs, limit, serverTimestamp }
     from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 
-  const config = {
+  const app  = getApps().length ? getApp() : initializeApp({
     apiKey:            "AIzaSyA8sUFIq81cs6uQvqduardpGJ4R2DxO8NQ",
     authDomain:        "micourt-dada6.firebaseapp.com",
     projectId:         "micourt-dada6",
     storageBucket:     "micourt-dada6.firebasestorage.app",
     messagingSenderId: "1013564619997",
     appId:             "1:1013564619997:web:8f259dab457915758f6f34"
+  });
+  const auth = getAuth(app), db = getFirestore(app);
+  await setPersistence(auth, browserLocalPersistence).catch(() => {});   // the dashboard shares this session
+
+  const DASHBOARD = '/courts/online-services/portal/dashboard/';
+  const THIS_URL  = location.origin + location.pathname;
+  const SITE_NAME = 'Michigan Courts Online Portal';
+  const q = new URLSearchParams({ redirect_uri: THIS_URL, site_name: SITE_NAME }).toString();
+  const $ = id => document.getElementById(id);
+  const STATES = ['check', 'start', 'work', 'pass', 'bar', 'err'];
+  const setState = s => { STATES.forEach(k => { $('st-' + k).hidden = k !== s; }); const h = $('st-' + s).querySelector('h2'); };
+  const initials = n => String(n || '?').split(/\s+/).filter(Boolean).slice(0, 2).map(w => w[0].toUpperCase()).join('');
+  const goMigovt = () => { location.href = 'https://migovt.org/login/?' + q; };
+  $('mk').href = 'https://migovt.org/signup/?' + q;
+  $('go').onclick = goMigovt; $('e-retry').onclick = goMigovt; $('p-back').onclick = async () => { await signOut(auth).catch(() => {}); goMigovt(); };
+
+  let ident = null, pending = null;     // ident: who MiGOVT says this is. pending: { email, bar } while asking for a password
+
+  const work = (title, msg, sub) => {
+    setState('work'); $('w-title').textContent = title; $('w-t').textContent = title; $('w-m').textContent = msg;
+    $('w-load').hidden = false; $('w-ok').hidden = true;
+    if (ident) { $('w-card').hidden = false; $('w-av').textContent = initials(ident.name); $('w-name').textContent = ident.name; $('w-sub').textContent = sub || 'Verified by MiGOVT'; }
+  };
+  const done = () => { setState('work'); $('w-title').textContent = 'Welcome'; $('w-load').hidden = true; $('w-ok').hidden = false; setTimeout(() => location.replace(DASHBOARD), 500); };
+  const fail = (title, msg, err) => { if (err) console.error(err); $('e-t').textContent = title; $('e-m').textContent = msg; setState('err'); };
+  const badCred = e => ['auth/wrong-password', 'auth/invalid-credential', 'auth/invalid-login-credentials'].includes(e?.code);
+  const hasAccount = async uid => { try { return (await getDoc(doc(db, 'accounts', uid))).exists(); } catch { return false; } };
+
+  /* ---------- an existing portal account ---------- */
+  async function findAccount(pin) {
+    try {
+      const s = await getDocs(query(collection(db, 'accounts'), where('mipassPin', '==', String(pin)), limit(1)));
+      if (!s.empty) { const d = s.docs[0].data(); return { email: d.email, name: d.name, role: d.role }; }
+    } catch (e) { console.warn('Account lookup failed', e); }
+    return null;
+  }
+  async function signInExisting(a) {
+    work('Signing you in', 'Confirming your account.', a.role ? 'Role: ' + a.role : '');
+    try { await signInWithEmailAndPassword(auth, a.email, ident.pin); await auth.authStateReady(); done(); }
+    catch (e) {
+      if (badCred(e)) { pending = { email: a.email, bar: null }; $('p-lead').textContent = 'Welcome back, ' + (a.name || ident.name) + '. You changed your portal password, so enter it to continue.'; showPassword(); }
+      else if (e?.code === 'auth/too-many-requests') fail('Too many attempts', 'Wait a few minutes, then try again.', e);
+      else fail('We could not sign you in', 'Check your connection and try again.', e);
+    }
+  }
+  function showPassword(msg) { setState('pass'); $('p-w').classList.remove('invalid'); $('p-error').hidden = !msg; if (msg) $('p-error-m').textContent = msg; $('p-pw').value = ''; $('p-pw').focus(); }
+  $('p-form').addEventListener('submit', async e => {
+    e.preventDefault(); const pw = $('p-pw').value;
+    if (!pw) { $('p-w').classList.add('invalid'); return; }
+    $('p-btn').disabled = true;
+    try {
+      const cred = await signInWithEmailAndPassword(auth, pending.email, pw);
+      if (!(await hasAccount(cred.user.uid))) await writeAccount(cred.user.uid, pending.email, pending.bar);
+      await auth.authStateReady(); done();
+    } catch (er) { showPassword(badCred(er) ? 'That password is not correct.' : er?.code === 'auth/too-many-requests' ? 'Too many attempts. Wait a few minutes and try again.' : 'We could not sign you in. Try again.'); }
+    $('p-btn').disabled = false;
+  });
+
+  /* ---------- a new portal account ---------- */
+  async function findBar(pin) {   // returns the registry record, null if none, or throws if the registry cannot be searched
+    const vals = [String(pin)]; if (/^\d+$/.test(pin)) vals.push(Number(pin));
+    const s = await getDocs(query(collection(db, 'sbm'), where('pin', 'in', vals), limit(1)));
+    if (s.empty) return null; const d = s.docs[0].data();
+    return { barNumber: s.docs[0].id, name: d.name || ident.name, role: d.role || 'Bar Member', status: d.status || 'Unknown' };
+  }
+  async function writeAccount(uid, email, bar) {
+    await setDoc(doc(db, 'accounts', uid), {
+      name: bar ? bar.name : ident.name, email, role: bar ? bar.role : 'Public User', pin: ident.pin, dob: ident.dob || null,
+      barNumber: bar ? bar.barNumber : null, barStatus: bar ? bar.status : null,
+      createdAt: serverTimestamp(), lastLogin: serverTimestamp(), mipassPin: ident.pin, robloxUser: ident.roblox || null
+    });
+  }
+  async function createNew() {
+    work('Setting up your account', 'Checking the State Bar registry.', 'New to the portal');
+    let bar = null;
+    try { bar = await findBar(ident.pin); }
+    catch (e) { console.warn('Bar registry not searchable', e); setState('bar'); return; }
+    return createAccount(bar);
+  }
+  async function createAccount(bar) {
+    work('Setting up your account', 'Creating your portal account.', bar ? 'Attorney, Bar No. ' + bar.barNumber : 'New to the portal');
+    const email = ident.email || (ident.pin + '@users.migovt.org');   // MiGOVT normally sends the email on file; this only covers an account that has none
+    let cred;
+    try { cred = await createUserWithEmailAndPassword(auth, email, ident.pin); }
+    catch (e) {
+      if (e?.code === 'auth/email-already-in-use') {
+        try { cred = await signInWithEmailAndPassword(auth, email, ident.pin); }
+        catch (e2) { if (badCred(e2)) { pending = { email, bar }; $('p-lead').textContent = 'An account already exists for ' + email + '. Enter its password to continue.'; return showPassword(); } return fail('We could not sign you in', 'Check your connection and try again.', e2); }
+      } else return fail('We could not create your account', e?.code === 'auth/weak-password' ? 'Your PIN is too short to use as a sign-in. Contact the clerk’s office.' : 'Check your connection and try again.', e);
+    }
+    try { if (!(await hasAccount(cred.user.uid))) await writeAccount(cred.user.uid, email, bar); await auth.authStateReady(); done(); }
+    catch (e) { fail('We could not save your profile', e?.code === 'permission-denied' ? 'The portal could not save your account. Contact the clerk’s office. (permission-denied)' : 'Check your connection and try again.', e); }
+  }
+  $('b-public').onclick = () => createAccount(null);
+  $('b-verify').onclick = async () => {
+    const num = $('b-num').value.trim().toUpperCase(); $('b-error').hidden = true; $('b-w').classList.toggle('invalid', !num); if (!num) return;
+    $('b-verify').disabled = true;
+    try {
+      const s = await getDoc(doc(db, 'sbm', num));
+      if (!s.exists()) throw new Error('Bar number "' + num + '" was not found in the State Bar of Michigan member registry.');
+      const d = s.data(); if (String(d.pin) !== String(ident.pin)) throw new Error('This bar number is registered to a different identity. Your MiGOVT PIN does not match the record on file.');
+      await createAccount({ barNumber: num, name: d.name || ident.name, role: d.role || 'Bar Member', status: d.status || 'Unknown' });
+    } catch (e) { $('b-error-m').textContent = e.message || 'Lookup failed.'; $('b-error').hidden = false; }
+    $('b-verify').disabled = false;
   };
 
-  const app  = getApps().length ? getApp() : initializeApp(config);
-  const auth = getAuth(app);
-  const db   = getFirestore(app);
-  await setPersistence(auth, browserLocalPersistence);   // keeps the session through the redirect
-
-  Object.assign(window, {
-    _auth: auth, _db: db, _ts: serverTimestamp, _doc: doc, _getDoc: getDoc, _setDoc: setDoc,
-    _query: query, _collection: collection, _where: where, _getDocs: getDocs,
-    _createUser: createUserWithEmailAndPassword, _signIn: signInWithEmailAndPassword, _fbReady: true
-  });
-  document.dispatchEvent(new Event('fbReady'));
-</script>
-
-<script>
-  const MIGOVT_LOGIN_URL = 'https://migovt.org/login/';
-  const THIS_URL   = window.location.href.split('?')[0];
-  const SITE_NAME  = 'Michigan Courts Online Portal';
-  const DASHBOARD  = '/courts/online-services/portal/dashboard/';
-
-  let migovt = null;        // identity returned by MiGOVT
-  let role = null;          // 'public' | 'bar'
-  let barData = null;       // verified bar record
-
-  const $ = id => document.getElementById(id);
-  const show = id => { const e = $(id); if (e) e.hidden = false; };
-  const hide = id => { const e = $(id); if (e) e.hidden = true; };
-  const txt  = (id, t) => { const e = $(id); if (e) e.textContent = t; };
-
-  function setInvalid(wrapId, bad) { $(wrapId).classList.toggle('invalid', bad); }
-
-  function indicator(id, current) {
-    const labels = ['Email', 'Role', 'Done'];
-    let h = '';
-    labels.forEach((l, i) => {
-      const cls = i + 1 < current ? 'done' : i + 1 === current ? 'active' : '';
-      h += `<div class="si ${cls}"><b>${cls === 'done' ? '&#10003;' : i + 1}</b>${l}</div>`;
-      if (i < labels.length - 1) h += `<div class="si-line ${i + 1 < current ? 'done' : ''}"></div>`;
-    });
-    $(id).innerHTML = h;
-  }
-
-  function goToStep(n) {
-    ['start', 'auto', '1', '2', '3'].forEach(k => hide('step-' + k));
-    show('step-' + n);
-    if (n === 1) indicator('ind-1', 1);
-    if (n === 2) indicator('ind-2', 2);
-  }
-  window.goToStep = goToStep;
-
-  function goMigovt() {
-    window.location.href = MIGOVT_LOGIN_URL +
-      '?redirect_uri=' + encodeURIComponent(THIS_URL) +
-      '&site_name=' + encodeURIComponent(SITE_NAME);
-  }
-  window.goMigovt = goMigovt;
-
-  async function waitForFb() {
-    if (window._fbReady) return;
-    await new Promise(r => document.addEventListener('fbReady', r, { once: true }));
-  }
-
-  function waitForAuthUser() {
-    return new Promise((resolve, reject) => {
-      const unsub = window._auth.onAuthStateChanged(user => {
-        unsub();
-        user ? resolve() : reject(new Error('Sign-in could not be confirmed.'));
-      });
-      setTimeout(() => reject(new Error('Sign-in timed out.')), 5000);
-    });
-  }
-
-  function goToDashboard() { setTimeout(() => { window.location.href = DASHBOARD; }, 700); }
-
-  /* ---------- existing account ---------- */
-  async function findAccount(pin) {
-    await waitForFb();
-    try {
-      const q = window._query(window._collection(window._db, 'accounts'), window._where('mipassPin', '==', String(pin)));
-      const snap = await window._getDocs(q);
-      if (!snap.empty) {
-        const d = snap.docs[0].data();
-        return { found: true, email: d.email, name: d.name, role: d.role };
-      }
-    } catch (e) { console.warn('Account lookup failed:', e); }
-    return { found: false };
-  }
-
-  async function autoLogin(acct) {
-    goToStep('auto');
-    txt('sal-name', acct.name);
-    txt('sal-role', 'Role: ' + acct.role);
-    try {
-      await window._signIn(window._auth, acct.email, String(migovt.pin));
-      await waitForAuthUser();
-      hide('sal-loading'); show('sal-success');
-      goToDashboard();
-    } catch (err) {
-      hide('sal-loading');
-      let msg = 'We could not sign you in automatically. ';
-      msg += (err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential')
-        ? 'Your details did not match. Please sign in with MiGOVT again.' : (err.message || 'Unknown error.');
-      txt('sal-error-msg', msg); show('sal-error'); show('sal-retry');
+  /* ---------- on load ---------- */
+  async function start() {
+    const p = new URLSearchParams(location.search), pin = p.get('mipass_pin'), name = p.get('mipass_name');
+    if (pin && name) {                                   // coming back from MiGOVT
+      history.replaceState({}, '', location.pathname);   // keep the PIN out of the address bar
+      ident = { pin: String(pin).trim(), name: name.trim(), dob: p.get('mipass_dob') || null, roblox: p.get('mipass_user') || null, email: (p.get('mipass_email') || '').trim().toLowerCase() };
+      work('Signing you in', 'Looking you up in the portal.');
+      const a = await findAccount(ident.pin);
+      return a ? signInExisting(a) : createNew();
     }
+    await auth.authStateReady();                         // already signed in? go straight to the dashboard
+    if (auth.currentUser) { if (await hasAccount(auth.currentUser.uid)) { location.replace(DASHBOARD); return; } await signOut(auth).catch(() => {}); }
+    setState('start');
   }
-
-  /* ---------- new account: email ---------- */
-  function stepEmailNext() {
-    const e1 = $('f-email').value.trim(), e2 = $('f-email2').value.trim();
-    const bad1 = !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e1);
-    const bad2 = !bad1 && e1 !== e2;
-    setInvalid('f-email-w', bad1);
-    setInvalid('f-email2-w', bad2);
-    if (!bad1 && !bad2) goToStep(2);
-  }
-  window.stepEmailNext = stepEmailNext;
-
-  /* ---------- new account: role ---------- */
-  function selectRole(r) {
-    role = r; barData = null;
-    $('bar-panel').hidden = r !== 'bar';
-    hide('bar-loading'); hide('bar-success'); hide('bar-error'); hide('s2-error');
-  }
-  window.selectRole = selectRole;
-
-  function clearBarResult() {
-    barData = null; hide('bar-success'); hide('bar-error'); setInvalid('f-bar-w', false);
-  }
-  window.clearBarResult = clearBarResult;
-
-  async function verifyBarNumber() {
-    const num = $('f-bar').value.trim().toUpperCase();
-    clearBarResult();
-    if (!num) { setInvalid('f-bar-w', true); return; }
-    const btn = $('bar-btn'); btn.disabled = true; show('bar-loading');
-    await waitForFb();
-    try {
-      const snap = await window._getDoc(window._doc(window._db, 'sbm', num));
-      hide('bar-loading'); btn.disabled = false;
-      if (!snap.exists()) {
-        txt('bar-error-msg', 'Bar number "' + num + '" was not found in the State Bar of Michigan member registry.');
-        show('bar-error'); return;
-      }
-      const d = snap.data();
-      if (String(d.pin) !== String(migovt.pin)) {
-        txt('bar-error-msg', 'This bar number is registered to a different identity. Your MiGOVT PIN does not match the record on file.');
-        show('bar-error'); return;
-      }
-      barData = { barNumber: num, name: d.name || migovt.name, role: d.role || 'Bar Member', status: d.status || 'Unknown' };
-      txt('bar-success-name', barData.name + ' — ' + barData.role);
-      txt('bar-success-detail', 'Status: ' + barData.status + ' · Bar No. ' + num);
-      show('bar-success');
-    } catch (err) {
-      hide('bar-loading'); btn.disabled = false;
-      txt('bar-error-msg', 'Lookup failed: ' + (err.message || 'Unknown error.')); show('bar-error');
-    }
-  }
-  window.verifyBarNumber = verifyBarNumber;
-
-  function stepRoleNext() {
-    hide('s2-error');
-    if (!role) { txt('s2-error-msg', 'Choose a role to continue.'); show('s2-error'); return; }
-    if (role === 'bar' && !barData) { txt('s2-error-msg', 'Verify your bar number before continuing.'); show('s2-error'); return; }
-    submitAccount();
-  }
-  window.stepRoleNext = stepRoleNext;
-
-  /* ---------- new account: create ---------- */
-  async function submitAccount() {
-    goToStep(3);
-    hide('s3-error'); hide('s3-success'); hide('s3-retry'); show('s3-loading');
-
-    const email = $('f-email').value.trim();
-    const isBar = role === 'bar' && barData;
-    const name  = isBar ? barData.name : (migovt.name || '—');
-    const roleLabel = isBar ? barData.role : 'Public User';
-    const pin = migovt.pin;
-
-    await waitForFb();
-    try {
-      txt('s3-title', 'Creating your account…'); txt('s3-msg', 'Registering your credentials.');
-      const cred = await window._createUser(window._auth, email, String(pin));
-
-      txt('s3-title', 'Saving your profile…'); txt('s3-msg', 'Writing your account information.');
-      await window._setDoc(window._doc(window._db, 'accounts', cred.user.uid), {
-        name, email, role: roleLabel, pin, dob: migovt.dob || null,
-        barNumber: isBar ? barData.barNumber : null, barStatus: isBar ? barData.status : null,
-        createdAt: window._ts(), lastLogin: window._ts(),
-        mipassPin: pin, robloxUser: migovt.robloxUsername || null
-      });
-
-      await waitForAuthUser();
-      hide('s3-loading'); show('s3-success');
-      goToDashboard();
-    } catch (err) {
-      hide('s3-loading');
-      let msg = err.message || 'An unexpected error occurred.';
-      if (err.code === 'auth/email-already-in-use') msg = 'An account already exists with this email address. Use a different email, or sign in instead.';
-      else if (err.code === 'auth/invalid-email') msg = 'The email address is not valid.';
-      txt('s3-error-msg', msg); show('s3-error'); show('s3-retry');
-    }
-  }
-  function retryAccount() { hide('s3-error'); hide('s3-retry'); submitAccount(); }
-  window.retryAccount = retryAccount;
-
-  /* ---------- on load: handle the return from MiGOVT ---------- */
-  async function init() {
-    const p = new URLSearchParams(window.location.search);
-    const pin = p.get('mipass_pin'), name = p.get('mipass_name');
-    if (!pin || !name) return;                       // normal visit: show the sign-in button
-
-    window.history.replaceState({}, '', window.location.pathname);   // keep the PIN out of the address bar
-    migovt = { pin, name, dob: p.get('mipass_dob'), robloxUsername: p.get('mipass_user'), email: p.get('mipass_email') || '' };
-
-    $('s0-btn').disabled = true;
-    show('s0-loading');
-
-    await waitForFb();
-    const existing = await findAccount(pin);
-    if (existing.found) { await autoLogin(existing); return; }
-
-    hide('s0-loading');
-    txt('s1-name', name);
-    if (migovt.email) { $('f-email').value = migovt.email; $('f-email2').value = migovt.email; }
-    goToStep(1);
-  }
-  window.addEventListener('DOMContentLoaded', init);
+  start().catch(e => fail('Something went wrong', 'Please try again.', e));
 </script>
 </body>
 </html>
