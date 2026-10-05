@@ -24,6 +24,23 @@ html{overflow-y:scroll}
 body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#e9ebee;color:#222}
 #pwrap{margin:16px auto}#preview{width:816px;transform-origin:top left}
 #measure{position:absolute;left:-9999px;top:0;visibility:hidden}
+@media screen{
+#preview [data-f]{background:rgba(255,214,102,.26);outline:1px dashed rgba(176,128,0,.55);outline-offset:1px;border-radius:2px;cursor:text;white-space:pre-wrap}
+#preview .sv [data-f]{white-space:pre}
+#preview [data-f]:hover{background:rgba(255,214,102,.5)}
+#preview [data-f]:focus{outline:2px solid #1f3a68;background:rgba(31,58,104,.09)}
+#preview [data-f]:empty{display:inline-block;min-width:3.5em;min-height:1em;vertical-align:bottom}
+#preview [data-f]:empty::before{content:attr(data-ph);color:#8a6d00;font:italic 400 .8em Arial,sans-serif;white-space:nowrap}
+#preview [data-chk],#preview [data-sel]{cursor:pointer}
+#preview [data-chk],#preview [data-sel] .cb{outline:1px dashed rgba(176,128,0,.6);outline-offset:1px;background:rgba(255,214,102,.26)}
+#preview [data-chk]:hover,#preview [data-sel]:hover .cb{background:rgba(255,214,102,.6)}
+}
+#tb{position:fixed;z-index:50;display:flex;gap:4px;align-items:center;background:#1c2b45;color:#fff;border-radius:8px;padding:5px 6px;box-shadow:0 4px 14px rgba(0,0,0,.3);font:12px Arial,sans-serif;max-width:calc(100vw - 16px)}
+#tb[hidden]{display:none}#tb .tn{font-weight:600;padding:0 6px 0 2px;max-width:160px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#tb .fx{display:contents}#tb.plain .fx{display:none}
+#tb select{height:26px;border-radius:5px;border:0;font:12px Arial,sans-serif;padding:0 4px;background:#fff;color:#1c2b45}#tb select:disabled{opacity:.5}
+#tb button{width:26px;height:26px;border:0;border-radius:5px;background:#fff;color:#1c2b45;cursor:pointer;font:13px Arial,sans-serif}#tb button[aria-pressed=true]{background:#ffd666}
+@media print{#tb{display:none!important}}
 @media print{body{background:#fff}#measure{display:none}#pwrap{width:auto!important;height:auto!important;margin:0}#preview{transform:none!important;margin:0}.page{margin:0!important;box-shadow:none!important;page-break-after:always}.page:last-child{page-break-after:auto}}`;
 
 /* ---------- Markdown: one schema, used both ways ---------- */
@@ -41,7 +58,7 @@ export function toMarkdown(def, api) {
     });
   });
   const st = Object.entries(api.styles()).filter(([, v]) => v.f || v.b || v.i);
-  if (st.length) { o.push('## Field styles', ''); st.forEach(([id, v]) => o.push('- ' + id + ': ' + [v.f, v.b && 'bold', v.i && 'italic'].filter(Boolean).join(', '))); o.push(''); }
+  if (st.length) { o.push('## Field styles', ''); st.forEach(([id, v]) => o.push('- ' + id + ': ' + [v.f, v.f && v.s && v.s + 'pt', v.b && 'bold', v.i && 'italic'].filter(Boolean).join(', '))); o.push(''); }
   return o.join('\n');
 }
 export function formOf(text) {   // which form a saved .md belongs to, or null
@@ -70,7 +87,7 @@ export function fromMarkdown(def, api, txt) {
       curGroup = groups.find(g => norm(g.heading) === norm(m[1])) || null; curItem = null; mode = norm(m[1]) === 'field styles' ? 'sty' : 'sec'; if (curGroup && !found.has(curGroup)) found.set(curGroup, []);
     } else if ((m = ln.match(/^[-*]\s+(.+?):\s?(.*)$/))) {
       const k = norm(m[1]);
-      if (mode === 'sty') { const p = m[2].split(/[,;]/).map(x => x.trim()).filter(Boolean); styles[m[1].trim().toLowerCase()] = { f: p.find(x => !/^(bold|italic)$/i.test(x)) || '', b: p.some(x => /^bold$/i.test(x)), i: p.some(x => /^italic$/i.test(x)) }; }
+      if (mode === 'sty') { const p = m[2].split(/[,;]/).map(x => x.trim()).filter(Boolean); styles[m[1].trim().toLowerCase()] = { f: p.find(x => !/^(bold|italic|\d+(\.\d+)?\s*pt)$/i.test(x)) || '', s: parseFloat((p.find(x => /^\d+(\.\d+)?\s*pt$/i.test(x)) || '0')) || 0, b: p.some(x => /^bold$/i.test(x)), i: p.some(x => /^italic$/i.test(x)) }; }
       else if (mode === 'item' && curItem) { const f = curGroup.fields.find(([, l]) => norm(l) === k); if (f) curItem[f[0]] = m[2].trim(); }
       else if (sl[k]) single[sl[k]] = m[2].trim();
     }
@@ -85,6 +102,7 @@ export function fromMarkdown(def, api, txt) {
 /* ---------- Mount a form into a host element ---------- */
 const FONTS = { std: ['Caveat', 'Courier New'], judge: ['Caveat', 'Courier New', 'Special Elite'] };
 const FCSS = { 'Caveat': "font-family:'Caveat',cursive;font-size:1.25em", 'Courier New': "font-family:'Courier New',Courier,monospace", 'Special Elite': "font-family:'Special Elite','Courier New',monospace" };
+const FSIZES = [8, 9, 10, 11, 12, 13, 14, 15, 16];
 const GFONTS = 'https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&family=Special+Elite&display=swap';
 const today = () => { const d = new Date(); return String(d.getMonth() + 1).padStart(2, '0') + '/' + String(d.getDate()).padStart(2, '0') + '/' + d.getFullYear(); };
 
@@ -102,26 +120,36 @@ export async function mountForm(def, host, { account, role, md, onDirty } = {}) 
   const sty = {}, bars = [];
   qa('[data-font]').forEach(el => {
     const bar = document.createElement('div'); bar.className = 'fd-fx'; bar.dataset.for = el.id;
-    bar.innerHTML = `<select class="fd-ff" aria-label="Font">${['', ...(FONTS[el.dataset.font] || FONTS.std)].map(f => `<option value="${f}">${f || 'Default font'}</option>`).join('')}</select><button type="button" class="fd-fb" aria-pressed="false" aria-label="Bold" title="Bold"><b>B</b></button><button type="button" class="fd-fi" aria-pressed="false" aria-label="Italic" title="Italic"><i>I</i></button>`;
-    el.insertAdjacentElement('afterend', bar); bars.push(bar); sty[el.id] = { f: '', b: false, i: false };
+    bar.innerHTML = `<select class="fd-ff" aria-label="Font">${['', ...(FONTS[el.dataset.font] || FONTS.std)].map(f => `<option value="${f}">${f || 'Default font'}</option>`).join('')}</select><select class="fd-fs" aria-label="Size in points" disabled><option value="">Size</option>${FSIZES.map(n => `<option value="${n}">${n} pt</option>`).join('')}</select><button type="button" class="fd-fb" aria-pressed="false" aria-label="Bold" title="Bold"><b>B</b></button><button type="button" class="fd-fi" aria-pressed="false" aria-label="Italic" title="Italic"><i>I</i></button>`;
+    el.insertAdjacentElement('afterend', bar); bars.push(bar); sty[el.id] = { f: '', s: 0, b: false, i: false };
   });
-  const readBar = bar => { sty[bar.dataset.for] = { f: bar.querySelector('select').value, b: bar.querySelector('.fd-fb').getAttribute('aria-pressed') === 'true', i: bar.querySelector('.fd-fi').getAttribute('aria-pressed') === 'true' }; };
-  const syncBar = bar => { const v = sty[bar.dataset.for] || {}; bar.querySelector('select').value = v.f || ''; bar.querySelector('.fd-fb').setAttribute('aria-pressed', !!v.b); bar.querySelector('.fd-fi').setAttribute('aria-pressed', !!v.i); };
+  const readBar = bar => { const f = bar.querySelector('.fd-ff').value; sty[bar.dataset.for] = { f, s: f ? parseFloat(bar.querySelector('.fd-fs').value) || 0 : 0, b: bar.querySelector('.fd-fb').getAttribute('aria-pressed') === 'true', i: bar.querySelector('.fd-fi').getAttribute('aria-pressed') === 'true' }; };
+  const syncBar = bar => { const v = sty[bar.dataset.for] || {}; bar.querySelector('.fd-ff').value = v.f || ''; const z = bar.querySelector('.fd-fs'); z.disabled = !v.f; z.value = v.f && v.s ? String(v.s) : ''; bar.querySelector('.fd-fb').setAttribute('aria-pressed', !!v.b); bar.querySelector('.fd-fi').setAttribute('aria-pressed', !!v.i); };
 
   const frame = document.createElement('iframe'); frame.className = 'fd-frame'; frame.title = def.number + ' preview';
-  frame.srcdoc = `<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="${GFONTS}"><style>${BASE_CSS}${def.css(k)}</style></head><body><div id="pwrap"><div id="preview"></div></div><div id="measure" class="page" style="height:auto;box-shadow:none"><div class="pc" id="mbox" style="display:flow-root"></div></div></body></html>`;
+  frame.srcdoc = `<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="${GFONTS}"><style>${BASE_CSS}${def.css(k)}</style></head><body><div id="pwrap"><div id="preview"></div></div><div id="measure" class="page" style="height:auto;box-shadow:none"><div class="pc" id="mbox" style="display:flow-root"></div></div><div id="tb" hidden><span class="tn"></span><span class="fx"><select class="tf" aria-label="Font"></select><select class="ts" aria-label="Size in points"></select><button type="button" class="tbb" aria-pressed="false" aria-label="Bold"><b>B</b></button><button type="button" class="tbi" aria-pressed="false" aria-label="Italic"><i>I</i></button></span></div></body></html>`;
   await new Promise(res => { frame.onload = res; $('fd-view').appendChild(frame); });
   const fd = frame.contentDocument, fw = frame.contentWindow, preview = fd.getElementById('preview'), mbox = fd.getElementById('mbox'), pwrap = fd.getElementById('pwrap');
   const val = id => esc($(id).value.trim());
+  const PLAIN = (() => { const d = fd.createElement('div'); d.contentEditable = 'plaintext-only'; return d.contentEditable === 'plaintext-only' ? 'plaintext-only' : 'true'; })();
+  const src = key => key[0] === '@' ? def.resolve?.(api, key.slice(1)) : $(key);
+  const labelOf = el => { let p = el.previousElementSibling; if (!p || p.tagName !== 'LABEL') p = el.parentElement?.querySelector('label'); return (p?.textContent || '').trim(); };
+  const styleOf = key => { const s = sty[key]; if (!s) return ''; let o = ''; if (s.f) { o += FCSS[s.f] + ';'; if (s.s) o += `font-size:${P(s.s)};line-height:1.25;`; } if (s.b) o += 'font-weight:700;'; if (s.i) o += 'font-style:italic;'; return o; };
   const api = {
     $, qa, esc, P, B, U, account, role, who, val,
-    fv(id, pre = '') {   // the value of a field in the font chosen for it
-      const v = val(id); if (!v) return ''; const s = sty[id];
-      if (!s || !(s.f || s.b || s.i)) return esc(pre) + v;
-      return `<span style="${s.f ? FCSS[s.f] + ';' : ''}${s.b ? 'font-weight:700;' : ''}${s.i ? 'font-style:italic;' : ''}">${esc(pre)}${v}</span>`;
+    /* A value that can be edited right on the preview. o: {pre, ph, blank, multi, style, text, off}
+       pre    text printed before it (e.g. "/s/ "), only when there is a value
+       blank  what prints when the field is empty (the form's own blank line, e.g. "___")
+       style  extra inline style (e.g. text-transform) */
+    ed(key, o = {}) {
+      const e = src(key), raw = o.text !== undefined ? o.text : (e ? String(e.value || '').replace(/\r/g, '') : ''), blank = !raw && o.blank, st = styleOf(key) + (o.style || '');
+      const body = `<span data-f="${esc(key)}" data-ph="${esc(o.ph || (e ? labelOf(e) : key))}"${o.off !== undefined ? ` data-off="${o.off}" data-len="${raw.length}"` : ''}${o.multi ? ' data-multi="1"' : ''}${blank ? ' data-blank="1"' : ''}${st ? ` style="${esc(st)}"` : ''} contenteditable="${PLAIN}" spellcheck="false">${esc(blank ? o.blank : raw)}${o.multi && raw.endsWith('\n') ? '\n' : ''}</span>`;
+      return raw && o.pre ? esc(o.pre) + body : body;
     },
+    edt: (key, t, o = {}) => api.ed(key, { ...o, text: t, off: api.seg || 0, multi: true }),   // one page's share of a long text
+    seg: 0,
     styles: () => sty,
-    setStyles(m) { Object.keys(sty).forEach(id => sty[id] = { f: '', b: false, i: false, ...(m?.[id] || {}) }); bars.forEach(syncBar); },
+    setStyles(m) { Object.keys(sty).forEach(id => sty[id] = { f: '', s: 0, b: false, i: false, ...(m?.[id] || {}) }); bars.forEach(syncBar); },
     render: () => render(), note: (t, bad) => { const m = $('fd-msg'); m.textContent = t; m.style.color = bad ? '#b33' : '#287a3e'; }
   };
   const AVN = (def.usable ? def.usable(U) : 678 * U), meas = html => { mbox.innerHTML = html; return mbox.getBoundingClientRect().height; };
@@ -136,6 +164,7 @@ export async function mountForm(def, host, { account, role, md, onDirty } = {}) 
       if (it.html !== undefined) { const h = meas(it.html); if (used + h > AVN && cur.has) start('cont'); cur.push(it.html); used += h; cur.has = true; continue; }
       let rest = it.txt, first = true;
       for (;;) {
+        api.seg = it.txt.length - rest.length;
         const full = it.make(rest, first), h = meas(full);
         if (used + h <= AVN) { cur.push(full); used += h; cur.has = true; break; }
         const tk = rest.split(/(\s+)/); let lo = 0, hi = tk.length;
@@ -156,12 +185,94 @@ export async function mountForm(def, host, { account, role, md, onDirty } = {}) 
     const s = Math.min(1, (fd.documentElement.clientWidth - 32) / 816); preview.style.transform = `scale(${s})`;
     pwrap.style.width = (816 * s) + 'px'; pwrap.style.height = (preview.offsetHeight * s) + 'px';
   }
+  /* ---- editing on the preview ---- */
+  const tb = fd.getElementById('tb'); let active = null, editing = false, rendering = false;
+  const caretOf = el => { const sel = fd.getSelection(); if (!sel.rangeCount || !el.contains(sel.anchorNode)) return 0; const r = fd.createRange(); r.selectNodeContents(el); r.setEnd(sel.anchorNode, sel.anchorOffset); return r.toString().length; };
+  const setCaret = (el, n) => {
+    const w = fd.createTreeWalker(el, NodeFilter.SHOW_TEXT), sel = fd.getSelection(), r = fd.createRange(); let t, acc = 0, done = false;
+    while ((t = w.nextNode())) { if (acc + t.length >= n) { r.setStart(t, n - acc); done = true; break; } acc += t.length; }
+    if (!done) { r.selectNodeContents(el); r.collapse(false); } else r.collapse(true);
+    sel.removeAllRanges(); sel.addRange(r);
+  };
+  const fieldsOf = key => [...preview.querySelectorAll('[data-f]')].filter(e => e.dataset.f === key);
+  function placeTb(el) {
+    if (!el || !el.isConnected) { tb.hidden = true; return; }
+    const r = el.getBoundingClientRect(), vw = fd.documentElement.clientWidth, vh = fd.documentElement.clientHeight; tb.hidden = false;
+    const h = tb.offsetHeight, w = tb.offsetWidth; let top = r.top - h - 8; if (top < 6) top = Math.min(r.bottom + 8, vh - h - 6);
+    tb.style.top = Math.max(6, top) + 'px'; tb.style.left = Math.max(8, Math.min(r.left, vw - w - 8)) + 'px';
+  }
+  function showTb(el) {
+    const key = el.dataset.f, s = sty[key], bar = bars.find(b => b.dataset.for === key), e = src(key);
+    tb.querySelector('.tn').textContent = (e && labelOf(e)) || key; tb.classList.toggle('plain', !s);
+    if (s && bar) {
+      const tf = tb.querySelector('.tf'), ts = tb.querySelector('.ts');
+      tf.innerHTML = [...bar.querySelector('.fd-ff').options].map(o => `<option value="${esc(o.value)}">${esc(o.textContent)}</option>`).join('');
+      ts.innerHTML = '<option value="">Size</option>' + FSIZES.map(n => `<option value="${n}">${n} pt</option>`).join('');
+      tf.value = s.f; ts.value = s.f && s.s ? String(s.s) : ''; ts.disabled = !s.f;
+      tb.querySelector('.tbb').setAttribute('aria-pressed', !!s.b); tb.querySelector('.tbi').setAttribute('aria-pressed', !!s.i);
+    }
+    placeTb(el);
+  }
+  function restore() {
+    if (!active || !editing) { if (!editing) tb.hidden = true; return; }
+    let el, local = active.caret || 0;
+    if (active.abs !== undefined) { const c = fieldsOf(active.key).filter(e => e.dataset.off !== undefined); el = c.find(e => active.abs <= +e.dataset.off + +e.dataset.len) || c[c.length - 1]; if (el) local = Math.max(0, active.abs - +el.dataset.off); }
+    else el = fieldsOf(active.key)[active.idx || 0];
+    if (!el) { tb.hidden = true; return; }
+    el.focus({ preventScroll: true }); setCaret(el, local); showTb(el);
+  }
   function render() {
-    const keep = fd.documentElement.scrollTop;
+    rendering = true; const keep = fd.documentElement.scrollTop;
     const pages = paginate(def.build(api));
     preview.innerHTML = pages.map(p => `<div class="page"><div class="pc">${p.join('')}</div><div class="foot">${esc(def.footer || def.number)}</div></div>`).join(''); fit();
-    fd.documentElement.scrollTop = keep;
+    fd.documentElement.scrollTop = keep; rendering = false; restore();
   }
+  function fromPreview(el) {
+    const key = el.dataset.f, tgt = src(key); if (!tgt) return;
+    let text = (PLAIN === 'plaintext-only' ? el.textContent : el.innerText).replace(/ /g, ' '); if (!el.dataset.multi) text = text.replace(/\s*\n\s*/g, ' '); else text = text.replace(/\n$/, ''); if (!text.trim()) text = '';
+    const caret = caretOf(el);
+    if (el.dataset.off !== undefined) { const off = +el.dataset.off, len = +el.dataset.len; tgt.value = tgt.value.slice(0, off) + text + tgt.value.slice(off + len); el.dataset.len = text.length; active = { key, abs: off + caret }; }
+    else { tgt.value = text; active = { key, idx: fieldsOf(key).indexOf(el), caret }; }
+    editing = true; mark(); later();
+  }
+  function setStyle(key, patch) {
+    const cur = sty[key]; if (!cur) return; const n = { ...cur, ...patch }; if (!n.f) n.s = 0; sty[key] = n; bars.forEach(syncBar); editing = true; mark(); render();
+  }
+  preview.addEventListener('input', e => { if (e.isComposing) return; const el = e.target.closest?.('[data-f]'); if (el) fromPreview(el); });
+  preview.addEventListener('compositionend', e => { const el = e.target.closest?.('[data-f]'); if (el) fromPreview(el); });
+  preview.addEventListener('focusin', e => {
+    const el = e.target.closest?.('[data-f]'); if (!el) return; editing = true;
+    if (el.dataset.blank) { delete el.dataset.blank; el.dataset.wb = '1'; el.textContent = ''; }
+    if (!active || active.key !== el.dataset.f || active.abs === undefined && active.idx !== fieldsOf(el.dataset.f).indexOf(el)) active = el.dataset.off !== undefined ? { key: el.dataset.f, abs: +el.dataset.off } : { key: el.dataset.f, idx: fieldsOf(el.dataset.f).indexOf(el), caret: 0 };
+    showTb(el);
+  });
+  preview.addEventListener('focusout', e => {
+    const el = e.target; if (rendering || !el.isConnected || !el.dataset?.wb) return; delete el.dataset.wb;
+    if (el.textContent) return;
+    if (!e.relatedTarget || !(preview.contains(e.relatedTarget) || tb.contains(e.relatedTarget))) { editing = false; active = null; tb.hidden = true; }
+    later();
+  });
+  preview.addEventListener('keydown', e => {
+    const el = e.target.closest?.('[data-f]'); if (!el) return;
+    if (e.key === 'Enter' && !el.dataset.multi) e.preventDefault();
+    if (e.key === 'Escape') { el.blur(); editing = false; active = null; tb.hidden = true; }
+  });
+  preview.addEventListener('click', e => {
+    const c = e.target.closest?.('[data-chk]'); if (c) { const i = $(c.dataset.chk); if (i) { i.checked = !i.checked; mark(); render(); } return; }
+    const o = e.target.closest?.('[data-sel]'); if (o) { const [id, v] = o.dataset.sel.split('='), i = $(id); if (i) { if (i.value === v) i.selectedIndex = 0; else i.value = v; mark(); render(); } }
+  });
+  fd.addEventListener('mousedown', e => { if (!e.target.closest('[data-f],#tb')) { editing = false; active = null; tb.hidden = true; } });
+  tb.addEventListener('mousedown', e => { if (!e.target.closest('select')) e.preventDefault(); });
+  tb.addEventListener('change', e => {
+    if (!active) return; const f = tb.querySelector('.tf').value, z = parseFloat(tb.querySelector('.ts').value) || 0;
+    setStyle(active.key, e.target.classList.contains('tf') ? { f, s: 0 } : { s: z });
+  });
+  tb.addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b || !active) return; const cur = sty[active.key] || {};
+    setStyle(active.key, b.classList.contains('tbb') ? { b: !cur.b } : { i: !cur.i });
+  });
+  fd.addEventListener('scroll', () => { const el = active && fieldsOf(active.key)[active.idx || 0] || fd.activeElement?.closest?.('[data-f]'); if (!tb.hidden && el) placeTb(el); }, true);
+  fw.addEventListener('blur', () => setTimeout(() => { if (!fd.hasFocus()) { editing = false; tb.hidden = true; } }, 250));
   let raf = 0; const later = () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(render); };
   const ro = new ResizeObserver(() => { size(); fit(); }); ro.observe($('fd-view'));
   addEventListener('resize', size); size();
@@ -170,10 +281,10 @@ export async function mountForm(def, host, { account, role, md, onDirty } = {}) 
   if (md) { try { fromMarkdown(def, api, md); api.note('Loaded your saved draft.'); } catch (e) { api.note(e.message, true); } }
   let dirty = false; const mark = () => { if (!dirty) { dirty = true; onDirty?.(); } };
   const panel = $('fd-panel');
-  panel.addEventListener('input', e => { const bar = e.target.closest('.fd-fx'); if (bar) readBar(bar); later(); mark(); });
+  panel.addEventListener('input', e => { const bar = e.target.closest('.fd-fx'); if (bar) { readBar(bar); syncBar(bar); } later(); mark(); });
   panel.addEventListener('click', e => {
     const b = e.target.closest('.fd-fb,.fd-fi'); if (!b) return;
-    b.setAttribute('aria-pressed', b.getAttribute('aria-pressed') !== 'true'); readBar(b.closest('.fd-fx')); later(); mark();
+    b.setAttribute('aria-pressed', b.getAttribute('aria-pressed') !== 'true'); readBar(b.closest('.fd-fx')); syncBar(b.closest('.fd-fx')); later(); mark();
   });
   /* Fill in my details as ... */
   const applied = {};
@@ -193,6 +304,7 @@ export async function mountForm(def, host, { account, role, md, onDirty } = {}) 
       try { const used = [...new Set(Object.values(sty).map(v => v.f).filter(Boolean))]; await Promise.all(used.map(f => fd.fonts.load(`16px "${f}"`))); await fd.fonts.ready; } catch (e) { /* fall back to system fonts */ }
       const holder = fd.createElement('div'); holder.style.cssText = 'position:absolute;left:-10000px;top:0;width:816px';
       const el = preview.cloneNode(true); el.style.transform = 'none'; el.id = 'pdfsrc';
+      el.querySelectorAll('[contenteditable]').forEach(n => { n.removeAttribute('contenteditable'); n.removeAttribute('data-ph'); n.removeAttribute('data-f'); });
       el.querySelectorAll('.page').forEach(p => { p.style.margin = '0'; p.style.boxShadow = 'none'; p.style.height = '1055px'; });
       holder.appendChild(el); fd.body.appendChild(holder);
       try { await fw.html2pdf().set({ margin: 0, filename: fileName('pdf'), image: { type: 'jpeg', quality: .98 }, html2canvas: { scale: 2.5, useCORS: true, scrollY: 0 }, jsPDF: { unit: 'pt', format: 'letter', orientation: 'portrait' }, pagebreak: { mode: ['css'], after: '.page' } }).from(el).save(); }

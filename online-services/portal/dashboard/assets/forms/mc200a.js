@@ -31,9 +31,9 @@ const css = ({ U, P, B }) => `
 .cn{width:${P(496)};padding:${P(20)} 0 0 ${P(1)}}.cn0{padding-top:${P(16)}}
 .ct{font-weight:bold;line-height:${P(12)}}
 .cx{margin-top:${P(1.75)};line-height:${P(16.5)}}
-.sr{display:flex;margin-top:${P(37)}}
+.sr{display:flex;align-items:flex-end;margin-top:${P(37)}}
 .sc{flex:none}
-.sv{height:${P(14)};line-height:${P(14)};border-bottom:${B} solid #000;text-align:center;overflow:hidden;white-space:nowrap}
+.sv{min-height:${P(14)};line-height:${P(14)};border-bottom:${B} solid #000;text-align:center;overflow:hidden;white-space:nowrap}
 .lf{text-align:left;padding-left:${P(5)}}
 .sl{font-size:${P(7.7)};line-height:${P(9)};padding:${P(5.5)} 0 0 ${P(5)}}
 .dc{width:${P(496)};padding:${P(20)} 0 0 ${P(1)};font-size:${P(6.8)};line-height:${P(10)}}
@@ -99,56 +99,56 @@ const panel = `
 const hdr=(P,B,mid,j,c)=>`<div class="hd"><div class="h1"><div class="b" style="padding-left:${P(33.5)}">STATE OF MICHIGAN</div><div class="r">THE DISTRICT COURT FOR</div><div class="r">GENESEE COUNTY</div></div><div class="h2">${mid}</div><div class="h3"><div><b>JUDGE</b><span class="jv">${j}</span></div><div><b>CASE NO.</b><span class="jv">${c}</span></div></div></div>`;
 const cell=(l,v)=>`<div class="lb">${l}</div><div class="vv">${v}</div>`;
 const blank=(v,b)=>v||b;
-const cb=on=>`<div class="cb">${on?'✓':''}</div>`;
+const cb=(on,key)=>`<div class="cb"${key?` data-chk="${key}" title="Click to check or uncheck"`:''}>${on?'✓':''}</div>`;
 
 
 function build(api){
- const {$,qa,P,B,esc}=api, V=api.val, F=api.fv;
+ const {$,qa,P,B,esc}=api, V=api.val, E=api.ed;
  const seq=[];
  /* page 1: complaint */
- seq.push({html:hdr(P,B,'CRIMINAL COMPLAINT',V('judge'),V('caseno'))});
+ seq.push({html:hdr(P,B,'CRIMINAL COMPLAINT',E('judge'),E('caseno'))});
  seq.push({html:`<div class="pt"><div class="c1">THE PEOPLE OF THE<br>STATE OF MICHIGAN</div><div class="c2">v</div>
-   <div class="c3">${cell('Defendant’s full name',V('def'))}</div>
-   <div class="c4"><div>${cell('Victim or complainant',V('victim'))}</div><div>${cell('Complaining witness',V('cw'))}</div></div></div>
-   <div class="cd">${cell('Co-defendant(s) (if known)',V('codef'))}</div>
-   <div class="cr"><div>${cell('City/Twp/Village',V('city'))}</div><div>${cell('County',V('county'))}</div><div>${cell('Date: on or about',V('date'))}</div></div>
-   <div class="wt"><div class="lb" style="padding-top:${P(5)}">Witnesses:</div><div class="vv" style="padding-bottom:0">${V('wit')}</div></div>`});
+   <div class="c3">${cell('Defendant’s full name',E('def'))}</div>
+   <div class="c4"><div>${cell('Victim or complainant',E('victim'))}</div><div>${cell('Complaining witness',E('cw'))}</div></div></div>
+   <div class="cd">${cell('Co-defendant(s) (if known)',E('codef'))}</div>
+   <div class="cr"><div>${cell('City/Twp/Village',E('city'))}</div><div>${cell('County',E('county'))}</div><div>${cell('Date: on or about',E('date'))}</div></div>
+   <div class="wt"><div class="lb" style="padding-top:${P(5)}">Witnesses:</div><div class="vv" style="padding-bottom:0">${E('wit',{multi:true})}</div></div>`});
  seq.push({html:`<div class="ip">The complaining witness, upon a sworn complaint, states that on or about the date range provided above, in Genesee County, Michigan, the defendant, did:</div>`});
  [...qa('.cnt')].forEach((c,i)=>{
-  const g=k=>esc(c.querySelector('.f-'+k).value.trim());
-  seq.push({html:`<div class="cn ${i?'':'cn0'}"><div class="ct">COUNT ${i+1}: ${g('ch')?g('ch').toUpperCase():'[CHARGE NAME]'}</div><div class="cx">${blank(g('cl'),'[CLASSIFICATION]')}: punishable by imprisonment for not more than ${blank(g('mi'),'___')} minutes ${blank(g('se'),'___')} seconds, or a fine of not more than $${blank(g('fi'),'______')} or both.</div></div>`});
+  const e=(k,blank,style)=>E('@'+i+'.'+k,{blank,style});
+  seq.push({html:`<div class="cn ${i?'':'cn0'}"><div class="ct">COUNT ${i+1}: ${e('ch','[CHARGE NAME]','text-transform:uppercase')}</div><div class="cx">${e('cl','[CLASSIFICATION]')}: punishable by imprisonment for not more than ${e('mi','___')} minutes ${e('se','___')} seconds, or a fine of not more than $${e('fi','______')} or both.</div></div>`});
  });
  seq.push({html:`<div class="ip" style="padding-top:${P(37)}">The complaining witness asks that the defendant be apprehended and dealt with according to law.</div>
-  <div class="sr"><div class="sc" style="width:${P(98)}"><div class="sv lf">${F('d1')}</div><div class="sl">Date</div></div><div class="sc" style="margin-left:${P(199)};width:${P(99)}"><div class="sv lf">${F('d2')}</div><div class="sl">Date</div></div></div>
-  <div class="sr" style="margin-top:${P(35.5)}"><div class="sc" style="width:${P(197)}"><div class="sv lf">${F('sig1','/s/ ')}</div><div class="sl">Complaining witness’ signature</div></div><div class="sc" style="margin-left:${P(100)};width:${P(196)}"><div class="sv lf">${F('sig2','/s/ ')}</div><div class="sl">Prosecutor’s signature</div></div></div>
+  <div class="sr"><div class="sc" style="width:${P(98)}"><div class="sv lf">${E('d1')}</div><div class="sl">Date</div></div><div class="sc" style="margin-left:${P(199)};width:${P(99)}"><div class="sv lf">${E('d2')}</div><div class="sl">Date</div></div></div>
+  <div class="sr" style="margin-top:${P(35.5)}"><div class="sc" style="width:${P(197)}"><div class="sv lf">${E('sig1',{pre:'/s/ '})}</div><div class="sl">Complaining witness’ signature</div></div><div class="sc" style="margin-left:${P(100)};width:${P(196)}"><div class="sv lf">${E('sig2',{pre:'/s/ '})}</div><div class="sl">Prosecutor’s signature</div></div></div>
   <div class="dc">The complaining witness and prosecuting authority declare under the penalties of perjury that they have examined this document and that its contents are true to the best of their information, knowledge, and belief.</div>`});
 
  /* order page */
  const sel=$('ordsel').value;
- const oo=(n,t)=>`<div class="oo">${cb(sel==n)}<div>${n}. ${t}</div></div>`;
+ const oo=(n,t)=>`<div class="oo" data-sel="ordsel=${n}" title="Click to choose this order">${cb(sel==n)}<div>${n}. ${t}</div></div>`;
  seq.push({pb:'cont',html:`<div class="or"><div class="cap">Order section to be completed by judge/magistrate.</div><div class="ob">ORDER</div></div>
   <div class="b" style="margin-top:${P(12)};line-height:${P(12)}">IT IS ORDERED:</div>
   <div style="margin-top:${P(4.25)}">${oo(1,'The complaint is <b>ACCEPTED</b>. A warrant shall issue for the arrest of the defendant.')}${oo(2,'The complaint is <b>ACCEPTED</b>. A summons shall issue requiring the defendant to appear before the court.')}${oo(3,'The criminal complaint is <b>REJECTED</b> because probable cause has not been established.')}</div>
-  <div class="sr" style="margin-top:${P(72)}"><div class="sc" style="margin-left:${P(3)};width:${P(98)}"><div class="sv lf">${F('od')}</div><div class="sl">Date</div></div><div class="sc" style="margin-left:${P(182)};width:${P(213)}"><div class="sv lf">${F('jname')}</div><div class="sl">Judge or Magistrate (type or print)</div></div></div>
-  <div class="sr" style="margin-top:${P(41.5)}"><div class="sc" style="margin-left:${P(283)};width:${P(213)}"><div class="sv lf">${F('jsig','/s/ ')}</div><div class="sl">Signature</div></div></div>`});
+  <div class="sr" style="margin-top:${P(72)}"><div class="sc" style="margin-left:${P(3)};width:${P(98)}"><div class="sv lf">${E('od')}</div><div class="sl">Date</div></div><div class="sc" style="margin-left:${P(182)};width:${P(213)}"><div class="sv lf">${E('jname')}</div><div class="sl">Judge or Magistrate (type or print)</div></div></div>
+  <div class="sr" style="margin-top:${P(41.5)}"><div class="sc" style="margin-left:${P(283)};width:${P(213)}"><div class="sv lf">${E('jsig',{pre:'/s/ '})}</div><div class="sl">Signature</div></div></div>`});
 
  /* blank page */
  seq.push({pb:'blank',html:`<div class="c" style="padding-top:${P(314)}"><div class="b" style="font-size:${P(19.4)};line-height:${P(22)}">THIS PAGE IS INTENTIONALLY LEFT BLANK</div><div style="margin-top:${P(20.5)};font-size:${P(11.8)};line-height:${P(15)}">COMPLAINT ON PREVIOUS PAGE(S)<br>AFFIDAVIT OF PROBABLE CAUSE ON NEXT PAGE(S)</div></div>`});
 
  /* affidavit */
- const nm=V('aff')||'________________________________________';
- seq.push({pb:'new',html:hdr(P,B,'AFFIDAVIT OF<br>PROBABLE CAUSE',V('judge'),V('caseno'))});
+ const nm=E('aff',{blank:'________________________________________'});
+ seq.push({pb:'new',html:hdr(P,B,'AFFIDAVIT OF<br>PROBABLE CAUSE',E('judge'),E('caseno'))});
  seq.push({html:`<div class="ap" style="padding-top:${P(14.5)}">I, ${nm}, being first duly sworn (or declaring under penalty of perjury), state as follows:</div>
   <div class="ap" style="padding-top:${P(9)}">I am the complaining witness in this matter and have personal knowledge of the facts contained in this affidavit of probable cause, except those facts stated upon information and belief, which I believe to be true.</div>`});
- seq.push({txt:$('narr').value.trim(),make:(t,first)=>(first?`<div class="ap b" style="padding-top:${P(14)}">The defendant, on the date and at the location described, did the following:</div>`:'')+`<div class="nv" style="${first?`margin-top:${P(6)};min-height:${P(28)}`:''}">${esc(t)}</div>`});
- const it=(n,t,extra)=>`<div class="oi">${cb($('b'+n).checked)}<div class="tx">${n}. ${t}${extra||''}</div></div>`;
- const oth=V('other');
+ seq.push({txt:$('narr').value.replace(/\r/g,''),make:(t,first)=>(first?`<div class="ap b" style="padding-top:${P(14)}">The defendant, on the date and at the location described, did the following:</div>`:'')+`<div class="nv" style="${first?`margin-top:${P(6)};min-height:${P(28)}`:''}">${api.edt('narr',t,{ph:'The defendant did the following'})}</div>`});
+ const it=(n,t,extra)=>`<div class="oi">${cb($('b'+n).checked,'b'+n)}<div class="tx">${n}. ${t}${extra||''}</div></div>`;
+ const oth=E('other',{multi:true,ph:'Other basis'});
  seq.push({html:`<div class="ap b" style="padding-top:${P(24)}">The facts contained in this affidavit are based upon: <span style="font-size:${P(7.5)};font-weight:normal">(select all that apply)</span></div>
-  <div style="margin-top:${P(3.75)}">${it(1,'My personal observations.')}${it(2,'Statements made by witnesses or victims.')}${it(3,'Physical evidence.')}${it(4,'Records or documents.')}${it(5,'Other:',oth?' '+oth:'')}</div>
-  <div class="at"><div><div class="lb">Agency</div><div class="vv">${V('agency')}</div></div><div><div class="lb">Title</div><div class="vv">${V('title')}</div></div><div><div class="lb">Badge No.</div><div class="vv">${V('badge')}</div></div><div><div class="lb">Name (type or print)</div><div class="vv">${F('aname')}</div></div></div>
+  <div style="margin-top:${P(3.75)}">${it(1,'My personal observations.')}${it(2,'Statements made by witnesses or victims.')}${it(3,'Physical evidence.')}${it(4,'Records or documents.')}${it(5,'Other: ',oth)}</div>
+  <div class="at"><div><div class="lb">Agency</div><div class="vv">${E('agency')}</div></div><div><div class="lb">Title</div><div class="vv">${E('title')}</div></div><div><div class="lb">Badge No.</div><div class="vv">${E('badge')}</div></div><div><div class="lb">Name (type or print)</div><div class="vv">${E('aname')}</div></div></div>
   <div class="ad"><div style="width:${P(208)};padding-left:${P(5)};font-size:${P(7.5)};line-height:${P(9.3)};padding-top:${P(0)}">I declare under the penalties of perjury that this affidavit has been examined by me and that its contents are true to the best of my information, knowledge and belief.</div>
-   <div class="sc" style="margin-left:${P(25)};width:${P(70)}"><div class="sv lf">${V('d3')}</div><div class="sl">Date</div></div>
-   <div class="sc" style="margin-left:${P(26)};width:${P(162)}"><div class="sv" style="text-align:left;padding-left:${P(6)}">${V('esig')?'/s/ '+V('esig'):''}</div><div class="sl" style="padding-left:${P(6)}">Affiant electronic signature</div></div></div>`});
+   <div class="sc" style="margin-left:${P(25)};width:${P(70)}"><div class="sv lf">${E('d3')}</div><div class="sl">Date</div></div>
+   <div class="sc" style="margin-left:${P(26)};width:${P(162)}"><div class="sv" style="text-align:left;padding-left:${P(6)}">${E('esig',{pre:'/s/ '})}</div><div class="sl" style="padding-left:${P(6)}">Affiant electronic signature</div></div></div>`});
  return seq;
 }
 
@@ -169,7 +169,8 @@ export default {
   id: 'mc200a', number: 'MC 200A', title: 'Criminal Complaint and Affidavit of Probable Cause', footer: 'MC 200A',
   css, panel,
   init(api) { addCount(api); api.$('addc').onclick = () => { addCount(api); api.render(); }; },
-  contHeader: api => `<div class="ch">Case Number: <span class="u">${api.val('caseno')}</span></div>`,
+  contHeader: api => `<div class="ch">Case Number: <span class="u">${api.ed('caseno')}</span></div>`,
+  resolve: (api, k) => { const m = /^(\d+)\.(\w+)$/.exec(k); return m && api.qa('.cnt')[+m[1]]?.querySelector('.f-' + m[2]); },
   build,
   roles: [
     { id: 'cw', label: 'Complaining witness', fill: (api, w) => ({ cw: w.name, sig1: w.name, d1: w.today }) },

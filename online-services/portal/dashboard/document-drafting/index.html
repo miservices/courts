@@ -52,8 +52,8 @@ dialog>footer{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:10px;padd
 .fd-panel .cnt{border:1px solid #dde;border-radius:8px;padding:8px 10px 10px;margin-bottom:10px;background:#fafbfd}
 .fd-panel .cnt .top{display:flex;justify-content:space-between;align-items:center;font-size:12px}
 .fd-panel .cnt .rm{background:none;color:#b33;border:0;padding:0;font-size:12px;cursor:pointer}
-.fd-fx{display:flex;gap:4px;margin-top:4px}
-.fd-panel .fd-fx select{flex:1;min-width:0;height:26px;padding:0 4px;font-size:12px;color:#445}
+.fd-fx{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
+.fd-panel .fd-fx select{flex:1 1 40%;min-width:0;height:26px;padding:0 4px;font-size:12px;color:#445}.fd-panel .fd-fx select.fd-ff{flex-basis:100%}.fd-panel .fd-fx select:disabled{opacity:.55}
 .fd-fx button{flex:none;width:26px;height:26px;padding:0;border:1px solid #b9c2cf;border-radius:6px;background:#fff;color:#334;font-size:12px;cursor:pointer;line-height:1}
 .fd-fx button[aria-pressed=true]{background:#1f3a68;border-color:#1f3a68;color:#fff}
 .fd-roles{margin:14px 0 0;padding:10px 12px;border:1px solid #d9dee7;border-radius:8px;background:#f5f7fb}.fd-roles>b{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:#345;display:block}
@@ -88,7 +88,7 @@ dialog>footer{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:10px;padd
 <script type="module">
 import { boot, $, esc } from '/courts/online-services/portal/dashboard/assets/js/portal-shell.js?v=7';
 import { FORMS, byId, byNumber } from '/courts/online-services/portal/dashboard/assets/forms/registry.js?v=1';
-import { mountForm, formOf } from '/courts/online-services/portal/dashboard/assets/forms/engine.js?v=2';
+import { mountForm, formOf } from '/courts/online-services/portal/dashboard/assets/forms/engine.js?v=3';
 const { account, role } = await boot({ id: 'drafting', title: 'Document Drafting', subtitle: 'Prepare court forms, then save them as a PDF or a .md file you can reopen later.' });
 const root = $('page-body'), BASE = 'https://migovt.org/courts/online-services/portal/dashboard/document-drafting/';
 let cur = null, pendingMd = null, gen = 0;
@@ -112,7 +112,7 @@ async function editor(form) {
   root.innerHTML = `<div class="fd-top"><a class="btn outline sm" href="${BASE}" id="fd-back">All forms</a><b>${esc(form.number)}</b><span class="m">${esc(form.title)}</span></div><div id="fd-host"><div class="loading-inline"><span class="spin-sm"></span>Loading form…</div></div>`;
   $('fd-back').onclick = e => { if (!leave()) e.preventDefault(); };
   try {
-    const def = (await import(`/courts/online-services/portal/dashboard/assets/forms/${form.id}.js?v=2`)).default;
+    const def = (await import(`/courts/online-services/portal/dashboard/assets/forms/${form.id}.js?v=3`)).default;
     if (my !== gen) return;
     const md = pendingMd; pendingMd = null;
     cur = await mountForm(def, $('fd-host'), { account, role, md });
