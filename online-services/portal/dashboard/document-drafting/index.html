@@ -65,6 +65,18 @@ dialog>footer{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:10px;padd
 .fd-keys{flex:1 0 100%;font-size:12px;color:#445}.fd-keys summary{cursor:pointer;color:#1f3a68;font-weight:600}
 .fd-keys dl{display:grid;grid-template-columns:auto 1fr;gap:3px 12px;margin:8px 0}.fd-keys dt{font-weight:600;white-space:nowrap}.fd-keys dd{margin:0}
 .fd-tools .btn[disabled]{opacity:.45;cursor:default}
+.fd-fs0{border:0;margin:0;padding:0;min-width:0}
+.fd-status{margin:14px 0 0;font-size:12px;color:#556;min-height:16px}.fd-status[data-k=ok]{color:#287a3e}.fd-status[data-k=busy]{color:#8a6d00}.fd-status[data-k=bad]{color:#b33}
+.fd-people{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:12px;color:#556;margin-top:4px}.fd-people:empty{display:none}
+.fd-ph{font-weight:600}.fd-chip{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:#1f3a68;color:#fff;font-size:11px;font-weight:700}.fd-pn{color:#667}
+.fd-btns{display:grid;grid-template-columns:1fr 1fr;gap:8px}.fd-btns .btn{width:100%}
+.fd-dl{position:relative}.fd-menu{position:absolute;bottom:calc(100% + 4px);left:0;right:0;z-index:5;background:#fff;border:1px solid #cfd6e2;border-radius:8px;box-shadow:0 6px 18px rgba(20,40,80,.18);padding:4px;display:flex;flex-direction:column}
+.fd-menu[hidden]{display:none}.fd-menu button{border:0;background:none;text-align:left;padding:8px 10px;border-radius:6px;font-size:13px;cursor:pointer;color:#223}.fd-menu button:hover{background:#eef2f9}
+.fd-title{flex:1;min-width:180px;max-width:520px;height:34px;padding:6px 10px;border:1px solid #b9c2cf;border-radius:6px;font-size:15px;font-weight:600;font-family:inherit}
+.fd-doc{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid #e3e7ee}.fd-doc:first-child{border-top:0}
+.fd-doc a{flex:1;min-width:0;text-decoration:none;color:inherit;display:flex;flex-direction:column;gap:2px}.fd-doc a:hover b{text-decoration:underline}.fd-doc span{font-size:12px;color:#667}
+.sh{display:flex;flex-direction:column;gap:10px;min-width:min(520px,80vw)}.sh-row{display:flex;gap:8px}.sh-row input{flex:1;min-width:0}.sh input[type=text],.sh select{height:36px;padding:6px 8px;border:1px solid #b9c2cf;border-radius:6px;font-size:13px;font-family:inherit}
+.sh-list{list-style:none;margin:6px 0 0;padding:0}.sh-p{display:flex;align-items:center;gap:8px;padding:8px 0;border-top:1px solid #e3e7ee}.sh-p>span:first-child{flex:1}.sh-found{display:flex;flex-direction:column;gap:6px;align-items:flex-start}
 </style>
 </head>
 <body>
@@ -90,44 +102,163 @@ dialog>footer{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:10px;padd
 <div class="auth-loading-overlay" id="auth-overlay" role="status"><div class="alo-title">Online Portal</div><div class="spin"></div><div>Verifying your session…</div></div>
 
 <script type="module">
-import { boot, $, esc } from '/courts/online-services/portal/dashboard/assets/js/portal-shell.js?v=7';
+import { boot, db, app, $, esc } from '/courts/online-services/portal/dashboard/assets/js/portal-shell.js?v=7';
 import { FORMS, byId, byNumber } from '/courts/online-services/portal/dashboard/assets/forms/registry.js?v=1';
-import { mountForm, formOf } from '/courts/online-services/portal/dashboard/assets/forms/engine.js?v=4';
-const { account, role } = await boot({ id: 'drafting', title: 'Document Drafting', subtitle: 'Prepare court forms, then save them as a PDF or a .md file you can reopen later.' });
-const root = $('page-body'), BASE = 'https://migovt.org/courts/online-services/portal/dashboard/document-drafting/';
-let cur = null, pendingMd = null, gen = 0;
-window.addEventListener('beforeunload', e => { if (cur?.isDirty()) { e.preventDefault(); e.returnValue = ''; } });
-const leave = () => !cur?.isDirty() || confirm('You have changes that are not saved to a PDF or .md file. Leave anyway?');
+import { mountForm, formOf } from '/courts/online-services/portal/dashboard/assets/forms/engine.js?v=5';
+import { DraftSession, accessOf, roleIn } from '/courts/online-services/portal/dashboard/assets/forms/drafts.js?v=1';
+import { firebaseBackend } from '/courts/online-services/portal/dashboard/assets/forms/backend.js?v=1';
+const { account, role, user } = await boot({ id: 'drafting', title: 'Document Drafting', subtitle: 'Prepare court forms. They save automatically, and you can share them to work on together.' });
+const root = $('page-body'), BASE = 'https://migovt.org/courts/online-services/portal/dashboard/document-drafting/', FORMS_PATH = '/courts/online-services/portal/dashboard/assets/forms/';
+const uid = account.uid, myName = (account.name || user?.email || 'Someone').trim(), be = firebaseBackend({ db, app });
+be.registerSelf({ uid, name: myName, email: user?.email || account.email || '', role }).catch(e => console.warn('Directory entry not saved', e));
+let cur = null, unList = null, pendingMd = null, gen = 0;
+const when = t => { const d = t?.toDate ? t.toDate() : t ? new Date(t) : null; return d && !isNaN(d) ? d.toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' }) : ''; };
+const secs = t => (t?.toDate ? t.toDate() : t ? new Date(t) : new Date(0)).getTime();
+const notice = (m, bad = true) => `<section class="card"><div class="${bad ? 'alert' : 'note'}" role="${bad ? 'alert' : 'status'}">${esc(m)}</div><p><a class="btn outline sm" href="${BASE}#">All documents</a></p></section>`;
 
+/* ---------- leaving the page / switching documents ---------- */
+window.addEventListener('beforeunload', e => { const s = cur?.session; if (s && (s.hasPending() || s.isDirty())) { e.preventDefault(); e.returnValue = ''; } });
+document.addEventListener('visibilitychange', () => { if (document.hidden) cur?.session?.flush().catch(() => { }); });
+addEventListener('pagehide', () => cur?.session?.flush().catch(() => { }));
+async function closeCurrent() {
+  if (!cur) return true; const { session, engine } = cur;
+  if (session) { await session.flush().catch(() => { }); if (session.isDirty() && !confirm('Your latest changes could not be saved. Leave anyway?')) return false; session.close(); }
+  engine?.destroy(); cur = null; return true;
+}
+
+/* ---------- library ---------- */
 function library(msg = '') {
-  const groups = [...new Set(FORMS.map(f => f.group))];
-  root.innerHTML = `<section class="card"><div class="fd-top"><h3 style="margin:0;flex:1">Forms</h3><button class="btn outline" type="button" id="fd-open">Open a saved .md</button><input type="file" id="fd-file" accept=".md,.markdown,.txt,text/markdown,text/plain" hidden></div>
+  root.innerHTML = `<section class="card"><div class="fd-top"><h3 style="margin:0;flex:1">Start a form</h3><button class="btn outline" type="button" id="fd-open">Open a .md file</button><input type="file" id="fd-file" accept=".md,.markdown,.txt,text/markdown,text/plain" hidden></div>
     <div id="fd-msg" role="alert" style="color:#b33;font-size:13px;min-height:16px">${esc(msg)}</div>
-    ${groups.map(g => `<div class="fd-grp">${esc(g)}</div><div class="fd-lib">${FORMS.filter(f => f.group === g).map(f => `<a class="fd-item" href="${BASE}#${f.id}" data-id="${f.id}"><span class="n">${esc(f.number)}</span><b>${esc(f.title)}</b><p>${esc(f.summary || '')}</p></a>`).join('')}</div>`).join('')}</section>`;
+    ${[...new Set(FORMS.map(f => f.group))].map(g => `<div class="fd-grp">${esc(g)}</div><div class="fd-lib">${FORMS.filter(f => f.group === g).map(f => `<a class="fd-item" href="${BASE}#${f.id}" data-id="${f.id}"><span class="n">${esc(f.number)}</span><b>${esc(f.title)}</b><p>${esc(f.summary || '')}</p></a>`).join('')}</div>`).join('')}</section>
+    <section class="card"><h3>My documents</h3><div id="fd-mine"><div class="loading-inline"><span class="spin-sm"></span>Loading…</div></div></section>
+    <section class="card"><h3>Shared with me</h3><div id="fd-shared"></div></section>`;
   $('fd-open').onclick = () => $('fd-file').click();
   $('fd-file').onchange = async e => {
     const f = e.target.files[0]; if (!f) return; const t = await f.text(), n = formOf(t), form = n && byNumber(n);
     if (!form) { $('fd-msg').textContent = n ? `This file is for form "${n}", which is not available here.` : 'We could not tell which form this file is for. Saved files start with "form: <number>".'; return; }
     pendingMd = t; location.hash = form.id;
   };
+  const row = d => { const r = roleIn(d, uid), f = byId(d.formId), label = r === 'owner' ? 'Owner' : accessOf(d, uid) === 'edit' ? 'Can edit' : 'Can view';
+    return `<div class="fd-doc"><a href="${BASE}#d/${esc(d.id)}"><b>${esc(d.title || 'Untitled')}</b><span>${esc(f?.number || d.formId)} · Updated ${esc(when(d.updatedAt))}${d.updatedByName ? ' by ' + esc(d.updatedByName) : ''}${r !== 'owner' ? ' · Owner ' + esc(d.ownerName || '') : ''}</span></a><span class="pill ${r === 'owner' ? 'live' : 'mid'}">${label}</span>${r === 'owner' ? `<button class="btn outline sm" type="button" data-del="${esc(d.id)}" data-t="${esc(d.title || 'Untitled')}">Delete</button>` : ''}</div>`; };
+  unList = be.list(uid, docs => {
+    const sorted = docs.slice().sort((a, b) => secs(b.updatedAt) - secs(a.updatedAt)), mine = sorted.filter(d => d.ownerUid === uid), shared = sorted.filter(d => d.ownerUid !== uid);
+    $('fd-mine').innerHTML = mine.length ? mine.map(row).join('') : '<p class="m">Nothing saved yet. Start a form above. It saves as you type.</p>';
+    $('fd-shared').innerHTML = shared.length ? shared.map(row).join('') : '<p class="m">Documents other people share with you appear here.</p>';
+  }, e => { console.error(e); $('fd-mine').innerHTML = '<div class="alert" role="alert">We could not load your documents. Check your connection and try again.</div>'; });
+  root.onclick = async e => {
+    const b = e.target.closest('[data-del]'); if (!b) return;
+    if (!confirm(`Delete "${b.dataset.t}" for everyone it is shared with? This cannot be undone.`)) return;
+    try { await be.remove(b.dataset.del); } catch (er) { console.error(er); alert('We could not delete that document.'); }
+  };
 }
-async function editor(form) {
-  const my = ++gen;
-  root.innerHTML = `<div class="fd-top"><a class="btn outline sm" href="${BASE}" id="fd-back">All forms</a><b>${esc(form.number)}</b><span class="m">${esc(form.title)}</span></div><div id="fd-host"><div class="loading-inline"><span class="spin-sm"></span>Loading form…</div></div>`;
-  $('fd-back').onclick = e => { if (!leave()) e.preventDefault(); };
+
+/* ---------- editor ---------- */
+async function editor({ form, docId, md0 }) {
+  const my = ++gen; let meta = null, text = null, access = 'edit';
+  root.innerHTML = `<div class="loading-inline"><span class="spin-sm"></span>Opening…</div>`;
   try {
-    const def = (await import(`/courts/online-services/portal/dashboard/assets/forms/${form.id}.js?v=4`)).default;
-    if (my !== gen) return;
-    const md = pendingMd; pendingMd = null;
-    cur = await mountForm(def, $('fd-host'), { account, role, md });
+    if (docId) {
+      meta = await be.get(docId);
+      if (!meta) { root.innerHTML = notice('That document was not found. It may have been deleted.'); return; }
+      access = accessOf(meta, uid); form = byId(meta.formId);
+      if (!access || !form) { root.innerHTML = notice('You do not have access to this document. Ask the owner to share it with you.'); return; }
+      if (meta.file) text = await be.getFile(docId, meta.file);
+      if (!(meta.members || []).includes(uid) && meta.linkAccess !== 'none') {   // opened by link: add it to "Shared with me"
+        be.update(docId, { members: [...(meta.members || []), uid], roles: { ...(meta.roles || {}), [uid]: meta.linkAccess }, names: { ...(meta.names || {}), [uid]: myName } }).catch(() => { });
+      }
+    }
+  } catch (e) {
+    console.error(e); root.innerHTML = notice(e?.code === 'permission-denied' || e?.code === 'storage/unauthorized' ? 'You do not have access to this document. Ask the owner to share it with you.' : 'We could not open this document. Check your connection and try again.'); return;
+  }
+  if (my !== gen) return;
+  const canEdit = access === 'edit', title0 = meta?.title || `${form.number} – ${new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
+  root.innerHTML = `<div class="fd-top"><a class="btn outline sm" href="${BASE}#" id="fd-back">All documents</a><input id="fd-title" class="fd-title" type="text" maxlength="120" aria-label="Document name" value="${esc(title0)}"${canEdit ? '' : ' readonly'}><span class="m">${esc(form.number)}${canEdit ? '' : ' · View only'}</span></div><div id="fd-host"><div class="loading-inline"><span class="spin-sm"></span>Loading form…</div></div>`;
+  try {
+    const def = (await import(`${FORMS_PATH}${form.id}.js?v=5`)).default; if (my !== gen) return;
+    let session = null;
+    const engine = await mountForm(def, $('fd-host'), { account, role, md: text ?? md0, readOnly: !canEdit, actions: canEdit ? ['save', 'share'] : ['share'], onEdit: () => session?.touch(), onAction: a => a === 'save' ? session.save(true) : openShare() });
+    if (my !== gen) { engine.destroy(); return; }
+    const adapter = { getMd: engine.getMd, stateFromMd: engine.stateFromMd, curState: engine.curState, applyState: engine.applyState, setPeople: engine.setPeople };
+    session = new DraftSession({
+      backend: be, adapter, uid, name: myName, formId: form.id, title: title0, docId, meta,
+      onStatus: (t, k) => engine.setStatus(t, k),
+      onConflict: (c, who) => engine.api.note(`${who} changed something you were also editing. Your version was kept.`, true),
+      onCreated: id => { history.replaceState(null, '', BASE + '#d/' + id); },
+      onMeta: m => {
+        if (!m) { root.innerHTML = notice('This document was deleted.'); return; }
+        const t = $('fd-title'); if (t && document.activeElement !== t && m.title && t.value !== m.title) { t.value = m.title; session.title = m.title; }
+        if (accessOf(m, uid) !== access) { location.reload(); }
+        if (sharing) renderShare();
+      }
+    });
+    cur = { session, engine, form };
+    session.attach({ save: !docId && !!md0 });
+    if (!canEdit) engine.setStatus('You can view this document. Changes by others appear here as they happen.', '');
+    let tt = 0; $('fd-title').addEventListener('input', e => { clearTimeout(tt); tt = setTimeout(() => session.setTitle(e.target.value.trim() || title0), 500); });
+
   } catch (e) { console.error(e); if (my === gen) $('fd-host').innerHTML = '<div class="alert" role="alert">We could not load this form. Refresh the page and try again.</div>'; }
 }
-let first = true;
+
+/* ---------- sharing ---------- */
+const dlg = $('dlg'); let sharing = false, found = [], shareMsg = null;
+const shareUrl = () => `${BASE}#d/${cur.session.docId}`;
+async function openShare() {
+  const s = cur?.session; if (!s) return;
+  if (!s.docId) { await s.save(true); if (!s.docId) { cur.engine.api.note('Could not save this document yet, so it cannot be shared. Try again in a moment.', true); return; } }
+  sharing = true; found = []; shareMsg = null; renderShare(); if (!dlg.open) dlg.showModal();
+}
+function renderShare() {
+  const s = cur?.session; if (!s || !s.meta) return; const m = s.meta, owner = m.ownerUid === uid;
+  $('dlg-t').textContent = 'Share'; $('dlg-w').textContent = m.title || 'Untitled';
+  const people = (m.members || []).map(u => { const nm = m.names?.[u] || 'Unknown', r = m.ownerUid === u ? 'owner' : m.roles?.[u] || 'view';
+    return `<li class="sh-p"><span><b>${esc(nm)}</b>${u === uid ? ' <small class="m">(you)</small>' : ''}</span>${r === 'owner' ? '<span class="m">Owner</span>' : owner ? `<select data-role="${esc(u)}" aria-label="Access for ${esc(nm)}"><option value="edit"${r === 'edit' ? ' selected' : ''}>Can edit</option><option value="view"${r === 'view' ? ' selected' : ''}>Can view</option></select><button class="btn outline sm" type="button" data-a="remove" data-uid="${esc(u)}">Remove</button>` : `<span class="m">${r === 'edit' ? 'Can edit' : 'Can view'}</span>`}</li>`; }).join('');
+  $('dlg-b').innerHTML = `<div class="sh">
+    <label class="f"><span>Anyone signed in with the link</span><select id="sh-link"${owner ? '' : ' disabled'}><option value="none"${m.linkAccess === 'none' ? ' selected' : ''}>Cannot open it (only people added below)</option><option value="view"${m.linkAccess === 'view' ? ' selected' : ''}>Can view</option><option value="edit"${m.linkAccess === 'edit' ? ' selected' : ''}>Can edit</option></select></label>
+    <div class="sh-row"><input id="sh-url" type="text" readonly value="${esc(shareUrl())}" aria-label="Document link"><button class="btn outline" type="button" data-a="copy">Copy link</button></div>
+    ${owner ? `<label class="f"><span>Add people by full name or email</span></label><div class="sh-row"><input id="sh-q" type="text" autocomplete="off" placeholder="Full name or email"><select id="sh-role" aria-label="Access"><option value="edit">Can edit</option><option value="view">Can view</option></select><button class="btn" type="button" data-a="find">Add</button></div>` : '<p class="m">Only the owner can change who this is shared with.</p>'}
+    ${found.length ? `<div class="sh-found"><p class="m">More than one account matches. Choose one:</p>${found.map(p => `<button class="btn outline sm" type="button" data-a="pick" data-uid="${esc(p.uid)}" data-name="${esc(p.name)}">${esc(p.name)} · ${esc(p.role || 'Account')}${p.email ? ' · ' + esc(p.email.replace(/^(.).*(@.*)$/, '$1•••$2')) : ''}</button>`).join('')}</div>` : ''}
+    <ul class="sh-list">${people}</ul></div>`;
+  $('dlg-e').innerHTML = shareMsg ? `<div class="${shareMsg.bad ? 'alert' : 'note'}" role="${shareMsg.bad ? 'alert' : 'status'}">${esc(shareMsg.t)}</div>` : '';
+  $('dlg-f').innerHTML = '<button class="btn outline" type="button" data-close>Done</button>';
+}
+const shMsg = (t, bad = false) => { shareMsg = { t, bad }; renderShare(); };
+async function addPerson(p, role) {
+  try { await cur.session.addMember(p.uid, p.name, role); found = []; shMsg(`${p.name} can now ${role === 'edit' ? 'edit' : 'view'} this document.`); } catch (e) { console.error(e); shMsg(e?.code === 'permission-denied' ? 'The Firestore rules do not allow sharing yet. (permission-denied)' : 'We could not share this. Try again.', true); }
+}
+dlg.addEventListener('click', async e => {
+  if (e.target === dlg || e.target.closest('[data-close]')) { dlg.close(); sharing = false; return; }
+  const b = e.target.closest('[data-a]'); if (!b || !cur?.session) return; const a = b.dataset.a, s = cur.session;
+  if (a === 'copy') { try { await navigator.clipboard.writeText(shareUrl()); shMsg('Link copied.'); } catch { $('sh-url').select(); shMsg('Press Ctrl+C to copy the link.'); } }
+  else if (a === 'find') {
+    const q = ($('sh-q').value || '').trim(), role = $('sh-role').value; if (!q) return shMsg('Type a full name or an email address.', true);
+    const had = new Set(s.meta.members || []); let res; try { res = (await be.find(q)).filter(p => !had.has(p.uid)); } catch { return shMsg('We could not search right now. Try again.', true); }
+    if (!res.length) return shMsg('No account found with that exact name or email, or they already have access. People can be found once they have opened Document Drafting. You can also send them the link above.', true);
+    if (res.length === 1) return addPerson(res[0], role);
+    found = res; shareMsg = null; renderShare();
+  }
+  else if (a === 'pick') addPerson({ uid: b.dataset.uid, name: b.dataset.name }, $('sh-role').value);
+  else if (a === 'remove') { try { await s.removeMember(b.dataset.uid); shMsg('Removed.'); } catch (er) { console.error(er); shMsg('We could not remove them. Try again.', true); } }
+});
+dlg.addEventListener('change', async e => {
+  const s = cur?.session; if (!s) return;
+  try {
+    if (e.target.id === 'sh-link') { await s.setLinkAccess(e.target.value); shMsg('Link setting saved.'); }
+    else if (e.target.dataset.role) { await s.setRole(e.target.dataset.role, e.target.value); shMsg('Access updated.'); }
+  } catch (er) { console.error(er); shMsg('We could not change that. Try again.', true); }
+});
+
+/* ---------- routing ---------- */
 async function route() {
-  const id = location.hash.replace(/^#/, ''), form = id && byId(id);
-  if (!first && cur && !leave()) { history.back(); return; }
-  first = false; cur?.destroy(); cur = null;
-  if (form) await editor(form); else library(id ? 'That form was not found.' : '');
+  const h = location.hash.replace(/^#/, ''), my = ++gen;
+  if (!(await closeCurrent())) { return; }
+  unList?.(); unList = null; dlg.open && dlg.close(); sharing = false;
+  if (my !== gen) return;
+  const d = /^d\/(.+)$/.exec(h);
+  if (d) return editor({ docId: decodeURIComponent(d[1]) });
+  const form = h && byId(h);
+  if (form) { const md0 = pendingMd; pendingMd = null; return editor({ form, md0 }); }
+  library(h ? 'That form was not found.' : '');
 }
 window.addEventListener('hashchange', route); route();
 
