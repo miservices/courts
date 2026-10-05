@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Court Document | Michigan Courts</title>
+<link rel="icon" type="image/png" href="/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=Source+Serif+4:wght@600;700&display=swap" rel="stylesheet">
+<style>
+:root{--navy:#10264a;--navy2:#1b3a6b;--ink:#1b2433;--muted:#5b6678;--line:#d3dae6;--bg:#e4e9f2;--red:#b3261e}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;font-family:'Public Sans',system-ui,sans-serif;color:var(--ink);background:var(--bg);display:flex;flex-direction:column;min-height:100vh}
+header.top{background:var(--navy);color:#fff;padding:10px 20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+header.top .brand{font-family:'Source Serif 4',Georgia,serif;font-weight:700;font-size:17px;letter-spacing:.01em}
+header.top .brand small{display:block;font:500 11px 'Public Sans',sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#aebfdc}
+header.top .meta{flex:1;min-width:180px}
+header.top .meta b{display:block;font-size:15px}header.top .meta span{font-size:12.5px;color:#c6d3ea}
+.acts{display:flex;gap:8px;flex-wrap:wrap}
+.btn{font:600 13.5px 'Public Sans',sans-serif;border-radius:6px;padding:8px 14px;border:1.5px solid #fff;background:#fff;color:var(--navy);cursor:pointer;text-decoration:none;display:inline-flex;align-items:center}
+.btn.o{background:transparent;color:#fff;border-color:#7f95bd}.btn:hover{filter:brightness(.95)}.btn.o:hover{background:rgba(255,255,255,.1)}
+.btn:disabled{opacity:.5;cursor:default}
+.btn:focus-visible{outline:3px solid #ffd666;outline-offset:2px}
+main{flex:1;display:flex;flex-direction:column;padding:14px 16px 18px;min-height:0}
+#host{flex:1;min-height:0}
+.fd-wrap{display:block;min-height:480px}.fd-panel{display:none!important}.fd-view{height:100%}
+.fd-frame{width:100%;height:100%;border:1px solid var(--line);border-radius:8px;background:#e9ebee;display:block}
+.msg{max-width:560px;margin:8vh auto;background:#fff;border:1px solid var(--line);border-top:4px solid var(--navy);border-radius:10px;padding:28px 30px}
+.msg h1{font-family:'Source Serif 4',Georgia,serif;font-size:22px;margin:0 0 8px;color:var(--navy)}
+.msg p{margin:0 0 16px;line-height:1.55;color:var(--muted)}
+.msg a.btn{background:var(--navy);color:#fff;border-color:var(--navy)}
+.spin{width:22px;height:22px;border:3px solid #b8cdee;border-top-color:var(--navy);border-radius:50%;animation:s .8s linear infinite;margin:0 auto 10px}@keyframes s{to{transform:rotate(360deg)}}
+.ld{text-align:center;margin:12vh auto;color:var(--muted)}
+#note{font-size:12.5px;color:#c6d3ea;min-height:16px;width:100%}
+@media print{header.top{display:none}body{background:#fff}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="brand">Michigan Courts<small>Court document</small></div>
+  <div class="meta"><b id="t">Loading document…</b><span id="s"></span></div>
+  <div class="acts" id="acts" hidden>
+    <button class="btn" id="pdf" type="button">Download PDF</button>
+    <button class="btn o" id="prt" type="button">Print</button>
+    <button class="btn o" id="md" type="button">Download .md</button>
+  </div>
+  <div id="note" role="status" aria-live="polite"></div>
+</header>
+<main><div id="host"><div class="ld"><div class="spin"></div>Opening the document…</div></div></main>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
+import { getAuth } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
+import { getStorage, ref, getBytes } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-storage.js";
+
+const app = initializeApp({
+  apiKey: "AIzaSyA8sUFIq81cs6uQvqduardpGJ4R2DxO8NQ", authDomain: "micourt-dada6.firebaseapp.com", projectId: "micourt-dada6",
+  storageBucket: "micourt-dada6.firebasestorage.app", messagingSenderId: "1013564619997", appId: "1:1013564619997:web:8f259dab457915758f6f34"
+});
+const auth = getAuth(app), storage = getStorage(app);
+const FORMS = '/courts/online-services/portal/dashboard/assets/forms/';
+const PORTAL = 'https://migovt.org/courts/online-services/portal/';
+const $ = id => document.getElementById(id);
+let engine = null, token = 0, shown = false;
+
+const card = (title, text, link) => { $('host').innerHTML = `<div class="msg" role="alert"><h1></h1><p></p>${link ? `<a class="btn" href="${link[1]}">${link[0]}</a>` : ''}</div>`; $('host').querySelector('h1').textContent = title; $('host').querySelector('p').textContent = text; $('t').textContent = title; $('s').textContent = ''; $('acts').hidden = true; };
+/* #/filingUploads/<confirmation>/<file>.md  (each part percent-encoded) */
+const pathOf = () => { const h = location.hash.replace(/^#\/?/, ''); if (!h) return null; try { return h.split('/').map(decodeURIComponent).join('/'); } catch { return null; } };
+
+async function open() {
+  const my = ++token; shown = false; engine?.destroy(); engine = null; $('acts').hidden = true; $('note').textContent = '';
+  const path = pathOf();
+  if (!path || !/^filingUploads\/[^/]+\/[^/]+\.md$/i.test(path)) return card('No document selected', 'This page opens court documents from a link on a docket or filing. Return to the page you came from and choose the document again.', ['Open the Online Portal', PORTAL]);
+  $('host').innerHTML = '<div class="ld"><div class="spin"></div>Opening the document…</div>';
+  await auth.authStateReady(); if (my !== token) return;
+  if (!auth.currentUser) return card('Sign in to view this document', 'Court documents are shown to people who are signed in to the Online Portal. Sign in, then open the document again.', ['Sign in to the Online Portal', PORTAL]);
+  let text;
+  try { text = new TextDecoder().decode(await getBytes(ref(storage, path), 4 * 1024 * 1024)); }
+  catch (e) { console.error(e); if (my !== token) return; return card(e?.code === 'storage/object-not-found' ? 'Document not found' : e?.code === 'storage/unauthorized' ? 'You do not have access' : 'We could not open this document', e?.code === 'storage/object-not-found' ? 'This document may have been removed.' : e?.code === 'storage/unauthorized' ? 'Your account is not allowed to view this document.' : 'Check your connection and try again.'); }
+  if (my !== token) return;
+  try {
+    const [{ byNumber }, { formOf, mountForm }] = await Promise.all([import(FORMS + 'registry.js?v=2'), import(FORMS + 'engine.js?v=8')]);
+    const num = formOf(text), form = num && byNumber(num);
+    if (!form) return card('This document cannot be shown', num ? `It was prepared on form "${num}", which this viewer does not support yet.` : 'We could not tell which form this file is for.');
+    const def = (await import(`${FORMS}${form.id}.js?v=8`)).default; if (my !== token) return;
+    $('host').innerHTML = '';
+    engine = await mountForm(def, $('host'), { md: text, readOnly: true, onNote: (t, bad) => { if (!shown && !bad) return; $('note').textContent = t; $('note').style.color = bad ? '#ffb4ab' : '#c6d3ea'; } });
+    if (my !== token) { engine.destroy(); return; }
+    shown = true; const c = engine.getCase(), title = `${def.number} · ${def.title}`;
+    $('t').textContent = title; $('s').textContent = [c.caseno && 'Case ' + c.caseno, c.judge].filter(Boolean).join(' · '); document.title = title + ' | Michigan Courts'; $('acts').hidden = false;
+  } catch (e) { console.error(e); if (my === token) card('We could not display this document', 'Refresh the page and try again.'); }
+}
+$('pdf').onclick = async () => { $('pdf').disabled = true; try { await engine?.exportPdf(); } finally { $('pdf').disabled = false; } };
+$('prt').onclick = () => engine?.print();
+$('md').onclick = () => engine?.exportMd();
+addEventListener('hashchange', open);
+open();
+</script>
+</body>
+</html>

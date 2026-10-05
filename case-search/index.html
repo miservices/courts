@@ -1130,7 +1130,7 @@ if (isFiling || isOrder) {
   } else if (link) {
     actions = `<div class="eacts">
       <a class="btn alt sm" href="${esc(link)}" target="_blank" rel="noopener">Open</a>
-      <a class="btn alt sm" href="${esc(link)}" download target="_blank" rel="noopener">Download</a></div>`;
+      ${/^https:\/\/migovt\.org\/courts\/documents\//.test(link) ? '' : `<a class="btn alt sm" href="${esc(link)}" download target="_blank" rel="noopener">Download</a>`}</div>`;
   } else if (isFiling) {
     actions = `<div class="nodoc">Document not available for public access</div>`;
   }

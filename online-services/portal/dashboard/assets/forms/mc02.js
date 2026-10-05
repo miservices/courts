@@ -29,7 +29,8 @@ const css = ({ U, P, B }) => `
 .fl .bl{border-bottom:${B} solid #000;min-height:${P(13)};padding:0 ${P(3)}}
 .sr{display:flex;align-items:stretch}
 .sc{flex:none;display:flex;flex-direction:column}
-.sv{flex:1 1 auto;display:flex;align-items:flex-end;min-height:${P(14)};line-height:${P(14)};border-bottom:${B} solid #000;text-align:center;overflow:hidden;white-space:nowrap}
+.sv{flex:1 1 auto;display:flex;align-items:flex-end;min-height:${P(14)};line-height:${P(14)};border-bottom:${B} solid #000;text-align:center;overflow:visible;white-space:nowrap}
+.sv .in{position:relative;z-index:1;max-width:none;overflow:visible}
 .sv .in{flex:1;min-width:0}
 .lf{text-align:left;padding-left:${P(5)}}
 .sl{font-size:${P(7.7)};line-height:${P(9)};padding:${P(5.5)} 0 0 ${P(5)}}

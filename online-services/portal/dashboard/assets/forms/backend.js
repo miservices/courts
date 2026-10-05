@@ -40,6 +40,16 @@ export function firebaseBackend({ db, app }) {
     /* The person's favorite fonts follow them across devices (kept on their own directory entry). */
     async getFavs(uid) { try { const s = await getDoc(doc(db, 'accountDirectory', uid)); return s.exists() && Array.isArray(s.data().fontFavs) ? s.data().fontFavs : []; } catch (e) { console.warn('Favorites unavailable', e); return null; } },
     async setFavs(uid, list) { await setDoc(doc(db, 'accountDirectory', uid), { fontFavs: list }, { merge: true }); },
+    /* Document builder settings (default fonts, and so on) follow the person across devices. */
+    async getSettings(uid) { try { const s = await getDoc(doc(db, 'accountDirectory', uid)); return s.exists() && s.data().builderSettings ? s.data().builderSettings : null; } catch (e) { console.warn('Settings unavailable', e); return null; } },
+    async setSettings(uid, v) { await setDoc(doc(db, 'accountDirectory', uid), { builderSettings: v }, { merge: true }); },
+    /* Cases that a document can be attached to (read once, kept in memory). */
+    async cases() {
+      if (this._cases) return this._cases;
+      const out = [];
+      for (const c of ['cases', 'mscCases']) { try { (await getDocs(collection(db, c))).docs.forEach(d => out.push({ ...d.data(), _id: d.id, _col: c })); } catch (e) { console.warn(c + ' unavailable', e); } }
+      return this._cases = out;
+    },
     /* Type-ahead: accounts whose name or email matches what was typed so far. The account list is read once and
        kept for a minute, so each keystroke is answered from memory. Only name, email, role and uid are used. */
     async search(text, limit = 8) {

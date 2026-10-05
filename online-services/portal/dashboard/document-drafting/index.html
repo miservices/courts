@@ -101,6 +101,15 @@ dialog.cdlg{width:min(440px,calc(100vw - 24px))}
 .sh-row{align-items:flex-start}.sh-row>select{flex:0 0 130px;width:130px}.sh-box{flex:1 1 0;width:auto}
 .sh-row>select#sh-role{height:36px}
 .sh-box input#sh-q{display:block;width:100%;min-width:0;flex:none}
+.fd-case{border:1px solid #d9dee7;border-radius:8px;background:#f7f9fc;padding:10px 12px;margin:12px 0 4px}.fd-case>b{display:block;font-size:12px;color:#445;margin-bottom:4px}
+.fd-cv{font-size:14px;display:flex;flex-direction:column;gap:2px;margin-bottom:8px}.fd-cv b{font-size:15px}.fd-cv span{color:#445}.fd-cv .m{color:#667}
+.fd-cbt{display:flex;gap:8px;flex-wrap:wrap}.fd-cbt [hidden]{display:none}
+.fd-warn{margin:10px 0;padding:10px 12px;border:1px solid #e0b04a;background:#fff6df;color:#5c3d08;border-radius:8px;font-size:13px;line-height:1.45}.fd-warn[hidden]{display:none}
+.st-r{display:grid;grid-template-columns:minmax(150px,1fr) minmax(170px,1fr) 110px minmax(110px,1fr);gap:10px;align-items:center;padding:10px 0;border-top:1px solid #e3e7ee}.st-r:first-of-type{border-top:0}
+.st-r select{height:34px;border:1px solid #b9c2cf;border-radius:6px;padding:0 8px;font:inherit;background:#fff;min-width:0}.st-t small{display:block}.st-p{font-size:22px;line-height:1.2;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.st-chip{display:inline-flex;align-items:center;gap:6px;border:1px solid #c5cdda;border-radius:999px;padding:3px 6px 3px 12px;margin:0 8px 8px 0;font-size:18px;background:#fff}.st-chip button{border:0;background:#e8edf5;border-radius:50%;width:22px;height:22px;cursor:pointer;font-size:14px;line-height:1}
+.cs-l{display:flex;flex-direction:column;gap:6px;margin-top:10px;max-height:46vh;overflow:auto}.cs-i{text-align:left;border:1px solid #d3d9e3;background:#fff;border-radius:8px;padding:9px 12px;cursor:pointer;font:inherit}.cs-i:hover,.cs-i:focus-visible{border-color:#1f3a68;background:#f3f6fb}.cs-i b{display:block}.cs-i small{color:#556}
+@media(max-width:760px){.st-r{grid-template-columns:1fr 1fr}.st-t{grid-column:1/-1}.st-p{grid-column:1/-1}}
 </style>
 </head>
 <body>
@@ -116,7 +125,7 @@ dialog.cdlg{width:min(440px,calc(100vw - 24px))}
   </header>
   <main class="page-body">
     <div class="page-head"><div><h2 id="page-title">Document Drafting</h2><p id="page-subtitle"></p></div><div id="page-action"></div></div>
-    <div id="page-body"><div class="loading-inline"><span class="spin-sm"></span>Opening Document Drafting…</div></div>
+    <div id="page-body"><div class="loading-inline"><span class="spin-sm"></span>Loading…</div></div>
   </main>
 </div>
 <dialog id="dlg" aria-labelledby="dlg-t">
@@ -128,14 +137,17 @@ dialog.cdlg{width:min(440px,calc(100vw - 24px))}
 <script type="module">
 import { boot, db, app, $, esc } from '/courts/online-services/portal/dashboard/assets/js/portal-shell.js?v=7';
 import { FORMS, byId, byNumber } from '/courts/online-services/portal/dashboard/assets/forms/registry.js?v=2';
-import { mountForm, formOf } from '/courts/online-services/portal/dashboard/assets/forms/engine.js?v=7';
+import { mountForm, formOf, fontAllowed, fontLock, fontCss, GFONTS, FONT_TYPES, FONT_WARNING } from '/courts/online-services/portal/dashboard/assets/forms/engine.js?v=8';
 import { DraftSession, accessOf, roleIn } from '/courts/online-services/portal/dashboard/assets/forms/drafts.js?v=1';
-import { firebaseBackend } from '/courts/online-services/portal/dashboard/assets/forms/backend.js?v=3';
+import { firebaseBackend } from '/courts/online-services/portal/dashboard/assets/forms/backend.js?v=4';
 const { account, role, user } = await boot({ id: 'drafting', title: 'Document Drafting', subtitle: 'Prepare court forms. They save automatically, and you can share them to work on together.' });
 const root = $('page-body'), BASE = 'https://migovt.org/courts/online-services/portal/dashboard/document-drafting/', FORMS_PATH = '/courts/online-services/portal/dashboard/assets/forms/';
 const uid = account.uid, myName = (account.name || user?.email || 'Someone').trim(), be = firebaseBackend({ db, app });
 be.registerSelf({ uid, name: myName, email: user?.email || account.email || '', role }).catch(e => console.warn('Directory entry not saved', e));
-let favCache = null, lastHash = location.hash, cur = null, unList = null, pendingMd = null, gen = 0;
+let settings = null, favCache = null, lastHash = location.hash, cur = null, unList = null, pendingMd = null, gen = 0;
+const SET_KEY = 'fd-settings';
+const loadSettings = async () => { let v = await be.getSettings(uid); if (!v) { try { v = JSON.parse(localStorage.getItem(SET_KEY) || 'null'); } catch { v = null; } } settings = v; };
+await loadSettings();
 const when = t => { const d = t?.toDate ? t.toDate() : t ? new Date(t) : null; return d && !isNaN(d) ? d.toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' }) : ''; };
 const secs = t => (t?.toDate ? t.toDate() : t ? new Date(t) : new Date(0)).getTime();
 const notice = (m, bad = true) => `<section class="card"><div class="${bad ? 'alert' : 'note'}" role="${bad ? 'alert' : 'status'}">${esc(m)}</div><p><a class="fd-back" href="${BASE}#"><svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true"><path d="M12.5 4 6.5 10l6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>All documents</a></p></section>`;
@@ -169,7 +181,7 @@ async function closeCurrent() {
 
 /* ---------- library ---------- */
 function library(msg = '') {
-  root.innerHTML = `<section class="card"><div class="fd-top"><h3 style="margin:0;flex:1">Start a form</h3><button class="btn outline" type="button" id="fd-open">Open a .md file</button><input type="file" id="fd-file" accept=".md,.markdown,.txt,text/markdown,text/plain" hidden></div>
+  root.innerHTML = `<section class="card"><div class="fd-top"><h3 style="margin:0;flex:1">Start a form</h3><a class="btn outline" href="${BASE}#settings">Settings</a><button class="btn outline" type="button" id="fd-open">Open a .md file</button><input type="file" id="fd-file" accept=".md,.markdown,.txt,text/markdown,text/plain" hidden></div>
     <div id="fd-msg" role="alert" style="color:#b33;font-size:13px;min-height:16px">${esc(msg)}</div>
     ${[...new Set(FORMS.map(f => f.group))].map(g => `<div class="fd-grp">${esc(g)}</div><div class="fd-lib">${FORMS.filter(f => f.group === g).map(f => `<a class="fd-item" href="${BASE}#${f.id}" data-id="${f.id}"><span class="n">${esc(f.number)}</span><b>${esc(f.title)}</b><p>${esc(f.summary || '')}</p></a>`).join('')}</div>`).join('')}</section>
     <section class="card"><h3>My documents</h3><div id="fd-mine"><div class="loading-inline"><span class="spin-sm"></span>Loading…</div></div></section>
@@ -216,11 +228,17 @@ async function editor({ form, docId, md0 }) {
   const canEdit = access === 'edit', title0 = meta?.title || `${form.number} – ${new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
   root.innerHTML = `<div class="fd-top fd-bar"><a class="fd-back" href="${BASE}#" id="fd-back"><svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true"><path d="M12.5 4 6.5 10l6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>All documents</a><input id="fd-title" class="fd-title" type="text" maxlength="120" aria-label="Document name" value="${esc(title0)}"${canEdit ? '' : ' readonly'}><span class="m">${esc(form.number)}${canEdit ? '' : ' · View only'}</span></div><div id="fd-host"><div class="loading-inline"><span class="spin-sm"></span>Loading form…</div></div>`;
   try {
-    const def = (await import(`${FORMS_PATH}${form.id}.js?v=7`)).default; if (my !== gen) return;
+    const def = (await import(`${FORMS_PATH}${form.id}.js?v=8`)).default; if (my !== gen) return;
     let session = null;
     if (favCache === null) { favCache = await be.getFavs(uid); if (favCache === null) { try { favCache = JSON.parse(localStorage.getItem('fd-font-favs') || '[]'); } catch { favCache = []; } } if (my !== gen) return; }
-    const engine = await mountForm(def, $('fd-host'), { account, role, favs: favCache, onFavs: l => { favCache = l; try { localStorage.setItem('fd-font-favs', JSON.stringify(l)); } catch { } be.setFavs(uid, l).catch(e => console.warn('Favorites not saved', e)); }, md: text ?? md0, readOnly: !canEdit, actions: canEdit ? ['save', 'share'] : ['share'], onEdit: () => session?.touch(), onAction: a => a === 'save' ? session.save(true) : openShare() });
+    const engine = await mountForm(def, $('fd-host'), { account, role, favs: favCache, onFavs: l => { favCache = l; try { localStorage.setItem('fd-font-favs', JSON.stringify(l)); } catch { } be.setFavs(uid, l).catch(e => console.warn('Favorites not saved', e)); }, md: text ?? md0, readOnly: !canEdit, actions: canEdit ? ['save', 'share', 'file'] : ['share'], onEdit: () => session?.touch(),
+      onFontNotice: () => ask({ title: 'Keep your text readable', message: FONT_WARNING, ok: 'I understand', info: true }),
+      onAction: a => a === 'save' ? session.save(true) : a === 'share' ? openShare() : a === 'case' ? openCases(engine) : fileIt(def) });
     if (my !== gen) { engine.destroy(); return; }
+    if (!docId && !md0 && settings?.fonts) {   // a brand new document starts with the person's own default fonts
+      const m = {}; Object.entries({ body: '~body', date: '~date', sig: '~sig' }).forEach(([k, id]) => { const v = settings.fonts[k]; if (v?.f && fontAllowed(v.f, role)) m[id] = { f: v.f, s: +v.s || 0 }; });
+      if (Object.keys(m).length) { engine.api.setStyles(m); engine.api.render(); }
+    }
     const adapter = { getMd: engine.getMd, stateFromMd: engine.stateFromMd, curState: engine.curState, applyState: engine.applyState, setPeople: engine.setPeople };
     session = new DraftSession({
       backend: be, adapter, uid, name: myName, formId: form.id, title: title0, docId, meta,
@@ -318,6 +336,77 @@ dlg.addEventListener('change', async e => {
   } catch (er) { console.error(er); shMsg('We could not change that. Try again.', true); }
 });
 
+/* ---------- choosing the case (number and judge come from the court record) ---------- */
+const FILE_URL = 'https://migovt.org/courts/online-services/portal/dashboard/file/';
+const honor = n => {
+  const t = String(n || '').split(/,|;| and /)[0].trim().replace(/^(hon\.?|honorable|chief judge|chief justice|judge|magistrate|justice)\s+/i, ''), w = t.split(/\s+/).filter(Boolean);
+  if (!w.length) return ''; if (w.length === 1) return 'Hon. ' + w[0];
+  let l = w.length - 1; while (l > 0 && /^(jr|sr|ii|iii|iv)\.?$/i.test(w[l])) l--;
+  return 'Hon. ' + w[0][0].toUpperCase() + '. ' + w[l];
+};
+const judgeOf = c => c.judge || (Array.isArray(c.judges) ? c.judges[0] : '') || '';
+const partiesOf = c => (Array.isArray(c.parties) ? c.parties : Object.values(c.parties || {}).flat()).filter(p => p && typeof p === 'object' && p.name);
+const capOf = c => { const p = partiesOf(c); return p[0] && p[1] ? `${p[0].name} v. ${p[1].name}` : c.caseId; };
+let caseList = [], caseEngine = null;
+async function openCases(engine) {
+  caseEngine = engine; sharing = false;
+  $('dlg-t').textContent = 'Choose a case'; $('dlg-w').textContent = 'The case number and judge are taken from the court record.';
+  $('dlg-b').innerHTML = '<div class="f"><span id="cs-ql">Case number or party name</span><input id="cs-q" type="text" autocomplete="off" spellcheck="false" aria-labelledby="cs-ql"></div><div id="cs-l" class="cs-l" aria-live="polite"><p class="m">Loading cases…</p></div>';
+  $('dlg-e').innerHTML = ''; $('dlg-f').innerHTML = '<button class="btn outline" type="button" data-close>Cancel</button>';
+  if (!dlg.open) dlg.showModal(); $('cs-q').focus();
+  try { caseList = await be.cases(); } catch (e) { console.error(e); caseList = []; }
+  paintCases();
+}
+function paintCases() {
+  const box = $('cs-l'), q = ($('cs-q')?.value || '').trim().toLowerCase(); if (!box) return;
+  if (q.length < 2) { box.innerHTML = '<p class="m">Start typing a case number or a party\u2019s name.</p>'; return; }
+  const l = caseList.filter(c => !c.sealed && ((c.caseId || '') + ' ' + partiesOf(c).map(p => p.name).join(' ')).toLowerCase().includes(q)).slice(0, 8);
+  box.innerHTML = l.length ? l.map(c => `<button type="button" class="cs-i" data-cs="${esc(c._id)}"><b>${esc(capOf(c))}</b><small>${esc(c.caseId)} \u00b7 ${esc(c.court || '')}${judgeOf(c) ? ' \u00b7 ' + esc(honor(judgeOf(c))) : ''}</small></button>`).join('') : '<p class="m">No matching cases.</p>';
+}
+dlg.addEventListener('input', e => { if (e.target.id === 'cs-q') paintCases(); });
+dlg.addEventListener('click', e => {
+  const b = e.target.closest('[data-cs]'); if (!b || !caseEngine) return; const c = caseList.find(x => x._id === b.dataset.cs); if (!c) return;
+  caseEngine.setCase({ caseno: c.caseId, judge: honor(judgeOf(c)) }); dlg.close();
+});
+
+/* ---------- File: hand the saved document to the filing screen ---------- */
+async function fileIt(def) {
+  const s = cur?.session, e = cur?.engine; if (!s || !e) return;
+  if (!e.getCase().caseno && !def.opensCase) { await ask({ title: 'Choose a case first', message: 'Pick the case this document is for before you file it. The case number and judge come from the court record.', ok: 'OK', info: true }); return; }
+  try { if (!s.docId) await s.save(true); else await s.flush(); } catch (er) { console.warn(er); }
+  if (!s.docId || s.isDirty()) { await ask({ title: 'Could not save yet', message: 'This document has to be saved before it can be filed. Check your connection and try again.', ok: 'OK', info: true }); return; }
+  location.href = FILE_URL + '#from=' + encodeURIComponent(s.docId);
+}
+
+/* ---------- builder settings ---------- */
+async function settingsView() {
+  if (favCache === null) { favCache = await be.getFavs(uid); if (favCache === null) { try { favCache = JSON.parse(localStorage.getItem('fd-font-favs') || '[]'); } catch { favCache = []; } } }
+  if (!document.getElementById('fd-gfonts')) { const l = document.createElement('link'); l.id = 'fd-gfonts'; l.rel = 'stylesheet'; l.href = GFONTS; document.head.appendChild(l); }
+  const cfg = settings?.fonts || {}, sizes = [8, 9, 10, 11, 12, 13, 14, 15, 16];
+  const fontSel = (k, first) => `<select id="st-${k}-f" aria-label="Font">${first}${FONT_TYPES.map(t => `<optgroup label="${esc(t.label)}">${t.fonts.filter(f => !(k === 'body' && f === 'Arial') && f !== 'Arial').map(f => { const ok = fontAllowed(f, role); return `<option value="${esc(f)}"${ok ? '' : ' disabled'}${cfg[k]?.f === f ? ' selected' : ''}>${esc(f)}${ok ? '' : ' (' + esc(fontLock(f)) + ')'}</option>`; }).join('')}</optgroup>`).join('')}</select>`;
+  const row = (k, t, h, first) => `<div class="st-r"><div class="st-t"><b>${t}</b><small class="fd-hint">${h}</small></div>${fontSel(k, first)}<select id="st-${k}-s" aria-label="Size in points"><option value="">Auto size</option>${sizes.map(n => `<option value="${n}"${+cfg[k]?.s === n ? ' selected' : ''}>${n} pt</option>`).join('')}</select><div class="st-p" id="st-${k}-p"></div></div>`;
+  root.innerHTML = `<div class="fd-top fd-bar"><a class="fd-back" href="${BASE}#"><svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true"><path d="M12.5 4 6.5 10l6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>All documents</a><h3 style="margin:0">Document builder settings</h3></div>
+    <section class="card"><h3>Document fonts</h3><p class="m">New documents start with these fonts. You can still change fonts inside any document.</p>
+      ${row('body', 'Default text', 'The main text of the form', '<option value="">Arial (standard)</option>')}${row('date', 'Date blocks', 'Dates beside a signature', '<option value="">Same as default text</option>')}${row('sig', 'Signature blocks', 'Signatures and typed names', '<option value="">Same as default text</option>')}
+      <div class="fd-warn" id="st-warn" role="note" hidden>${esc(FONT_WARNING)}</div>
+      <div class="fd-top" style="margin-top:14px"><button class="btn" type="button" id="st-save">Save settings</button><button class="btn outline" type="button" id="st-reset">Use standard fonts</button><span class="m" id="st-msg" role="status"></span></div></section>
+    <section class="card"><h3>Favorite fonts</h3><div id="st-fav"></div></section>`;
+  const paintPrev = () => ['body', 'date', 'sig'].forEach(k => { const f = $(`st-${k}-f`).value, p = $(`st-${k}-p`); p.innerHTML = f ? `<span style="${fontCss(f)}">${esc(k === 'date' ? '10/05/2026' : 'Jane Q. Public')}</span>` : ''; });
+  const warn = () => { const f = $('st-body-f').value; $('st-warn').hidden = !f || FONT_TYPES.find(t => t.fonts.includes(f))?.id === 'default'; };
+  const favs = () => { $('st-fav').innerHTML = favCache.length ? favCache.map(f => `<span class="st-chip" style="${fontCss(f)}">${esc(f)}<button type="button" data-unfav="${esc(f)}" aria-label="Remove ${esc(f)} from favorites">\u00d7</button></span>`).join('') : '<p class="m">No favorites yet. Use the star in the font list inside a document.</p>'; };
+  paintPrev(); warn(); favs();
+  root.onchange = e => { if (/^st-(body|date|sig)-f$/.test(e.target.id)) { paintPrev(); if (e.target.id === 'st-body-f') { const was = !$('st-warn').hidden; warn(); if (!$('st-warn').hidden && !was) ask({ title: 'Keep your text readable', message: FONT_WARNING, ok: 'I understand', info: true }); } } };
+  root.onclick = async e => {
+    const u = e.target.closest('[data-unfav]'); if (u) { favCache = favCache.filter(f => f !== u.dataset.unfav); try { localStorage.setItem('fd-font-favs', JSON.stringify(favCache)); } catch { } be.setFavs(uid, favCache).catch(er => console.warn(er)); favs(); return; }
+    if (e.target.id === 'st-reset') { ['body', 'date', 'sig'].forEach(k => { $(`st-${k}-f`).value = ''; $(`st-${k}-s`).value = ''; }); paintPrev(); warn(); return; }
+    if (e.target.id !== 'st-save') return;
+    const v = { fonts: Object.fromEntries(['body', 'date', 'sig'].map(k => [k, { f: $(`st-${k}-f`).value, s: +$(`st-${k}-s`).value || 0 }])) };
+    $('st-msg').textContent = 'Saving\u2026';
+    try { await be.setSettings(uid, v); settings = v; try { localStorage.setItem(SET_KEY, JSON.stringify(v)); } catch { } $('st-msg').textContent = 'Saved.'; }
+    catch (er) { console.error(er); settings = v; try { localStorage.setItem(SET_KEY, JSON.stringify(v)); } catch { } $('st-msg').textContent = 'Saved on this device only. We could not reach your account.'; }
+  };
+}
+
 /* ---------- routing ---------- */
 async function route() {
   const h = location.hash.replace(/^#/, ''), my = ++gen;
@@ -325,6 +414,7 @@ async function route() {
   lastHash = location.hash;
   unList?.(); unList = null; dlg.open && dlg.close(); sharing = false;
   if (my !== gen) return;
+  if (h === 'settings') return settingsView();
   const d = /^d\/(.+)$/.exec(h);
   if (d) return editor({ docId: decodeURIComponent(d[1]) });
   const form = h && byId(h);

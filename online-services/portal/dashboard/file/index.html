@@ -27,7 +27,9 @@
 <div class="auth-loading-overlay" id="auth-overlay" role="status"><div class="alo-title">Online Portal</div><div class="spin"></div><div>Verifying your session…</div></div>
 
 <script type="module">
-import { boot, db, app, $, esc, has, ATTY, STAFF, CASE_CODES, DISTRICT_COURT, SUPREME_COURT, reserveCaseNumber, reserveFilingNumber, colFor } from '/courts/online-services/portal/dashboard/assets/js/portal-shell.js?v=6';
+import { boot, db, app, $, esc, has, ATTY, STAFF, CASE_CODES, DISTRICT_COURT, SUPREME_COURT, reserveCaseNumber, reserveFilingNumber, colFor } from '/courts/online-services/portal/dashboard/assets/js/portal-shell.js?v=7';
+import { byNumber as formByNumber } from '/courts/online-services/portal/dashboard/assets/forms/registry.js?v=2';
+import { firebaseBackend } from '/courts/online-services/portal/dashboard/assets/forms/backend.js?v=4';
 import { collection, getDocs, addDoc, query, where, doc, getDoc, updateDoc, setDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 
 const { account, role } = await boot({ id: 'filings', title: 'My filings', subtitle: 'File a new case, add to an existing one, enter an appearance, and track what you have submitted.' });
@@ -121,6 +123,16 @@ const sideOf = r => /defendant|respondent|appellee/i.test(r || '') ? 1 : /plaint
 const AUTH = ['City of Flint', 'County of Genesee', 'People of the State of Michigan'];
 const opposing = p => p.role === ROLES[S.ctype][1] || p.role === 'Cross-Defendant';   // when opening a case you can't be counsel for the other side
 
+/* ── Court forms saved as .md ───────────────────────────────────────── */
+// A form from the Document Drafting page is kept as the .md text itself. Anyone who opens it sees it laid out like the printed form.
+const VIEWER = 'https://migovt.org/courts/documents/#/';
+const viewerUrl = path => VIEWER + path.split('/').map(encodeURIComponent).join('/');
+const mdForm = t => { const h = String(t).replace(/\r/g, '').split('\n').slice(0, 40).join('\n'), m = /^form:\s*(.+?)\s*$/mi.exec(h) || /^#\s+(.+?)\s*$/m.exec(h); return m ? m[1] : null; };
+const mdLine = (t, label) => { const m = new RegExp('^- ' + label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ':[ \\t]*(.*)$', 'mi').exec(String(t)); return m ? m[1].trim() : ''; };
+const mdSet = (t, label, v) => String(t).replace(new RegExp('^(- ' + label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ':)[ \\t]*.*$', 'mi'), (_, a) => v ? a + ' ' + v : a);
+const honor = n => { const w = String(n || '').split(/,|;| and /)[0].trim().replace(/^(hon\.?|honorable|chief judge|chief justice|judge|magistrate|justice)\s+/i, '').split(/\s+/).filter(Boolean); if (!w.length) return ''; if (w.length === 1) return 'Hon. ' + w[0]; let l = w.length - 1; while (l > 0 && /^(jr|sr|ii|iii|iv)\.?$/i.test(w[l])) l--; return 'Hon. ' + w[0][0].toUpperCase() + '. ' + w[l]; };
+const judgeOf = c => c?.judge || (Array.isArray(c?.judges) ? c.judges[0] : '') || '';
+
 /* ── State ──────────────────────────────────────────────────────────── */
 const blank = () => ({ step: 0, view: 'new', counsel: false, type: '', court: '', ctype: '', kase: null, repIds: [], lower: null, lq: '', touched: false, prefilled: false, parties: [], files: [], links: [],
   email: account.email || '', notes: '', cert: false, q: '', err: '', busy: false, done: null });
@@ -132,7 +144,7 @@ const ymd = v => { const m = String(v || '').match(/^(\d{4}-\d{2}-\d{2})/); if (
 const acctDob = ymd(account.dob || account.dateOfBirth || account.birthDate || account.birthdate);   // comes from the account, so it cannot be changed here
 const mkParty = (r, i) => { const own = i === 0 && !S.counsel; return { role: r, kind: 'Person', name: own ? account.name || '' : '', pin: own ? account.mipassPin || '' : '', dob: own ? acctDob : '', pinUnknown: false, dobUnknown: false, self: own, mine: false }; };
 
-Promise.all([getDocs(collection(db, 'cases')), getDocs(collection(db, 'mscCases')).catch(() => ({ docs: [] }))]).then(r => { cases = r.flatMap(s => s.docs.map(d => ({ ...d.data(), _id: d.id }))); if (S.step === 1) render(); }).catch(() => {});
+const casesReady = Promise.all([getDocs(collection(db, 'cases')), getDocs(collection(db, 'mscCases')).catch(() => ({ docs: [] }))]).then(r => { cases = r.flatMap(s => s.docs.map(d => ({ ...d.data(), _id: d.id }))); if (S.step === 1) render(); }).catch(() => {});
 const loadMine = () => getDocs(query(collection(db, 'pendingFilings'), where('filedByUid', '==', account.uid)))
   .then(s => { mine = s.docs.map(d => ({ ...d.data(), _id: d.id })).sort((a, b) => new Date(b.dateFiled) - new Date(a.dateFiled)); renderAction(); if (S.view === 'history') render(); }).catch(() => {});
 loadMine();
@@ -245,8 +257,8 @@ function stepDocs() {
   const o = S.type === 'appearance';
   return `<section class="card"><header><h3>Documents${o ? ' <small style="display:inline;font-weight:400">optional</small>' : ''}</h3></header>
     <p style="margin:0 0 14px;color:var(--muted)">${o ? 'Your appearance is recorded when you submit. You may also attach a signed Appearance (MC 02).' : 'Upload PDFs of 5 MB or less (MCR 2.119). Documents with photographs or scanned images go in through Google Drive instead.'}</p>
-    <div class="drop" id="dz"><input class="vh" type="file" id="fi" accept="application/pdf,.pdf" multiple><label for="fi" class="btn">Choose PDF files</label><p class="big">or drag and drop them here</p><p>PDF only · up to 5 MB each</p></div>
-    ${S.files.map((f, i) => `<div class="sub"><header><span>${esc(f.file.name)} <small style="display:inline">· ${(f.file.size / 1048576).toFixed(2)} MB</small></span><button class="btn outline sm" type="button" data-a="rmfile:${i}">Remove</button></header>${cb(`files.${i}.type`, f.type)}</div>`).join('')}
+    <div class="drop" id="dz"><input class="vh" type="file" id="fi" accept="application/pdf,.pdf,.md,text/markdown" multiple><label for="fi" class="btn">Choose files</label><p class="big">or drag and drop them here</p><p>PDF files (up to 5 MB) or court forms saved as .md from Document Drafting</p></div>
+    ${S.files.map((f, i) => `<div class="sub"><header><span>${esc(f.file.name)} <small style="display:inline">· ${f.md ? 'Court form ' + esc(f.md.number) : (f.file.size / 1048576).toFixed(2) + ' MB'}</small></span><button class="btn outline sm" type="button" data-a="rmfile:${i}">Remove</button></header>${cb(`files.${i}.type`, f.type)}</div>`).join('')}
     ${S.links.map((l, i) => `<div class="sub"><header><span>Google Drive document ${i + 1}</span><button class="btn outline sm" type="button" data-a="rmlink:${i}">Remove</button></header><div class="cols">${cb(`links.${i}.type`, l.type)}${F('Share link', inp(`links.${i}.url`, l.url, 'https://drive.google.com/…', 'url'), 'Set sharing to “Anyone with the link can view”.')}</div></div>`).join('')}
     <button class="btn outline" type="button" data-a="addlink">Add a Google Drive link</button></section>`;
 }
@@ -312,6 +324,11 @@ function check() {
   }
   if (S.step === 2) {
     if (S.type !== 'appearance' && !S.files.length && !S.links.length) return 'Add at least one PDF or Google Drive link.';
+    for (const f of S.files) if (f.md) {
+      const cn = f.md.caseNo;
+      if (S.type === 'new' && cn) return `${f.file.name} already names case ${cn}. To open a new case, clear the case on the form in Document Drafting and save it again.`;
+      if (S.type !== 'new' && S.kase && cn && cn !== S.kase.caseId) return `${f.file.name} is for case ${cn}, but you selected ${S.kase.caseId}. Choose the matching case or change the case on the form.`;
+    }
     if (S.files.some(f => !f.type) || S.links.some(l => !l.type)) return 'Choose a document type for every document.';
     if (S.links.some(l => !/^https?:\/\//.test(l.url.trim()))) return 'Every Google Drive entry needs a valid link.';
   }
@@ -335,6 +352,12 @@ async function submit() {
     const documents = []; let st = null;
     if (S.files.length) st = await import('https://www.gstatic.com/firebasejs/11.0.0/firebase-storage.js');
     for (const f of S.files) {
+      if (f.md) {   // the court form is stored as the .md itself. Case number and judge always come from the court record, never from what was typed.
+        let t = mdSet(f.md.text, 'Case No.', caseNo); t = mdSet(t, 'Judge', isNew ? '' : honor(judgeOf(S.kase)));
+        const nm = f.file.name.replace(/[^A-Za-z0-9._-]+/g, '_'), path = `filingUploads/${conf}/${Date.now()}-${nm}`, r = st.ref(st.getStorage(app), path), blob = new Blob([t], { type: 'text/markdown' });
+        await st.uploadBytes(r, blob, { contentType: 'text/markdown' });
+        documents.push({ type: 'md', name: f.file.name, size: blob.size, documentType: f.type, fee: fee(f.type, court), form: f.md.number, fileUrl: viewerUrl(path), storagePath: path }); continue;
+      }
       const d = { type: 'pdf', name: f.file.name, size: f.file.size, documentType: f.type, fee: fee(f.type, court), fileUrl: null };
       const path = `filingUploads/${conf}/${Date.now()}-${f.file.name}`, r = st.ref(st.getStorage(app), path);
       await st.uploadBytes(r, f.file, { contentType: 'application/pdf' }); d.fileUrl = await st.getDownloadURL(r); d.storagePath = path; documents.push(d);
@@ -389,9 +412,19 @@ async function submit() {
 /* ── Events ─────────────────────────────────────────────────────────── */
 const get = p => p.split('.').reduce((o, k) => o?.[k], S);
 const set = (p, v) => { const a = p.split('.'); let o = S; a.slice(0, -1).forEach(k => o = o[k]); o[a.at(-1)] = v; };
-function addFiles(fl) {
+async function addFiles(fl) {
   S.err = '';
-  [...fl].forEach(f => { if (!/\.pdf$/i.test(f.name) && f.type !== 'application/pdf') S.err = f.name + ' is not a PDF.'; else if (f.size > 5242880) S.err = f.name + ' is over 5 MB.'; else if (!S.files.some(x => x.file.name === f.name)) S.files.push({ file: f, type: '' }); });
+  for (const f of [...fl]) {
+    const isMd = /\.md$/i.test(f.name) || f.type === 'text/markdown';
+    if (!isMd && !/\.pdf$/i.test(f.name) && f.type !== 'application/pdf') { S.err = f.name + ' is not a PDF or a court form (.md).'; continue; }
+    if (f.size > (isMd ? 2097152 : 5242880)) { S.err = f.name + ' is over ' + (isMd ? '2' : '5') + ' MB.'; continue; }
+    if (S.files.some(x => x.file.name === f.name)) continue;
+    if (!isMd) { S.files.push({ file: f, type: '' }); continue; }
+    const text = await f.text(), num = mdForm(text), form = num && formByNumber(num);
+    if (!form) { S.err = num ? `${f.name} is for form "${num}", which is not available in the portal yet.` : `${f.name} does not look like a court form saved from Document Drafting.`; continue; }
+    const cf = byNum(form.number);
+    S.files.push({ file: f, type: cf ? FL(cf) : form.number === 'MC 02' ? 'Appearance (MC 02)' : '', md: { text, number: form.number, caseNo: mdLine(text, 'Case No.') } });
+  }
   render();
 }
 // Searchable document-type picker
@@ -444,7 +477,39 @@ document.addEventListener('keydown', e => { if ((e.key === 'Enter' || e.key === 
 root.addEventListener('dragover', e => { const z = e.target.closest('#dz'); if (z) { e.preventDefault(); z.classList.add('over'); } });
 root.addEventListener('dragleave', e => e.target.closest('#dz')?.classList.remove('over'));
 root.addEventListener('drop', e => { if (e.target.closest('#dz')) { e.preventDefault(); addFiles(e.dataTransfer.files); } });
+
+/* ── Coming from Document Drafting (#from=<document id>) ───────────── */
+async function fromDraft(id) {
+  S.busy = true; render();
+  try {
+    const be = firebaseBackend({ db, app }), m = await be.get(id);
+    if (!m || !m.file) throw new Error('That document could not be found. Open it in Document Drafting and choose File again.');
+    const text = await be.getFile(id, m.file), num = mdForm(text), form = num && formByNumber(num);
+    if (!form) throw new Error('This form is not available for filing yet.');
+    await casesReady;
+    const cn = mdLine(text, 'Case No.'), kase = cn ? cases.find(c => c.caseId === cn) : null, nm = (m.title || form.number).replace(/[^A-Za-z0-9._ -]+/g, '').trim().replace(/\s+/g, '_') + '.md';
+    S = blank(); S.fromDraft = id;
+    if (form.id === 'mc200a') {
+      if (!(COURTS[DISTRICT_COURT] || []).includes('General Criminal')) throw new Error('Only prosecutors and court staff can open a criminal case. Ask your prosecutor to file this form.');
+      S.type = 'new'; S.court = DISTRICT_COURT; S.ctype = 'General Criminal'; initParties(); S.step = 1;
+    } else if (form.id === 'mc02') {
+      if (!isAtty) throw new Error('Only attorneys can enter an appearance.');
+      S.type = 'appearance'; S.step = 1;
+    } else { S.type = 'existing'; S.step = 1; }
+    if (S.type !== 'new') {
+      if (!kase) throw new Error(cn ? `Case ${cn} was not found.` : 'Choose a case on the form in Document Drafting first.');
+      if (S.type === 'existing' && !isMine(kase)) throw new Error('You can only file in a case where you are a party or attorney. Case ' + cn + ' is not one of yours.');
+      S.kase = kase; S.step = S.type === 'appearance' ? 1 : 2;
+    }
+    const cf = byNum(form.number);
+    S.files.push({ file: new File([text], nm, { type: 'text/markdown' }), type: cf ? FL(cf) : form.number === 'MC 02' ? 'Appearance (MC 02)' : '', md: { text, number: form.number, caseNo: cn } });
+    S.view = 'new';
+  } catch (e) { console.error(e); S = blank(); S.err = e.message || 'We could not open that document for filing.'; }
+  S.busy = false; window.history.replaceState(null, '', location.pathname); render();
+}
+const fromId = /^#from=(.+)$/.exec(location.hash);
 render();
+if (fromId) fromDraft(decodeURIComponent(fromId[1]));
 </script>
 </body>
 </html>

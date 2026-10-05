@@ -33,7 +33,8 @@ const css = ({ U, P, B }) => `
 .cx{margin-top:${P(1.75)};line-height:${P(16.5)}}
 .sr{display:flex;align-items:stretch;margin-top:${P(37)}}
 .sc{flex:none;display:flex;flex-direction:column}
-.sv{flex:1 1 auto;display:flex;align-items:flex-end;min-height:${P(14)};line-height:${P(14)};border-bottom:${B} solid #000;text-align:center;overflow:hidden;white-space:nowrap}
+.sv{flex:1 1 auto;display:flex;align-items:flex-end;min-height:${P(14)};line-height:${P(14)};border-bottom:${B} solid #000;text-align:center;overflow:visible;white-space:nowrap}
+.sv .in{position:relative;z-index:1;max-width:none;overflow:visible}
 .sv .in{flex:1;min-width:0}
 .lf{text-align:left;padding-left:${P(5)}}
 .sl{font-size:${P(7.7)};line-height:${P(9)};padding:${P(5.5)} 0 0 ${P(5)}}
@@ -168,6 +169,7 @@ function numberCounts(api) { const l = api.qa('.cnt'); l.forEach((c, i) => { c.q
 const CNT = [['ch', 'Charge name'], ['cl', 'Classification'], ['mi', 'Minutes'], ['se', 'Seconds'], ['fi', 'Fine']];
 
 export default {
+  opensCase: true,
   id: 'mc200a', number: 'MC 200A', title: 'Criminal Complaint and Affidavit of Probable Cause', footer: 'MC 200A',
   css, panel,
   init(api) { addCount(api); api.$('addc').onclick = () => { addCount(api); api.render(); }; },
