@@ -212,7 +212,7 @@ export async function mountForm(def, host, { account, role, md, onDirty, onEdit,
   const warnSync = () => { const w = $('fd-warn'); if (w) w.hidden = !(sty['~body']?.f && typeOf(sty['~body'].f) !== 'default'); };
   const syncBar = bar => {
     warnSync();
-    const key = bar.dataset.for, v = sty[key] || blankSt(), e = effOf(key), nm = e.f || 'Arial', n = bar.querySelector('.fd-fpn');
+    const key = bar.dataset.for, v = sty[key] || blankSt(), e = effOf(key), nm = e.f || def.font || 'Arial', n = bar.querySelector('.fd-fpn');
     n.textContent = key[0] === '~' || v.f ? nm : 'Document default · ' + nm; n.style.fontFamily = famOf(e.f);
     const z = bar.querySelector('.fd-fs'); z.disabled = !e.f; z.value = e.f && v.s ? String(v.s) : '';
     bar.querySelector('.fd-fb').setAttribute('aria-pressed', e.b); bar.querySelector('.fd-fi').setAttribute('aria-pressed', e.i);
@@ -295,7 +295,7 @@ export async function mountForm(def, host, { account, role, md, onDirty, onEdit,
     tb.style.top = Math.max(6, top) + 'px'; tb.style.left = Math.max(8, Math.min(r.left, vw - w - 8)) + 'px';
   }
   function paintTb(key) {
-    const s = sty[key], e = effOf(key), nm = e.f || 'Arial';
+    const s = sty[key], e = effOf(key), nm = e.f || def.font || 'Arial';
     tb.querySelector('.tfn').textContent = s && !s.f ? 'Document default · ' + nm : nm; tb.querySelector('.tfn').style.fontFamily = famOf(e.f);
     tb.querySelector('.tsv').textContent = e.f && (e.s || '') ? e.s + ' pt' : 'Auto';
     tb.querySelector('.tsm').disabled = tb.querySelector('.tsp').disabled = !e.f;
@@ -476,7 +476,7 @@ export async function mountForm(def, host, { account, role, md, onDirty, onEdit,
       const keepTop = el.querySelector('.fp-list')?.scrollTop || 0, s = sty[key], types = parseTypes(s.t), smp = esc(sample());
       const row = f => !allow(f, key) ? `<div class="fp-r"><button type="button" class="fp-o" role="option" disabled aria-disabled="true" data-f="${esc(f)}"><span class="fp-s" style="${fontCss(f)}">${smp}</span><small>${esc(f)} · ${esc(fontLock(f, kindOf(key)))}</small></button></div>` : `<div class="fp-r"><button type="button" class="fp-o" role="option" data-f="${esc(f)}" aria-selected="${s.f === f}"><span class="fp-s" style="${fontCss(f)}">${smp}</span><small>${esc(f)}</small></button><button type="button" class="fp-f" data-fav="${esc(f)}" aria-pressed="${favs.has(f)}" aria-label="${favs.has(f) ? 'Remove ' + esc(f) + ' from favorites' : 'Add ' + esc(f) + ' to favorites'}" title="${favs.has(f) ? 'Remove from favorites' : 'Save as a favorite'}">${STAR}</button></div>`;
       const fl = TYPES.flatMap(t => t.fonts).filter(f => favs.has(f) && allow(f, key));
-      const dd = key[0] === '~' ? '' : `<button type="button" class="fp-o fp-d" role="option" data-f="" aria-selected="${!s.f}"><span>Use document default</span><small>${esc(effOf(key).d?.f || 'Arial')}</small></button>`;
+      const dd = key[0] === '~' ? '' : `<button type="button" class="fp-o fp-d" role="option" data-f="" aria-selected="${!s.f}"><span>Use document default</span><small>${esc(effOf(key).d?.f || def.font || 'Arial')}</small></button>`;
       el.innerHTML = `<div class="fp-types" role="group" aria-label="Text types">${TYPES.map(t => `<button type="button" class="fp-t" data-t="${t.id}" aria-pressed="${types.includes(t.id)}">${t.label}</button>`).join('')}</div><div class="fp-list" role="listbox" aria-label="Fonts">${dd}${fl.length ? `<div class="fp-h">Favorites</div>${fl.map(row).join('')}` : ''}${TYPES.filter(t => types.includes(t.id)).map(t => `<div class="fp-h">${t.label}</div>${t.fonts.map(row).join('')}`).join('')}</div>`;
       el.querySelector('.fp-list').scrollTop = keepTop;
     };
