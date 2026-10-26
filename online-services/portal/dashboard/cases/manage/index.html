@@ -97,7 +97,7 @@ dialog>footer{display:flex;justify-content:flex-end;gap:10px;padding:14px 22px;b
 import { boot, db, app, $, esc, has, STAFF, SUPREME, scopeOf, colFor, reserveFilingNumber, logAction, DISTRICT_COURT, SUPREME_COURT } from '/courts/online-services/portal/dashboard/assets/js/portal-shell.js?v=7';
 import * as F from '/courts/online-services/portal/dashboard/assets/js/finance.js?v=1';
 import { collection, getDocs, getDoc, doc, query, where, updateDoc, setDoc, runTransaction } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
-import { getStorage, ref as sRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-storage.js";
+import { getStorage, ref as sRef, uploadBytes, getDownloadURL, getBytes } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-storage.js";
 
 const { account, role } = await boot({ id: 'mcases', title: 'Case Management', subtitle: 'Find a case to manage its docket, parties, hearings, orders, and financials.' });
 const root = $('page-body');
@@ -206,7 +206,8 @@ async function loadAll() {
 }
 const idFromHash = () => { try { return decodeURIComponent(location.hash.slice(1)).replace(/^case-/, ''); } catch { return ''; } };
 const setHead = (sub, action = '') => { $('page-subtitle').textContent = sub; $('page-action').innerHTML = action; };
-async function route() { note = ''; const id = idFromHash(); if (id) await showCase(id); else showList(); }
+let pend = new URLSearchParams(location.search).get('order');   // a drafted order waiting for a case
+async function route() { note = ''; const id = idFromHash(); if (id) { await showCase(id); if (pend && cur) { const p = pend; pend = null; orderModal(-1, p); } } else showList(); }
 window.addEventListener('hashchange', route);
 
 /* ── Search screen ──────────────────────────────────────────────────── */
@@ -217,7 +218,7 @@ function showList() {
   const noJudge = open.filter(c => !judgeName(c)).length;
   const stat = (l, v, al) => `<div class="stat ${al ? 'alert-stat' : ''}"><span>${l}</span><b>${v}</b></div>`;
   const statuses = [...new Set([...STATUSES, ...cases.map(c => c.status).filter(Boolean)])];
-  root.innerHTML = `<div id="msg"></div><div class="stats">${stat('Total cases', cases.length)}${stat('Open', open.length)}${stat('Without a judge', noJudge, noJudge > 0)}${stat('Hearings, next 7 days', hearings)}</div>
+  root.innerHTML = `${pend ? '<div class="ok-bar" role="status">Your drafted order is ready. Find the case below and open it to enter the order.</div>' : ''}<div id="msg"></div><div class="stats">${stat('Total cases', cases.length)}${stat('Open', open.length)}${stat('Without a judge', noJudge, noJudge > 0)}${stat('Hearings, next 7 days', hearings)}</div>
     ${superior ? `<section class="card"><header><h3>Lower court cases</h3></header><p class="m">The Supreme Court has superintending control over the district court. Lower court cases stay out of this list, but you can open any of them by case number and manage it exactly as a district court clerk or judge would.</p>
       <div class="acts"><input class="in" id="lc-no" placeholder="Case number, e.g. 26-52996-CV" aria-label="Lower court case number" style="max-width:340px">${btn('lclookup', 'Open case', '')}</div><div id="lc-err"></div></section>` : ''}
     <div class="tools"><input class="in" id="ls-q" type="search" placeholder="Search by case number, party, judge, or keyword" aria-label="Search cases" value="${esc(LS.q)}">
@@ -869,18 +870,30 @@ function payModal(i) {
 }
 
 /* Orders and rulings */
-function orderModal(taskIdx) {
+const mdSet = (t, label, v) => String(t).replace(new RegExp('^(- ' + label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ':)[ \\t]*.*$', 'mi'), (_, a) => v ? a + ' ' + v : a);
+const honor = n => { const w = String(n || '').split(/,|;| and /)[0].trim().replace(/^(hon\.?|honorable|chief judge|chief justice|judge|magistrate|justice)\s+/i, '').split(/\s+/).filter(Boolean); if (!w.length) return ''; if (w.length === 1) return 'Hon. ' + w[0]; let l = w.length - 1; while (l > 0 && /^(jr|sr|ii|iii|iv)\.?$/i.test(w[l])) l--; return 'Hon. ' + w[0][0].toUpperCase() + '. ' + w[l]; };
+async function myDrafts() { try { return (await getDocs(query(collection(db, 'draftDocs'), where('members', 'array-contains', account.uid)))).docs.map(d => ({ id: d.id, ...d.data() })).filter(d => d.file).sort((a, b) => (b.updatedAt?.seconds || 0) - (a.updatedAt?.seconds || 0)); } catch (e) { console.warn('Drafts unavailable', e); return []; } }
+async function orderModal(taskIdx, preDraft) {
+  const drafts = await myDrafts();
   const t = taskIdx != null && taskIdx >= 0 ? cm.tasks[taskIdx] : null, p = pool(cur.court), me = p.find(j => j.name === account.name), def = isJudicial && me ? me.name : cur.judge || '';
   const opts = [...new Set([cur.judge, ...p.map(j => j.name)].filter(Boolean))].map(n => [n, n === cur.judge ? `${n} — judge of record` : `${n} — ${p.find(j => j.name === n)?.role || ''}`]);
-  modal({ title: 'Enter an order or ruling', ok: 'Enter order', okCls: 'good', body: (t ? `<div class="quote">Ruling on: ${esc(t.title)}</div>` : '') + fld('Order title', 'or-title', t ? 'Order on ' + (t.docType || stripSuffix(t.title)) : '', { ph: 'e.g. Order Granting Motion to Dismiss' })
+  modal({ title: 'Enter an order or ruling', ok: 'Enter order', okCls: 'good', body: (t ? `<div class="quote">Ruling on: ${esc(t.title)}</div>` : '') + fld('Order title', 'or-title', t ? 'Order on ' + (t.docType || stripSuffix(t.title)) : drafts.find(d => d.id === preDraft)?.title || '', { ph: 'e.g. Order Granting Motion to Dismiss' })
     + selF('Judge or justice', 'or-judge', opts.length ? opts : [['', 'Unassigned']], def) + (!isJudicial ? `<p class="m">Entered by ${esc(account.name)} (${esc(role)}) on behalf of the selected judicial officer.</p>` : '')
-    + fileIn('or-file', 'Order document') + fld('Or paste a document link', 'or-link', '', { ph: 'https://…' }) + area('Comment or summary', 'or-comment', '', 'Brief summary of the ruling for the docket')
+    + (drafts.length ? selF('Use an order drafted in the Document Builder', 'or-draft', [['', 'None'], ...drafts.map(d => [d.id, d.title || 'Untitled document'])], preDraft || '') : '') + fileIn('or-file', 'Order document') + fld('Or paste a document link', 'or-link', '', { ph: 'https://…' }) + area('Comment or summary', 'or-comment', '', 'Brief summary of the ruling for the docket')
     + `<label class="opt"><input type="checkbox" id="or-seal"><div><b>Seal this order from public access</b></div></label>`,
     onOk: async () => {
       const title = val('or-title'); if (!title) bad('Enter an order title.'); const judge = val('or-judge') || cur.judge || null, sealed = $('or-seal').checked, file = $('or-file').files[0];
-      const link = file ? await upload('case-orders', file) : val('or-link') || null, comment = val('or-comment') || null;
+      const dr = drafts.find(d => d.id === val('or-draft')); let link = null, fname = null;
+      if (dr) {   // the drafted order is copied to the case, with the case number and judge filled in by the system
+        let t = new TextDecoder().decode(await getBytes(sRef(storage, `draftDocs/${dr.id}/${dr.file}`), 4 * 1024 * 1024));
+        t = mdSet(mdSet(t, 'Case No.', cur.caseId || ''), 'Judge', honor(judge));
+        fname = (dr.title || 'Order').replace(/[^A-Za-z0-9._-]+/g, '_') + '.md';
+        const path = `case-orders/${cur._id}/${Date.now()}-${fname}`; await uploadBytes(sRef(storage, path), new Blob([t], { type: 'text/markdown' }), { contentType: 'text/markdown' });
+        link = 'https://migovt.org/courts/documents/#/' + path.split('/').map(encodeURIComponent).join('/');
+      } else link = file ? await upload('case-orders', file) : val('or-link') || null;
+      const comment = val('or-comment') || null;
       await change(d => ({ events: withEvent(d, { type: 'order', date: now(), description: title, documentLink: link, comment, judge, sealed, enteredBy: account.name, enteredByRole: role }) }),
-        `Entered order: ${title}${judge ? ' (Judge: ' + judge + ')' : ''}${file ? ' — uploaded ' + file.name : ''}`);
+        `Entered order: ${title}${judge ? ' (Judge: ' + judge + ')' : ''}${file ? ' — uploaded ' + file.name : fname ? ' — drafted document ' + fname : ''}`);
       if (!sealed) await notify({ type: 'NEF', title: 'Notice of Entry of Order', text: `${title} was entered on the docket${judge ? ' by ' + judge : ''}.` });
       if (t) await setTask(taskIdx, 'Completed');
     } });

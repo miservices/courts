@@ -135,9 +135,9 @@ dialog.cdlg{width:min(440px,calc(100vw - 24px))}
 <div class="auth-loading-overlay" id="auth-overlay" role="status"><div class="alo-title">Online Portal</div><div class="spin"></div><div>Verifying your session…</div></div>
 
 <script type="module">
-import { boot, db, app, $, esc } from '/courts/online-services/portal/dashboard/assets/js/portal-shell.js?v=7';
+import { boot, db, app, $, esc, has, STAFF } from '/courts/online-services/portal/dashboard/assets/js/portal-shell.js?v=7';
 import { FORMS, byId, byNumber } from '/courts/online-services/portal/dashboard/assets/forms/registry.js?v=3';
-import { mountForm, formOf, fontAllowed, fontFits, fontLock, fontCss, GFONTS, FONT_TYPES, FONT_WARNING } from '/courts/online-services/portal/dashboard/assets/forms/engine.js?v=10';
+import { mountForm, formOf, fontAllowed, fontFits, fontLock, fontCss, GFONTS, FONT_TYPES, FONT_WARNING } from '/courts/online-services/portal/dashboard/assets/forms/engine.js?v=11';
 import { DraftSession, accessOf, roleIn } from '/courts/online-services/portal/dashboard/assets/forms/drafts.js?v=1';
 import { firebaseBackend } from '/courts/online-services/portal/dashboard/assets/forms/backend.js?v=5';
 const { account, role, user } = await boot({ id: 'drafting', title: 'Document Drafting', subtitle: 'Prepare court forms. They save automatically, and you can share them to work on together.' });
@@ -231,7 +231,7 @@ async function editor({ form, docId, md0 }) {
     const def = (await import(`${FORMS_PATH}${form.id}.js?v=11`)).default; if (my !== gen) return;
     let session = null;
     if (favCache === null) { favCache = await be.getFavs(uid); if (favCache === null) { try { favCache = JSON.parse(localStorage.getItem('fd-font-favs') || '[]'); } catch { favCache = []; } } if (my !== gen) return; }
-    const engine = await mountForm(def, $('fd-host'), { account, role, favs: favCache, onFavs: l => { favCache = l; try { localStorage.setItem('fd-font-favs', JSON.stringify(l)); } catch { } be.setFavs(uid, l).catch(e => console.warn('Favorites not saved', e)); }, md: text ?? md0, readOnly: !canEdit, actions: canEdit ? ['save', 'share', 'file'] : ['share'], onEdit: () => session?.touch(),
+    const engine = await mountForm(def, $('fd-host'), { account, role, favs: favCache, onFavs: l => { favCache = l; try { localStorage.setItem('fd-font-favs', JSON.stringify(l)); } catch { } be.setFavs(uid, l).catch(e => console.warn('Favorites not saved', e)); }, md: text ?? md0, readOnly: !canEdit, fileLabel: has(STAFF, role) ? 'Enter order' : 'File', actions: canEdit ? ['save', 'share', 'file'] : ['share'], onEdit: () => session?.touch(),
       onFontNotice: () => ask({ title: 'Keep your text readable', message: FONT_WARNING, ok: 'I understand', info: true }),
       onAction: a => a === 'save' ? session.save(true) : a === 'share' ? openShare() : fileIt(def) });
     if (my !== gen) { engine.destroy(); return; }
@@ -346,6 +346,7 @@ async function fileIt(def) {
   const s = cur?.session, e = cur?.engine; if (!s || !e) return;
   try { if (!s.docId) await s.save(true); else await s.flush(); } catch (er) { console.warn(er); }
   if (!s.docId || s.isDirty()) { await ask({ title: 'Could not save yet', message: 'This document has to be saved before it can be filed. Check your connection and try again.', ok: 'OK', info: true }); return; }
+  if (has(STAFF, role)) { location.href = 'https://migovt.org/courts/online-services/portal/dashboard/cases/manage/?order=' + encodeURIComponent(s.docId); return; }
   location.href = FILE_URL + '#from=' + encodeURIComponent(s.docId);
 }
 
