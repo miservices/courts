@@ -72,7 +72,7 @@ const pathOf = () => { const h = location.hash.replace(/^#\/?/, ''); if (!h) ret
 async function open() {
   const my = ++token; shown = false; engine?.destroy(); engine = null; $('acts').hidden = true; $('note').textContent = '';
   const path = pathOf();
-  if (!path || !/^filingUploads\/[^/]+\/[^/]+\.md$/i.test(path)) return card('No document selected', 'This page opens court documents from a link on a docket or filing. Return to the page you came from and choose the document again.', ['Open the Online Portal', PORTAL]);
+  if (!path || !/^(filingUploads|case-orders)\/[^/]+\/[^/]+\.md$/i.test(path)) return card('No document selected', 'This page opens court documents from a link on a docket or filing. Return to the page you came from and choose the document again.', ['Open the Online Portal', PORTAL]);
   $('host').innerHTML = '<div class="ld"><div class="spin"></div>Opening the document…</div>';
   await auth.authStateReady(); if (my !== token) return;
   if (!auth.currentUser) return card('Sign in to view this document', 'Court documents are shown to people who are signed in to the Online Portal. Sign in, then open the document again.', ['Sign in to the Online Portal', PORTAL]);
