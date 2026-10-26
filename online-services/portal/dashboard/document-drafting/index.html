@@ -1,78 +1,400 @@
-/* The Firebase side of saved documents (used by drafts.js).
-   Firestore  draftDocs/{id}              title, sharing, revision number, name of the current .md
-   Storage    draftDocs/{id}/{file}.md    the document itself
-   Firestore  accountDirectory/{uid}      name and email, so people can be found by name or email when sharing */
-import { collection, doc, getDoc, getDocs, setDoc, updateDoc, deleteDoc, onSnapshot, query, where, runTransaction, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
-import { getStorage, ref, uploadString, getBytes, deleteObject } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-storage.js";
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Document Drafting | Online Portal</title>
+<link rel="icon" type="image/png" href="/courts/images/favicon.png">
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=Source+Serif+4:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/courts/online-services/portal/dashboard/assets/css/dashboard.css?v=5">
+<style>
+.m{color:var(--muted);font-weight:400}.mt{margin-top:14px}
+.tools{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px;align-items:center}.tools .in{flex:1;min-width:200px;width:auto}.tools select.in{flex:0 0 auto;min-width:0}
+.chk{display:flex;gap:8px;align-items:center;font-weight:600;color:var(--navy);white-space:nowrap}.chk input{width:18px;height:18px}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}.chips button{font:inherit;font-weight:600;font-size:14px;padding:6px 14px;border-radius:16px;border:1px solid var(--line);background:#fff;color:var(--navy);cursor:pointer}.chips button.on{background:var(--navy);color:#fff;border-color:var(--navy)}.chips i{font-style:normal;opacity:.75;margin-left:6px}
+.tabs i{font-style:normal;font-weight:500;color:var(--muted);margin-left:6px}
+tbody tr[data-a]{cursor:pointer}tbody tr[data-a]:hover{background:#f6f9fd}
+td small,th small{display:block;color:var(--muted);font-weight:400}.num{text-align:right;white-space:nowrap}th.num{text-align:right}.pills{display:flex;gap:6px;flex-wrap:wrap}
+.amts{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px 18px;margin-bottom:14px}.amts div{display:grid;gap:2px}.amts dt{font-size:13px;color:var(--muted)}.amts dd{font-weight:700;font-size:17px;color:var(--navy)}.amts dd.owe{font-size:22px}
+.alert-line{border-left:4px solid #b7791f;background:#fdf6e7;color:#6e4a10;border-radius:4px;padding:10px 14px;margin-bottom:10px}.alert-line.red{border-color:#b3261e;background:#fdf1f0;color:#7a1b13}
+.note{border-left:4px solid var(--navy);background:#eef3f9;border-radius:4px;padding:10px 14px;margin-bottom:12px;color:var(--navy)}
+.acts{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}.sec{margin:18px 0 8px;font-size:16px;color:var(--navy)}
+.kv{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px 22px;margin-bottom:6px;text-align:left}.kv dt{font-size:13px;color:var(--muted)}.kv dd{font-weight:600;overflow-wrap:anywhere}
+.rcpt{text-align:center;padding:6px 0 4px}.rcpt .big{font-family:var(--font-head);font-size:34px;color:var(--navy);font-weight:700;margin:6px 0}.rcpt .tick{width:54px;height:54px;border-radius:50%;background:#e4f3ea;color:#2f7d4f;font-size:30px;line-height:54px;margin:0 auto 6px}
+.quote{background:#f4f7fb;border-radius:4px;padding:10px 14px;margin-bottom:16px;color:var(--navy)}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:16px}@media(max-width:700px){.cols{grid-template-columns:1fr}}
+dialog{border:0;padding:0;border-radius:6px;width:min(660px,calc(100vw - 24px));max-height:calc(100vh - 48px);box-shadow:0 24px 60px rgba(9,22,40,.35);color:var(--text);font:inherit;overflow:hidden;margin:auto}
+dialog[open]{display:flex;flex-direction:column}dialog.wide{width:min(900px,calc(100vw - 24px))}dialog::backdrop{background:rgba(9,22,40,.55)}
+dialog>header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:16px 22px;border-bottom:1px solid var(--line);background:#f4f7fb}dialog>header h3{font-size:19px}dialog>header p{color:var(--muted);margin-top:2px}
+.x{font:inherit;font-size:22px;line-height:1;width:36px;height:36px;border:1px solid var(--line);border-radius:4px;background:#fff;cursor:pointer;color:var(--navy);flex-shrink:0}.x:hover{background:#eef3f9}
+#dlg-b{padding:20px 22px 6px;overflow:auto}#dlg-e{padding:0 22px 14px}#dlg-e .alert{margin:0}
+dialog>footer{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:10px;padding:14px 22px;border-top:1px solid var(--line);background:#f4f7fb}
+@media print{body>*:not(dialog){display:none!important}dialog{position:static!important;box-shadow:none!important;width:auto!important;max-height:none!important}dialog>footer,.x{display:none!important}}
 
-export function firebaseBackend({ db, app }) {
-  const storage = getStorage(app), COL = 'draftDocs'; let pool = null, poolAt = 0;
-  const path = (id, file) => `${COL}/${id}/${file}`;
-  const data = s => s.exists() ? { id: s.id, ...s.data() } : null;
-  return {
-    async create(meta) { const r = doc(collection(db, COL)); await setDoc(r, { ...meta, createdAt: serverTimestamp(), updatedAt: serverTimestamp() }); return r.id; },
-    async get(id) { return data(await getDoc(doc(db, COL, id))); },
-    subscribe(id, cb, err) { return onSnapshot(doc(db, COL, id), s => cb(data(s)), err); },
-    async putFile(id, file, text) { await uploadString(ref(storage, path(id, file)), text, 'raw', { contentType: 'text/markdown' }); },
-    async getFile(id, file) { return new TextDecoder().decode(await getBytes(ref(storage, path(id, file)), 4 * 1024 * 1024)); },
-    async delFile(id, file) { await deleteObject(ref(storage, path(id, file))); },
-    /* Saves only if nobody else saved since baseRev. */
-    async commit(id, baseRev, patch) {
-      const r = doc(db, COL, id);
-      return runTransaction(db, async tx => {
-        const s = await tx.get(r); if (!s.exists()) throw new Error('This document no longer exists.');
-        const d = s.data(); if ((d.rev || 0) !== baseRev) return { ok: false, meta: { id, ...d } };
-        tx.update(r, { ...patch, rev: baseRev + 1, updatedAt: serverTimestamp() });
-        return { ok: true, rev: baseRev + 1, prevFile: d.file || null };
-      });
-    },
-    async update(id, patch) { await updateDoc(doc(db, COL, id), patch); },
-    list(uid, cb, err) { return onSnapshot(query(collection(db, COL), where('members', 'array-contains', uid)), s => cb(s.docs.map(d => ({ id: d.id, ...d.data() }))), err); },
-    async remove(id) {
-      const m = data(await getDoc(doc(db, COL, id)));
-      if (m?.file) await deleteObject(ref(storage, path(id, m.file))).catch(() => { });
-      await deleteDoc(doc(db, COL, id));
-    },
-    async registerSelf({ uid, name, email, role }) {
-      if (!uid || !name) return;
-      await setDoc(doc(db, 'accountDirectory', uid), { uid, name, nameLower: name.trim().toLowerCase(), email: email || '', emailLower: (email || '').trim().toLowerCase(), role: role || '' }, { merge: true });
-    },
-    /* The person's favorite fonts follow them across devices (kept on their own directory entry). */
-    async getFavs(uid) { try { const s = await getDoc(doc(db, 'accountDirectory', uid)); return s.exists() && Array.isArray(s.data().fontFavs) ? s.data().fontFavs : []; } catch (e) { console.warn('Favorites unavailable', e); return null; } },
-    async setFavs(uid, list) { await setDoc(doc(db, 'accountDirectory', uid), { fontFavs: list }, { merge: true }); },
-    /* Document builder settings (default fonts, and so on) follow the person across devices. */
-    async getSettings(uid) { try { const s = await getDoc(doc(db, 'accountDirectory', uid)); return s.exists() && s.data().builderSettings ? s.data().builderSettings : null; } catch (e) { console.warn('Settings unavailable', e); return null; } },
-    async getPleadingSettings(uid) { try { const s = await getDoc(doc(db, 'accountDirectory', uid)); return s.exists() && s.data().pleadingSettings ? s.data().pleadingSettings : null; } catch (e) { console.warn('Pleading settings unavailable', e); return null; } },
-    async setPleadingSettings(uid, v) { await setDoc(doc(db, 'accountDirectory', uid), { pleadingSettings: v }, { merge: true }); },
-    async setSettings(uid, v) { await setDoc(doc(db, 'accountDirectory', uid), { builderSettings: v }, { merge: true }); },
-    /* Cases that a document can be attached to (read once, kept in memory). */
-    async cases() {
-      if (this._cases) return this._cases;
-      const out = [];
-      for (const c of ['cases', 'mscCases']) { try { (await getDocs(collection(db, c))).docs.forEach(d => out.push({ ...d.data(), _id: d.id, _col: c })); } catch (e) { console.warn(c + ' unavailable', e); } }
-      return this._cases = out;
-    },
-    /* Type-ahead: accounts whose name or email matches what was typed so far. The account list is read once and
-       kept for a minute, so each keystroke is answered from memory. Only name, email, role and uid are used. */
-    async search(text, limit = 8) {
-      const q = String(text || '').trim().toLowerCase(); if (q.length < 1) return [];
-      if (!pool || Date.now() - poolAt > 60000) {
-        const m = new Map(), add = (id, d) => { const e = { uid: id, name: (d.name || '').trim(), email: (d.email || '').trim(), role: d.role || '' }; if (e.name || e.email) m.set(id, { ...(m.get(id) || {}), ...e }); };
-        try { (await getDocs(collection(db, 'accounts'))).docs.forEach(d => add(d.id, d.data())); } catch (e) { console.warn('Accounts unavailable', e); }
-        try { (await getDocs(collection(db, 'accountDirectory'))).docs.forEach(d => { if (!m.has(d.id)) add(d.id, d.data()); }); } catch (e) { console.warn('Directory unavailable', e); }
-        pool = [...m.values()]; poolAt = Date.now();
-      }
-      const score = p => { const n = p.name.toLowerCase(), e = p.email.toLowerCase();
-        if (n === q || e === q) return 0; if (n.startsWith(q)) return 1; if (n.split(/\s+/).some(w => w.startsWith(q))) return 2; if (e.startsWith(q)) return 3; if (n.includes(q)) return 4; if (e.includes(q)) return 5; return 9; };
-      return pool.map(p => [score(p), p]).filter(x => x[0] < 9).sort((a, b) => a[0] - b[0] || a[1].name.localeCompare(b[1].name)).slice(0, limit).map(x => x[1]);
-    },
-    /* Exact full name or exact email. */
-    async find(text) {
-      const q = text.trim(), key = q.toLowerCase(), byMail = key.includes('@'), out = new Map();
-      const add = (id, d) => out.set(id, { uid: id, name: d.name || '', email: d.email || '', role: d.role || '' });
-      try { (await getDocs(query(collection(db, 'accountDirectory'), where(byMail ? 'emailLower' : 'nameLower', '==', key)))).docs.forEach(d => add(d.id, d.data())); } catch (e) { console.warn('Directory unavailable', e); }
-      if (!out.size) { try { (await getDocs(query(collection(db, 'accounts'), where(byMail ? 'email' : 'name', '==', byMail ? key : q)))).docs.forEach(d => add(d.id, d.data())); } catch (e) { console.warn('Accounts unavailable', e); } }
-      return [...out.values()];
-    }
+.fd-lib{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
+.fd-item{display:flex;flex-direction:column;gap:6px;padding:16px;border:1px solid var(--line,#d9dee7);border-radius:10px;background:#fff;text-decoration:none;color:inherit}
+.fd-item:hover{border-color:#1f3a68;box-shadow:0 2px 8px rgba(20,40,80,.12)}
+.fd-item b{font-size:15px}.fd-item .n{font-size:12px;font-weight:600;color:#1f3a68;letter-spacing:.04em}.fd-item p{margin:0;font-size:13px;color:#566}
+.fd-grp{font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:#667;margin:18px 0 8px}
+.fd-top{display:flex;gap:10px;align-items:center;margin-bottom:12px;flex-wrap:wrap}
+.fd-wrap{display:flex;gap:14px;align-items:stretch;min-height:480px}
+.fd-panel{width:400px;flex:none;overflow-y:auto;overscroll-behavior:contain;background:#fff;border:1px solid #d9dee7;border-radius:10px;padding:16px;font-size:13px}
+.fd-panel h3{margin:0 0 4px;font-size:16px}.fd-hint{color:#667;font-size:12px;font-weight:400}
+.fd-panel h2{font-size:12px;text-transform:uppercase;letter-spacing:.05em;margin:22px 0 8px;color:#345;border-bottom:1px solid #dde;padding:0 0 4px}
+.fd-panel label{display:block;font-size:12px;line-height:1.25;font-weight:600;color:#445;margin:10px 0 4px}
+.fd-panel input[type=text],.fd-panel textarea,.fd-panel select{display:block;width:100%;box-sizing:border-box;height:34px;padding:6px 8px;border:1px solid #b9c2cf;border-radius:6px;background:#fff;color:#1a2233;font-size:13px;font-family:inherit;line-height:1.3}
+.fd-panel textarea{height:auto;resize:vertical}
+.fd-panel input:focus,.fd-panel textarea:focus,.fd-panel select:focus{outline:2px solid #1f3a68;outline-offset:0;border-color:#1f3a68}
+.fd-panel select{appearance:auto}
+.fd-panel .row{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:start}
+.fd-panel .row>div{min-width:0}.fd-panel .row.r3{grid-template-columns:1fr 1fr 1fr}
+.fd-panel .chk{display:flex;gap:8px;align-items:flex-start;font-size:13px;font-weight:400;color:#222;margin:6px 0}.fd-panel .chk input{margin:2px 0 0;flex:none}
+.fd-panel .cnt{border:1px solid #dde;border-radius:8px;padding:8px 10px 10px;margin-bottom:10px;background:#fafbfd}
+.fd-panel .cnt .top{display:flex;justify-content:space-between;align-items:center;font-size:12px}
+.fd-panel .cnt .rm{background:none;color:#b33;border:0;padding:0;font-size:12px;cursor:pointer}
+.fd-fx{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
+.fd-fx .fd-fp{flex:1 1 100%;display:flex;align-items:center;justify-content:space-between;gap:8px;height:30px;padding:0 9px;border:1px solid #b9c2cf;border-radius:6px;background:#fff;color:#1a2233;font-size:14px;cursor:pointer;text-align:left;min-width:0}
+.fd-fx .fd-fp:hover{border-color:#1f3a68}.fd-fx .fd-fp[aria-expanded=true]{border-color:#1f3a68;box-shadow:0 0 0 2px rgba(31,58,104,.18)}
+.fd-fpn{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.fd-panel .fd-fx select{flex:1 1 40%;min-width:0;height:26px;padding:0 4px;font-size:12px;color:#445}.fd-panel .fd-fx select:disabled{opacity:.55}
+.fd-fx button.fd-fb,.fd-fx button.fd-fi{flex:none;width:26px;height:26px;padding:0;border:1px solid #b9c2cf;border-radius:6px;background:#fff;color:#334;font-size:12px;cursor:pointer;line-height:1}
+.fd-fx button[aria-pressed=true]{background:#1f3a68;border-color:#1f3a68;color:#fff}
+.fd-dfl{margin:14px 0 0;border:1px solid #d9dee7;border-radius:8px;background:#f5f7fb;padding:0}.fd-dfl>summary{cursor:pointer;padding:10px 12px;font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#345}
+.fd-dfl[open]>summary{border-bottom:1px solid #dde}.fd-dfl>.fd-hint{display:block;padding:8px 12px 0}.fd-dr{padding:8px 12px 10px}.fd-dr>b{font-size:13px;color:#223}.fd-dr>small{font-size:12px;color:#667}
+.fd-roles{margin:14px 0 0;padding:10px 12px;border:1px solid #d9dee7;border-radius:8px;background:#f5f7fb}.fd-roles>b{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:#345;display:block}
+.fd-btns{position:sticky;bottom:-16px;background:#fff;padding:12px 0 16px;display:flex;flex-wrap:wrap;gap:8px;border-top:1px solid #dde;margin-top:18px}
+.fd-btns .btn{flex:1 1 46%}.fd-msg{display:block;min-height:16px;margin-top:2px;font-size:12px}
+.fd-view{flex:1;min-width:0}.fd-frame{width:100%;height:100%;border:1px solid #d9dee7;border-radius:10px;background:#e9ebee;display:block}
+@media(max-width:900px){.fd-wrap{flex-direction:column;height:auto!important}.fd-panel{width:100%;max-height:70vh}.fd-view{height:85vh}}
+.fd-tools{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:10px 0 2px}
+.fd-keys{flex:1 0 100%;font-size:12px;color:#445}.fd-keys summary{cursor:pointer;color:#1f3a68;font-weight:600}
+.fd-keys dl{display:grid;grid-template-columns:auto 1fr;gap:3px 12px;margin:8px 0}.fd-keys dt{font-weight:600;white-space:nowrap}.fd-keys dd{margin:0}
+.fd-tools .btn[disabled]{opacity:.45;cursor:default}
+.fd-fs0{border:0;margin:0;padding:0;min-width:0}
+.fd-status{margin:14px 0 0;font-size:12px;color:#556;min-height:16px}.fd-status[data-k=ok]{color:#287a3e}.fd-status[data-k=busy]{color:#8a6d00}.fd-status[data-k=bad]{color:#b33}
+.fd-people{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:12px;color:#556;margin-top:4px}.fd-people:empty{display:none}
+.fd-ph{font-weight:600}.fd-chip{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:#1f3a68;color:#fff;font-size:11px;font-weight:700}.fd-pn{color:#667}
+.fd-btns{display:grid;grid-template-columns:1fr 1fr;gap:8px}.fd-btns .btn{width:100%}
+.fd-dl{position:relative}.fd-menu{position:absolute;bottom:calc(100% + 4px);left:0;right:0;z-index:5;background:#fff;border:1px solid #cfd6e2;border-radius:8px;box-shadow:0 6px 18px rgba(20,40,80,.18);padding:4px;display:flex;flex-direction:column}
+.fd-menu[hidden]{display:none}.fd-menu button{border:0;background:none;text-align:left;padding:8px 10px;border-radius:6px;font-size:13px;cursor:pointer;color:#223}.fd-menu button:hover{background:#eef2f9}
+.fd-title{flex:1;min-width:180px;max-width:520px;height:34px;padding:6px 10px;border:1px solid #b9c2cf;border-radius:6px;font-size:15px;font-weight:600;font-family:inherit}
+.fd-doc{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid #e3e7ee}.fd-doc:first-child{border-top:0}
+.fd-doc a{flex:1;min-width:0;text-decoration:none;color:inherit;display:flex;flex-direction:column;gap:2px}.fd-doc a:hover b{text-decoration:underline}.fd-doc span{font-size:12px;color:#667}
+.sh{display:flex;flex-direction:column;gap:10px;min-width:min(520px,80vw)}.sh-row{display:flex;gap:8px}.sh-row input{flex:1;min-width:0}.sh input[type=text],.sh select{height:36px;padding:6px 8px;border:1px solid #b9c2cf;border-radius:6px;font-size:13px;font-family:inherit}
+.sh-list{list-style:none;margin:6px 0 0;padding:0}.sh-p{display:flex;align-items:center;gap:8px;padding:8px 0;border-top:1px solid #e3e7ee}.sh-p>span:first-child{flex:1}.sh-found{display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+.fd-bar{position:sticky;top:0;z-index:20;background:var(--bg,#e3e9f2);padding:8px 0;margin-top:-8px}
+.fd-back{display:inline-flex;align-items:center;gap:4px;height:36px;padding:0 14px 0 8px;border:1px solid var(--navy,#10264a);border-radius:6px;background:#fff;color:var(--navy,#10264a);font-weight:600;font-size:14px;text-decoration:none;white-space:nowrap}
+.fd-back:hover{background:var(--navy,#10264a);color:#fff}.fd-back:focus-visible{outline:3px solid #7fa9e6;outline-offset:2px}.fd-back svg{flex:none}
+dialog.cdlg{width:min(440px,calc(100vw - 24px))}
+.cdlg .cb{padding:22px 24px 10px}.cdlg h3{font-size:19px;margin:0 0 8px;color:var(--navy,#10264a)}.cdlg p{margin:0;color:var(--text,#1b2433);line-height:1.5;font-size:14.5px}
+.btn.danger{background:#a82424;border-color:#a82424;color:#fff}.btn.danger:hover{background:#8c1c1c;border-color:#8c1c1c}
+.sh-box{position:relative;flex:1;min-width:0}.sh-box input{width:100%;box-sizing:border-box}
+.sh-sg{position:absolute;left:0;right:0;top:calc(100% + 4px);z-index:30;max-height:290px;overflow-y:auto;background:#fff;border:1px solid #b9c2cf;border-radius:8px;box-shadow:0 12px 30px rgba(9,22,40,.25);padding:4px}
+.sh-sg[hidden]{display:none}
+.sg-i{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:6px;cursor:pointer}
+.sg-i[aria-selected=true],.sg-i:hover{background:#e8eef8}
+.sg-av{flex:none;width:32px;height:32px;border-radius:50%;background:var(--navy,#10264a);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.sg-t{display:flex;flex-direction:column;min-width:0}.sg-t b{font-size:14px;color:var(--navy,#10264a);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.sg-t small{font-size:12px;color:var(--muted,#5a667a);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sg-m{display:flex;align-items:center;gap:8px;padding:12px;font-size:13px;color:var(--muted,#5a667a)}
+#dlg-b:has(.sh-sg:not([hidden])){min-height:380px}
+.sh-f{display:block}
+.sh-row{align-items:flex-start}.sh-row>select{flex:0 0 130px;width:130px}.sh-box{flex:1 1 0;width:auto}
+.sh-row>select#sh-role{height:36px}
+.sh-box input#sh-q{display:block;width:100%;min-width:0;flex:none}
+.fd-case{border:1px solid #d9dee7;border-radius:8px;background:#f7f9fc;padding:10px 12px;margin:12px 0 4px}.fd-case>b{display:block;font-size:12px;color:#445;margin-bottom:4px}
+.fd-cv{font-size:14px;display:flex;flex-direction:column;gap:2px;margin-bottom:8px}.fd-cv b{font-size:15px}.fd-cv span{color:#445}.fd-cv .m{color:#667}
+.fd-cbt{display:flex;gap:8px;flex-wrap:wrap}.fd-cbt [hidden]{display:none}
+.fd-warn{margin:10px 0;padding:10px 12px;border:1px solid #e0b04a;background:#fff6df;color:#5c3d08;border-radius:8px;font-size:13px;line-height:1.45}.fd-warn[hidden]{display:none}
+.st-r{display:grid;grid-template-columns:minmax(150px,1fr) minmax(170px,1fr) 110px minmax(110px,1fr);gap:10px;align-items:center;padding:10px 0;border-top:1px solid #e3e7ee}.st-r:first-of-type{border-top:0}
+.st-r select{height:34px;border:1px solid #b9c2cf;border-radius:6px;padding:0 8px;font:inherit;background:#fff;min-width:0}.st-t small{display:block}.st-p{font-size:22px;line-height:1.2;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.st-chip{display:inline-flex;align-items:center;gap:6px;border:1px solid #c5cdda;border-radius:999px;padding:3px 6px 3px 12px;margin:0 8px 8px 0;font-size:18px;background:#fff}.st-chip button{border:0;background:#e8edf5;border-radius:50%;width:22px;height:22px;cursor:pointer;font-size:14px;line-height:1}
+.cs-l{display:flex;flex-direction:column;gap:6px;margin-top:10px;max-height:46vh;overflow:auto}.cs-i{text-align:left;border:1px solid #d3d9e3;background:#fff;border-radius:8px;padding:9px 12px;cursor:pointer;font:inherit}.cs-i:hover,.cs-i:focus-visible{border-color:#1f3a68;background:#f3f6fb}.cs-i b{display:block}.cs-i small{color:#556}
+@media(max-width:760px){.st-r{grid-template-columns:1fr 1fr}.st-t{grid-column:1/-1}.st-p{grid-column:1/-1}}
+</style>
+</head>
+<body>
+<aside class="sidebar" id="sidebar-root" aria-label="Portal navigation"></aside>
+<div class="scrim" id="scrim" hidden></div>
+<div class="main">
+  <header class="topbar">
+    <div class="topbar-left">
+      <button class="menu-btn" id="menu-btn" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="sidebar-root"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+      <div><span class="topbar-eyebrow">Online Portal</span><span class="topbar-page-title" id="topbar-title">Document Drafting</span></div>
+    </div>
+    <div class="topbar-right"><span class="topbar-date" id="topbar-date"></span><div class="notif-wrap" id="notif-root"></div></div>
+  </header>
+  <main class="page-body">
+    <div class="page-head"><div><h2 id="page-title">Document Drafting</h2><p id="page-subtitle"></p></div><div id="page-action"></div></div>
+    <div id="page-body"><div class="loading-inline"><span class="spin-sm"></span>Loading…</div></div>
+  </main>
+</div>
+<dialog id="dlg" aria-labelledby="dlg-t">
+  <header><div><h3 id="dlg-t"></h3><p id="dlg-w"></p></div><button class="x" type="button" aria-label="Close" data-close>×</button></header>
+  <div id="dlg-b"></div><div id="dlg-e"></div><footer id="dlg-f"></footer>
+</dialog>
+<div class="auth-loading-overlay" id="auth-overlay" role="status"><div class="alo-title">Online Portal</div><div class="spin"></div><div>Verifying your session…</div></div>
+
+<script type="module">
+import { boot, db, app, $, esc } from '/courts/online-services/portal/dashboard/assets/js/portal-shell.js?v=7';
+import { FORMS, byId, byNumber } from '/courts/online-services/portal/dashboard/assets/forms/registry.js?v=3';
+import { mountForm, formOf, fontAllowed, fontFits, fontLock, fontCss, GFONTS, FONT_TYPES, FONT_WARNING } from '/courts/online-services/portal/dashboard/assets/forms/engine.js?v=10';
+import { DraftSession, accessOf, roleIn } from '/courts/online-services/portal/dashboard/assets/forms/drafts.js?v=1';
+import { firebaseBackend } from '/courts/online-services/portal/dashboard/assets/forms/backend.js?v=5';
+const { account, role, user } = await boot({ id: 'drafting', title: 'Document Drafting', subtitle: 'Prepare court forms. They save automatically, and you can share them to work on together.' });
+const root = $('page-body'), BASE = 'https://migovt.org/courts/online-services/portal/dashboard/document-drafting/', FORMS_PATH = '/courts/online-services/portal/dashboard/assets/forms/';
+const uid = account.uid, myName = (account.name || user?.email || 'Someone').trim(), be = firebaseBackend({ db, app });
+be.registerSelf({ uid, name: myName, email: user?.email || account.email || '', role }).catch(e => console.warn('Directory entry not saved', e));
+let settings = null, favCache = null, lastHash = location.hash, cur = null, unList = null, pendingMd = null, gen = 0;
+const SET_KEY = 'fd-settings';
+const loadSettings = async () => { let v = await be.getSettings(uid); if (!v) { try { v = JSON.parse(localStorage.getItem(SET_KEY) || 'null'); } catch { v = null; } } settings = v; };
+await loadSettings();
+const when = t => { const d = t?.toDate ? t.toDate() : t ? new Date(t) : null; return d && !isNaN(d) ? d.toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' }) : ''; };
+const secs = t => (t?.toDate ? t.toDate() : t ? new Date(t) : new Date(0)).getTime();
+const notice = (m, bad = true) => `<section class="card"><div class="${bad ? 'alert' : 'note'}" role="${bad ? 'alert' : 'status'}">${esc(m)}</div><p><a class="fd-back" href="${BASE}#"><svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true"><path d="M12.5 4 6.5 10l6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>All documents</a></p></section>`;
+
+/* ---------- portal-styled popups (replace the browser's confirm / alert) ---------- */
+const cd = document.createElement('dialog'); cd.id = 'dlg-c'; cd.className = 'cdlg'; cd.setAttribute('aria-labelledby', 'cdlg-t'); cd.setAttribute('aria-describedby', 'cdlg-m');
+cd.innerHTML = '<div class="cb"><h3 id="cdlg-t"></h3><p id="cdlg-m"></p></div><footer><button class="btn outline" type="button" data-v="0" id="cdlg-no"></button><button class="btn" type="button" data-v="1" id="cdlg-yes"></button></footer>';
+document.body.appendChild(cd); let cdDone = null;
+cd.addEventListener('click', e => { const b = e.target.closest('[data-v]'); if (b) cd.close(b.dataset.v); else if (e.target === cd && !cd.classList.contains('must')) cd.close('0'); });
+cd.addEventListener('cancel', e => { if (cd.classList.contains('must')) e.preventDefault(); });
+cd.addEventListener('close', () => { const f = cdDone; cdDone = null; f?.(cd.returnValue === '1'); cd.returnValue = ''; });
+/* ask({title, message, ok, cancel, danger, info}) resolves true when the OK button is pressed. info:true shows only one button. */
+function ask({ title, message, ok = 'OK', cancel = 'Cancel', danger = false, info = false }) {
+  return new Promise(res => {
+    if (cdDone) { cd.close('0'); }
+    cdDone = res; $('cdlg-t').textContent = title; $('cdlg-m').textContent = message;
+    const yes = $('cdlg-yes'), no = $('cdlg-no'); yes.textContent = ok; no.textContent = cancel; no.hidden = info; yes.className = 'btn' + (danger ? ' danger' : '');
+    cd.showModal(); (danger ? no : yes).focus();
+  });
+}
+
+/* ---------- leaving the page / switching documents ---------- */
+window.addEventListener('beforeunload', e => { const s = cur?.session; if (s && (s.hasPending() || s.isDirty())) { e.preventDefault(); e.returnValue = ''; } });
+document.addEventListener('visibilitychange', () => { if (document.hidden) cur?.session?.flush().catch(() => { }); });
+addEventListener('pagehide', () => cur?.session?.flush().catch(() => { }));
+async function closeCurrent() {
+  if (!cur) return true; const { session, engine } = cur;
+  if (session) { await session.flush().catch(() => { }); if (session.isDirty() && !(await ask({ title: 'Changes not saved', message: 'Your latest changes could not be saved. If you leave now they will be lost.', ok: 'Leave anyway', cancel: 'Stay here', danger: true }))) return false; session.close(); }
+  engine?.destroy(); cur = null; return true;
+}
+
+/* ---------- library ---------- */
+function library(msg = '') {
+  root.innerHTML = `<section class="card"><div class="fd-top"><h3 style="margin:0;flex:1">Start a form</h3><a class="btn outline" href="${BASE}#settings">Settings</a><button class="btn outline" type="button" id="fd-open">Open a .md file</button><input type="file" id="fd-file" accept=".md,.markdown,.txt,text/markdown,text/plain" hidden></div>
+    <div id="fd-msg" role="alert" style="color:#b33;font-size:13px;min-height:16px">${esc(msg)}</div>
+    ${[...new Set(FORMS.map(f => f.group))].map(g => `<div class="fd-grp">${esc(g)}</div><div class="fd-lib">${FORMS.filter(f => f.group === g).map(f => `<a class="fd-item" href="${BASE}#${f.id}" data-id="${f.id}"><span class="n">${esc(f.number)}</span><b>${esc(f.title)}</b><p>${esc(f.summary || '')}</p></a>`).join('')}</div>`).join('')}</section>
+    <section class="card"><h3>My documents</h3><div id="fd-mine"><div class="loading-inline"><span class="spin-sm"></span>Loading…</div></div></section>
+    <section class="card"><h3>Shared with me</h3><div id="fd-shared"></div></section>`;
+  $('fd-open').onclick = () => $('fd-file').click();
+  $('fd-file').onchange = async e => {
+    const f = e.target.files[0]; if (!f) return; const t = await f.text(), n = formOf(t), form = n && byNumber(n);
+    if (!form) { $('fd-msg').textContent = n ? `This file is for form "${n}", which is not available here.` : 'We could not tell which form this file is for. Saved files start with "form: <number>".'; return; }
+    pendingMd = t; location.hash = form.id;
+  };
+  const row = d => { const r = roleIn(d, uid), f = byId(d.formId), label = r === 'owner' ? 'Owner' : accessOf(d, uid) === 'edit' ? 'Can edit' : 'Can view';
+    return `<div class="fd-doc"><a href="${BASE}#d/${esc(d.id)}"><b>${esc(d.title || 'Untitled')}</b><span>${esc(f?.number || d.formId)} · Updated ${esc(when(d.updatedAt))}${d.updatedByName ? ' by ' + esc(d.updatedByName) : ''}${r !== 'owner' ? ' · Owner ' + esc(d.ownerName || '') : ''}</span></a><span class="pill ${r === 'owner' ? 'live' : 'mid'}">${label}</span>${r === 'owner' ? `<button class="btn outline sm" type="button" data-del="${esc(d.id)}" data-t="${esc(d.title || 'Untitled')}">Delete</button>` : ''}</div>`; };
+  unList = be.list(uid, docs => {
+    const sorted = docs.slice().sort((a, b) => secs(b.updatedAt) - secs(a.updatedAt)), mine = sorted.filter(d => d.ownerUid === uid), shared = sorted.filter(d => d.ownerUid !== uid);
+    $('fd-mine').innerHTML = mine.length ? mine.map(row).join('') : '<p class="m">Nothing saved yet. Start a form above. It saves as you type.</p>';
+    $('fd-shared').innerHTML = shared.length ? shared.map(row).join('') : '<p class="m">Documents other people share with you appear here.</p>';
+  }, e => { console.error(e); $('fd-mine').innerHTML = '<div class="alert" role="alert">We could not load your documents. Check your connection and try again.</div>'; });
+  root.onclick = async e => {
+    const b = e.target.closest('[data-del]'); if (!b) return;
+    if (!(await ask({ title: 'Delete this document?', message: `"${b.dataset.t}" will be deleted for you and for everyone it is shared with. This cannot be undone.`, ok: 'Delete', cancel: 'Keep it', danger: true }))) return;
+    try { await be.remove(b.dataset.del); } catch (er) { console.error(er); ask({ title: 'Could not delete', message: 'We could not delete that document. Check your connection and try again.', ok: 'Close', info: true }); }
   };
 }
+
+/* ---------- editor ---------- */
+async function editor({ form, docId, md0 }) {
+  const my = ++gen; let meta = null, text = null, access = 'edit';
+  root.innerHTML = `<div class="loading-inline"><span class="spin-sm"></span>Opening…</div>`;
+  try {
+    if (docId) {
+      meta = await be.get(docId);
+      if (!meta) { root.innerHTML = notice('That document was not found. It may have been deleted.'); return; }
+      access = accessOf(meta, uid); form = byId(meta.formId);
+      if (!access || !form) { root.innerHTML = notice('You do not have access to this document. Ask the owner to share it with you.'); return; }
+      if (meta.file) text = await be.getFile(docId, meta.file);
+      if (!(meta.members || []).includes(uid) && meta.linkAccess !== 'none') {   // opened by link: add it to "Shared with me"
+        be.update(docId, { members: [...(meta.members || []), uid], roles: { ...(meta.roles || {}), [uid]: meta.linkAccess }, names: { ...(meta.names || {}), [uid]: myName } }).catch(() => { });
+      }
+    }
+  } catch (e) {
+    console.error(e); root.innerHTML = notice(e?.code === 'permission-denied' || e?.code === 'storage/unauthorized' ? 'You do not have access to this document. Ask the owner to share it with you.' : 'We could not open this document. Check your connection and try again.'); return;
+  }
+  if (my !== gen) return;
+  const canEdit = access === 'edit', title0 = meta?.title || `${form.number} – ${new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
+  root.innerHTML = `<div class="fd-top fd-bar"><a class="fd-back" href="${BASE}#" id="fd-back"><svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true"><path d="M12.5 4 6.5 10l6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>All documents</a><input id="fd-title" class="fd-title" type="text" maxlength="120" aria-label="Document name" value="${esc(title0)}"${canEdit ? '' : ' readonly'}><span class="m">${esc(form.number)}${canEdit ? '' : ' · View only'}</span></div><div id="fd-host"><div class="loading-inline"><span class="spin-sm"></span>Loading form…</div></div>`;
+  try {
+    const def = (await import(`${FORMS_PATH}${form.id}.js?v=10`)).default; if (my !== gen) return;
+    let session = null;
+    if (favCache === null) { favCache = await be.getFavs(uid); if (favCache === null) { try { favCache = JSON.parse(localStorage.getItem('fd-font-favs') || '[]'); } catch { favCache = []; } } if (my !== gen) return; }
+    const engine = await mountForm(def, $('fd-host'), { account, role, favs: favCache, onFavs: l => { favCache = l; try { localStorage.setItem('fd-font-favs', JSON.stringify(l)); } catch { } be.setFavs(uid, l).catch(e => console.warn('Favorites not saved', e)); }, md: text ?? md0, readOnly: !canEdit, actions: canEdit ? ['save', 'share', 'file'] : ['share'], onEdit: () => session?.touch(),
+      onFontNotice: () => ask({ title: 'Keep your text readable', message: FONT_WARNING, ok: 'I understand', info: true }),
+      onAction: a => a === 'save' ? session.save(true) : a === 'share' ? openShare() : fileIt(def) });
+    if (my !== gen) { engine.destroy(); return; }
+    if (!docId && !md0 && settings?.fonts) {   // a brand new document starts with the person's own default fonts
+      const m = {}; Object.entries({ body: '~body', date: '~date', sig: '~sig' }).forEach(([k, id]) => { const v = settings.fonts[k]; if (v?.f && fontAllowed(v.f, role, k) && fontFits(def, v.f, k)) m[id] = { f: v.f, s: +v.s || 0 }; });
+      if (Object.keys(m).length) { engine.api.setStyles(m); engine.api.render(); }
+    }
+    if (!docId && !md0 && form.id.startsWith('plead')) {   // pleading defaults from Account Settings
+      const ps = await be.getPleadingSettings(uid); if (my !== gen) { engine.destroy(); return; }
+      if (ps) { const A = engine.api; ['tplace', 'spacing', 'ct1', 'ct2', 'closing'].forEach(k => { if (ps[k] && A.$(k)) A.$(k).value = ps[k]; }); A.render(); }
+    }
+    const adapter = { getMd: engine.getMd, stateFromMd: engine.stateFromMd, curState: engine.curState, applyState: engine.applyState, setPeople: engine.setPeople };
+    session = new DraftSession({
+      backend: be, adapter, uid, name: myName, formId: form.id, title: title0, docId, meta,
+      onStatus: (t, k) => engine.setStatus(t, k),
+      onConflict: (c, who) => engine.api.note(`${who} changed something you were also editing. Your version was kept.`, true),
+      onCreated: id => { history.replaceState(null, '', BASE + (lastHash = '#d/' + id)); },
+      onMeta: m => {
+        if (!m) { root.innerHTML = notice('This document was deleted.'); return; }
+        const t = $('fd-title'); if (t && document.activeElement !== t && m.title && t.value !== m.title) { t.value = m.title; session.title = m.title; }
+        if (accessOf(m, uid) !== access) { location.reload(); }
+        if (sharing) renderShare();
+      }
+    });
+    cur = { session, engine, form };
+    $('fd-back').onclick = e => { e.preventDefault(); if (location.hash && location.hash !== '#') location.hash = ''; else route(); };
+    session.attach({ save: !docId && !!md0 });
+    if (!canEdit) engine.setStatus('You can view this document. Changes by others appear here as they happen.', '');
+    let tt = 0; $('fd-title').addEventListener('input', e => { clearTimeout(tt); tt = setTimeout(() => session.setTitle(e.target.value.trim() || title0), 500); });
+
+  } catch (e) { console.error(e); if (my === gen) $('fd-host').innerHTML = '<div class="alert" role="alert">We could not load this form. Refresh the page and try again.</div>'; }
+}
+
+/* ---------- sharing ---------- */
+const dlg = $('dlg'); let sharing = false, found = [], shareMsg = null;
+const shareUrl = () => `${BASE}#d/${cur.session.docId}`;
+async function openShare() {
+  const s = cur?.session; if (!s) return;
+  if (!s.docId) { await s.save(true); if (!s.docId) { cur.engine.api.note('Could not save this document yet, so it cannot be shared. Try again in a moment.', true); return; } }
+  sharing = true; found = []; shareMsg = null; renderShare(); if (!dlg.open) dlg.showModal();
+}
+function renderShare() {
+  const s = cur?.session; if (!s || !s.meta) return; const m = s.meta, owner = m.ownerUid === uid;
+  const qEl = $('sh-q'), keep = qEl ? { v: qEl.value, f: document.activeElement === qEl, a: qEl.selectionStart, b: qEl.selectionEnd, r: $('sh-role')?.value } : null;
+  $('dlg-t').textContent = 'Share'; $('dlg-w').textContent = m.title || 'Untitled';
+  const people = (m.members || []).map(u => { const nm = m.names?.[u] || 'Unknown', r = m.ownerUid === u ? 'owner' : m.roles?.[u] || 'view';
+    return `<li class="sh-p"><span><b>${esc(nm)}</b>${u === uid ? ' <small class="m">(you)</small>' : ''}</span>${r === 'owner' ? '<span class="m">Owner</span>' : owner ? `<select data-role="${esc(u)}" aria-label="Access for ${esc(nm)}"><option value="edit"${r === 'edit' ? ' selected' : ''}>Can edit</option><option value="view"${r === 'view' ? ' selected' : ''}>Can view</option></select><button class="btn outline sm" type="button" data-a="remove" data-uid="${esc(u)}">Remove</button>` : `<span class="m">${r === 'edit' ? 'Can edit' : 'Can view'}</span>`}</li>`; }).join('');
+  $('dlg-b').innerHTML = `<div class="sh">
+    <label class="f"><span>Anyone signed in with the link</span><select id="sh-link"${owner ? '' : ' disabled'}><option value="none"${m.linkAccess === 'none' ? ' selected' : ''}>Cannot open it (only people added below)</option><option value="view"${m.linkAccess === 'view' ? ' selected' : ''}>Can view</option><option value="edit"${m.linkAccess === 'edit' ? ' selected' : ''}>Can edit</option></select></label>
+    <div class="sh-row"><input id="sh-url" type="text" readonly value="${esc(shareUrl())}" aria-label="Document link"><button class="btn outline" type="button" data-a="copy">Copy link</button></div>
+    ${owner ? `<div class="f"><span id="sh-ql">Add people</span><div class="sh-row"><div class="sh-box"><input id="sh-q" type="text" autocomplete="off" spellcheck="false" placeholder="Start typing a name or email" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="sh-sg" aria-labelledby="sh-ql"><div id="sh-sg" class="sh-sg" role="listbox" hidden></div></div><select id="sh-role" aria-label="Access"><option value="edit">Can edit</option><option value="view">Can view</option></select></div></div>` : '<p class="m">Only the owner can change who this is shared with.</p>'}
+    <ul class="sh-list">${people}</ul></div>`;
+  $('dlg-e').innerHTML = shareMsg ? `<div class="${shareMsg.bad ? 'alert' : 'note'}" role="${shareMsg.bad ? 'alert' : 'status'}">${esc(shareMsg.t)}</div>` : '';
+  $('dlg-f').innerHTML = '<button class="btn outline" type="button" data-close>Done</button>';
+  if (keep && $('sh-q')) { $('sh-q').value = keep.v; if (keep.r) $('sh-role').value = keep.r; if (keep.f) { $('sh-q').focus(); try { $('sh-q').setSelectionRange(keep.a, keep.b); } catch { } } suggest(true); }
+}
+
+/* ---------- type-ahead for adding people ---------- */
+let sg = [], sgi = -1, sgSeq = 0, sgT = 0;
+const initials = n => (n.match(/\b\p{L}/gu) || ['?']).slice(0, 2).join('').toUpperCase();
+const mask = e => e ? e.replace(/^(.{1,2}).*(@.*)$/, '$1•••$2') : '';
+function paintSuggest(state) {
+  const box = $('sh-sg'), q = $('sh-q'); if (!box || !q) return;
+  const open = state !== 'closed'; box.hidden = !open; q.setAttribute('aria-expanded', open ? 'true' : 'false'); if (!open) { q.removeAttribute('aria-activedescendant'); return; }
+  if (state === 'busy') box.innerHTML = '<div class="sg-m"><span class="spin-sm"></span>Searching…</div>';
+  else if (!sg.length) box.innerHTML = '<div class="sg-m">No matching accounts. People who are not listed can still open the link above.</div>';
+  else box.innerHTML = sg.map((p, i) => `<div class="sg-i" role="option" id="sg-${i}" data-i="${i}" aria-selected="${i === sgi}"><span class="sg-av" aria-hidden="true">${esc(initials(p.name || p.email))}</span><span class="sg-t"><b>${esc(p.name || p.email)}</b><small>${esc([p.role, mask(p.email)].filter(Boolean).join(' · '))}</small></span></div>`).join('');
+  if (sgi >= 0 && sg.length) { q.setAttribute('aria-activedescendant', 'sg-' + sgi); $('sg-' + sgi)?.scrollIntoView({ block: 'nearest' }); }
+}
+async function suggest(now) {
+  const q = $('sh-q'); if (!q) return; const text = q.value.trim(), seq = ++sgSeq; clearTimeout(sgT);
+  if (!text) { sg = []; sgi = -1; return paintSuggest('closed'); }
+  const run = async () => {
+    const had = new Set(cur?.session?.meta?.members || []);
+    let res = []; try { res = (await be.search(text)).filter(p => !had.has(p.uid)); } catch (e) { console.warn(e); }
+    if (seq !== sgSeq || !$('sh-q')) return; sg = res; sgi = res.length ? 0 : -1; paintSuggest('list');
+  };
+  if (now) return run(); paintSuggest('busy'); sgT = setTimeout(run, 140);
+}
+const chosen = i => { const p = sg[i]; if (p) { addPerson(p, $('sh-role').value); } };
+dlg.addEventListener('input', e => { if (e.target.id === 'sh-q') suggest(false); });
+dlg.addEventListener('focusin', e => { if (e.target.id === 'sh-q' && e.target.value.trim()) suggest(false); });
+dlg.addEventListener('keydown', e => {
+  if (e.target.id !== 'sh-q') return; const box = $('sh-sg');
+  if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { if (box.hidden) return suggest(true); e.preventDefault(); if (sg.length) { sgi = (sgi + (e.key === 'ArrowDown' ? 1 : -1) + sg.length) % sg.length; paintSuggest('list'); } }
+  else if (e.key === 'Enter') { e.preventDefault(); if (sgi >= 0) chosen(sgi); else if (e.target.value.trim()) suggest(true); }
+  else if (e.key === 'Escape' && !box.hidden) { e.preventDefault(); e.stopPropagation(); paintSuggest('closed'); }
+});
+dlg.addEventListener('mousedown', e => { if (e.target.closest('.sg-i')) e.preventDefault(); });   // keep focus in the field
+dlg.addEventListener('click', e => { const o = e.target.closest('.sg-i'); if (o) chosen(+o.dataset.i); else if (!e.target.closest('.sh-box')) paintSuggest('closed'); });
+const shMsg = (t, bad = false) => { shareMsg = { t, bad }; renderShare(); };
+async function addPerson(p, role) {
+  try { await cur.session.addMember(p.uid, p.name || p.email, role); found = []; sg = []; sgi = -1; if ($('sh-q')) $('sh-q').value = ''; shMsg(`${p.name} can now ${role === 'edit' ? 'edit' : 'view'} this document.`); } catch (e) { console.error(e); shMsg(e?.code === 'permission-denied' ? 'The Firestore rules do not allow sharing yet. (permission-denied)' : 'We could not share this. Try again.', true); }
+}
+dlg.addEventListener('click', async e => {
+  if (e.target === dlg || e.target.closest('[data-close]')) { dlg.close(); sharing = false; return; }
+  const b = e.target.closest('[data-a]'); if (!b || !cur?.session) return; const a = b.dataset.a, s = cur.session;
+  if (a === 'copy') { try { await navigator.clipboard.writeText(shareUrl()); shMsg('Link copied.'); } catch { $('sh-url').select(); shMsg('Press Ctrl+C to copy the link.'); } }
+  else if (a === 'remove') { try { await s.removeMember(b.dataset.uid); shMsg('Removed.'); } catch (er) { console.error(er); shMsg('We could not remove them. Try again.', true); } }
+});
+dlg.addEventListener('change', async e => {
+  const s = cur?.session; if (!s) return;
+  try {
+    if (e.target.id === 'sh-link') { await s.setLinkAccess(e.target.value); shMsg('Link setting saved.'); }
+    else if (e.target.dataset.role) { await s.setRole(e.target.dataset.role, e.target.value); shMsg('Access updated.'); }
+  } catch (er) { console.error(er); shMsg('We could not change that. Try again.', true); }
+});
+
+/* ---------- File: hand the saved document to the filing screen ---------- */
+const FILE_URL = 'https://migovt.org/courts/online-services/portal/dashboard/file/';
+async function fileIt(def) {
+  const s = cur?.session, e = cur?.engine; if (!s || !e) return;
+  try { if (!s.docId) await s.save(true); else await s.flush(); } catch (er) { console.warn(er); }
+  if (!s.docId || s.isDirty()) { await ask({ title: 'Could not save yet', message: 'This document has to be saved before it can be filed. Check your connection and try again.', ok: 'OK', info: true }); return; }
+  location.href = FILE_URL + '#from=' + encodeURIComponent(s.docId);
+}
+
+/* ---------- builder settings ---------- */
+async function settingsView() {
+  if (favCache === null) { favCache = await be.getFavs(uid); if (favCache === null) { try { favCache = JSON.parse(localStorage.getItem('fd-font-favs') || '[]'); } catch { favCache = []; } } }
+  if (!document.getElementById('fd-gfonts')) { const l = document.createElement('link'); l.id = 'fd-gfonts'; l.rel = 'stylesheet'; l.href = GFONTS; document.head.appendChild(l); }
+  const cfg = settings?.fonts || {}, sizes = [8, 9, 10, 11, 12, 13, 14, 15, 16];
+  const fontSel = (k, first) => `<select id="st-${k}-f" aria-label="Font">${first}${FONT_TYPES.map(t => `<optgroup label="${esc(t.label)}">${t.fonts.filter(f => !(k === 'body' && f === 'Arial') && f !== 'Arial').map(f => { const ok = fontAllowed(f, role, k); return `<option value="${esc(f)}"${ok ? '' : ' disabled'}${cfg[k]?.f === f ? ' selected' : ''}>${esc(f)}${ok ? '' : ' (' + esc(fontLock(f, k)) + ')'}</option>`; }).join('')}</optgroup>`).join('')}</select>`;
+  const row = (k, t, h, first) => `<div class="st-r"><div class="st-t"><b>${t}</b><small class="fd-hint">${h}</small></div>${fontSel(k, first)}<select id="st-${k}-s" aria-label="Size in points"><option value="">Auto size</option>${sizes.map(n => `<option value="${n}"${+cfg[k]?.s === n ? ' selected' : ''}>${n} pt</option>`).join('')}</select><div class="st-p" id="st-${k}-p"></div></div>`;
+  root.innerHTML = `<div class="fd-top fd-bar"><a class="fd-back" href="${BASE}#"><svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true"><path d="M12.5 4 6.5 10l6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>All documents</a><h3 style="margin:0">Document builder settings</h3></div>
+    <section class="card"><h3>Document fonts</h3><p class="m">New documents start with these fonts. You can still change fonts inside any document.</p>
+      ${row('body', 'Default text', 'The main text of the form', '<option value="">Arial (standard)</option>')}${row('date', 'Date blocks', 'Dates beside a signature', '<option value="">Same as default text</option>')}${row('sig', 'Signature blocks', 'Signatures and typed names', '<option value="">Same as default text</option>')}
+      <div class="fd-warn" id="st-warn" role="note" hidden>${esc(FONT_WARNING)}</div>
+      <div class="fd-top" style="margin-top:14px"><button class="btn" type="button" id="st-save">Save settings</button><button class="btn outline" type="button" id="st-reset">Use standard fonts</button><span class="m" id="st-msg" role="status"></span></div></section>
+    <section class="card"><h3>Favorite fonts</h3><div id="st-fav"></div></section>`;
+  const paintPrev = () => ['body', 'date', 'sig'].forEach(k => { const f = $(`st-${k}-f`).value, p = $(`st-${k}-p`); p.innerHTML = f ? `<span style="${fontCss(f)}">${esc(k === 'date' ? '10/05/2026' : 'Jane Q. Public')}</span>` : ''; });
+  const warn = () => { const f = $('st-body-f').value; $('st-warn').hidden = !f || FONT_TYPES.find(t => t.fonts.includes(f))?.id === 'default'; };
+  const favs = () => { $('st-fav').innerHTML = favCache.length ? favCache.map(f => `<span class="st-chip" style="${fontCss(f)}">${esc(f)}<button type="button" data-unfav="${esc(f)}" aria-label="Remove ${esc(f)} from favorites">\u00d7</button></span>`).join('') : '<p class="m">No favorites yet. Use the star in the font list inside a document.</p>'; };
+  paintPrev(); warn(); favs();
+  root.onchange = e => { if (/^st-(body|date|sig)-f$/.test(e.target.id)) { paintPrev(); if (e.target.id === 'st-body-f') { const was = !$('st-warn').hidden; warn(); if (!$('st-warn').hidden && !was) ask({ title: 'Keep your text readable', message: FONT_WARNING, ok: 'I understand', info: true }); } } };
+  root.onclick = async e => {
+    const u = e.target.closest('[data-unfav]'); if (u) { favCache = favCache.filter(f => f !== u.dataset.unfav); try { localStorage.setItem('fd-font-favs', JSON.stringify(favCache)); } catch { } be.setFavs(uid, favCache).catch(er => console.warn(er)); favs(); return; }
+    if (e.target.id === 'st-reset') { ['body', 'date', 'sig'].forEach(k => { $(`st-${k}-f`).value = ''; $(`st-${k}-s`).value = ''; }); paintPrev(); warn(); return; }
+    if (e.target.id !== 'st-save') return;
+    const v = { fonts: Object.fromEntries(['body', 'date', 'sig'].map(k => [k, { f: $(`st-${k}-f`).value, s: +$(`st-${k}-s`).value || 0 }])) };
+    $('st-msg').textContent = 'Saving\u2026';
+    try { await be.setSettings(uid, v); settings = v; try { localStorage.setItem(SET_KEY, JSON.stringify(v)); } catch { } $('st-msg').textContent = 'Saved.'; }
+    catch (er) { console.error(er); settings = v; try { localStorage.setItem(SET_KEY, JSON.stringify(v)); } catch { } $('st-msg').textContent = 'Saved on this device only. We could not reach your account.'; }
+  };
+}
+
+/* ---------- routing ---------- */
+async function route() {
+  const h = location.hash.replace(/^#/, ''), my = ++gen;
+  if (!(await closeCurrent())) { history.replaceState(null, '', BASE + lastHash); return; }
+  lastHash = location.hash;
+  unList?.(); unList = null; dlg.open && dlg.close(); sharing = false;
+  if (my !== gen) return;
+  if (h === 'settings') return settingsView();
+  const d = /^d\/(.+)$/.exec(h);
+  if (d) return editor({ docId: decodeURIComponent(d[1]) });
+  const form = h && byId(h);
+  if (form) { const md0 = pendingMd; pendingMd = null; return editor({ form, md0 }); }
+  library(h ? 'That form was not found.' : '');
+}
+window.addEventListener('hashchange', route); route();
+
+</script>
+</body>
+</html>
+1
