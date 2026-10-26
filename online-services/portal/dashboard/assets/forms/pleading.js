@@ -33,6 +33,7 @@ const css = () => `
 .s4 .cr,.s5 .cr{padding-left:22px}
 .dl{display:flex;align-items:flex-end;margin-top:4px}.dl i{display:block;width:290px;border-bottom:1.4px solid #000;height:16px}
 .tt{text-align:center;font-weight:bold;text-transform:uppercase;margin-top:34px}
+.ul{margin-top:18px;white-space:pre-wrap;word-wrap:break-word}
 .ip{margin-top:14px;text-indent:48px;white-space:pre-wrap;word-wrap:break-word}
 .hh{text-align:center;font-weight:bold;text-transform:uppercase;margin-top:26px;margin-bottom:4px}
 .np,.pp{margin-top:10px;text-indent:48px;white-space:pre-wrap;word-wrap:break-word}
@@ -62,6 +63,8 @@ const panel = `
  <label>Pleading name</label><input type="text" id="title" placeholder="e.g. COMPLAINT">
  <label>Show the pleading name</label>
  <select id="tplace"><option value="both">In the caption and below it</option><option value="caption">In the caption only</option><option value="below">Below the caption only</option></select>
+ <div class="row r3"><div><label>Court heading</label><select id="bct"><option value="">Bold</option><option value="n">Not bold</option></select></div><div><label>Pleading name</label><select id="bti"><option value="">Bold</option><option value="n">Not bold</option></select></div><div><label>Headings</label><select id="bhd"><option value="">Bold</option><option value="n">Not bold</option></select></div></div>
+ <div id="staffonly" hidden><label>Lines under the pleading name (court staff)</label><textarea id="under" rows="4" placeholder="At a session of said Court, held in the City of Flint, County of Genesee, State of Michigan, on ____________, 2026.&#10;&#10;PRESENT: HON. NAME, Circuit Court Judge"></textarea></div>
  <label>Opening text (under the pleading name)</label><textarea id="intro" rows="4"></textarea>
  <label>Line spacing</label>
  <select id="spacing"><option value="1.3">Single</option><option value="1.65">1.5 lines</option><option value="2.1" selected>Double</option></select>
@@ -103,25 +106,27 @@ function addBlock(api, k = 'n', t = '') {
   box.appendChild(d); label(api); return d;
 }
 
+const nb = id => (typeof document !== 'undefined' && document.getElementById(id) && document.getElementById(id).value === 'n') ? ' style="font-weight:normal"' : '';
 function caption(api, n) {
   const E = api.ed, { $ } = api, tp = $('tplace').value;
-  const court = `<div class="ct"><div>${E('ct1')}</div><div>${E('ct2')}</div></div>`;
+  const court = `<div class="ct"${nb('bct')}><div>${E('ct1')}</div><div>${E('ct2')}</div></div>`;
   const comma = (k, ph) => `${E(k, { ph })}${$(k).value.trim() ? ',' : ''}`;
   const left = `<div class="cl"><div>${comma('pln', 'Plaintiff name')}</div><div class="rl">${E('plrole', { ph: 'Plaintiff,' })}</div><div class="vv">v.</div><div>${comma('dfn', 'Defendant name')}</div><div class="rl">${E('dfrole', { ph: 'Defendant.' })}</div>${n === 3 ? '<div class="dl"><i></i>/</div>' : ''}</div>`;
   const parens = n >= 4 ? '<div class="pr">' + ')'.repeat(13).split('').map(c => '<span>' + c + '</span>').join('') + '</div>' : '';
-  const right = `<div class="cr">${tp === 'below' ? '' : `<div class="pn">${E('title', { ph: 'PLEADING NAME' })}</div>`}<div>${E('judge', { hon: true, blank: '____________' })}</div><div>Case No. ${E('caseno', { blank: '____________' })}</div></div>`;
+  const right = `<div class="cr">${tp === 'below' ? '' : `<div class="pn"${nb('bti')}>${E('title', { ph: 'PLEADING NAME' })}</div>`}<div>${E('judge', { hon: true, blank: '____________' })}</div><div>Case No. ${E('caseno', { blank: '____________' })}</div></div>`;
   return `<div class="s${n}">${court}<div class="cap"><div class="lw">${left}${parens}</div>${right}</div></div>`;
 }
 
 function build(api, n) {
   const { $ } = api, E = api.ed, seq = [], lh = $('spacing').value || '2.1';
   seq.push({ html: caption(api, n) });
-  if ($('tplace').value !== 'caption') seq.push({ html: `<div class="tt">${E('title', { ph: 'PLEADING NAME' })}</div>` });
+  if ($('tplace').value !== 'caption') seq.push({ html: `<div class="tt"${nb('bti')}>${E('title', { ph: 'PLEADING NAME' })}</div>` });
+  if ($('under').value.trim()) seq.push({ html: `<div class="ul">${E('under', { multi: true, ph: 'Lines under the pleading name' })}</div>` });
   seq.push({ txt: $('intro').value.replace(/\r/g, ''), make: (t, first) => `<div class="ip" style="line-height:${lh};${first ? '' : 'text-indent:0;margin-top:0'}">${api.edt('intro', t, { ph: 'Opening text' })}</div>` });
   let num = 0;
   api.qa('.blk').forEach((b, i) => {
     const k = b.querySelector('.f-k').value, v = b.querySelector('.f-t').value.replace(/\r/g, ''), key = '@' + i + '.t';
-    if (k === 'h') { seq.push({ html: `<div class="hh">${E(key, { ph: 'HEADING' })}</div>` }); return; }
+    if (k === 'h') { seq.push({ html: `<div class="hh"${nb('bhd')}>${E(key, { ph: 'HEADING' })}</div>` }); return; }
     const mine = k === 'n' ? ++num : 0;
     seq.push({ txt: v, make: (t, first) => `<div class="${k === 'n' ? 'np' : 'pp'}${first ? '' : ' cont'}" style="line-height:${lh}">${first && mine ? mine + '.&emsp;' : ''}${api.edt(key, t, { ph: k === 'n' ? 'Paragraph text' : 'Text' })}</div>` });
   });
@@ -143,6 +148,7 @@ export function make(n) {
     css, panel: n === 1 ? panel.replace('<option value="both">In the caption and below it</option><option value="caption">In the caption only</option><option value="below">Below the caption only</option>', '<option value="below">Below the caption only</option><option value="both">In the caption and below it</option><option value="caption">In the caption only</option>') : n === 5 ? panel.replace('value="THE STATE OF MICHIGAN"', 'value="THE STATE OF MICHIGAN IN THE"').replace('value="IN THE 7TH JUDICIAL DISTRICT COURT FOR GENESEE"', 'value="7TH JUDICIAL DISTRICT COURT FOR GENESEE"') : panel, usable: () => 864,
     build: api => build(api, n),
     init(api) {
+      if (n === 1 && /clerk|judge|justice|magistrate|judicial|court reporter|court administrator|reporter of decisions/i.test(api.role || '')) api.$('staffonly').hidden = false;
       addBlock(api, 'n');
       api.$('addh').onclick = () => { addBlock(api, 'h'); api.render(); };
       api.$('addn').onclick = () => { addBlock(api, 'n'); api.render(); };
@@ -156,8 +162,8 @@ export function make(n) {
       { id: 'party', label: 'Party filing without an attorney', fill: (api, w) => ({ aname: w.name, sig1: w.name, d1: w.today, addr: w.address, ph: w.phone, em: w.email }) }
     ],
     md: { title: 'General Pleading (Style ' + n + ')', sections: [
-      { name: 'Case', fields: [['judge', 'Judge'], ['caseno', 'Case No.'], ['ct1', 'Court heading line 1'], ['ct2', 'Court heading line 2'], ['pln', 'Plaintiff name'], ['plrole', 'Plaintiff label'], ['dfn', 'Defendant name'], ['dfrole', 'Defendant label'], ['title', 'Pleading name'], ['tplace', 'Pleading name shown'], ['spacing', 'Line spacing']],
-        multi: [['intro', 'Opening text']],
+      { name: 'Case', fields: [['judge', 'Judge'], ['caseno', 'Case No.'], ['ct1', 'Court heading line 1'], ['ct2', 'Court heading line 2'], ['pln', 'Plaintiff name'], ['plrole', 'Plaintiff label'], ['dfn', 'Defendant name'], ['dfrole', 'Defendant label'], ['title', 'Pleading name'], ['tplace', 'Pleading name shown'], ['bct', 'Court heading weight'], ['bti', 'Pleading name weight'], ['bhd', 'Headings weight'], ['spacing', 'Line spacing']],
+        multi: [['intro', 'Opening text'], ['under', 'Lines under the pleading name']],
         groups: [{ heading: 'Body', item: 'Block', fields: BODY,
           get: api => api.qa('.blk').map(b => ({ k: b.querySelector('.f-k').value, t: b.querySelector('.f-t').value.trim() })),
           set(api, items) { api.$('blocks').innerHTML = ''; (items.length ? items : [{ k: 'n' }]).forEach(it => addBlock(api, ['h', 'n', 'p'].includes(String(it.k || '').trim().toLowerCase()) ? String(it.k).trim().toLowerCase() : 'n', it.t || '')); label(api); } }] },

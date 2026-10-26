@@ -84,7 +84,7 @@ async function open() {
     const [{ byNumber }, { formOf, mountForm }] = await Promise.all([import(FORMS + 'registry.js?v=3'), import(FORMS + 'engine.js?v=10')]);
     const num = formOf(text), form = num && byNumber(num);
     if (!form) return card('This document cannot be shown', num ? `It was prepared on form "${num}", which this viewer does not support yet.` : 'We could not tell which form this file is for.');
-    const def = (await import(`${FORMS}${form.id}.js?v=10`)).default; if (my !== token) return;
+    const def = (await import(`${FORMS}${form.id}.js?v=11`)).default; if (my !== token) return;
     $('host').innerHTML = '';
     engine = await mountForm(def, $('host'), { md: text, readOnly: true, onNote: (t, bad) => { if (!shown && !bad) return; $('note').textContent = t; $('note').style.color = bad ? '#ffb4ab' : '#c6d3ea'; } });
     if (my !== token) { engine.destroy(); return; }
