@@ -16,7 +16,8 @@ const css = () => `
 .foot::after{content:counter(pg)}
 .ct{text-align:center;font-weight:bold;line-height:1.3}
 .s5 .ct{text-align:left;font-weight:normal}
-.cap{display:flex;margin-top:30px;align-items:stretch}
+.cap{display:flex;margin-top:30px;align-items:center}
+.lw{display:flex;align-items:stretch;flex:none}
 .cl{width:330px;flex:none;padding:8px 0}
 .cl>div{margin:10px 0}
 .cl .rl{padding-left:56px}.cl .vv{padding-left:20px}
@@ -36,9 +37,9 @@ const css = () => `
 .hh{text-align:center;font-weight:bold;text-transform:uppercase;margin-top:26px;margin-bottom:4px}
 .np,.pp{margin-top:10px;text-indent:48px;white-space:pre-wrap;word-wrap:break-word}
 .np.cont,.pp.cont{text-indent:0;margin-top:0}
-.sg{margin-top:34px;page-break-inside:avoid}
-.sg .dt{margin-bottom:10px}
-.sg .rt{margin-left:312px}
+.sg{margin-top:34px;display:flex;align-items:flex-start}
+.sg .dt{width:312px;flex:none}
+.sg .rt{flex:1;min-width:0}
 .sg .sl{border-bottom:1.4px solid #000;min-height:24px;padding-top:6px;margin-top:22px;white-space:pre}
 .sg .sl>*{max-width:none;overflow:visible}
 .sg .ln{margin-top:2px;white-space:pre-wrap;word-wrap:break-word}
@@ -59,6 +60,8 @@ const panel = `
 
  <h2>Pleading</h2>
  <label>Pleading name</label><input type="text" id="title" placeholder="e.g. COMPLAINT">
+ <label>Show the pleading name</label>
+ <select id="tplace"><option value="both">In the caption and below it</option><option value="caption">In the caption only</option><option value="below">Below the caption only</option></select>
  <label>Opening text (under the pleading name)</label><textarea id="intro" rows="4"></textarea>
  <label>Line spacing</label>
  <select id="spacing"><option value="1.3">Single</option><option value="1.65">1.5 lines</option><option value="2.1" selected>Double</option></select>
@@ -72,10 +75,10 @@ const panel = `
  <label class="chk"><input type="checkbox" id="sigon" checked> <span>Include a signature block</span></label>
  <label>Closing line</label><input type="text" id="closing" value="Respectfully submitted,">
  <div class="row"><div><label>Date</label><input type="text" id="d1" data-font="date"></div><div><label>Signature (typed)</label><input type="text" id="sig1" data-font="sig"></div></div>
- <label>Name (type or print)</label><input type="text" id="aname" data-font="sig">
- <div class="row"><div><label>Bar number</label><input type="text" id="bar"></div><div><label>Firm name (if applicable)</label><input type="text" id="firm"></div></div>
- <label>Address</label><textarea id="addr" rows="2" placeholder="Street, city, state ZIP"></textarea>
- <div class="row"><div><label>Phone</label><input type="text" id="ph"></div><div><label>Email</label><input type="text" id="em"></div></div>
+ <label>Name (type or print)</label><input type="text" id="aname" data-font="info">
+ <div class="row"><div><label>Bar number</label><input type="text" id="bar" data-font="info"></div><div><label>Firm name (if applicable)</label><input type="text" id="firm" data-font="info"></div></div>
+ <label>Address</label><textarea id="addr" rows="2" placeholder="Street, city, state ZIP" data-font="info"></textarea>
+ <div class="row"><div><label>Phone</label><input type="text" id="ph" data-font="info"></div><div><label>Email</label><input type="text" id="em" data-font="info"></div></div>
 `;
 
 const KINDS = [['h', 'Heading'], ['n', 'Numbered paragraph'], ['p', 'Plain paragraph']];
@@ -101,19 +104,19 @@ function addBlock(api, k = 'n', t = '') {
 }
 
 function caption(api, n) {
-  const E = api.ed, { $ } = api, c1 = $('ct1').value.trim(), c2 = $('ct2').value.trim();
+  const E = api.ed, { $ } = api, tp = $('tplace').value;
   const court = `<div class="ct"><div>${E('ct1')}</div><div>${E('ct2')}</div></div>`;
   const comma = (k, ph) => `${E(k, { ph })}${$(k).value.trim() ? ',' : ''}`;
   const left = `<div class="cl"><div>${comma('pln', 'Plaintiff name')}</div><div class="rl">${E('plrole', { ph: 'Plaintiff,' })}</div><div class="vv">v.</div><div>${comma('dfn', 'Defendant name')}</div><div class="rl">${E('dfrole', { ph: 'Defendant.' })}</div>${n === 3 ? '<div class="dl"><i></i>/</div>' : ''}</div>`;
-  const judge = `<div>${E('judge', { blank: 'Hon. ______________' })}</div><div>Case No. ${E('caseno', { blank: '____________' })}</div>`;
-  const right = `<div class="cr">${n === 1 ? '' : `<div class="pn">${E('title', { ph: 'PLEADING NAME' })}</div>`}${judge}</div>`;
-  return `<div class="s${n}">${court}<div class="cap">${left}${n >= 4 ? '<div class="pr">' + ')'.repeat(13).split('').map(c => '<span>' + c + '</span>').join('') + '</div>' : ''}${right}</div></div>`;
+  const parens = n >= 4 ? '<div class="pr">' + ')'.repeat(13).split('').map(c => '<span>' + c + '</span>').join('') + '</div>' : '';
+  const right = `<div class="cr">${tp === 'below' ? '' : `<div class="pn">${E('title', { ph: 'PLEADING NAME' })}</div>`}<div>${E('judge', { hon: true, blank: '____________' })}</div><div>Case No. ${E('caseno', { blank: '____________' })}</div></div>`;
+  return `<div class="s${n}">${court}<div class="cap"><div class="lw">${left}${parens}</div>${right}</div></div>`;
 }
 
 function build(api, n) {
   const { $ } = api, E = api.ed, seq = [], lh = $('spacing').value || '2.1';
   seq.push({ html: caption(api, n) });
-  seq.push({ html: `<div class="tt">${E('title', { ph: 'PLEADING NAME' })}</div>` });
+  if ($('tplace').value !== 'caption') seq.push({ html: `<div class="tt">${E('title', { ph: 'PLEADING NAME' })}</div>` });
   seq.push({ txt: $('intro').value.replace(/\r/g, ''), make: (t, first) => `<div class="ip" style="line-height:${lh};${first ? '' : 'text-indent:0;margin-top:0'}">${api.edt('intro', t, { ph: 'Opening text' })}</div>` });
   let num = 0;
   api.qa('.blk').forEach((b, i) => {
@@ -136,7 +139,8 @@ const BODY = [['k', 'Type (h heading, n numbered paragraph, p plain paragraph)']
 export function make(n) {
   return {
     id: 'plead' + n, number: 'Pleading ' + n, title: 'General Pleading (Style ' + n + ')', footer: '​', font: 'Times New Roman',
-    css, panel: n === 5 ? panel.replace('value="THE STATE OF MICHIGAN"', 'value="THE STATE OF MICHIGAN IN THE"').replace('value="IN THE 7TH JUDICIAL DISTRICT COURT FOR GENESEE"', 'value="7TH JUDICIAL DISTRICT COURT FOR GENESEE"') : panel, usable: () => 864,
+    fontPolicy: { body: ['default'], date: ['default', 'hand', 'stamp'], info: ['default', 'hand', 'stamp'], sig: ['default', 'hand', 'stamp', 'cursive'] },
+    css, panel: n === 1 ? panel.replace('<option value="both">In the caption and below it</option><option value="caption">In the caption only</option><option value="below">Below the caption only</option>', '<option value="below">Below the caption only</option><option value="both">In the caption and below it</option><option value="caption">In the caption only</option>') : n === 5 ? panel.replace('value="THE STATE OF MICHIGAN"', 'value="THE STATE OF MICHIGAN IN THE"').replace('value="IN THE 7TH JUDICIAL DISTRICT COURT FOR GENESEE"', 'value="7TH JUDICIAL DISTRICT COURT FOR GENESEE"') : panel, usable: () => 864,
     build: api => build(api, n),
     init(api) {
       addBlock(api, 'n');
@@ -148,11 +152,11 @@ export function make(n) {
     contHeader: api => `<div class="ch">Case No. ${api.ed('caseno', { blank: '____________' })}</div>`,
     resolve: (api, k) => { const m = /^(\d+)\.t$/.exec(k); return m && api.qa('.blk')[+m[1]]?.querySelector('.f-t'); },
     roles: [
-      { id: 'attorney', label: 'Attorney signing this pleading', fill: (api, w) => ({ aname: w.name, sig1: w.name, d1: w.today, bar: w.bar, firm: w.org }) },
-      { id: 'party', label: 'Party filing without an attorney', fill: (api, w) => ({ aname: w.name, sig1: w.name, d1: w.today }) }
+      { id: 'attorney', label: 'Attorney signing this pleading', fill: (api, w) => ({ aname: w.name, sig1: w.name, d1: w.today, bar: w.bar, firm: w.org, addr: w.address, ph: w.phone, em: w.email }) },
+      { id: 'party', label: 'Party filing without an attorney', fill: (api, w) => ({ aname: w.name, sig1: w.name, d1: w.today, addr: w.address, ph: w.phone, em: w.email }) }
     ],
     md: { title: 'General Pleading (Style ' + n + ')', sections: [
-      { name: 'Case', fields: [['judge', 'Judge'], ['caseno', 'Case No.'], ['ct1', 'Court heading line 1'], ['ct2', 'Court heading line 2'], ['pln', 'Plaintiff name'], ['plrole', 'Plaintiff label'], ['dfn', 'Defendant name'], ['dfrole', 'Defendant label'], ['title', 'Pleading name'], ['spacing', 'Line spacing']],
+      { name: 'Case', fields: [['judge', 'Judge'], ['caseno', 'Case No.'], ['ct1', 'Court heading line 1'], ['ct2', 'Court heading line 2'], ['pln', 'Plaintiff name'], ['plrole', 'Plaintiff label'], ['dfn', 'Defendant name'], ['dfrole', 'Defendant label'], ['title', 'Pleading name'], ['tplace', 'Pleading name shown'], ['spacing', 'Line spacing']],
         multi: [['intro', 'Opening text']],
         groups: [{ heading: 'Body', item: 'Block', fields: BODY,
           get: api => api.qa('.blk').map(b => ({ k: b.querySelector('.f-k').value, t: b.querySelector('.f-t').value.trim() })),

@@ -42,6 +42,8 @@ export function firebaseBackend({ db, app }) {
     async setFavs(uid, list) { await setDoc(doc(db, 'accountDirectory', uid), { fontFavs: list }, { merge: true }); },
     /* Document builder settings (default fonts, and so on) follow the person across devices. */
     async getSettings(uid) { try { const s = await getDoc(doc(db, 'accountDirectory', uid)); return s.exists() && s.data().builderSettings ? s.data().builderSettings : null; } catch (e) { console.warn('Settings unavailable', e); return null; } },
+    async getPleadingSettings(uid) { try { const s = await getDoc(doc(db, 'accountDirectory', uid)); return s.exists() && s.data().pleadingSettings ? s.data().pleadingSettings : null; } catch (e) { console.warn('Pleading settings unavailable', e); return null; } },
+    async setPleadingSettings(uid, v) { await setDoc(doc(db, 'accountDirectory', uid), { pleadingSettings: v }, { merge: true }); },
     async setSettings(uid, v) { await setDoc(doc(db, 'accountDirectory', uid), { builderSettings: v }, { merge: true }); },
     /* Cases that a document can be attached to (read once, kept in memory). */
     async cases() {

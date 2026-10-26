@@ -62,7 +62,7 @@ dialog>footer{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:10px;padd
 
 <script type="module">
 import { boot, db, auth, $, esc, has, STAFF, SELF, ATTY } from '/courts/online-services/portal/dashboard/assets/js/portal-shell.js?v=7';
-import { doc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+import { doc, updateDoc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 import { EmailAuthProvider, reauthenticateWithCredential, updatePassword, verifyBeforeUpdateEmail } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
 
 const { account, role, user } = await boot({ id: 'settings', title: 'Account Settings', subtitle: 'Your contact details, security, and notification choices.' });
@@ -70,6 +70,7 @@ const root = $('page-body'), staff = has(STAFF, role), atty = has(ATTY, role), e
 const ymd = v => { if (!v) return ''; const d = v.toDate ? v.toDate() : new Date(v); return isNaN(d) ? String(v) : d.toISOString().slice(0, 10); };
 const dob = ymd(account.dob || account.dateOfBirth || account.birthDate || account.birthdate);
 const A = account.address && typeof account.address === 'object' ? account.address : {};
+let PL = {}; try { const d = await getDoc(doc(db, 'accountDirectory', account.uid)); PL = d.exists() && d.data().pleadingSettings || {}; } catch (e) { console.warn(e); }
 const P = { filings: true, hearings: true, financial: true, enforcement: true, review: true, ...(account.notificationPrefs || {}) };
 const f = (label, id, v = '', o = {}) => `<label class="f"><span>${label}</span><input id="${id}" type="${o.type || 'text'}" value="${esc(v)}"${o.ac ? ` autocomplete="${o.ac}"` : ''}${o.ro ? ' readonly' : ''}${o.max ? ` maxlength="${o.max}"` : ''}>${o.hint ? `<small class="m">${o.hint}</small>` : ''}</label>`;
 const msg = (id, t, ok = true) => { $(id).innerHTML = t ? `<div class="${ok ? 'note' : 'alert'}" role="${ok ? 'status' : 'alert'}">${esc(t)}</div>` : ''; };
@@ -88,6 +89,13 @@ function draw() {
     <div class="cols3">${f('City', 's-city', A.city || '', { ac: 'address-level2' })}${f('State', 's-state', A.state || 'MI', { ac: 'address-level1', max: 2 })}${f('ZIP code', 's-zip', A.zip || '', { ac: 'postal-code', max: 10 })}</div>
     <div class="acts"><button class="btn" type="button" id="save-contact">Save contact details</button></div></section>
 
+  <section class="card"><h3>Pleadings</h3><p class="m">Starting choices for new general pleadings in the document builder. You can still change them on any document.</p><div id="m-pl"></div>
+    <label class="f"><span>Show the pleading name</span><select id="pl-tplace">${[['', 'Use each style’s standard'], ['both', 'In the caption and below it'], ['caption', 'In the caption only'], ['below', 'Below the caption only']].map(([v, t]) => `<option value="${v}"${(PL.tplace || '') === v ? ' selected' : ''}>${t}</option>`).join('')}</select></label>
+    <label class="f"><span>Line spacing</span><select id="pl-spacing">${[['', 'Double (standard)'], ['1.65', '1.5 lines'], ['1.3', 'Single']].map(([v, t]) => `<option value="${v}"${(PL.spacing || '') === v ? ' selected' : ''}>${t}</option>`).join('')}</select></label>
+    <div class="cols">${f('Court heading, line 1', 'pl-ct1', PL.ct1 || '')}${f('Court heading, line 2', 'pl-ct2', PL.ct2 || '')}</div>
+    ${f('Closing line', 'pl-closing', PL.closing || '')}
+    <div class="acts"><button class="btn" type="button" id="save-pl">Save pleading settings</button></div></section>
+
   <section class="card"><h3>Notifications</h3><p class="m">Choose what the portal tells you about. Notices that the court is required to send you cannot be turned off.</p><div id="m-prefs"></div>
     ${toggle('p-filings', 'Filings', 'Decisions on filings you submitted.')}${toggle('p-hearings', 'Hearings', 'Hearings scheduled, moved or cancelled in your cases.')}${toggle('p-financial', 'Fines and fees', 'Assessments, due dates, late fees and payment confirmations.')}
     ${enforce || staff ? toggle('p-enforcement', 'Enforcement', staff ? 'Warrant rulings and supervision reports.' : 'Rulings on your warrant requests and reports returned to you.') : ''}${staff ? toggle('p-review', 'Items waiting for my review', 'The counts shown beside Manage Filings and Enforcement administration.') : ''}
@@ -101,7 +109,7 @@ function draw() {
     <div class="cols">${f('New email address', 'em-new', '', { type: 'email', ac: 'email' })}${f('Current password', 'em-pw', '', { type: 'password', ac: 'current-password' })}</div>
     <div class="acts"><button class="btn outline" type="button" id="save-mail">Send verification link</button></div></section>`;
   $('pin')?.addEventListener('click', () => { pinShown = !pinShown; draw(); });
-  $('save-contact').onclick = saveContact; $('save-prefs').onclick = savePrefs; $('save-pass').onclick = savePass; $('save-mail').onclick = saveMail;
+  $('save-contact').onclick = saveContact; $('save-prefs').onclick = savePrefs; $('save-pl').onclick = savePl; $('save-pass').onclick = savePass; $('save-mail').onclick = saveMail;
 }
 const val = id => ($(id)?.value || '').trim();
 const busy = (b, on, t) => { b.disabled = on; b.dataset.l = b.dataset.l || b.textContent; b.textContent = on ? t : b.dataset.l; };
@@ -113,6 +121,13 @@ async function saveContact(e) {
   busy(b, true, 'Saving…');
   try { const p = { phone: phone || null, organization: val('s-org') || null, address: { street: val('s-street'), unit: val('s-unit'), city: val('s-city'), state, zip } }; await updateDoc(doc(db, 'accounts', account.uid), p); Object.assign(account, p); msg('m-contact', 'Contact details saved.'); }
   catch (er) { console.error(er); msg('m-contact', er?.code === 'permission-denied' ? 'Your account could not be updated. The Firestore rules must let people update their own contact fields. (permission-denied)' : 'We could not save that. Check your connection and try again.', false); }
+  busy(b, false);
+}
+async function savePl(e) {
+  const b = e.currentTarget, p = { tplace: val('pl-tplace'), spacing: val('pl-spacing'), ct1: val('pl-ct1'), ct2: val('pl-ct2'), closing: val('pl-closing') };
+  busy(b, true, 'Saving…');
+  try { await setDoc(doc(db, 'accountDirectory', account.uid), { pleadingSettings: p }, { merge: true }); PL = p; msg('m-pl', 'Pleading settings saved.'); }
+  catch (er) { console.error(er); msg('m-pl', 'We could not save those. Try again.', false); }
   busy(b, false);
 }
 async function savePrefs(e) {
