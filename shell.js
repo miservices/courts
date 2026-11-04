@@ -214,7 +214,8 @@
         L('Request Court Records', 'online-services/request-records/', 'Copies, certified copies, and transcripts'),
       ]},
       { title: 'Jury Service', links: [
-        L('Juror Information', 'jury-service/juror-information/', 'What to expect and how service works'),
+        L('Juror Information', 'online-services/juror-information/', 'What to expect and how service works'),
+        L('Become a Juror', 'online-services/become-a-juror/', 'What to expect and how service works'),
         L('Jury Duty Portal',  'online-services/jury-portal/',    'Respond to a summons or check your status'),
       ]},
     ]},
