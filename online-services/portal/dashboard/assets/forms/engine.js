@@ -165,7 +165,7 @@ const FP_CSS = `.fp{position:fixed;z-index:2147483000;width:320px;max-width:calc
 const today = () => { const d = new Date(); return String(d.getMonth() + 1).padStart(2, '0') + '/' + String(d.getDate()).padStart(2, '0') + '/' + d.getFullYear(); };
 
 export async function mountForm(def, host, { account, role, md, onDirty, onEdit, readOnly = false, actions = [], onAction, favs: favList, onFavs, onFontNotice, onNote, fileLabel = 'File' } = {}) {
-  const allow = (f, key) => fontAllowed(f, role, key ? kindOf(key) : undefined) && (!key || fontFits(def, f, kindOf(key)));
+  const allow = (f, key) => def.fontOpen || fontAllowed(f, role, key ? kindOf(key) : undefined) && (!key || fontFits(def, f, kindOf(key)));
   const typesFor = key => { const l = def.fontPolicy && key ? (def.fontPolicy[kindOf(key)] || def.fontPolicy.sig || []) : null; return l ? TYPES.filter(t => l.includes(t.id)) : TYPES; };
   const shown = (t, key) => t.fonts.filter(f => !(f === 'Times New Roman' && def.font !== 'Times New Roman'));
   const who = { name: (account?.name || account?.displayName || '').trim(), org: account?.organization || '', title: account?.title || account?.jobTitle || '', badge: account?.badgeNumber || account?.badge || '', bar: account?.barNumber || account?.barNo || '', phone: account?.phone || '', email: account?.email || '', address: (() => { const a = account?.address; if (!a || typeof a !== 'object') return typeof a === 'string' ? a : ''; const l2 = [a.city, [a.state, a.zip].filter(Boolean).join(' ')].filter(Boolean).join(', '); return [[a.street, a.unit].filter(Boolean).join(', '), l2].filter(Boolean).join('\n'); })(), today: today() };
@@ -177,7 +177,7 @@ export async function mountForm(def, host, { account, role, md, onDirty, onEdit,
   const caseCard = `<div class="fd-case" id="fd-case"><b>Case</b><div class="fd-cv" id="fd-cv"></div><small class="fd-hint">The case number and judge are added by the court system when this is filed. They cannot be typed in.</small></div>`;
   host.innerHTML = `<div class="fd-wrap"><div class="fd-panel" id="fd-panel"><h3>${esc(def.number)}</h3><small class="fd-hint">Fill in the fields. The document updates as you type and adds pages as needed.</small><div class="fd-tools"><button type="button" class="btn outline sm" data-fd="undo" title="Undo (Ctrl+Z)" disabled>Undo</button><button type="button" class="btn outline sm" data-fd="redo" title="Redo (Ctrl+Y)" disabled>Redo</button><details class="fd-keys"><summary>Shortcuts</summary><dl><dt>Ctrl+Z</dt><dd>Undo</dd><dt>Ctrl+Y or Ctrl+Shift+Z</dt><dd>Redo</dd><dt>Ctrl+B</dt><dd>Bold</dd><dt>Ctrl+I</dt><dd>Italic</dd><dt>Ctrl+Shift+&gt; or &lt;</dt><dd>Larger or smaller text</dd><dt>Ctrl+S</dt><dd>Save</dd><dt>Ctrl+P</dt><dd>Print</dd><dt>Tab</dt><dd>Next field</dd><dt>Esc</dt><dd>Close the font bar</dd></dl><small class="fd-hint">Bold, italic and size apply to fields that have font options (size needs a font other than the default). On a Mac, use Command instead of Ctrl.</small></details></div><fieldset class="fd-fs0"${readOnly ? ' disabled' : ''}>${roleBox}${dfBox}${def.panel}</fieldset>
     <div class="fd-status" id="fd-status" role="status" aria-live="polite"></div><div class="fd-people" id="fd-people"></div>
-    <div class="fd-btns">${actions.includes('save') ? '<button type="button" class="btn" data-fd="save">Save</button>' : ''}${actions.includes('share') ? '<button type="button" class="btn outline" data-fd="share">Share</button>' : ''}${actions.includes('file') ? '<button type="button" class="btn" data-fd="file">${esc(fileLabel)}</button>' : ''}<div class="fd-dl"><button type="button" class="btn outline" data-fd="download" aria-haspopup="menu" aria-expanded="false">Download</button><div class="fd-menu" role="menu" hidden><button type="button" role="menuitem" data-fd="pdf">PDF document</button><button type="button" role="menuitem" data-fd="md">Markdown file (.md)</button></div></div><button type="button" class="btn outline" data-fd="print">Print</button></div><small class="fd-msg" id="fd-msg" role="status"></small></div>
+    <div class="fd-btns">${actions.includes('save') ? '<button type="button" class="btn" data-fd="save">Save</button>' : ''}${actions.includes('share') ? '<button type="button" class="btn outline" data-fd="share">Share</button>' : ''}${actions.includes('file') ? '<button type="button" class="btn" data-fd="file">' + esc(fileLabel) + '</button>' : ''}<div class="fd-dl"><button type="button" class="btn outline" data-fd="download" aria-haspopup="menu" aria-expanded="false">Download</button><div class="fd-menu" role="menu" hidden><button type="button" role="menuitem" data-fd="pdf">PDF document</button><button type="button" role="menuitem" data-fd="md">Markdown file (.md)</button></div></div><button type="button" class="btn outline" data-fd="print">Print</button></div><small class="fd-msg" id="fd-msg" role="status"></small></div>
     <div class="fd-view" id="fd-view"></div></div>`;
   const $ = id => host.querySelector('#' + id), qa = sel => [...host.querySelectorAll(sel)], k = { U, P, B };
   if (!document.getElementById('fd-gfonts')) { const l = document.createElement('link'); l.id = 'fd-gfonts'; l.rel = 'stylesheet'; l.href = GFONTS; document.head.appendChild(l); const st = document.createElement('style'); st.id = 'fd-fp-css'; st.textContent = FP_CSS; document.head.appendChild(st); }
@@ -253,6 +253,38 @@ export async function mountForm(def, host, { account, role, md, onDirty, onEdit,
   const AVN = (def.usable ? def.usable(U) : 678 * U), meas = html => { mbox.innerHTML = html; return mbox.getBoundingClientRect().height; };
 
   /* Blocks: {html} stays whole; {txt, make(text, first)} may be split across pages; {pb:'new'|'cont'|'blank', html?} forces a new page. */
+  /* {rich: html, wrap(inner)}: free-form formatted text. Split into blocks, and a long block is cut at a word so the rest flows to the next page. */
+  function richFlow(it, pages, getCur, start, addUsed, getUsed) {
+    const tpl = fd.createElement('template'); tpl.innerHTML = it.rich; const blocks = [];
+    const push = el => blocks.push(el);
+    [...tpl.content.childNodes].forEach(n => {
+      if (n.nodeType === 3) { if (!n.textContent.trim()) return; const d = fd.createElement('p'); d.textContent = n.textContent; push(d); return; }
+      if (n.nodeType !== 1) return;
+      if (/^(UL|OL)$/.test(n.tagName)) { let k = +n.getAttribute('start') || 1; [...n.children].forEach(li => { const c = n.cloneNode(false); if (n.tagName === 'OL') c.setAttribute('start', k); k++; c.appendChild(li.cloneNode(true)); push(c); }); return; }
+      push(n);
+    });
+    const wrap = it.wrap || (h => h), outer = el => wrap(el.outerHTML);
+    const cut = (el, n) => {   // [head, tail] split after n characters of text
+      const h = el.cloneNode(true), t = el.cloneNode(true);
+      const trim = (root, keepFrom) => { const w = fd.createTreeWalker(root, NodeFilter.SHOW_TEXT); let x, acc = 0; const ns = []; while ((x = w.nextNode())) ns.push(x);
+        ns.forEach(x => { const a = acc, b = acc + x.length; acc = b; if (keepFrom) { if (b <= n) x.textContent = ''; else if (a < n) x.textContent = x.textContent.slice(n - a); } else { if (a >= n) x.textContent = ''; else if (b > n) x.textContent = x.textContent.slice(0, n - a); } });
+        const brs = [...root.querySelectorAll('br')]; let seen = 0; root.querySelectorAll('*').forEach(() => { }); brs.forEach(b => { const r = fd.createRange(); r.selectNodeContents(root); r.setEndBefore(b); const pos = r.toString().length; if (keepFrom ? pos < n : pos >= n) b.remove(); }); };
+      trim(h, false); trim(t, true); t.style.textIndent = '0'; if (/^(UL|OL)$/.test(t.tagName)) [...t.children].forEach(li => { li.style.listStyle = 'none'; li.style.textIndent = '0'; }); return [h, t];
+    };
+    for (let el of blocks) {
+      if (el.hasAttribute?.('data-pb')) { start('cont'); continue; }
+      for (;;) {
+        const c = getCur(), full = outer(el), h = meas(full);
+        if (getUsed() + h <= AVN) { c.push(full); addUsed(h); c.has = true; break; }
+        const text = el.textContent, cuts = []; for (let i = 0; i < text.length; i++) if (/\s/.test(text[i]) && i > 0 && !/\s/.test(text[i - 1])) cuts.push(i + 1);
+        let lo = 0, hi = cuts.length;
+        while (lo < hi) { const m = (lo + hi + 1) >> 1, [hd] = cut(el, cuts[m - 1]); if (getUsed() + meas(outer(hd)) <= AVN) lo = m; else hi = m - 1; }
+        if (!lo) { if (c.has) { start('cont'); continue; } c.push(full); addUsed(h); c.has = true; break; }
+        const [hd, tl] = cut(el, cuts[lo - 1]), hh = outer(hd); c.push(hh); addUsed(meas(hh)); c.has = true;
+        if (!tl.textContent.trim()) break; el = tl; start('cont');
+      }
+    }
+  }
   function paginate(seq) {
     const pages = []; let cur, used;
     const start = mode => { cur = []; pages.push(cur); used = 0; cur.has = false; if (mode === 'cont' && def.contHeader) { const h = def.contHeader(api); cur.push(h); used = meas(h); } };
@@ -260,6 +292,7 @@ export async function mountForm(def, host, { account, role, md, onDirty, onEdit,
     for (const it of seq) {
       if (it.pb) { start(it.pb); if (it.html) { cur.push(it.html); used += meas(it.html); cur.has = true; } continue; }
       if (it.html !== undefined) { const h = meas(it.html); if (used + h > AVN && cur.has) start('cont'); cur.push(it.html); used += h; cur.has = true; continue; }
+      if (it.rich !== undefined) { richFlow(it, pages, () => cur, m => start(m), n => { used += n; }, () => used); continue; }
       let rest = it.txt, first = true;
       for (;;) {
         api.seg = it.txt.length - rest.length;
