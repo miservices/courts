@@ -304,10 +304,11 @@ export async function mountForm(def, host, { account, role, md, onDirty, onEdit,
     }
   }
   function paginate(seq) {
-    const pages = []; let cur, used;
-    const start = mode => { cur = []; pages.push(cur); used = 0; cur.has = false; if (mode === 'cont' && def.contHeader) { const h = def.contHeader(api); cur.push(h); used = meas(h); } };
+    const pages = []; let cur, used, chOv = null;
+    const start = mode => { cur = []; pages.push(cur); used = 0; cur.has = false; if (mode === 'cont' && (chOv !== null || def.contHeader)) { const h = chOv !== null ? chOv : def.contHeader(api); cur.push(h); used = meas(h); } };
     start('new');
     for (const it of seq) {
+      if (it.ch !== undefined) { chOv = it.ch; continue; }
       if (it.pb) { start(it.pb); if (it.html) { cur.push(it.html); used += meas(it.html); cur.has = true; } continue; }
       if (it.html !== undefined) { const h = meas(it.html); if (used + h > AVN && cur.has) start('cont'); cur.push(it.html); used += h; cur.has = true; continue; }
       if (it.rich !== undefined) { richFlow(it, pages, () => cur, m => start(m), n => { used += n; }, () => used); continue; }
