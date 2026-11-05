@@ -92,9 +92,9 @@ function draw() {
     <div class="acts"><button class="btn" type="button" id="save-contact">Save contact details</button></div></section>
 
 
-  <section class="card"><h3>Signature</h3><p class="m">Keep one signature on file. You can choose it as the text type for any signature line in the Document Builder. Upload a picture or draw it. Saving a new one replaces the old one.</p><div id="m-sig"></div>
-    <div class="sigbox" id="sig-cur">${SIG ? `<img src="${esc(SIG)}" alt="Your signature">` : '<span class="m">No signature on file.</span>'}</div>
-    <div class="acts"><label class="btn outline" for="sig-file" style="cursor:pointer">Upload a picture</label><input type="file" id="sig-file" accept="image/png,image/jpeg,image/webp" hidden><button class="btn outline" type="button" id="sig-draw">Draw it</button>${SIG ? '<button class="btn outline" type="button" id="sig-rm">Remove signature</button>' : ''}</div>
+  <section class="card" id="signature"><h3>Signature</h3><p class="m">Keep one signature on file. Upload a picture or draw it, then choose “My signature” as the text type on any signature line in the Document Builder. Saving a new one replaces the old one. Without a picture, signature lines show a typed signature: /s/ and your name in the standard font at 12 pt.</p><div id="m-sig"></div>
+    <div class="sigbox" id="sig-cur">${SIG ? `<img src="${esc(SIG)}" alt="Your signature">` : `<span style="font:12pt 'Times New Roman',serif;color:#000">/s/ ${esc(account.name || '')}</span>`}</div>
+    <div class="acts"><label class="btn outline" for="sig-file" style="cursor:pointer">Upload a picture</label><input type="file" id="sig-file" accept="image/png,image/jpeg,image/webp" hidden><button class="btn outline" type="button" id="sig-draw">Draw it</button>${SIG ? '<button class="btn outline" type="button" id="sig-rm">Use a typed signature instead</button>' : ''}</div>
     <div id="sig-pad" hidden style="margin-top:14px"><canvas class="sigpad" id="sig-cv" width="1200" height="360" aria-label="Draw your signature here"></canvas>
       <div class="acts" style="margin-top:10px"><button class="btn" type="button" id="sig-use">Save drawing</button><button class="btn outline" type="button" id="sig-clear">Clear</button><button class="btn outline" type="button" id="sig-cancel">Cancel</button></div></div></section>
 
@@ -111,7 +111,7 @@ function draw() {
     <div class="cols">${f('New email address', 'em-new', '', { type: 'email', ac: 'email' })}${f('Current password', 'em-pw', '', { type: 'password', ac: 'current-password' })}</div>
     <div class="acts"><button class="btn outline" type="button" id="save-mail">Send verification link</button></div></section>`;
   $('pin')?.addEventListener('click', () => { pinShown = !pinShown; draw(); });
-  wireSig(); $('save-contact').onclick = saveContact; $('save-prefs').onclick = savePrefs; $('save-pass').onclick = savePass; $('save-mail').onclick = saveMail;
+  wireSig(); if (location.hash === '#signature' && !draw.jumped) { draw.jumped = true; setTimeout(() => $('signature')?.scrollIntoView({ block: 'start' }), 60); } $('save-contact').onclick = saveContact; $('save-prefs').onclick = savePrefs; $('save-pass').onclick = savePass; $('save-mail').onclick = saveMail;
 }
 
 /* ── Signature: one per person, a small transparent PNG ── */
@@ -152,7 +152,7 @@ function wireSig() {
   $('sig-draw').onclick = () => { $('sig-pad').hidden = false; reset(); msg('m-sig', ''); };
   $('sig-clear').onclick = reset; $('sig-cancel').onclick = () => { $('sig-pad').hidden = true; };
   $('sig-use').onclick = () => { if (!ink) return msg('m-sig', 'Draw your signature first.', false); const im = new Image(); im.onload = () => saveSig(toPng(im)); im.src = cv.toDataURL('image/png'); };
-  $('sig-rm')?.addEventListener('click', async () => { try { await deleteDoc(doc(db, 'userSignatures', account.uid)); SIG = ''; draw(); msg('m-sig', 'Your signature was removed.'); } catch (er) { console.error(er); msg('m-sig', 'We could not remove it. Try again.', false); } });
+  $('sig-rm')?.addEventListener('click', async () => { try { await deleteDoc(doc(db, 'userSignatures', account.uid)); SIG = ''; draw(); msg('m-sig', 'Done. Your signature lines will use the typed signature.'); } catch (er) { console.error(er); msg('m-sig', 'We could not remove it. Try again.', false); } });
 }
 const val = id => ($(id)?.value || '').trim();
 const busy = (b, on, t) => { b.disabled = on; b.dataset.l = b.dataset.l || b.textContent; b.textContent = on ? t : b.dataset.l; };
