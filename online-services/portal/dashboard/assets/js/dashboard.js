@@ -149,7 +149,7 @@ async function loadData(account, role) {
       hearings.push({ ...base, type: h.type, date: h.date, where: [h.attendance === 'video' ? 'Videoconference' : (/^\d+$/.test(String(h.courtroom || '')) ? 'Courtroom ' + h.courtroom : h.courtroom), h.officer].filter(Boolean).join(' · ') });
       events.push({ date: h.date, text: `${h.type} in ${c.caseId}: ${h.result || 'scheduled'}` });
     });
-    ((c.filings && c.filings.length) ? c.filings : (c.events || []).filter(e => e.type === 'filing' && !e.sealed).map(e => ({ title: e.description, filedBy: e.filedBy, dateFiled: e.date }))).forEach(f => {
+    ((c.filings && c.filings.length) ? c.filings : (c.events || []).filter(e => e.type === 'filing' && !e.sealed && !e.struck).map(e => ({ title: e.description, filedBy: e.filedBy, dateFiled: e.date }))).forEach(f => {
       filings.push({ ...base, title: f.title, by: f.filedBy, date: f.dateFiled });
       events.push({ date: f.dateFiled, text: `${f.title} filed in ${c.caseId}` });
     });

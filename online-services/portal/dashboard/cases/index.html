@@ -66,7 +66,7 @@ tr[data-open]{cursor:pointer}
 <div class="auth-loading-overlay" id="auth-overlay" role="status"><div class="alo-title">Online Portal</div><div class="spin"></div><div>Verifying your session…</div></div>
 
 <script type="module">
-import { boot, db, $, esc, has, SELF, STAFF, colFor, DISTRICT_COURT, SUPREME_COURT } from '/courts/online-services/portal/dashboard/assets/js/portal-shell.js?v=6';
+import { boot, db, $, esc, has, SELF, STAFF, colFor, DISTRICT_COURT, SUPREME_COURT } from '/courts/online-services/portal/dashboard/assets/js/portal-shell.js?v=7';
 import { collection, getDocs, getDoc, doc, query, where } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 
 const { account, role } = await boot({ id: 'cases', title: 'My cases', subtitle: 'Cases where you are a party or an attorney of record.' });
@@ -133,10 +133,12 @@ function link(c) {
 let cases = [], mine = [], subs = [], cur = null, tab = 'overview', dFilter = 'all', dQ = '';
 const LS = { q: '', status: 'active', shown: 25 };
 
+/* Struck docket entries are only visible in case management. Event numbers stay as entered, so a struck entry leaves its number unused. */
+const noStruck = c => Array.isArray(c.events) ? { ...c, events: c.events.filter(e => !e.struck) } : c;
 async function loadAll() {
   const safe = p => p.catch(() => ({ docs: [] }));
   const [d, m, f] = await Promise.all([safe(getDocs(collection(db, 'cases'))), safe(getDocs(collection(db, 'mscCases'))), safe(getDocs(query(collection(db, 'pendingFilings'), where('filedByUid', '==', account.uid))))]);
-  cases = [...d.docs, ...m.docs].map(x => ({ ...x.data(), _id: x.id }));
+  cases = [...d.docs, ...m.docs].map(x => noStruck({ ...x.data(), _id: x.id }));
   mine = cases.map(c => ({ c, lk: link(c) })).filter(x => x.lk);
   subs = f.docs.map(x => ({ ...x.data(), _id: x.id }));
 }
@@ -179,7 +181,7 @@ async function showCase(id) {
   let x = mine.find(m => m.c._id === id || m.c.caseId === id);
   if (!x) { setHead('', '<a class="btn outline" href="#">All my cases</a>'); root.innerHTML = `<section class="card">${empty('Case not found', 'This case is not linked to your account. You can look up public cases with case search.')}<div class="acts" style="justify-content:center;margin-top:8px"><a class="btn outline" href="https://migovt.org/courts/case-search/">Search cases</a></div></section>`; return; }
   const fresh = await getDoc(doc(db, colFor(x.c.court), x.c._id)).catch(() => null);   // always show the latest record
-  cur = fresh?.exists() ? { ...fresh.data(), _id: fresh.id } : x.c; cur._lk = link(cur) || x.lk;
+  cur = fresh?.exists() ? noStruck({ ...fresh.data(), _id: fresh.id }) : x.c; cur._lk = link(cur) || x.lk;
   tab = 'overview'; dFilter = 'all'; dQ = ''; window.scrollTo(0, 0); draw();
 }
 function alerts() {

@@ -488,11 +488,13 @@ function decorate(c){
     next: nh, text };
 }
 
+/* Struck docket entries are only visible in case management. Event numbers stay as entered, so a struck entry leaves its number unused. */
+const noStruck = c => Array.isArray(c.events) ? { ...c, events: c.events.filter(e => !e.struck) } : c;
 function loadAll(){
   if (!LOADING) LOADING = (async () => {
     const snap = await getDocs(collection(db,'cases'));
     const rows = [];
-    snap.forEach(d => rows.push({...d.data(), _id: d.id}));
+    snap.forEach(d => rows.push(noStruck({...d.data(), _id: d.id})));
     RAW = rows;
     CASES = RAW.filter(c => isPublic(c) && isTrialCase(c)).map(decorate);
     return RAW;
@@ -664,7 +666,7 @@ async function showDetail(id){
     let c = (RAW || []).find(x => x._id === id || x.caseId === id) || null;
     if (!c) {
       const snap = await getDoc(doc(db, 'cases', id));
-      if (snap.exists()) c = {...snap.data(), _id: snap.id};
+      if (snap.exists()) c = noStruck({...snap.data(), _id: snap.id});
     }
     $('detail-loading').hidden = true;
     box.hidden = false;
