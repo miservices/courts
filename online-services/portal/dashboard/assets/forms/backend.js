@@ -46,6 +46,8 @@ export function firebaseBackend({ db, app }) {
     async getSignature(uid) { try { const s = await getDoc(doc(db, 'userSignatures', uid)); return s.exists() && s.data().png ? s.data().png : ''; } catch (e) { console.warn('Signature unavailable', e); return ''; } },
     /* The picture and which signature the person prefers ('image' or 'slash'). */
     async getSignatureInfo(uid) { try { const s = await getDoc(doc(db, 'userSignatures', uid)); const d = s.exists() ? s.data() : {}; return { png: d.png || '', pref: d.pref === 'slash' ? 'slash' : 'image' }; } catch (e) { console.warn('Signature unavailable', e); return { png: '', pref: 'slash' }; } },
+    async setSignature(uid, png) { await setDoc(doc(db, 'userSignatures', uid), { png, uid, ...(png ? { pref: 'image' } : {}), updatedAt: new Date().toISOString() }, { merge: true }); },
+    async setSigPref(uid, pref) { await setDoc(doc(db, 'userSignatures', uid), { pref, uid }, { merge: true }); },
     async getPleadingSettings(uid) { try { const s = await getDoc(doc(db, 'accountDirectory', uid)); return s.exists() && s.data().pleadingSettings ? s.data().pleadingSettings : null; } catch (e) { console.warn('Pleading settings unavailable', e); return null; } },
     async setPleadingSettings(uid, v) { await setDoc(doc(db, 'accountDirectory', uid), { pleadingSettings: v }, { merge: true }); },
     async setSettings(uid, v) { await setDoc(doc(db, 'accountDirectory', uid), { builderSettings: v }, { merge: true }); },

@@ -70,7 +70,7 @@ export function toMarkdown(def, api) {
   if (st.length) { o.push('## Field styles', ''); st.forEach(([id, v]) => o.push('- ' + id + ': ' + tok(v))); o.push(''); }
   const rc = api.records?.();
   if (rc) { const cl = x => String(x || '').replace(/[|\r\n]+/g, ' ').trim(), L = [];
-    Object.entries(rc.signed).forEach(([k, v]) => L.push(`- ${k}: signed | ${cl(v.name)} | ${v.mode === 'image' ? 'image' : 'slash'} | ${cl(v.uid)} | ${cl(v.at)}`));
+    Object.entries(rc.signed).forEach(([k, v]) => L.push(`- ${k}: signed | ${cl(v.name)} | ${['image', 'font', 'stamp'].includes(v.mode) ? v.mode : 'slash'} | ${cl(v.uid)} | ${cl(v.at)}`));
     Object.entries(rc.pending).forEach(([k, v]) => { if (!rc.signed[k]) L.push(`- ${k}: awaiting | ${cl(v.name)} | ${cl(v.uid)}`); });
     if (L.length) o.push('## Signature record', '', ...L, ''); }
   const im = all.filter(([, v]) => v.f === 'Signature image' && v.g); if (im.length) { o.push('## Signature images', ''); im.forEach(([id, v]) => o.push('- ' + id + ': ' + v.g)); o.push(''); }
@@ -104,7 +104,7 @@ export function parseMd(def, txt) {
       curGroup = groups.find(g => norm(g.heading) === norm(m[1])) || null; curItem = null; mode = norm(m[1]) === 'signature record' ? 'rec' : norm(m[1]) === 'signature images' ? 'img' : norm(m[1]) === 'field styles' ? 'sty' : norm(m[1]) === 'default fonts' ? 'dfl' : 'sec'; if (curGroup && !found.has(curGroup)) found.set(curGroup, []);
     } else if ((m = ln.match(/^[-*]\s+(.+?):\s?(.*)$/))) {
       const k = norm(m[1]);
-      if (mode === 'rec') { const q = m[2].split('|').map(x => x.trim()), k0 = m[1].trim().toLowerCase(); if (q[0] === 'signed') records.signed[k0] = { name: q[1] || '', mode: q[2] === 'image' ? 'image' : 'slash', uid: q[3] || '', at: q[4] || '' }; else if (q[0] === 'awaiting') records.pending[k0] = { name: q[1] || '', uid: q[2] || '' }; }
+      if (mode === 'rec') { const q = m[2].split('|').map(x => x.trim()), k0 = m[1].trim().toLowerCase(); if (q[0] === 'signed') records.signed[k0] = { name: q[1] || '', mode: ['image', 'font', 'stamp'].includes(q[2]) ? q[2] : 'slash', uid: q[3] || '', at: q[4] || '' }; else if (q[0] === 'awaiting') records.pending[k0] = { name: q[1] || '', uid: q[2] || '' }; }
       else if (mode === 'img') { const id = m[1].trim().toLowerCase(); if (styles[id]) styles[id].g = m[2].trim(); }
       else if (mode === 'sty' || mode === 'dfl') {
         const p = m[2].split(/[,;]/).map(x => x.trim()).filter(Boolean), isMeta = x => /^(not bold|bold|not italic|italic|\d+(\.\d+)?\s*pt|types:.*)$/i.test(x), ty = p.find(x => /^types:/i.test(x));
@@ -175,9 +175,9 @@ const FP_CSS = `.fp{position:fixed;z-index:2147483000;width:320px;max-width:calc
 .fp-f svg{fill:none}.fp-f:hover{background:#e8eef8;color:#10264a}.fp-f[aria-pressed=true]{color:#c58a00}.fp-f[aria-pressed=true] svg{fill:currentColor}`;
 const today = () => { const d = new Date(); return String(d.getMonth() + 1).padStart(2, '0') + '/' + String(d.getDate()).padStart(2, '0') + '/' + d.getFullYear(); };
 
-export async function mountForm(def, host, { account, role, md, onDirty, onEdit, readOnly = false, actions = [], onAction, favs: favList, onFavs, onFontNotice, onNote, fileLabel = 'File', signature = '', sigPref = 'image', uid: myUidOpt = '', signKeys = null, onSigInfo, settingsUrl = '' } = {}) {
+export async function mountForm(def, host, { account, role, md, onDirty, onEdit, readOnly = false, actions = [], onAction, favs: favList, onFavs, onFontNotice, onNote, fileLabel = 'File', signature = '', sigPref = 'image', uid: myUidOpt = '', signKeys = null, onSaveSig, onRemoveSig, onSavePref, onSigInfo, settingsUrl = '' } = {}) {
   const allow = (f, key) => def.fontOpen || fontAllowed(f, role, key ? kindOf(key) : undefined) && (!key || fontFits(def, f, kindOf(key)));
-  const mySig = okImg(signature), isCourt = STAFF_RE.test(role || ''), courtLock = k => !!def.courtKeys?.includes(k) && !isCourt, sigKeys = new Set(), signed = {}, pending = {}, myUid = myUidOpt || account?.uid || '', signOnly = Array.isArray(signKeys) ? signKeys : null, sgEl = {};
+  let mySig = okImg(signature); let myPref = sigPref; const isCourt = STAFF_RE.test(role || ''), courtLock = k => !!def.courtKeys?.includes(k) && !isCourt, sigKeys = new Set(), signed = {}, pending = {}, myUid = myUidOpt || account?.uid || '', signOnly = Array.isArray(signKeys) ? signKeys : null, sgEl = {};
   const typesFor = key => { const l = def.fontPolicy && key ? (def.fontPolicy[kindOf(key)] || def.fontPolicy.sig || []) : null; return (l ? TYPES.filter(t => l.includes(t.id)) : TYPES).filter(t => t.id !== 'sigimg' && (!key || t.fonts.some(f => allow(f, key)))); };
   const shown = (t, key) => t.fonts.filter(f => !(f === 'Times New Roman' && def.font !== 'Times New Roman') && (!key || allow(f, key)));   // fonts this person cannot use are not listed
   const who = { name: (account?.name || account?.displayName || '').trim(), org: account?.organization || '', title: account?.title || account?.jobTitle || '', badge: account?.badgeNumber || account?.badge || '', bar: account?.barNumber || account?.barNo || '', phone: account?.phone || '', email: account?.email || '', address: (() => { const a = account?.address; if (!a || typeof a !== 'object') return typeof a === 'string' ? a : ''; const l2 = [a.city, [a.state, a.zip].filter(Boolean).join(' ')].filter(Boolean).join(', '); return [[a.street, a.unit].filter(Boolean).join(', '), l2].filter(Boolean).join('\n'); })(), today: today() };
@@ -252,12 +252,12 @@ export async function mountForm(def, host, { account, role, md, onDirty, onEdit,
        blank  what prints when the field is empty (the form's own blank line, e.g. "___")
        style  extra inline style (e.g. text-transform) */
     ed(key, o = {}) {
-      const e = src(key), raw0 = o.text !== undefined ? o.text : (e ? String(e.value || '').replace(/\r/g, '') : ''), sys = key === 'caseno' || key === 'judge', hm = key === 'judge' ? /^\s*Hon(?:\.|orable)?\s+(.*)$/i.exec(raw0) : null, raw = hm ? hm[1] : raw0, hon = key === 'judge' && (raw.trim() || o.hon) ? 'Hon. ' : '', blank = !raw && o.blank, isSig = !sys && !!o.pre && /\/s\//.test(o.pre), lk = !sys && courtLock(key), simg = isSig && effOf(key).f === SIGFONT ? (sty[key]?.g || '') : '', st = (sys ? fontCss('Special Elite') + ';' : isSig ? (simg ? 'display:inline-block;position:relative;min-width:170px;height:46px;vertical-align:bottom;color:transparent;' : '') : styleOf(key)) + (o.style || '');
+      const e = src(key), raw0 = o.text !== undefined ? o.text : (e ? String(e.value || '').replace(/\r/g, '') : ''), sys = key === 'caseno' || key === 'judge', hm = key === 'judge' ? /^\s*Hon(?:\.|orable)?\s+(.*)$/i.exec(raw0) : null, raw = hm ? hm[1] : raw0, hon = key === 'judge' && (raw.trim() || o.hon) ? 'Hon. ' : '', blank = !raw && o.blank, isSig = !sys && !!o.pre && /\/s\//.test(o.pre), lk = !sys && courtLock(key), simg = isSig && effOf(key).f === SIGFONT ? (sty[key]?.g || '') : '', fsig = isSig && !simg && ['font', 'stamp'].includes(signed[key]?.mode) && !!sty[key]?.f, st = (sys ? fontCss('Special Elite') + ';' : isSig ? (simg ? 'display:inline-block;position:relative;min-width:170px;height:46px;vertical-align:bottom;color:transparent;' : fsig ? styleOf(key) : '') : styleOf(key)) + (o.style || '');
       if (isSig) sigKeys.add(key);   // case number and judge are stamped by the system
       if (isSig && !signed[key] && pending[key] && !raw) return `<span data-f="${esc(key)}" data-sig="1" style="color:#7a5b00;font-style:italic;font-size:${P(10)}">[Awaiting signature of ${esc(pending[key].name)}]</span>`;
       const body = `<span data-f="${esc(key)}" data-ph="${esc(o.ph || (e ? labelOf(e) : key))}"${o.off !== undefined ? ` data-off="${o.off}" data-len="${raw.length}"` : ''}${o.multi ? ' data-multi="1"' : ''}${blank ? ' data-blank="1"' : ''}${sys ? ' data-sys="1"' : ''}${isSig ? ' data-sig="1"' : ''}${lk ? ' data-lock="1"' : ''}${st ? ` style="${esc(st)}"` : ''} ${readOnly || sys || isSig || lk ? '' : ` contenteditable="${PLAIN}"`} spellcheck="false">${simg ? `<img src="${esc(simg)}" alt="" contenteditable="false" style="position:absolute;left:0;top:0;height:46px;max-width:100%;pointer-events:none;-webkit-user-select:none;user-select:none">` : ''}${esc(blank ? o.blank : raw)}${o.multi && raw.endsWith('\n') ? '\n' : ''}</span>`;
-      const fx = effOf(key).f, pre = o.pre && /\/s\//.test(o.pre) && fx && typeOf(fx) !== 'default' ? '' : o.pre;   // a styled signature is not prefixed with /s/
-      const std = isSig && !simg;   // the standard typed signature, "/s/ Name", is 10 pt
+      const fx = effOf(key).f, pre = o.pre && /\/s\//.test(o.pre) && fx && typeOf(fx) !== 'default' && signed[key]?.mode !== 'stamp' ? '' : o.pre;   // a styled signature is not prefixed with /s/
+      const std = isSig && !simg && !fsig;   // the standard typed signature, "/s/ Name", is 10 pt
       return std ? `<span style="font-size:${P(10)}">${hon + (raw && pre ? esc(pre) + body : body)}</span>` : hon + (raw && pre ? esc(pre) + body : body);   // the "Hon." label stays in the form's own font; only the name is stamped
     },
     edt: (key, t, o = {}) => api.ed(key, { ...o, text: t, off: api.seg || 0, multi: true }),   // one page's share of a long text
@@ -379,23 +379,33 @@ export async function mountForm(def, host, { account, role, md, onDirty, onEdit,
     Object.keys(signed).forEach(k => delete signed[k]); Object.keys(pending).forEach(k => delete pending[k]);
     Object.entries(r?.signed || {}).forEach(([k, v]) => { signed[k] = { ...v }; }); Object.entries(r?.pending || {}).forEach(([k, v]) => { pending[k] = { ...v }; });
   }
-  const prefMode = () => sigPref === 'slash' || !mySig ? 'slash' : 'image';
+  const prefMode = () => myPref === 'slash' || !mySig ? 'slash' : 'image';
   const mineSg = sg => !!sg && (sg.uid ? sg.uid === myUid : String(sg.name || '').trim().toLowerCase() === who.name.toLowerCase());
   const lineLabel = k => (labelOf(src(k) || { previousElementSibling: null, parentElement: null }) || k).replace(/\s*\((typed|type or print)\)\s*$/i, '');
-  const eligible = k => { if (signed[k] || !who.name) return false; if (def.signFor?.[k] && !def.signFor[k].test(role || '')) return false; if (signOnly && !signOnly.includes(k)) return false; const v = String(src(k)?.value || '').trim().toLowerCase(), pd = pending[k];
-    if (pd) return pd.uid ? pd.uid === myUid : String(pd.name || '').trim().toLowerCase() === who.name.toLowerCase(); return !v || v === who.name.toLowerCase(); };
-  function signLine(k, mode) {
-    const el = src(k); if (!el || !eligible(k)) { if (el && !signed[k]) { const v = el.value.trim(), pd = pending[k]; api.note(pd ? `This line is waiting for ${pd.name}.` : `This line is for ${v}. Only ${v} can sign it.`, true); } return; }
-    if (mode === 'image' && !mySig) { api.note('Add your signature picture in Account Settings first.', true); return; }
-    el.value = who.name; signed[k] = { name: who.name, mode: mode === 'image' ? 'image' : 'slash', uid: myUid, at: new Date().toISOString() };
-    sty[k] = mode === 'image' ? normSt({ f: SIGFONT, g: mySig }) : blankSt(); bars.forEach(syncBar); render(); mark(); commit(false);
+  const eligible = k => !signed[k] && !!who.name && !(signOnly && !signOnly.includes(k)) && !courtLock(k);   // anyone who may edit the line can sign it, with any name
+  function signLine(k, r) {
+    const el = src(k); if (!el || !eligible(k)) return; if (typeof r === 'string') r = { mode: r, text: who.name };
+    const text = String(r.text || who.name).trim(); if (!text) return; let mode = r.mode;
+    if (mode === 'image' && !mySig) { api.note('Add a signature picture first.', true); return; }
+    if ((mode === 'font' || mode === 'stamp') && !(r.font && allow(r.font, k))) mode = 'slash';
+    el.value = text; signed[k] = { name: text, mode: mode === 'slash' ? 'slash' : mode, uid: myUid, at: new Date().toISOString() };
+    sty[k] = mode === 'image' ? normSt({ f: SIGFONT, g: mySig }) : mode === 'font' ? normSt({ f: r.font, s: 14 }) : mode === 'stamp' ? normSt({ f: r.font, s: 10 }) : blankSt();
+    bars.forEach(syncBar); render(); mark(); commit(false);
+  }
+  async function askSign(k) {
+    if (!eligible(k)) return; const { openSignDialog } = await import(new URL('./sigdlg.js?v=1', import.meta.url).href);
+    const fl = TYPES.filter(t => t.id !== 'default' && t.id !== 'sigimg').flatMap(t => shown(t, k).map(f => ({ f, css: fontCss(f), stamp: t.id === 'stamp' })));
+    const r = await openSignDialog({ label: lineLabel(k), name: String(src(k)?.value || '').trim() || who.name, image: mySig, fonts: fl,
+      saveImage: onSaveSig ? async png => { await onSaveSig(png); mySig = okImg(png); } : null, removeImage: onRemoveSig ? async () => { await onRemoveSig(); mySig = ''; } : null,
+      savePref: onSavePref ? async p => { try { await onSavePref(p); myPref = p; } catch (e) { console.warn(e); } } : null });
+    if (r) signLine(k, r);
   }
   function unsignLine(k) {
     const sg = signed[k]; if (!sg || !mineSg(sg)) return; delete signed[k]; sty[k] = blankSt(); const el = src(k); if (el) el.value = '';
     bars.forEach(syncBar); render(); mark(); commit(false);
   }
   function autoSign(keys) {   // a line that holds the signer's own name is signed the way they prefer
-    (keys || [...sigKeys]).forEach(k => { if (!signed[k] && eligible(k) && String(src(k)?.value || '').trim().toLowerCase() === who.name.toLowerCase()) signLine(k, prefMode()); });
+    (keys || [...sigKeys]).forEach(k => { if (!signed[k] && eligible(k) && String(src(k)?.value || '').trim().toLowerCase() === who.name.toLowerCase()) signLine(k, { mode: prefMode(), text: who.name }); });
   }
   const sigNote = `<small class="fd-hint">Signatures come from each person's own account settings. ${settingsUrl ? `<a href="${esc(settingsUrl)}" target="_top">Change yours in Settings</a>` : 'Change yours in your account settings.'}</small>`;
   const fmtAt = t => { const d = new Date(t); return isNaN(d) ? '' : d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }); };
@@ -404,12 +414,11 @@ export async function mountForm(def, host, { account, role, md, onDirty, onEdit,
       const inp = src(k); if (!inp) return;
       if (!sgEl[k]) { const bar = bars.find(b => b.dataset.for === k); if (bar) { bars.splice(bars.indexOf(bar), 1); sgEl[k] = bar; } else { sgEl[k] = fd.createElement('div'); inp.insertAdjacentElement('afterend', sgEl[k]); } sgEl[k].className = 'fd-sg'; sgEl[k].dataset.sgfor = k; }
       const sg = signed[k], pd = pending[k], ok = eligible(k); let h = '';
-      inp.disabled = !!sg || (!!pd && !ok) || (readOnly && !!signOnly) || (courtLock(k)); inp.readOnly = true;   // a signature is never typed: it is made with the Sign button, by the person it belongs to
-      if (sg) h = `<small class="fd-hint"><b>Signed</b> by ${esc(sg.name)}${sg.at ? ' on ' + esc(fmtAt(sg.at)) : ''}, ${sg.mode === 'image' ? 'with their signature' : 'as /s/'}. This line is locked.</small>${mineSg(sg) ? ` <button type="button" class="btn outline sm" data-sg="unsign:${esc(k)}">Remove my signature</button>` : ''}`;
-      else if (ok) h = `<div class="fd-sgr"><select data-sgm="${esc(k)}" aria-label="How to sign"><option value="slash"${prefMode() === 'slash' ? ' selected' : ''}>Plain /s/ ${esc(who.name)}</option>${mySig ? `<option value="image"${prefMode() === 'image' ? ' selected' : ''}>My signature (picture)</option>` : ''}</select><button type="button" class="btn sm" data-sg="sign:${esc(k)}">Sign</button></div>${!mySig ? ` <small class="fd-hint">${settingsUrl ? `<a href="${esc(settingsUrl)}" target="_top">Add a signature picture in Settings</a> to sign with it.` : ''}</small>` : ''}`;
+      inp.disabled = !!sg || (readOnly && !!signOnly) || courtLock(k); inp.readOnly = true;   // a signature is never typed: it is made with the Sign button, by the person it belongs to
+      if (sg) h = `<small class="fd-hint"><b>Signed</b> by ${esc(sg.name)}${sg.at ? ' on ' + esc(fmtAt(sg.at)) : ''}, ${sg.mode === 'image' ? 'with a signature picture' : sg.mode === 'font' ? 'in a typed signature style' : sg.mode === 'stamp' ? 'with a stamped /s/' : 'as /s/'}. This line is locked.</small>${mineSg(sg) ? ` <button type="button" class="btn outline sm" data-sg="unsign:${esc(k)}">Remove my signature</button>` : ''}`;
+      else if (ok) h = `<div class="fd-sgr"><button type="button" class="btn sm" data-sg="sign:${esc(k)}">Sign</button><small class="fd-hint">${pd ? `Waiting for ${esc(pd.name)}. ` : ''}Choose a picture, a styled signature, or /s/.</small></div>`;
       else if (pd) h = `<small class="fd-hint">Waiting for ${esc(pd.name)} to sign this line.</small>`;
-      else if (def.signFor?.[k] && !def.signFor[k].test(role || '')) h = `<small class="fd-hint">Only the person this line belongs to can sign it. To get it signed, choose Share, add them, and pick “Can sign only” for this line.</small>`;
-      else if (!courtLock(k)) h = sigNote;
+      else if (!courtLock(k)) h = '';
       if (sgEl[k].innerHTML !== h) sgEl[k].innerHTML = h;
     });
     if (readOnly && signOnly) qa('.fd-fs0 input,.fd-fs0 select,.fd-fs0 textarea,.fd-fs0 button').forEach(n => { if (!n.closest('.fd-sg')) n.disabled = true; });
@@ -469,8 +478,8 @@ export async function mountForm(def, host, { account, role, md, onDirty, onEdit,
     if (e.key === 'Escape') { el.blur(); editing = false; active = null; tb.hidden = true; }
   });
   preview.addEventListener('click', e => {
+    const sgEl2 = e.target.closest?.('[data-sig]'); if (sgEl2) { const k = sgEl2.dataset.f; if (k && eligible(k)) askSign(k); return; }
     if (readOnly) return;
-    if (e.target.closest?.('[data-sig]')) { onSigInfo?.(); return; }
     const c = e.target.closest?.('[data-chk]'); if (c) { if (courtLock(c.dataset.chk)) return; const i = $(c.dataset.chk); if (i) { i.checked = !i.checked; mark(); render(); commit(false); } return; }
     const o = e.target.closest?.('[data-sel]'); if (o) { const [id, v] = o.dataset.sel.split('='), i = $(id); if (i && !courtLock(id)) { if (i.value === v) i.selectedIndex = 0; else i.value = v; mark(); render(); commit(false); } }
   });
@@ -563,7 +572,7 @@ export async function mountForm(def, host, { account, role, md, onDirty, onEdit,
   });
   panel.addEventListener('click', e => {
     const b = e.target.closest('[data-sg]'); if (!b) return; const [a, k] = b.dataset.sg.split(':');
-    if (a === 'sign') signLine(k, panel.querySelector(`[data-sgm="${k}"]`)?.value || prefMode()); else if (a === 'unsign') unsignLine(k);
+    if (a === 'sign') askSign(k); else if (a === 'unsign') unsignLine(k);
   });
   /* Fill in my details as ... */
   const applied = {};

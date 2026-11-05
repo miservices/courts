@@ -177,13 +177,12 @@ export default {
   resolve: (api, k) => { const m = /^(\d+)\.(\w+)$/.exec(k); return m && api.qa('.cnt')[+m[1]]?.querySelector('.f-' + m[2]); },
   build,
   courtKeys: ['ordsel', 'od', 'jname', 'jsig'], courtNote: 'The order is completed by the judge or magistrate, or by court staff for them. Only the judge or magistrate can sign it: staff share the document with them as "Can sign only".',
-  signFor: { jsig: /judge|magistrate|justice/i },
   roles: [
     { id: 'cw', label: 'Complaining witness', fill: (api, w) => ({ cw: w.name, sig1: w.name, d1: w.today }) },
     { id: 'affiant', label: 'Affiant', hint: 'usually the complaining witness too', fill: (api, w) => ({ aff: w.name, aname: w.name, esig: w.name, d3: w.today, agency: w.org, title: w.title, badge: w.badge }) },
     { id: 'prosecutor', label: 'Prosecutor', fill: (api, w) => ({ sig2: w.name, d2: w.today }) },
     { id: 'judge', label: 'Judge or magistrate', for: /judge|magistrate|justice/i, fill: (api, w) => ({ jname: w.name, jsig: w.name, od: w.today }) },
-    { id: 'chambers', label: 'Court staff completing the order for the judge', hint: 'fills the date only; the judge signs their own line', for: /law clerk|judicial assistant|deputy clerk|county clerk|court administrator|court reporter/i, fill: (api, w) => ({ od: w.today }) }
+    { id: 'chambers', label: 'Court staff completing the order for the judge', hint: 'fills the date only; use Sign on the judge\'s line to sign for them, or share the document so the judge can sign', for: /law clerk|judicial assistant|deputy clerk|county clerk|court administrator|court reporter/i, fill: (api, w) => ({ od: w.today }) }
   ],
   md: { alias: { 'defendant full name': 'def' }, malias: { 'defendant full name and address': 'def' },
     migrate: r => { const d = r.multi.def ?? r.single.def; if (d !== undefined && r.single.defn === undefined && r.multi.defa === undefined) { const [n, ...rest] = String(d).split('\n'); r.single.defn = n.trim(); r.multi.defa = rest.join('\n').trim(); } delete r.multi.def; delete r.single.def; }, title: 'Criminal Complaint and Affidavit of Probable Cause', sections: [
