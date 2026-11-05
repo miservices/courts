@@ -1,6 +1,7 @@
 /* MC 240: Order After Arraignment and Pretrial Release Order (one packet).
    Completed by the court: the judge or magistrate, or court staff for them. */
 import a200 from './mc200a.js?v=15';
+import { defendants } from './caseinfo.js?v=1';
 
 const css = args => a200.css(args) + (({ U, P, B }) => `
 .u{text-align:left;padding-left:${P(4)}}
@@ -37,7 +38,6 @@ const panel = `
  <h2>Case</h2>
  <div class="row"><div><label>Judge</label><input type="text" id="judge"></div><div><label>Case No.</label><input type="text" id="caseno"></div></div>
  <label>Defendant's name</label><input type="text" id="defn" placeholder="e.g. John Doe">
- <label>Defendant's personal identification number</label><input type="text" id="pin">
 
  <h2>Arraignment</h2>
  <div class="row"><div><label>1. Date</label><input type="text" id="arrd" placeholder="e.g. 11/05/2026"></div><div><label>2. Time</label><input type="text" id="arrt" placeholder="e.g. 9:00 AM"></div></div>
@@ -119,7 +119,7 @@ function build(api) {
   /* pretrial release order */
   seq.push({ pb: 'new', html: hdr(P, B, 'PRETRIAL RELEASE ORDER<br>(INITIAL ORDER)', E('judge'), E('caseno')) });
   seq.push({ ch: caseHd });
-  seq.push({ html: `<div class="pt"><div class="c1">THE PEOPLE OF THE<br>STATE OF MICHIGAN</div><div class="c2">v</div><div class="c5"><div class="lb">Defendant’s name and personal identification number</div><div class="vv"><div>${E('defn')}</div><div>${E('pin')}</div></div></div></div>${matter}` });
+  seq.push({ html: `<div class="pt"><div class="c1">THE PEOPLE OF THE<br>STATE OF MICHIGAN</div><div class="c2">v</div><div class="c5"><div class="lb">Defendant’s full name</div><div class="vv">${E('defn')}</div></div></div>${matter}` });
   const row = (n, k, t, d) => `<div class="rr"><div>${n}</div><div>${cb(on(k), k)}</div><div>${t}</div><div>${d}</div></div>`;
   seq.push({ html: `<div class="rt"><div class="rr h"><div>Item</div><div>Ordered (Y/N)</div><div>Release Type</div><div>Amount / Details</div></div>
     ${row(1, 'rt1', 'Personal Recognizance', 'N/A')}${row(2, 'rt2', 'Cash Bail', '$' + u('cash', 70))}${row(3, 'rt3', 'Surety Bond', '$' + u('surety', 70))}${row(4, 'rt4', 'Bail Denied', 'See detailed order')}</div>` });
@@ -148,14 +148,15 @@ function build(api) {
   return seq;
 }
 
-const F = ['judge', 'caseno', 'defn', 'pin', 'arrd', 'arrt', 'pres', 'adv', 'plea', 'nxt', 'nxo', 'n15d', 'n15t', 'n15l', 'fo', 'od', 'jname', 'jsig', 'rt1', 'rt2', 'cash', 'rt3', 'surety', 'rt4', 'bond', ...T.map(([k]) => 't' + k), 'tm2', 'd6', 'd7', 'od2', 'jname2', 'jsig2'];
-const L = { judge: 'Judge', caseno: 'Case No.', defn: 'Defendant name', pin: 'Defendant personal identification number', arrd: 'Arraignment date', arrt: 'Arraignment time', pres: 'Presiding', adv: 'Advisement (0 none, 1 signed 4a, 2 refused 4b, 3 not presented 5)', plea: 'Plea (0 none, 1 not guilty, 2 guilty, 3 no contest, 4 stood mute)', nxt: 'Next proceeding (0 none, 1 PC conference, 2 preliminary exam, 3 sentencing, 4 other)', nxo: 'Next proceeding other', n15d: 'Next proceeding date', n15t: 'Next proceeding time', n15l: 'Next proceeding location', fo: 'Further orders entered', od: 'Order date', jname: 'Order judge or magistrate name', jsig: 'Order signature', rt1: 'Release - personal recognizance', rt2: 'Release - cash bail', cash: 'Cash bail amount', rt3: 'Release - surety bond', surety: 'Surety bond amount', rt4: 'Release - bail denied', bond: 'Bond (0 none, 1 new bond, 2 denied, 3 continued)', tm2: 'Premises - may return once with officer', d6: 'Bail denied finding', d7: 'Sheriff maintains custody', od2: 'Release order date', jname2: 'Release order judge or magistrate name', jsig2: 'Release order signature' };
+const F = ['judge', 'caseno', 'defn', 'arrd', 'arrt', 'pres', 'adv', 'plea', 'nxt', 'nxo', 'n15d', 'n15t', 'n15l', 'fo', 'od', 'jname', 'jsig', 'rt1', 'rt2', 'cash', 'rt3', 'surety', 'rt4', 'bond', ...T.map(([k]) => 't' + k), 'tm2', 'd6', 'd7', 'od2', 'jname2', 'jsig2'];
+const L = { judge: 'Judge', caseno: 'Case No.', defn: 'Defendant name', arrd: 'Arraignment date', arrt: 'Arraignment time', pres: 'Presiding', adv: 'Advisement (0 none, 1 signed 4a, 2 refused 4b, 3 not presented 5)', plea: 'Plea (0 none, 1 not guilty, 2 guilty, 3 no contest, 4 stood mute)', nxt: 'Next proceeding (0 none, 1 PC conference, 2 preliminary exam, 3 sentencing, 4 other)', nxo: 'Next proceeding other', n15d: 'Next proceeding date', n15t: 'Next proceeding time', n15l: 'Next proceeding location', fo: 'Further orders entered', od: 'Order date', jname: 'Order judge or magistrate name', jsig: 'Order signature', rt1: 'Release - personal recognizance', rt2: 'Release - cash bail', cash: 'Cash bail amount', rt3: 'Release - surety bond', surety: 'Surety bond amount', rt4: 'Release - bail denied', bond: 'Bond (0 none, 1 new bond, 2 denied, 3 continued)', tm2: 'Premises - may return once with officer', d6: 'Bail denied finding', d7: 'Sheriff maintains custody', od2: 'Release order date', jname2: 'Release order judge or magistrate name', jsig2: 'Release order signature' };
 T.forEach(([k]) => { L['t' + k] = 'Term ' + k; });
 const fields = ids => ids.map(id => [id, L[id]]);
 
 export default {
   id: 'mc240', number: 'MC 240', title: 'Order After Arraignment and Pretrial Release Order', footer: 'MC 240',
   css, panel, usable: U => 686 * U,
+  fromCase: c => ({ defn: defendants(c).join(', ') }),
   init(api) { TD.forEach(k => { api.$('t' + k).checked = true; }); },
   contHeader: api => `<div class="ch">Case Number: <span class="u">${api.ed('caseno')}</span></div>`,
   build,
@@ -165,7 +166,7 @@ export default {
     { id: 'chambers', label: 'Court staff completing the order for the judge', hint: 'fills the dates only', for: /law clerk|judicial assistant|deputy clerk|county clerk|court administrator|court reporter/i, fill: (api, w) => ({ od: w.today, od2: w.today }) }
   ],
   md: { title: 'Order After Arraignment and Pretrial Release Order', sections: [
-    { name: 'Parties and case', fields: fields(['judge', 'caseno', 'defn', 'pin']) },
+    { name: 'Parties and case', fields: fields(['judge', 'caseno', 'defn']) },
     { name: 'Arraignment', fields: fields(['arrd', 'arrt', 'pres', 'adv', 'plea', 'nxt', 'nxo', 'n15d', 'n15t', 'n15l']) },
     { name: 'Order after arraignment', fields: fields(['fo', 'od', 'jname', 'jsig']), multi: [['fot', 'Further orders']] },
     { name: 'Release type', fields: fields(['rt1', 'rt2', 'cash', 'rt3', 'surety', 'rt4', 'bond']) },

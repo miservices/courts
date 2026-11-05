@@ -202,7 +202,7 @@ const bad = m => { throw new UserError(m); };
 async function loadAll() {
   const [cs, acc] = await Promise.all([Promise.all(scope.map(ct => getDocs(collection(db, colFor(ct))).catch(() => ({ docs: [] })))), getDocs(collection(db, 'accounts')).catch(() => ({ docs: [] }))]);
   cases = cs.flatMap(s => s.docs.map(d => ({ ...d.data(), _id: d.id })));
-  judges = acc.docs.map(d => ({ uid: d.id, name: d.data().name || 'Unnamed', role: d.data().role })).filter(j => has(JUDICIAL, j.role));
+  judges = acc.docs.map(d => ({ uid: d.id, name: d.data().name || 'Unnamed', role: d.data().role, bar: d.data().barNumber || '' })).filter(j => has(JUDICIAL, j.role));
 }
 const idFromHash = () => { try { return decodeURIComponent(location.hash.slice(1)).replace(/^case-/, ''); } catch { return ''; } };
 const setHead = (sub, action = '') => { $('page-subtitle').textContent = sub; $('page-action').innerHTML = action; };
@@ -884,6 +884,8 @@ function payModal(i) {
 /* Orders and rulings */
 function mdPath(l) { const m = /^https:\/\/migovt\.org\/courts\/documents\/#\/((?:filingUploads|case-orders)\/.+\.md)$/i.exec(String(l || '')); try { return m ? decodeURIComponent(m[1]) : ''; } catch { return ''; }  }
 const mdSet = (t, label, v) => String(t).replace(new RegExp('^(- ' + label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ':)[ \\t]*.*$', 'mi'), (_, a) => v ? a + ' ' + v : a);
+/* The judge line on an order: James Sullivan (P59594) */
+const judgeLine = (n, bar) => { const nm = String(n || '').split(/,|;| and /)[0].trim().replace(/^(hon\.?|honorable|chief judge|chief justice|judge|magistrate|justice)\s+/i, '').trim(), b = String(bar || '').trim(), f = !b ? '' : /^[A-Za-z]/.test(b) ? b.toUpperCase() : 'P' + b; return nm ? (f ? `${nm} (${f})` : nm) : ''; };
 const honor = n => { const w = String(n || '').split(/,|;| and /)[0].trim().replace(/^(hon\.?|honorable|chief judge|chief justice|judge|magistrate|justice)\s+/i, '').split(/\s+/).filter(Boolean); if (!w.length) return ''; if (w.length === 1) return 'Hon. ' + w[0]; let l = w.length - 1; while (l > 0 && /^(jr|sr|ii|iii|iv)\.?$/i.test(w[l])) l--; return 'Hon. ' + w[0][0].toUpperCase() + '. ' + w[l]; };
 async function myDrafts() { try { return (await getDocs(query(collection(db, 'draftDocs'), where('members', 'array-contains', account.uid)))).docs.map(d => ({ id: d.id, ...d.data() })).filter(d => d.file).sort((a, b) => (b.updatedAt?.seconds || 0) - (a.updatedAt?.seconds || 0)); } catch (e) { console.warn('Drafts unavailable', e); return []; } }
 async function orderModal(taskIdx, preDraft) {
@@ -901,7 +903,7 @@ async function orderModal(taskIdx, preDraft) {
       if (dr) {   // the drafted order is copied to the case, with the case number and judge filled in by the system
         let t = hand?.md && hand.id === dr.id ? hand.md : null;
         if (t === null) { try { t = new TextDecoder().decode(await getBytes(sRef(storage, `draftDocs/${dr.id}/${dr.file}`), 4 * 1024 * 1024)); } catch (er) { console.error(er); bad('We could not read that draft. Open it in the Document Builder and choose Enter order there.'); } }
-        t = mdSet(mdSet(t, 'Case No.', cur.caseId || ''), 'Judge', honor(judge));
+        t = mdSet(mdSet(t, 'Case No.', cur.caseId || ''), 'Judge', judgeLine(judge, judges.find(x => x.name === judge)?.bar));
         fname = (dr.title || 'Order').replace(/[^A-Za-z0-9._-]+/g, '_') + '.md';
         const path = `case-orders/${cur._id}/${Date.now()}-${fname}`; await uploadBytes(sRef(storage, path), new Blob([t], { type: 'text/markdown' }), { contentType: 'text/markdown' });
         link = 'https://migovt.org/courts/documents/#/' + path.split('/').map(encodeURIComponent).join('/'); try { sessionStorage.removeItem('fd-order'); } catch { }

@@ -39,7 +39,9 @@ dialog>footer{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:10px;padd
 .fd-top{display:flex;gap:10px;align-items:center;margin-bottom:12px;flex-wrap:wrap}
 .fd-wrap{display:flex;gap:14px;align-items:stretch;min-height:480px}
 .fd-panel{width:400px;flex:none;overflow-y:auto;overscroll-behavior:contain;background:#fff;border:1px solid #d9dee7;border-radius:10px;padding:16px;font-size:13px}
-.fd-panel h3{margin:0 0 4px;font-size:16px}.fd-hint{color:#667;font-size:12px;font-weight:400}.fd-sg{margin:4px 0 10px}.fd-sgr{display:flex;gap:6px;align-items:center;flex-wrap:wrap}.fd-sgr select{flex:1;min-width:0}
+.fd-panel h3{margin:0 0 4px;font-size:16px}.fd-hint{color:#667;font-size:12px;font-weight:400}.fd-lkd{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin:4px 0 8px;font-size:13px}.fd-badge{background:#e6f4ea;color:#1b6b3a;border-radius:10px;padding:1px 8px;font-size:11px;font-weight:700}.fd-lkb{margin-left:auto}.fd-cfr{display:flex;gap:8px;align-items:center;margin:4px 0;font-size:12px}.fd-cfr>span{min-width:76px}.fd-rq{margin:6px 0;padding:8px 10px;background:#fff8e6;border:1px solid #f0d99a;border-radius:6px;font-size:12.5px}.fd-rq button{margin:6px 6px 0 0}
+.cs-list{list-style:none;margin:8px 0 0;padding:0;max-height:300px;overflow:auto}.cs-list li{border:1px solid #d9dee8;border-radius:6px;margin-bottom:6px}.cs-list button{all:unset;display:block;width:100%;box-sizing:border-box;padding:8px 10px;cursor:pointer}.cs-list button:hover,.cs-list button:focus-visible{background:#eef2fa}.cs-list small{color:#667;display:block}
+.fd-sg{margin:4px 0 10px}.fd-sgr{display:flex;gap:6px;align-items:center;flex-wrap:wrap}.fd-sgr select{flex:1;min-width:0}
 .fd-panel h2{font-size:12px;text-transform:uppercase;letter-spacing:.05em;margin:22px 0 8px;color:#345;border-bottom:1px solid #dde;padding:0 0 4px}
 .fd-panel label{display:block;font-size:12px;line-height:1.25;font-weight:600;color:#445;margin:10px 0 4px}
 .fd-panel input[type=text],.fd-panel textarea,.fd-panel select{display:block;width:100%;box-sizing:border-box;height:34px;padding:6px 8px;border:1px solid #b9c2cf;border-radius:6px;background:#fff;color:#1a2233;font-size:13px;font-family:inherit;line-height:1.3}
@@ -110,6 +112,87 @@ dialog.cdlg{width:min(440px,calc(100vw - 24px))}
 .st-chip{display:inline-flex;align-items:center;gap:6px;border:1px solid #c5cdda;border-radius:999px;padding:3px 6px 3px 12px;margin:0 8px 8px 0;font-size:18px;background:#fff}.st-chip button{border:0;background:#e8edf5;border-radius:50%;width:22px;height:22px;cursor:pointer;font-size:14px;line-height:1}
 .cs-l{display:flex;flex-direction:column;gap:6px;margin-top:10px;max-height:46vh;overflow:auto}.cs-i{text-align:left;border:1px solid #d3d9e3;background:#fff;border-radius:8px;padding:9px 12px;cursor:pointer;font:inherit}.cs-i:hover,.cs-i:focus-visible{border-color:#1f3a68;background:#f3f6fb}.cs-i b{display:block}.cs-i small{color:#556}
 @media(max-width:760px){.st-r{grid-template-columns:1fr 1fr}.st-t{grid-column:1/-1}.st-p{grid-column:1/-1}}
+
+/* ===== Redesign: library, cards, editor chrome ===== */
+:root{--dd-navy:var(--navy,#10264a);--dd-line:#dbe1ec;--dd-soft:#f3f6fb;--dd-ink:#18223a;--dd-mut:#5f6c82;--dd-acc:#2b5db8}
+.dd-bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:22px}
+.dd-search{position:relative;flex:1 1 320px;min-width:220px}
+.dd-search svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:#7a869b;pointer-events:none}
+.dd-search input{width:100%;box-sizing:border-box;height:46px;padding:0 16px 0 44px;border:1px solid var(--dd-line);border-radius:12px;background:#fff;font:inherit;font-size:15px;color:var(--dd-ink);box-shadow:0 1px 2px rgba(16,38,74,.05)}
+.dd-search input:focus{outline:none;border-color:var(--dd-acc);box-shadow:0 0 0 3px rgba(43,93,184,.16)}
+.dd-bar .btn{height:46px;border-radius:12px;white-space:nowrap}
+.dd-h{display:flex;align-items:baseline;gap:12px;margin:0 0 12px}.dd-h h3{margin:0;font-size:19px;color:var(--dd-navy);font-family:var(--font-head,inherit)}.dd-h span{color:var(--dd-mut);font-size:13px}.dd-h .sp{flex:1}
+.dd-sec{margin-bottom:34px}
+.dd-seg{display:inline-flex;background:#e6ebf3;border-radius:10px;padding:3px;gap:2px}
+.dd-seg button{font:inherit;font-size:13px;font-weight:600;border:0;background:none;color:var(--dd-mut);padding:6px 13px;border-radius:8px;cursor:pointer}
+.dd-seg button i{font-style:normal;opacity:.7;margin-left:5px;font-weight:500}
+.dd-seg button.on{background:#fff;color:var(--dd-navy);box-shadow:0 1px 3px rgba(16,38,74,.18)}
+.dd-seg button:focus-visible{outline:2px solid var(--dd-acc)}
+.dd-sort{height:34px;border:1px solid var(--dd-line);border-radius:8px;background:#fff;font:inherit;font-size:13px;padding:0 8px;color:var(--dd-ink)}
+/* new-document tiles */
+.dd-tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+.dd-tile{display:flex;gap:14px;align-items:flex-start;padding:14px;background:#fff;border:1px solid var(--dd-line);border-radius:14px;text-decoration:none;color:inherit;position:relative;transition:transform .15s,box-shadow .15s,border-color .15s}
+.dd-tile:hover{transform:translateY(-2px);border-color:#b7c5de;box-shadow:0 8px 22px rgba(16,38,74,.12)}
+.dd-tile:focus-visible{outline:3px solid #7fa9e6;outline-offset:2px}
+.dd-tile .ic{flex:none;width:52px;height:68px;border-radius:5px;background:#fff;border:1px solid #cdd6e6;box-shadow:2px 3px 0 #e3e9f4;padding:8px 7px;display:flex;flex-direction:column;gap:4px;position:relative;overflow:hidden}
+.dd-tile .ic i{display:block;height:3px;border-radius:2px;background:#d5dcea}.dd-tile .ic i.h{height:5px;width:60%;background:var(--tint,#2b5db8);margin:0 auto 3px}.dd-tile .ic i.s{width:70%}
+.dd-tile .tx{min-width:0;display:flex;flex-direction:column;gap:3px}
+.dd-tile .no{font-size:11.5px;font-weight:700;letter-spacing:.06em;color:var(--tint,#2b5db8)}
+.dd-tile b{font-size:15.5px;color:var(--dd-navy);line-height:1.25}
+.dd-tile p{margin:0;font-size:12.5px;line-height:1.45;color:var(--dd-mut);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.dd-tile .go{position:absolute;right:12px;top:12px;width:26px;height:26px;border-radius:50%;background:var(--dd-soft);color:var(--dd-navy);display:flex;align-items:center;justify-content:center;font-size:17px;line-height:1;opacity:0;transition:opacity .15s}
+.dd-tile:hover .go,.dd-tile:focus-visible .go{opacity:1}
+.dd-chips{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 12px}.dd-chips button{font:inherit;font-size:12.5px;font-weight:600;padding:5px 12px;border-radius:999px;border:1px solid var(--dd-line);background:#fff;color:var(--dd-mut);cursor:pointer}
+.dd-chips button.on{background:var(--dd-navy);border-color:var(--dd-navy);color:#fff}
+/* document cards */
+.dd-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:16px}
+.dd-card{position:relative;background:#fff;border:1px solid var(--dd-line);border-radius:14px;overflow:hidden;display:flex;flex-direction:column;transition:transform .15s,box-shadow .15s,border-color .15s}
+.dd-card:hover{transform:translateY(-2px);border-color:#b7c5de;box-shadow:0 10px 26px rgba(16,38,74,.13)}
+.dd-card:focus-within{outline:3px solid #7fa9e6;outline-offset:2px}
+.dd-th{height:150px;background:linear-gradient(180deg,#eef2f9,#e2e9f4);display:flex;justify-content:center;align-items:flex-end;padding-top:18px}
+.dd-pg{width:112px;height:100%;background:#fff;border-radius:4px 4px 0 0;box-shadow:0 3px 12px rgba(16,38,74,.2);padding:12px 11px;display:flex;flex-direction:column;gap:5px;position:relative;transition:transform .2s}
+.dd-card:hover .dd-pg{transform:translateY(-4px)}
+.dd-pg i{display:block;height:3px;border-radius:2px;background:#dde3ee}.dd-pg i.h{width:55%;height:4px;margin:0 auto 4px;background:var(--tint,#2b5db8)}.dd-pg i.s{width:72%}.dd-pg i.l{width:40%}
+.dd-pg b{position:absolute;right:8px;bottom:8px;font-size:9.5px;letter-spacing:.06em;color:var(--tint,#2b5db8);background:color-mix(in srgb,var(--tint,#2b5db8) 10%,#fff);padding:2px 6px;border-radius:4px}
+.dd-main{padding:12px 14px 14px;display:flex;flex-direction:column;gap:6px;flex:1}
+.dd-main a{color:var(--dd-navy);font-weight:700;font-size:15px;line-height:1.3;text-decoration:none;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.dd-main a::after{content:"";position:absolute;inset:0}
+.dd-meta{font-size:12px;color:var(--dd-mut);line-height:1.4}
+.dd-foot{display:flex;align-items:center;gap:8px;margin-top:auto;padding-top:6px}
+.dd-role{font-size:11px;font-weight:700;padding:2px 9px;border-radius:999px;background:#e8eef8;color:#2b4a82}.dd-role.own{background:#e3f3ea;color:#23683f}.dd-role.view{background:#eef0f4;color:#566}
+.dd-av{width:22px;height:22px;border-radius:50%;background:var(--dd-navy);color:#fff;font-size:9.5px;font-weight:700;display:inline-flex;align-items:center;justify-content:center}
+.dd-del{position:absolute;right:8px;top:8px;z-index:2;width:30px;height:30px;border-radius:8px;border:0;background:rgba(255,255,255,.92);color:#8a2a2a;cursor:pointer;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .15s;box-shadow:0 1px 4px rgba(16,38,74,.25)}
+.dd-card:hover .dd-del,.dd-del:focus-visible{opacity:1}.dd-del:hover{background:#fbe9e9}
+@media(hover:none){.dd-del,.dd-tile .go{opacity:1}}
+.dd-empty{border:2px dashed #cfd8e8;border-radius:14px;padding:34px 20px;text-align:center;color:var(--dd-mut);background:#fafbfe}
+.dd-empty b{display:block;color:var(--dd-navy);font-size:16px;margin-bottom:4px}
+.dd-skel{height:230px;border-radius:14px;background:linear-gradient(90deg,#edf1f7,#f7f9fc,#edf1f7);background-size:200% 100%;animation:ddsk 1.2s infinite}@keyframes ddsk{to{background-position:-200% 0}}
+/* editor chrome */
+.fd-bar{background:rgba(255,255,255,.94);backdrop-filter:blur(8px);border:1px solid var(--dd-line);border-radius:14px;padding:8px 12px;margin:-4px 0 14px;box-shadow:0 2px 10px rgba(16,38,74,.07);gap:12px}
+.fd-back{border:0;background:var(--dd-soft);border-radius:9px;height:36px}
+.fd-title{border:1px solid transparent;background:transparent;border-radius:8px;font-size:17px;font-weight:700;color:var(--dd-navy);height:38px;transition:background .15s,border-color .15s}
+.fd-title:hover{background:var(--dd-soft)}.fd-title:focus{outline:none;background:#fff;border-color:var(--dd-acc);box-shadow:0 0 0 3px rgba(43,93,184,.16)}
+.fd-bar>.m{font-size:12px;font-weight:700;letter-spacing:.05em;color:var(--dd-acc);background:#e8eef8;padding:4px 10px;border-radius:999px;white-space:nowrap}
+.fd-wrap{gap:18px}
+.fd-panel{border:1px solid var(--dd-line);border-radius:16px;padding:18px 18px 0;box-shadow:0 4px 18px rgba(16,38,74,.07);scrollbar-width:thin}
+.fd-panel>h3{font-size:18px;color:var(--dd-navy);font-family:var(--font-head,inherit)}
+.fd-panel h2{display:flex;align-items:center;gap:8px;font-size:11.5px;letter-spacing:.08em;color:var(--dd-navy);border:0;margin:26px 0 6px;padding:0}
+.fd-panel h2::after{content:"";flex:1;height:1px;background:var(--dd-line)}
+.fd-panel label{font-size:12.5px;color:#34415a;margin:12px 0 5px}
+.fd-panel input[type=text],.fd-panel textarea,.fd-panel select{height:38px;border:1px solid #c9d2e1;border-radius:9px;padding:7px 11px;font-size:13.5px;transition:border-color .12s,box-shadow .12s}
+.fd-panel textarea{height:auto}
+.fd-panel input:hover,.fd-panel textarea:hover,.fd-panel select:hover{border-color:#9db0d0}
+.fd-panel input:focus,.fd-panel textarea:focus,.fd-panel select:focus{outline:none;border-color:var(--dd-acc);box-shadow:0 0 0 3px rgba(43,93,184,.16)}
+.fd-panel .cnt{border:1px solid var(--dd-line);border-radius:12px;background:var(--dd-soft);padding:10px 12px 12px}
+.fd-case,.fd-roles,.fd-dfl{border-radius:12px;border-color:var(--dd-line);background:var(--dd-soft)}
+.fd-case{padding:12px 14px}
+.fd-btns{margin:22px -18px 0;padding:14px 18px;bottom:0;border-top:1px solid var(--dd-line);background:rgba(255,255,255,.96);backdrop-filter:blur(6px);border-radius:0 0 16px 16px}
+.fd-btns .btn{border-radius:10px;height:40px}
+.fd-frame{border-radius:16px;border-color:var(--dd-line);background:#dfe5ef;box-shadow:inset 0 2px 8px rgba(16,38,74,.08)}
+.fd-status{padding:8px 10px;border-radius:8px;background:var(--dd-soft)}.fd-status:empty{display:none}
+.fd-badge{background:#dff2e6!important}
+@media(max-width:900px){.fd-bar{position:static}.dd-tiles{grid-template-columns:1fr}}
+@media(prefers-reduced-motion:reduce){.dd-card,.dd-tile,.dd-pg{transition:none}.dd-skel{animation:none}}
 </style>
 </head>
 <body>
@@ -137,9 +220,10 @@ dialog.cdlg{width:min(440px,calc(100vw - 24px))}
 <script type="module">
 import { boot, db, app, $, esc, has, STAFF } from '/courts/online-services/portal/dashboard/assets/js/portal-shell.js?v=7';
 import { FORMS, byId, byNumber } from '/courts/online-services/portal/dashboard/assets/forms/registry.js?v=5';
-import { mountForm, formOf, fontAllowed, fontFits, fontLock, fontCss, GFONTS, FONT_TYPES, FONT_WARNING } from '/courts/online-services/portal/dashboard/assets/forms/engine.js?v=19';
+import { mountForm, formOf, fontAllowed, fontFits, fontLock, fontCss, GFONTS, FONT_TYPES, FONT_WARNING } from '/courts/online-services/portal/dashboard/assets/forms/engine.js?v=20';
+import { canLink, caption as capOf, judgeName, judgeLine } from '/courts/online-services/portal/dashboard/assets/forms/caseinfo.js?v=1';
 import { DraftSession, accessOf, roleIn } from '/courts/online-services/portal/dashboard/assets/forms/drafts.js?v=2';
-import { firebaseBackend } from '/courts/online-services/portal/dashboard/assets/forms/backend.js?v=8';
+import { firebaseBackend } from '/courts/online-services/portal/dashboard/assets/forms/backend.js?v=9';
 const { account, role, user } = await boot({ id: 'drafting', title: 'Document Drafting', subtitle: 'Prepare court forms. They save automatically, and you can share them to work on together.' });
 const root = $('page-body'), BASE = 'https://migovt.org/courts/online-services/portal/dashboard/document-drafting/', FORMS_PATH = '/courts/online-services/portal/dashboard/assets/forms/';
 const uid = account.uid, myName = (account.name || user?.email || 'Someone').trim(), be = firebaseBackend({ db, app });
@@ -180,25 +264,56 @@ async function closeCurrent() {
 }
 
 /* ---------- library ---------- */
+const TINT = { General: '#2b5db8', Criminal: '#9b2c3a' };
+const ago = t => { const d = secs(t); if (!d) return ''; const m = Math.round((Date.now() - d) / 60000); if (m < 1) return 'Just now'; if (m < 60) return m + ' min ago'; const h = Math.round(m / 60); if (h < 24) return h + (h === 1 ? ' hour ago' : ' hours ago'); const dd = Math.round(h / 24); if (dd < 7) return dd + (dd === 1 ? ' day ago' : ' days ago'); return new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }); };
+const ini = n => (String(n || '?').match(/\p{L}/gu) || ['?']).slice(0, 2).join('').toUpperCase();
+const paper = (f, cls = '') => `<div class="${cls}">${cls === 'ic' ? '' : ''}<i class="h"></i><i></i><i class="s"></i><i></i><i class="s"></i><i class="l"></i>${cls === 'ic' ? '' : `<b>${esc(f?.number || 'DOC')}</b>`}</div>`;
 function library(msg = '') {
-  root.innerHTML = `<section class="card"><div class="fd-top"><h3 style="margin:0;flex:1">Start a form</h3><a class="btn outline" href="${BASE}#settings">Settings</a><button class="btn outline" type="button" id="fd-open">Open a .md file</button><input type="file" id="fd-file" accept=".md,.markdown,.txt,text/markdown,text/plain" hidden></div>
-    <div id="fd-msg" role="alert" style="color:#b33;font-size:13px;min-height:16px">${esc(msg)}</div>
-    ${[...new Set(FORMS.map(f => f.group))].map(g => `<div class="fd-grp">${esc(g)}</div><div class="fd-lib">${FORMS.filter(f => f.group === g).map(f => `<a class="fd-item" href="${BASE}#${f.id}" data-id="${f.id}"><span class="n">${esc(f.number)}</span><b>${esc(f.title)}</b><p>${esc(f.summary || '')}</p></a>`).join('')}</div>`).join('')}</section>
-    <section class="card"><h3>My documents</h3><div id="fd-mine"><div class="loading-inline"><span class="spin-sm"></span>Loading…</div></div></section>
-    <section class="card"><h3>Shared with me</h3><div id="fd-shared"></div></section>`;
+  const groups = [...new Set(FORMS.map(f => f.group))];
+  let all = [], q = '', grp = '', tab = 'all', sort = 'new', loaded = false, failed = false;
+  root.innerHTML = `<div class="dd-bar"><label class="dd-search"><svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="9" cy="9" r="6"/><path d="m14 14 4 4"/></svg><input id="dd-q" type="search" placeholder="Search your documents and forms" autocomplete="off" aria-label="Search documents and forms"></label>
+      <a class="btn outline" href="${BASE}#settings">Settings</a><button class="btn outline" type="button" id="fd-open">Open a .md file</button><input type="file" id="fd-file" accept=".md,.markdown,.txt,text/markdown,text/plain" hidden></div>
+    <div id="fd-msg" role="alert" style="color:#b33;font-size:13px;margin:-14px 0 14px;min-height:0">${esc(msg)}</div>
+    <section class="dd-sec" aria-labelledby="dd-nh"><div class="dd-h"><h3 id="dd-nh">Start a new document</h3><span id="dd-nc"></span></div>
+      <div class="dd-chips" id="dd-g" role="group" aria-label="Form category"><button type="button" class="on" data-g="">All forms</button>${groups.map(g => `<button type="button" data-g="${esc(g)}">${esc(g)}</button>`).join('')}</div>
+      <div class="dd-tiles" id="dd-t"></div></section>
+    <section class="dd-sec" aria-labelledby="dd-dh"><div class="dd-h"><h3 id="dd-dh">Your documents</h3><span class="sp"></span>
+      <div class="dd-seg" id="dd-tabs" role="tablist"></div><select class="dd-sort" id="dd-sort" aria-label="Sort documents"><option value="new">Recently updated</option><option value="old">Oldest first</option><option value="az">Name A–Z</option></select></div>
+      <div id="dd-d"><div class="dd-grid"><div class="dd-skel"></div><div class="dd-skel"></div><div class="dd-skel"></div></div></div></section>`;
+  const hit = (...t) => !q || t.join(' ').toLowerCase().includes(q);
+  const paintTiles = () => {
+    const l = FORMS.filter(f => (!grp || f.group === grp) && hit(f.number, f.title, f.summary, f.group));
+    $('dd-nc').textContent = l.length === FORMS.length ? FORMS.length + ' forms' : `${l.length} of ${FORMS.length} forms`;
+    $('dd-t').innerHTML = l.length ? l.map(f => `<a class="dd-tile" href="${BASE}#${f.id}" data-id="${f.id}" style="--tint:${TINT[f.group] || '#2b5db8'}"><div class="ic"><i class="h"></i><i></i><i class="s"></i><i></i><i class="s"></i></div><div class="tx"><span class="no">${esc(f.number)}</span><b>${esc(f.title)}</b><p>${esc(f.summary || '')}</p></div><span class="go" aria-hidden="true">→</span></a>`).join('') : `<div class="dd-empty" style="grid-column:1/-1"><b>No forms match “${esc(q)}”</b>Try a form number like MC 02, or a word from the title.</div>`;
+  };
+  const paintDocs = () => {
+    const sorted = all.slice().sort((a, b) => sort === 'az' ? String(a.title || '').localeCompare(String(b.title || '')) : sort === 'old' ? secs(a.updatedAt) - secs(b.updatedAt) : secs(b.updatedAt) - secs(a.updatedAt));
+    const mine = sorted.filter(d => d.ownerUid === uid), shared = sorted.filter(d => d.ownerUid !== uid), pool = tab === 'mine' ? mine : tab === 'shared' ? shared : sorted;
+    $('dd-tabs').innerHTML = [['all', 'All', sorted.length], ['mine', 'Mine', mine.length], ['shared', 'Shared with me', shared.length]].map(([k, n, c]) => `<button type="button" role="tab" aria-selected="${tab === k}" class="${tab === k ? 'on' : ''}" data-tab="${k}">${n}<i>${c}</i></button>`).join('');
+    const list = pool.filter(d => hit(d.title, byId(d.formId)?.number, byId(d.formId)?.title, d.ownerName));
+    if (failed) { $('dd-d').innerHTML = '<div class="alert" role="alert">We could not load your documents. Check your connection and try again.</div>'; return; }
+    if (!loaded) return;
+    if (!list.length) { $('dd-d').innerHTML = `<div class="dd-empty"><b>${q ? 'No documents match your search' : tab === 'shared' ? 'Nothing has been shared with you yet' : 'No documents yet'}</b>${q ? 'Try a different word, or clear the search.' : tab === 'shared' ? 'When someone shares a document with you, it appears here.' : 'Pick a form above to start. Everything saves as you type.'}</div>`; return; }
+    $('dd-d').innerHTML = `<div class="dd-grid">${list.map(d => {
+      const r = roleIn(d, uid), f = byId(d.formId), acc = accessOf(d, uid), label = r === 'owner' ? 'Owner' : acc === 'edit' ? 'Can edit' : acc === 'sign' ? 'Signs only' : 'View only', cls = r === 'owner' ? 'own' : acc === 'edit' ? '' : 'view';
+      return `<article class="dd-card" style="--tint:${TINT[f?.group] || '#2b5db8'}"><div class="dd-th" aria-hidden="true">${paper(f, 'dd-pg')}</div>
+        ${r === 'owner' ? `<button class="dd-del" type="button" data-del="${esc(d.id)}" data-t="${esc(d.title || 'Untitled')}" aria-label="Delete ${esc(d.title || 'Untitled')}"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h12M8 6V4h4v2M6 6l1 10h6l1-10"/></svg></button>` : ''}
+        <div class="dd-main"><a href="${BASE}#d/${esc(d.id)}">${esc(d.title || 'Untitled')}</a><div class="dd-meta">${esc(f?.title || d.formId)}<br>${esc(ago(d.updatedAt))}${d.updatedByName && d.updatedByName !== myName ? ' · ' + esc(d.updatedByName) : ''}</div>
+        <div class="dd-foot"><span class="dd-role ${cls}">${label}</span>${r !== 'owner' ? `<span class="dd-av" title="Owner: ${esc(d.ownerName || '')}">${esc(ini(d.ownerName))}</span><span class="dd-meta">${esc(d.ownerName || '')}</span>` : ''}</div></div></article>`;
+    }).join('')}</div>`;
+  };
+  paintTiles();
   $('fd-open').onclick = () => $('fd-file').click();
   $('fd-file').onchange = async e => {
     const f = e.target.files[0]; if (!f) return; const t = await f.text(), n = formOf(t), form = n && byNumber(n);
     if (!form) { $('fd-msg').textContent = n ? `This file is for form "${n}", which is not available here.` : 'We could not tell which form this file is for. Saved files start with "form: <number>".'; return; }
     pendingMd = t; location.hash = form.id;
   };
-  const row = d => { const r = roleIn(d, uid), f = byId(d.formId), label = r === 'owner' ? 'Owner' : accessOf(d, uid) === 'edit' ? 'Can edit' : 'Can view';
-    return `<div class="fd-doc"><a href="${BASE}#d/${esc(d.id)}"><b>${esc(d.title || 'Untitled')}</b><span>${esc(f?.number || d.formId)} · Updated ${esc(when(d.updatedAt))}${d.updatedByName ? ' by ' + esc(d.updatedByName) : ''}${r !== 'owner' ? ' · Owner ' + esc(d.ownerName || '') : ''}</span></a><span class="pill ${r === 'owner' ? 'live' : 'mid'}">${label}</span>${r === 'owner' ? `<button class="btn outline sm" type="button" data-del="${esc(d.id)}" data-t="${esc(d.title || 'Untitled')}">Delete</button>` : ''}</div>`; };
-  unList = be.list(uid, docs => {
-    const sorted = docs.slice().sort((a, b) => secs(b.updatedAt) - secs(a.updatedAt)), mine = sorted.filter(d => d.ownerUid === uid), shared = sorted.filter(d => d.ownerUid !== uid);
-    $('fd-mine').innerHTML = mine.length ? mine.map(row).join('') : '<p class="m">Nothing saved yet. Start a form above. It saves as you type.</p>';
-    $('fd-shared').innerHTML = shared.length ? shared.map(row).join('') : '<p class="m">Documents other people share with you appear here.</p>';
-  }, e => { console.error(e); $('fd-mine').innerHTML = '<div class="alert" role="alert">We could not load your documents. Check your connection and try again.</div>'; });
+  $('dd-q').oninput = e => { q = e.target.value.toLowerCase().trim(); paintTiles(); paintDocs(); };
+  $('dd-g').onclick = e => { const b = e.target.closest('[data-g]'); if (!b) return; grp = b.dataset.g; $('dd-g').querySelectorAll('button').forEach(x => x.classList.toggle('on', x === b)); paintTiles(); };
+  $('dd-tabs').onclick = e => { const b = e.target.closest('[data-tab]'); if (b) { tab = b.dataset.tab; paintDocs(); } };
+  $('dd-sort').onchange = e => { sort = e.target.value; paintDocs(); };
+  unList = be.list(uid, docs => { all = docs; loaded = true; failed = false; paintDocs(); }, e => { console.error(e); failed = true; paintDocs(); });
   root.onclick = async e => {
     const b = e.target.closest('[data-del]'); if (!b) return;
     if (!(await ask({ title: 'Delete this document?', message: `"${b.dataset.t}" will be deleted for you and for everyone it is shared with. This cannot be undone.`, ok: 'Delete', cancel: 'Keep it', danger: true }))) return;
@@ -228,11 +343,11 @@ async function editor({ form, docId, md0 }) {
   const canEdit = access === 'edit', canSign = access === 'sign', title0 = meta?.title || `${form.number} – ${new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
   root.innerHTML = `<div class="fd-top fd-bar"><a class="fd-back" href="${BASE}#" id="fd-back"><svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true"><path d="M12.5 4 6.5 10l6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>All documents</a><input id="fd-title" class="fd-title" type="text" maxlength="120" aria-label="Document name" value="${esc(title0)}"${canEdit ? '' : ' readonly'}><span class="m">${esc(form.number)}${canEdit ? '' : canSign ? ' · Signature only' : ' · View only'}</span></div><div id="fd-host"><div class="loading-inline"><span class="spin-sm"></span>Loading form…</div></div>`;
   try {
-    const def = (await import(`${FORMS_PATH}${form.id}.js?v=17`)).default; if (my !== gen) return;
+    const def = (await import(`${FORMS_PATH}${form.id}.js?v=18`)).default; if (my !== gen) return;
     let session = null;
     if (favCache === null) { favCache = await be.getFavs(uid); if (favCache === null) { try { favCache = JSON.parse(localStorage.getItem('fd-font-favs') || '[]'); } catch { favCache = []; } } if (my !== gen) return; }
     const sInfo = await be.getSignatureInfo(uid), signature = sInfo.png; if (my !== gen) return;
-    const engine = await mountForm(def, $('fd-host'), { account, role, signature, sigPref: sInfo.pref, uid, onSaveSig: png => be.setSignature(uid, png), onRemoveSig: () => be.setSignature(uid, ''), onSavePref: p => be.setSigPref(uid, p), signKeys: canSign ? (meta?.signKeys?.[uid] || []) : null, favs: favCache, onFavs: l => { favCache = l; try { localStorage.setItem('fd-font-favs', JSON.stringify(l)); } catch { } be.setFavs(uid, l).catch(e => console.warn('Favorites not saved', e)); }, md: text ?? md0, readOnly: !canEdit, fileLabel: has(STAFF, role) ? 'Enter order' : 'File', settingsUrl: SIG_URL, onSigInfo: async () => { if (await ask({ title: 'About signatures', message: 'Signing is done with the Sign button next to the signature line in the panel. Your signature picture and /s/ preference are in Account Settings.', ok: 'Open Settings', cancel: 'Not now' })) location.href = SIG_URL; }, actions: canEdit ? ['save', 'share', 'file'] : [], onEdit: () => session?.touch(),
+    const engine = await mountForm(def, $('fd-host'), { account, role, signature, sigPref: sInfo.pref, uid, onSaveSig: png => be.setSignature(uid, png), onRemoveSig: () => be.setSignature(uid, ''), onSavePref: p => be.setSigPref(uid, p), onCaseLink: () => openCases(), signKeys: canSign ? (meta?.signKeys?.[uid] || []) : null, favs: favCache, onFavs: l => { favCache = l; try { localStorage.setItem('fd-font-favs', JSON.stringify(l)); } catch { } be.setFavs(uid, l).catch(e => console.warn('Favorites not saved', e)); }, md: text ?? md0, readOnly: !canEdit, fileLabel: has(STAFF, role) ? 'Enter order' : 'File', settingsUrl: SIG_URL, onSigInfo: async () => { if (await ask({ title: 'About signatures', message: 'Signing is done with the Sign button next to the signature line in the panel. Your signature picture and /s/ preference are in Account Settings.', ok: 'Open Settings', cancel: 'Not now' })) location.href = SIG_URL; }, actions: canEdit ? ['save', 'share', 'file'] : [], onEdit: () => session?.touch(),
       onFontNotice: () => ask({ title: 'Keep your text readable', message: FONT_WARNING, ok: 'I understand', info: true }),
       onAction: a => a === 'save' ? session.save(true) : a === 'share' ? openShare() : fileIt(def) });
     if (my !== gen) { engine.destroy(); return; }
@@ -265,6 +380,21 @@ async function editor({ form, docId, md0 }) {
 }
 
 /* ---------- sharing ---------- */
+/* ---------- link to a case ---------- */
+let caseCache = null;
+async function openCases() {
+  const s = cur?.session; sharing = false; $('dlg-t').textContent = 'Link to a case'; $('dlg-w').textContent = 'Names and details are filled in from the case.'; $('dlg-e').innerHTML = '';
+  $('dlg-b').innerHTML = '<label class="f"><span>Search by case number, name or judge</span><input id="cs-q" type="text" autocomplete="off"></label><ul class="cs-list" id="cs-l"><li style="padding:10px">Loading cases…</li></ul>';
+  $('dlg-f').innerHTML = '<button class="btn outline" type="button" data-close>Cancel</button>'; if (!dlg.open) dlg.showModal();
+  if (!caseCache) { try { caseCache = (await be.cases()).filter(c => canLink(c, account, uid, has(STAFF, role))); } catch (e) { console.error(e); caseCache = []; } }
+  const paint = () => { const q = ($('cs-q')?.value || '').toLowerCase().trim(), list = caseCache.filter(c => !q || [c.caseId, capOf(c), judgeName(c)].join(' ').toLowerCase().includes(q)).slice(0, 40);
+    $('cs-l').innerHTML = list.length ? list.map((c, i) => `<li><button type="button" data-i="${caseCache.indexOf(c)}"><b>${esc(c.caseId || 'No number')}</b> ${esc(capOf(c))}<small>${esc(judgeName(c) || 'No judge assigned')}</small></button></li>`).join('') : '<li style="padding:10px">No matching cases.</li>'; };
+  paint(); $('cs-q').addEventListener('input', paint); $('cs-q').focus();
+  $('cs-l').onclick = async e => { const b = e.target.closest('button[data-i]'); if (!b || !cur?.engine) return; const c = caseCache[+b.dataset.i];
+    const jn = judgeName(c).split(/,|;| and /)[0], bar = jn ? await be.barOf(jn.replace(/^(hon\.?|honorable|chief judge|chief justice|judge|magistrate|justice)\s+/i, '').trim()) : '';
+    const fill = cur.engine.def?.fromCase ? cur.engine.def.fromCase(c) : {};
+    cur.engine.link({ id: c._id, col: c._col, caseno: c.caseId || '', judge: judgeLine(jn, bar), title: capOf(c), fill }); dlg.close(); };
+}
 const dlg = $('dlg'); let sharing = false, found = [], shareMsg = null;
 const shareUrl = () => `${BASE}#d/${cur.session.docId}`;
 async function openShare() {

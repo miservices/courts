@@ -94,9 +94,11 @@ function build(api) {
   return seq;
 }
 
+import { plaintiffs, defendants, caption } from './caseinfo.js?v=1';
 export default {
   id: 'mc02', number: 'MC 02', title: 'Appearance', footer: 'MC 02',
   css, panel, build,
+  fromCase: c => ({ pln: plaintiffs(c).join(', '), dfn: defendants(c).join(', '), matter: caption(c) }),
   contHeader: api => `<div class="ch">Case Number: <span class="cu">${api.ed('caseno')}</span></div>`,
   roles: [
     { id: 'attorney', label: 'Attorney entering the appearance', fill: (api, w) => ({ aname: w.name, sig1: w.name, d1: w.today, bar: w.bar, firm: w.org }) }

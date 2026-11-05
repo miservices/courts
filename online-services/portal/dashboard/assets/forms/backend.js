@@ -48,6 +48,8 @@ export function firebaseBackend({ db, app }) {
     async getSignatureInfo(uid) { try { const s = await getDoc(doc(db, 'userSignatures', uid)); const d = s.exists() ? s.data() : {}; return { png: d.png || '', pref: d.pref === 'slash' ? 'slash' : 'image' }; } catch (e) { console.warn('Signature unavailable', e); return { png: '', pref: 'slash' }; } },
     async setSignature(uid, png) { await setDoc(doc(db, 'userSignatures', uid), { png, uid, ...(png ? { pref: 'image' } : {}), updatedAt: new Date().toISOString() }, { merge: true }); },
     async setSigPref(uid, pref) { await setDoc(doc(db, 'userSignatures', uid), { pref, uid }, { merge: true }); },
+    /* A person's bar number by exact account name (used for the judge line: James Sullivan (P59594)). */
+    async barOf(name) { const n = String(name || '').trim(); if (!n) return ''; this._bars = this._bars || {}; if (n in this._bars) return this._bars[n]; let b = ''; try { const s = await getDocs(query(collection(db, 'accounts'), where('name', '==', n))); s.docs.forEach(d => { if (!b && d.data().barNumber) b = String(d.data().barNumber); }); } catch (e) { console.warn('Bar number unavailable', e); } return this._bars[n] = b; },
     async getPleadingSettings(uid) { try { const s = await getDoc(doc(db, 'accountDirectory', uid)); return s.exists() && s.data().pleadingSettings ? s.data().pleadingSettings : null; } catch (e) { console.warn('Pleading settings unavailable', e); return null; } },
     async setPleadingSettings(uid, v) { await setDoc(doc(db, 'accountDirectory', uid), { pleadingSettings: v }, { merge: true }); },
     async setSettings(uid, v) { await setDoc(doc(db, 'accountDirectory', uid), { builderSettings: v }, { merge: true }); },

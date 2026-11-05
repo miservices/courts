@@ -73,6 +73,7 @@ export function toMarkdown(def, api) {
     Object.entries(rc.signed).forEach(([k, v]) => L.push(`- ${k}: signed | ${cl(v.name)} | ${['image', 'font', 'stamp'].includes(v.mode) ? v.mode : 'slash'} | ${cl(v.uid)} | ${cl(v.at)}`));
     Object.entries(rc.pending).forEach(([k, v]) => { if (!rc.signed[k]) L.push(`- ${k}: awaiting | ${cl(v.name)} | ${cl(v.uid)}`); });
     if (L.length) o.push('## Signature record', '', ...L, ''); }
+  if (rc?.lc?.id) o.push('## Linked case', '', `- Case ID: ${rc.lc.id}`, `- Collection: ${rc.lc.col || 'cases'}`, `- Case number: ${String(rc.lc.caseno || '').replace(/[\r\n]+/g, ' ')}`, `- Caption: ${String(rc.lc.title || '').replace(/[\r\n]+/g, ' ')}`, '');
   const im = all.filter(([, v]) => v.f === 'Signature image' && v.g); if (im.length) { o.push('## Signature images', ''); im.forEach(([id, v]) => o.push('- ' + id + ': ' + v.g)); o.push(''); }
   return o.join('\n');
 }
@@ -85,7 +86,7 @@ export function formOf(text) {   // which form a saved .md belongs to, or null
 export function parseMd(def, txt) {
   const lines = txt.replace(/\r/g, '').split('\n');
   if (keyOf(formOf(txt)) !== keyOf(def.number)) throw new Error(`This file is not a ${def.number} form (no "form: ${def.number}" found).`);
-  const single = {}, multi = {}, styles = {}, found = new Map(), records = { signed: {}, pending: {} }; let curGroup = null, curItem = null, i = 0, mode = '';
+  const single = {}, multi = {}, styles = {}, found = new Map(), records = { signed: {}, pending: {}, lc: {} }; let curGroup = null, curItem = null, i = 0, mode = '';
   const sl = {}, ml = {}, groups = []; def.md.sections.forEach(s => { (s.fields || []).forEach(([id, l]) => sl[norm(l)] = id); (s.multi || []).forEach(([id, l]) => ml[norm(l)] = id); (s.groups || []).forEach(g => groups.push(g)); });
   Object.entries(def.md.malias || {}).forEach(([l, id]) => ml[norm(l)] = id);
   while (i < lines.length) {
@@ -101,10 +102,11 @@ export function parseMd(def, txt) {
         multi[ml[t]] = buf.join('\n').trim();
       }
     } else if ((m = ln.match(/^##\s+(.+?)\s*$/))) {
-      curGroup = groups.find(g => norm(g.heading) === norm(m[1])) || null; curItem = null; mode = norm(m[1]) === 'signature record' ? 'rec' : norm(m[1]) === 'signature images' ? 'img' : norm(m[1]) === 'field styles' ? 'sty' : norm(m[1]) === 'default fonts' ? 'dfl' : 'sec'; if (curGroup && !found.has(curGroup)) found.set(curGroup, []);
+      curGroup = groups.find(g => norm(g.heading) === norm(m[1])) || null; curItem = null; mode = norm(m[1]) === 'linked case' ? 'lnk' : norm(m[1]) === 'signature record' ? 'rec' : norm(m[1]) === 'signature images' ? 'img' : norm(m[1]) === 'field styles' ? 'sty' : norm(m[1]) === 'default fonts' ? 'dfl' : 'sec'; if (curGroup && !found.has(curGroup)) found.set(curGroup, []);
     } else if ((m = ln.match(/^[-*]\s+(.+?):\s?(.*)$/))) {
       const k = norm(m[1]);
-      if (mode === 'rec') { const q = m[2].split('|').map(x => x.trim()), k0 = m[1].trim().toLowerCase(); if (q[0] === 'signed') records.signed[k0] = { name: q[1] || '', mode: ['image', 'font', 'stamp'].includes(q[2]) ? q[2] : 'slash', uid: q[3] || '', at: q[4] || '' }; else if (q[0] === 'awaiting') records.pending[k0] = { name: q[1] || '', uid: q[2] || '' }; }
+      if (mode === 'lnk') { const kk = m[1].toLowerCase().replace(/[^a-z]/g, ''), mp = { caseid: 'id', collection: 'col', casenumber: 'caseno', caption: 'title' }[kk]; if (mp) records.lc[mp] = m[2].trim(); }
+      else if (mode === 'rec') { const q = m[2].split('|').map(x => x.trim()), k0 = m[1].trim().toLowerCase(); if (q[0] === 'signed') records.signed[k0] = { name: q[1] || '', mode: ['image', 'font', 'stamp'].includes(q[2]) ? q[2] : 'slash', uid: q[3] || '', at: q[4] || '' }; else if (q[0] === 'awaiting') records.pending[k0] = { name: q[1] || '', uid: q[2] || '' }; }
       else if (mode === 'img') { const id = m[1].trim().toLowerCase(); if (styles[id]) styles[id].g = m[2].trim(); }
       else if (mode === 'sty' || mode === 'dfl') {
         const p = m[2].split(/[,;]/).map(x => x.trim()).filter(Boolean), isMeta = x => /^(not bold|bold|not italic|italic|\d+(\.\d+)?\s*pt|types:.*)$/i.test(x), ty = p.find(x => /^types:/i.test(x));
@@ -175,9 +177,9 @@ const FP_CSS = `.fp{position:fixed;z-index:2147483000;width:320px;max-width:calc
 .fp-f svg{fill:none}.fp-f:hover{background:#e8eef8;color:#10264a}.fp-f[aria-pressed=true]{color:#c58a00}.fp-f[aria-pressed=true] svg{fill:currentColor}`;
 const today = () => { const d = new Date(); return String(d.getMonth() + 1).padStart(2, '0') + '/' + String(d.getDate()).padStart(2, '0') + '/' + d.getFullYear(); };
 
-export async function mountForm(def, host, { account, role, md, onDirty, onEdit, readOnly = false, actions = [], onAction, favs: favList, onFavs, onFontNotice, onNote, fileLabel = 'File', signature = '', sigPref = 'image', uid: myUidOpt = '', signKeys = null, onSaveSig, onRemoveSig, onSavePref, onSigInfo, settingsUrl = '' } = {}) {
+export async function mountForm(def, host, { account, role, md, onDirty, onEdit, readOnly = false, actions = [], onAction, favs: favList, onFavs, onFontNotice, onNote, fileLabel = 'File', signature = '', sigPref = 'image', uid: myUidOpt = '', signKeys = null, onSaveSig, onRemoveSig, onSavePref, onCaseLink, onSigInfo, settingsUrl = '' } = {}) {
   const allow = (f, key) => def.fontOpen || fontAllowed(f, role, key ? kindOf(key) : undefined) && (!key || fontFits(def, f, kindOf(key)));
-  let mySig = okImg(signature); let myPref = sigPref; const isCourt = STAFF_RE.test(role || ''), courtLock = k => !!def.courtKeys?.includes(k) && !isCourt, sigKeys = new Set(), signed = {}, pending = {}, myUid = myUidOpt || account?.uid || '', signOnly = Array.isArray(signKeys) ? signKeys : null, sgEl = {};
+  let mySig = okImg(signature); let myPref = sigPref; const isCourt = STAFF_RE.test(role || ''), courtLock = k => !!def.courtKeys?.includes(k) && !isCourt, sigKeys = new Set(), signed = {}, pending = {}, myUid = myUidOpt || account?.uid || '', signOnly = Array.isArray(signKeys) ? signKeys : null, sgEl = {}; let linked = null, linkFill = {};
   const typesFor = key => { const l = def.fontPolicy && key ? (def.fontPolicy[kindOf(key)] || def.fontPolicy.sig || []) : null; return (l ? TYPES.filter(t => l.includes(t.id)) : TYPES).filter(t => t.id !== 'sigimg' && (!key || t.fonts.some(f => allow(f, key)))); };
   const shown = (t, key) => t.fonts.filter(f => !(f === 'Times New Roman' && def.font !== 'Times New Roman') && (!key || allow(f, key)));   // fonts this person cannot use are not listed
   const who = { name: (account?.name || account?.displayName || '').trim(), org: account?.organization || '', title: account?.title || account?.jobTitle || '', badge: account?.badgeNumber || account?.badge || '', bar: account?.barNumber || account?.barNo || '', phone: account?.phone || '', email: account?.email || '', address: (() => { const a = account?.address; if (!a || typeof a !== 'object') return typeof a === 'string' ? a : ''; const l2 = [a.city, [a.state, a.zip].filter(Boolean).join(' ')].filter(Boolean).join(', '); return [[a.street, a.unit].filter(Boolean).join(', '), l2].filter(Boolean).join('\n'); })(), today: today() };
@@ -186,7 +188,7 @@ export async function mountForm(def, host, { account, role, md, onDirty, onEdit,
   const hasD = /data-font="date"/.test(def.panel), hasS = /data-font="(sig|std|judge|info)"/.test(def.panel);
   const dfRow = (k, t, h) => `<div class="fd-dr"><b>${t}</b>${h ? ` <small class="fd-hint">${h}</small>` : ''}<div class="fd-fx" data-for="~${k}"></div></div>`;
   const dfBox = `<details class="fd-dfl"><summary>Document fonts</summary><small class="fd-hint">One font for each kind of text across the whole document. Any date or signature field can still use its own font below.</small>${dfRow('body', 'Default text', 'fields like "The defendant did the following"')}${hasD ? dfRow('date', 'Date blocks') : ''}${hasS ? dfRow('sig', 'Signature blocks', 'and name blocks (type or print)') : ''}</details><div class="fd-warn" id="fd-warn" role="note" hidden>${esc(FONT_WARNING)}</div>`;
-  const caseCard = `<div class="fd-case" id="fd-case"><b>Case</b><div class="fd-cv" id="fd-cv"></div><small class="fd-hint">The case number and judge are added by the court system when this is filed. They cannot be typed in.</small></div>`;
+  const caseCard = `<div class="fd-case" id="fd-case"><b>Case</b><div class="fd-cv" id="fd-cv"></div><div id="fd-cq"></div><div id="fd-cf" hidden><small class="fd-hint">Fonts for the filled-in case number and judge. They start in the court's stamp font.</small><div class="fd-cfr"><span>Case number</span><div class="fd-fx" data-for="caseno"></div></div><div class="fd-cfr"><span>Judge</span><div class="fd-fx" data-for="judge"></div></div></div><small class="fd-hint">${def.opensCase ? 'The case number and judge are added by the court system when the case is opened.' : 'Link this document to a case to fill in the case number, judge and party names. If you do not link one, the court system adds them when this is filed.'}</small></div>`;
   host.innerHTML = `<div class="fd-wrap"><div class="fd-panel" id="fd-panel"><h3>${esc(def.number)}</h3><small class="fd-hint">Fill in the fields. The document updates as you type and adds pages as needed.</small><div class="fd-tools"><button type="button" class="btn outline sm" data-fd="undo" title="Undo (Ctrl+Z)" disabled>Undo</button><button type="button" class="btn outline sm" data-fd="redo" title="Redo (Ctrl+Y)" disabled>Redo</button><details class="fd-keys"><summary>Shortcuts</summary><dl><dt>Ctrl+Z</dt><dd>Undo</dd><dt>Ctrl+Y or Ctrl+Shift+Z</dt><dd>Redo</dd><dt>Ctrl+B</dt><dd>Bold</dd><dt>Ctrl+I</dt><dd>Italic</dd><dt>Ctrl+Shift+&gt; or &lt;</dt><dd>Larger or smaller text</dd><dt>Ctrl+S</dt><dd>Save</dd><dt>Ctrl+P</dt><dd>Print</dd><dt>Tab</dt><dd>Next field</dd><dt>Esc</dt><dd>Close the font bar</dd></dl><small class="fd-hint">Bold, italic and size apply to fields that have font options (size needs a font other than the default). On a Mac, use Command instead of Ctrl.</small></details></div><fieldset class="fd-fs0"${readOnly && !signOnly ? ' disabled' : ''}>${roleBox}${dfBox}${def.panel}</fieldset>
     <div class="fd-status" id="fd-status" role="status" aria-live="polite"></div><div class="fd-people" id="fd-people"></div>
     <div class="fd-btns">${actions.includes('save') ? '<button type="button" class="btn" data-fd="save">Save</button>' : ''}${actions.includes('share') ? '<button type="button" class="btn outline" data-fd="share">Share</button>' : ''}${actions.includes('file') ? '<button type="button" class="btn" data-fd="file">' + esc(fileLabel) + '</button>' : ''}<div class="fd-dl"><button type="button" class="btn outline" data-fd="download" aria-haspopup="menu" aria-expanded="false">Download</button><div class="fd-menu" role="menu" hidden><button type="button" role="menuitem" data-fd="pdf">PDF document</button><button type="button" role="menuitem" data-fd="md">Markdown file (.md)</button></div></div><button type="button" class="btn outline" data-fd="print">Print</button></div><small class="fd-msg" id="fd-msg" role="status"></small></div>
@@ -203,7 +205,12 @@ export async function mountForm(def, host, { account, role, md, onDirty, onEdit,
   if (def.courtKeys?.length && !isCourt) { def.courtKeys.forEach(id => { const e = $(id); if (e) e.disabled = true; }); $(def.courtKeys[0])?.insertAdjacentHTML('beforebegin', `<small class="fd-hint">${esc(def.courtNote || 'This part is completed by the court.')}</small>`); }
     const row = cnE.closest('.row') || cnE.parentElement; row.style.display = 'none'; row.insertAdjacentHTML('beforebegin', caseCard);
   }
-  const paintCase = () => { const v = $('fd-cv'); if (!v || !cnE) return; const c = cnE.value.trim(), j = jdE?.value.trim() || ''; v.innerHTML = c ? `<b>${esc(c)}</b>${j ? `<span>${esc(j)}</span>` : ''}` : '<span class="m">' + (def.opensCase ? 'Assigned when the case is opened' : 'Added when you file') + '</span>'; };
+  const paintCase = () => {
+    const v = $('fd-cv'); if (!v || !cnE) return; const c = cnE.value.trim(), j = jdE?.value.trim() || '', cf = $('fd-cf'); let h;
+    if (linked) h = `<div class="fd-lkd"><span class="fd-badge">Linked</span><b>${esc(c || linked.caseno || '')}</b>${j ? `<span>${esc(j)}</span>` : ''}${linked.title ? `<span>${esc(linked.title)}</span>` : ''}</div>${readOnly ? '' : '<div class="fd-lkb"><button type="button" class="btn outline sm" data-lk="unlink">Unlink</button></div>'}`;
+    else { h = c ? `<b>${esc(c)}</b>${j ? `<span>${esc(j)}</span>` : ''}` : '<span class="m">' + (def.opensCase ? 'Assigned when the case is opened' : 'Not linked to a case') + '</span>'; if (!def.opensCase && !readOnly && onCaseLink) h += '<div class="fd-lkb"><button type="button" class="btn outline sm" data-lk="link">Link to a case</button></div>'; }
+    if (v.innerHTML !== h) v.innerHTML = h; if (cf) cf.hidden = !linked || readOnly;
+  };
 
   /* font pickers: sty[id] for each field with options, sty['~body'|'~date'|'~sig'] for the document-wide defaults */
   const sty = {}, bars = [];
@@ -214,6 +221,7 @@ export async function mountForm(def, host, { account, role, md, onDirty, onEdit,
     el.insertAdjacentElement('afterend', bar); bars.push(bar); sty[el.id] = blankSt();
   });
   qa('.fd-fx[data-for^="~"]').forEach(bar => { bar.innerHTML = barInner(); bars.push(bar); sty[bar.dataset.for] = blankSt(); });
+  qa('#fd-cf .fd-fx').forEach(bar => { bar.innerHTML = barInner(); bars.push(bar); sty[bar.dataset.for] = blankSt(); });   // case number and judge fonts, offered once a case is linked
   const kindOf = key => { if (key[0] === '~') return key === '~body' ? 'body' : key === '~date' ? 'date' : 'sig'; const v = src(key)?.dataset?.font; return v === 'date' ? 'date' : v === 'info' ? 'info' : v && v !== 'none' ? 'sig' : 'body'; };
   const catOf = key => { if (key[0] === '~') return null; const v = src(key)?.dataset?.font; return v === 'none' ? null : v === 'date' ? 'date' : v ? 'sig' : 'body'; };
   /* what a field actually looks like: its own choice where it made one, otherwise the document default for its kind */
@@ -222,6 +230,7 @@ export async function mountForm(def, host, { account, role, md, onDirty, onEdit,
     const c = catOf(key), d0 = (c && sty['~' + c]) || blankSt(), d = d0.f && !fontFits(def, d0.f, kindOf(key)) ? { ...d0, f: '', s: 0 } : d0, v = sty[key] || blankSt(), pick = (a, z) => a ? a > 0 : z > 0;
     return { f: v.f || d.f || '', s: v.s || (v.f ? 0 : d.s), b: pick(v.b, d.b), i: pick(v.i, d.i), own: !!v.f, d };
   };
+  const ownCss = key => { const v = sty[key] || blankSt(); let o = fontCss(v.f) + ';'; if (v.s) o += `font-size:${P(v.s)};line-height:1.25;`; if (v.b > 0) o += 'font-weight:700;'; if (v.i > 0) o += 'font-style:italic;'; return o; };
   const styleOf = key => {
     if (!catOf(key)) return ''; const e = effOf(key); let o = '';
     if (e.f) { o += fontCss(e.f) + ';'; if (e.s) o += `font-size:${P(e.s)};line-height:1.25;`; }
@@ -231,7 +240,7 @@ export async function mountForm(def, host, { account, role, md, onDirty, onEdit,
   const syncBar = bar => {
     warnSync();
     const key = bar.dataset.for, v = sty[key] || blankSt(), e = effOf(key), nm = e.f || def.font || 'Arial', n = bar.querySelector('.fd-fpn');
-    n.textContent = key[0] === '~' || v.f ? nm : 'Document default · ' + nm; n.style.fontFamily = famOf(e.f);
+    n.textContent = key[0] === '~' || v.f ? nm : (key === 'caseno' || key === 'judge') ? 'Stamp · Special Elite' : 'Document default · ' + nm; n.style.fontFamily = famOf(e.f);
     const z = bar.querySelector('.fd-fs'); z.disabled = !e.f; z.value = e.f && v.s ? String(v.s) : '';
     bar.querySelector('.fd-fb').setAttribute('aria-pressed', e.b); bar.querySelector('.fd-fi').setAttribute('aria-pressed', e.i);
   };
@@ -252,7 +261,7 @@ export async function mountForm(def, host, { account, role, md, onDirty, onEdit,
        blank  what prints when the field is empty (the form's own blank line, e.g. "___")
        style  extra inline style (e.g. text-transform) */
     ed(key, o = {}) {
-      const e = src(key), raw0 = o.text !== undefined ? o.text : (e ? String(e.value || '').replace(/\r/g, '') : ''), sys = key === 'caseno' || key === 'judge', hm = key === 'judge' ? /^\s*Hon(?:\.|orable)?\s+(.*)$/i.exec(raw0) : null, raw = hm ? hm[1] : raw0, hon = key === 'judge' && (raw.trim() || o.hon) ? 'Hon. ' : '', blank = !raw && o.blank, isSig = !sys && !!o.pre && /\/s\//.test(o.pre), lk = !sys && courtLock(key), simg = isSig && effOf(key).f === SIGFONT ? (sty[key]?.g || '') : '', fsig = isSig && !simg && ['font', 'stamp'].includes(signed[key]?.mode) && !!sty[key]?.f, st = (sys ? fontCss('Special Elite') + ';' : isSig ? (simg ? 'display:inline-block;position:relative;min-width:170px;height:46px;vertical-align:bottom;color:transparent;' : fsig ? styleOf(key) : '') : styleOf(key)) + (o.style || '');
+      const e = src(key), raw0 = o.text !== undefined ? o.text : (e ? String(e.value || '').replace(/\r/g, '') : ''), sys = key === 'caseno' || key === 'judge', hm = key === 'judge' ? /^\s*Hon(?:\.|orable)?\s+(.*)$/i.exec(raw0) : null, raw = hm ? hm[1] : raw0, hon = '', blank = !raw && o.blank, isSig = !sys && !!o.pre && /\/s\//.test(o.pre), lk = !sys && courtLock(key), simg = isSig && effOf(key).f === SIGFONT ? (sty[key]?.g || '') : '', fsig = isSig && !simg && ['font', 'stamp'].includes(signed[key]?.mode) && !!sty[key]?.f, st = (sys ? (linked && sty[key]?.f ? ownCss(key) : fontCss('Special Elite') + ';') : isSig ? (simg ? 'display:inline-block;position:relative;min-width:170px;height:46px;vertical-align:bottom;color:transparent;' : fsig ? styleOf(key) : '') : styleOf(key)) + (o.style || '');
       if (isSig) sigKeys.add(key);   // case number and judge are stamped by the system
       if (isSig && !signed[key] && pending[key] && !raw) return `<span data-f="${esc(key)}" data-sig="1" style="color:#7a5b00;font-style:italic;font-size:${P(10)}">[Awaiting signature of ${esc(pending[key].name)}]</span>`;
       const body = `<span data-f="${esc(key)}" data-ph="${esc(o.ph || (e ? labelOf(e) : key))}"${o.off !== undefined ? ` data-off="${o.off}" data-len="${raw.length}"` : ''}${o.multi ? ' data-multi="1"' : ''}${blank ? ' data-blank="1"' : ''}${sys ? ' data-sys="1"' : ''}${isSig ? ' data-sig="1"' : ''}${lk ? ' data-lock="1"' : ''}${st ? ` style="${esc(st)}"` : ''} ${readOnly || sys || isSig || lk ? '' : ` contenteditable="${PLAIN}"`} spellcheck="false">${simg ? `<img src="${esc(simg)}" alt="" contenteditable="false" style="position:absolute;left:0;top:0;height:46px;max-width:100%;pointer-events:none;-webkit-user-select:none;user-select:none">` : ''}${esc(blank ? o.blank : raw)}${o.multi && raw.endsWith('\n') ? '\n' : ''}</span>`;
@@ -263,7 +272,7 @@ export async function mountForm(def, host, { account, role, md, onDirty, onEdit,
     edt: (key, t, o = {}) => api.ed(key, { ...o, text: t, off: api.seg || 0, multi: true }),   // one page's share of a long text
     seg: 0,
     styles: () => sty,
-    records: () => ({ signed, pending }),
+    records: () => ({ signed, pending, lc: linked || {} }),
     setRecords: r => setRecords(r),
     setStyles(m) { Object.keys(sty).forEach(id => sty[id] = normSt(m?.[id])); bars.forEach(syncBar); },
     render: () => { render(); commit(false); }, note: (t, bad) => { onNote?.(t, bad); const m = $('fd-msg'); m.textContent = t; m.style.color = bad ? '#b33' : '#287a3e'; }
@@ -379,6 +388,7 @@ export async function mountForm(def, host, { account, role, md, onDirty, onEdit,
   function setRecords(r) {
     Object.keys(signed).forEach(k => delete signed[k]); Object.keys(pending).forEach(k => delete pending[k]);
     Object.entries(r?.signed || {}).forEach(([k, v]) => { signed[k] = { ...v }; }); Object.entries(r?.pending || {}).forEach(([k, v]) => { pending[k] = { ...v }; });
+    linked = r?.lc?.id ? { id: r.lc.id, col: r.lc.col || 'cases', caseno: r.lc.caseno || '', title: r.lc.title || '' } : null;
   }
   const prefMode = () => myPref === 'slash' || !mySig ? 'slash' : 'image';
   const mineSg = sg => !!sg && (sg.uid ? sg.uid === myUid : String(sg.name || '').trim().toLowerCase() === who.name.toLowerCase());
@@ -401,6 +411,32 @@ export async function mountForm(def, host, { account, role, md, onDirty, onEdit,
       savePref: onSavePref ? async p => { try { await onSavePref(p); myPref = p; } catch (e) { console.warn(e); } } : null });
     if (r) signLine(k, r);
   }
+  /* ---- linking the document to a case ---- */
+  const labelName = id => (labelOf($(id)) || id).replace(/\s*\((typed|type or print)\)\s*$/i, '');
+  function link(info) {
+    if (!cnE || def.opensCase) return; linked = { id: info.id, col: info.col || 'cases', caseno: info.caseno || '', title: info.title || '' };
+    cnE.value = info.caseno || ''; if (jdE) jdE.value = info.judge || ''; linkFill = {}; const clash = [];
+    Object.entries(info.fill || {}).forEach(([id, v]) => { const el = $(id); if (!el || !v || signed[id]) return; if (el.type !== 'checkbox' && el.value.trim() && el.value.trim() !== String(v).trim()) clash.push([id, v]); else { el.value = v; linkFill[id] = v; } });
+    render(); mark(); commit(false);
+    const q = $('fd-cq'); if (q) { q.innerHTML = ''; if (clash.length) {
+      const names = clash.map(([id]) => labelName(id)); q.innerHTML = `<div class="fd-rq">Already filled in: ${esc(names.slice(0, 3).join(', '))}${names.length > 3 ? ' and ' + (names.length - 3) + ' more' : ''}. Replace with the case's details? <button type="button" class="btn sm" data-lk="rep-y">Replace</button> <button type="button" class="btn outline sm" data-lk="rep-n">Keep mine</button></div>`;
+      q._clash = clash; } }
+  }
+  function unlink() {
+    if (!linked) return; linked = null; if (cnE) cnE.value = ''; if (jdE) jdE.value = '';
+    Object.entries(linkFill).forEach(([id, v]) => { const el = $(id); if (el && el.value === v && !signed[id]) el.value = ''; }); linkFill = {};
+    ['caseno', 'judge'].forEach(k => { sty[k] = blankSt(); }); bars.forEach(syncBar); const q = $('fd-cq'); if (q) q.innerHTML = '';
+    render(); mark(); commit(false);
+  }
+  host.addEventListener('click', e => {
+    const b = e.target.closest('[data-lk]'); if (!b) return; const a = b.dataset.lk, q = $('fd-cq');
+    if (a === 'link') onCaseLink?.();
+    else if (a === 'unlink') { const lkb = b.closest('.fd-lkb'); lkb.innerHTML = '<span>Unlink this case? The case number, judge and the details it filled in will be removed.</span> <button type="button" class="btn sm" data-lk="unlink-y">Unlink</button> <button type="button" class="btn outline sm" data-lk="unlink-n">Keep it linked</button>'; }
+    else if (a === 'unlink-n') paintCase();
+    else if (a === 'unlink-y') unlink();
+    else if (a === 'rep-y') { (q._clash || []).forEach(([id, v]) => { const el = $(id); if (el && !signed[id]) { el.value = v; linkFill[id] = v; } }); q.innerHTML = ''; render(); mark(); commit(false); }
+    else if (a === 'rep-n') q.innerHTML = '';
+  });
   function unsignLine(k) {
     const sg = signed[k]; if (!sg || !mineSg(sg)) return; delete signed[k]; sty[k] = blankSt(); const el = src(k); if (el) el.value = '';
     bars.forEach(syncBar); render(); mark(); commit(false);
@@ -528,7 +564,7 @@ export async function mountForm(def, host, { account, role, md, onDirty, onEdit,
       (sec.groups || []).forEach(x => g.push((p.found.get(x) || []).map(it => Object.fromEntries(x.fields.map(([k]) => [k, it[k] || '']))))); });
     Object.keys(p.single).forEach(id => { if (!(id in f) && !(id in m) && $(id)) f[id] = isCb(id) ? /^(yes|true|x|1)$/i.test(p.single[id]) : p.single[id]; });
     Object.keys(sty).forEach(id => { s[id] = normSt(p.styles[id]); });
-    return { f, m, g, s, n: { signed: p.records.signed, pending: p.records.pending } };
+    return { f, m, g, s, n: { signed: p.records.signed, pending: p.records.pending, lc: p.records.lc } };
   }
   function applyState(st) {   // only touches what differs, so nobody loses their place while typing
     const put = (id, v) => { const e = $(id); if (!e || v === undefined) return; if (e.type === 'checkbox') { if (e.checked !== !!v) e.checked = !!v; } else if (e.value.trim() !== String(v).trim()) e.value = v; };
@@ -698,5 +734,5 @@ export async function mountForm(def, host, { account, role, md, onDirty, onEdit,
   const setStatus = (t, kind = '') => { statusEl.textContent = t; statusEl.dataset.k = kind; };
   const initials = n => String(n || '?').split(/\s+/).filter(Boolean).slice(0, 2).map(w => w[0].toUpperCase()).join('');
   const setPeople = list => { peopleEl.innerHTML = list.length ? `<span class="fd-ph">Here now</span>${list.map(p => `<span class="fd-chip" title="${esc(p.name)}">${esc(initials(p.name))}</span>`).join('')}<span class="fd-pn">${esc(list.map(p => p.name).join(', '))}</span>` : ''; };
-  return { api, sigLines: () => [...sigKeys].map(k => ({ key: k, label: lineLabel(k), signed: !!signed[k], signedBy: signed[k]?.name || '', awaiting: pending[k]?.name || '' })), assign: (k, person) => { if (!sigKeys.has(k) || signed[k]) return false; if (person) pending[k] = { name: person.name || '', uid: person.uid || '' }; else delete pending[k]; render(); mark(); commit(false); return true; }, unsigned: () => [...sigKeys].filter(k => !signed[k]).map(k => lineLabel(k)), setCase, getCase: () => ({ caseno: cnE?.value.trim() || '', judge: jdE?.value.trim() || '' }), exportPdf: () => pdf(), exportMd: saveMd, print: () => { fw.focus(); fw.print(); }, getMd, stateFromMd, curState: () => stateFromMd(getMd()), applyState, setStatus, setPeople, destroy() { closePicker(); document.removeEventListener('keydown', onKey); document.removeEventListener('click', outside); ro.disconnect(); removeEventListener('resize', size); host.innerHTML = ''; }, isDirty: () => dirty };
+  return { api, def, link, unlink, linkedCase: () => linked, sigLines: () => [...sigKeys].map(k => ({ key: k, label: lineLabel(k), signed: !!signed[k], signedBy: signed[k]?.name || '', awaiting: pending[k]?.name || '' })), assign: (k, person) => { if (!sigKeys.has(k) || signed[k]) return false; if (person) pending[k] = { name: person.name || '', uid: person.uid || '' }; else delete pending[k]; render(); mark(); commit(false); return true; }, unsigned: () => [...sigKeys].filter(k => !signed[k]).map(k => lineLabel(k)), setCase, getCase: () => ({ caseno: cnE?.value.trim() || '', judge: jdE?.value.trim() || '' }), exportPdf: () => pdf(), exportMd: saveMd, print: () => { fw.focus(); fw.print(); }, getMd, stateFromMd, curState: () => stateFromMd(getMd()), applyState, setStatus, setPeople, destroy() { closePicker(); document.removeEventListener('keydown', onKey); document.removeEventListener('click', outside); ro.disconnect(); removeEventListener('resize', size); host.innerHTML = ''; }, isDirty: () => dirty };
 }
