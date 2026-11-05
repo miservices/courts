@@ -2,101 +2,135 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Court Document | Michigan Courts</title>
-<link rel="icon" type="image/png" href="/favicon.png">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=Source+Serif+4:wght@600;700&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>Sign a Document | Michigan Courts</title>
+<link rel="icon" type="image/png" href="/courts/images/favicon.png">
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=Source+Serif+4:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/courts/online-services/portal/dashboard/assets/css/dashboard.css?v=5">
 <style>
-:root{--navy:#10264a;--navy2:#1b3a6b;--ink:#1b2433;--muted:#5b6678;--line:#d3dae6;--bg:#e4e9f2;--red:#b3261e}
-*{box-sizing:border-box}
-html,body{height:100%}
-body{margin:0;font-family:'Public Sans',system-ui,sans-serif;color:var(--ink);background:var(--bg);display:flex;flex-direction:column;min-height:100vh}
-header.top{background:var(--navy);color:#fff;padding:10px 20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
-header.top .brand{font-family:'Source Serif 4',Georgia,serif;font-weight:700;font-size:17px;letter-spacing:.01em}
-header.top .brand small{display:block;font:500 11px 'Public Sans',sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#aebfdc}
-header.top .meta{flex:1;min-width:180px}
-header.top .meta b{display:block;font-size:15px}header.top .meta span{font-size:12.5px;color:#c6d3ea}
-.acts{display:flex;gap:8px;flex-wrap:wrap}
-.btn{font:600 13.5px 'Public Sans',sans-serif;border-radius:6px;padding:8px 14px;border:1.5px solid #fff;background:#fff;color:var(--navy);cursor:pointer;text-decoration:none;display:inline-flex;align-items:center}
-.btn.o{background:transparent;color:#fff;border-color:#7f95bd}.btn:hover{filter:brightness(.95)}.btn.o:hover{background:rgba(255,255,255,.1)}
-.btn:disabled{opacity:.5;cursor:default}
-.btn:focus-visible{outline:3px solid #ffd666;outline-offset:2px}
-main{flex:1;display:flex;flex-direction:column;padding:14px 16px 18px;min-height:0}
-#host{flex:1;min-height:0}
-.fd-wrap{display:block;min-height:480px}.fd-panel{display:none!important}.fd-view{height:100%}
-.fd-frame{width:100%;height:100%;border:1px solid var(--line);border-radius:8px;background:#e9ebee;display:block}
-.msg{max-width:560px;margin:8vh auto;background:#fff;border:1px solid var(--line);border-top:4px solid var(--navy);border-radius:10px;padding:28px 30px}
-.msg h1{font-family:'Source Serif 4',Georgia,serif;font-size:22px;margin:0 0 8px;color:var(--navy)}
-.msg p{margin:0 0 16px;line-height:1.55;color:var(--muted)}
-.msg a.btn{background:var(--navy);color:#fff;border-color:var(--navy)}
-.spin{width:22px;height:22px;border:3px solid #b8cdee;border-top-color:var(--navy);border-radius:50%;animation:s .8s linear infinite;margin:0 auto 10px}@keyframes s{to{transform:rotate(360deg)}}
-.ld{text-align:center;margin:12vh auto;color:var(--muted)}
-#note{font-size:12.5px;color:#c6d3ea;min-height:16px;width:100%}
-@media print{header.top{display:none}body{background:#fff}}
+body{margin:0;background:#e3e9f2;font-family:'Public Sans',system-ui,sans-serif;color:#18223a}
+.sg-top{background:#10264a;color:#fff;padding:14px 20px;display:flex;align-items:center;gap:12px}.sg-top b{font-family:'Source Serif 4',serif;font-size:19px}.sg-top span{opacity:.75;font-size:13px}
+.sg-wrap{max-width:1280px;margin:0 auto;padding:18px 16px 60px}
+.sg-card{background:#fff;border:1px solid #dbe1ec;border-radius:14px;padding:20px 22px;box-shadow:0 4px 18px rgba(16,38,74,.07);margin-bottom:16px}
+.sg-card h1{margin:0 0 6px;font-size:22px;font-family:'Source Serif 4',serif;color:#10264a}.sg-card p{margin:6px 0;line-height:1.5}
+.sg-chips{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}.sg-chips em{font-style:normal;font-size:12px;font-weight:600;padding:3px 10px;border-radius:999px;background:#e8eef8;color:#2b4a82}.sg-chips em.ok{background:#e3f3ea;color:#23683f}
+.sg-bar{position:sticky;bottom:0;z-index:30;background:rgba(255,255,255,.96);backdrop-filter:blur(6px);border:1px solid #dbe1ec;border-radius:14px;padding:12px 16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;box-shadow:0 -4px 18px rgba(16,38,74,.1);margin-top:14px}
+.sg-bar p{margin:0;flex:1;min-width:200px;font-size:14px}
+.sg-ok{text-align:center;padding:34px 20px}.sg-ok .tick{width:60px;height:60px;border-radius:50%;background:#e4f3ea;color:#2f7d4f;font-size:32px;line-height:60px;margin:0 auto 12px}
+.sg-bad{border-left:4px solid #b3261e;background:#fdf1f0;color:#7a1b13;border-radius:6px;padding:12px 16px}
+.sg-note{font-size:12.5px;color:#5f6c82;margin-top:10px}
+@media(max-width:900px){.fd-wrap{flex-direction:column;height:auto!important}.fd-panel{width:100%;max-height:70vh}.fd-view{height:85vh}}
+</style>
+<style>
+.fd-wrap{display:flex;gap:14px;align-items:stretch;min-height:480px}
+.fd-panel{width:400px;flex:none;overflow-y:auto;overscroll-behavior:contain;background:#fff;border:1px solid #d9dee7;border-radius:10px;padding:16px;font-size:13px}
+.fd-panel h3{margin:0 0 4px;font-size:16px}.fd-hint{color:#667;font-size:12px;font-weight:400}.fd-lkd{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin:4px 0 8px;font-size:13px}.fd-badge{background:#e6f4ea;color:#1b6b3a;border-radius:10px;padding:1px 8px;font-size:11px;font-weight:700}.fd-lkb{margin-left:auto}.fd-cfr{display:flex;gap:8px;align-items:center;margin:4px 0;font-size:12px}.fd-cfr>span{min-width:76px}.fd-rq{margin:6px 0;padding:8px 10px;background:#fff8e6;border:1px solid #f0d99a;border-radius:6px;font-size:12.5px}.fd-rq button{margin:6px 6px 0 0}
+.cs-list{list-style:none;margin:8px 0 0;padding:0;max-height:300px;overflow:auto}.cs-list li{border:1px solid #d9dee8;border-radius:6px;margin-bottom:6px}.cs-list button{all:unset;display:block;width:100%;box-sizing:border-box;padding:8px 10px;cursor:pointer}.cs-list button:hover,.cs-list button:focus-visible{background:#eef2fa}.cs-list small{color:#667;display:block}
+.fd-sg{margin:4px 0 10px}.fd-sgr{display:flex;gap:6px;align-items:center;flex-wrap:wrap}.fd-sgr select{flex:1;min-width:0}
+.fd-panel h2{font-size:12px;text-transform:uppercase;letter-spacing:.05em;margin:22px 0 8px;color:#345;border-bottom:1px solid #dde;padding:0 0 4px}
+.fd-panel label{display:block;font-size:12px;line-height:1.25;font-weight:600;color:#445;margin:10px 0 4px}
+.fd-panel input[type=text],.fd-panel textarea,.fd-panel select{display:block;width:100%;box-sizing:border-box;height:34px;padding:6px 8px;border:1px solid #b9c2cf;border-radius:6px;background:#fff;color:#1a2233;font-size:13px;font-family:inherit;line-height:1.3}
+.fd-panel textarea{height:auto;resize:vertical}
+.fd-panel input:focus,.fd-panel textarea:focus,.fd-panel select:focus{outline:2px solid #1f3a68;outline-offset:0;border-color:#1f3a68}
+.fd-panel select{appearance:auto}
+.fd-panel .row{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:start}
+.fd-panel .row>div{min-width:0}.fd-panel .row.r3{grid-template-columns:1fr 1fr 1fr}
+.fd-panel .chk{display:flex;gap:8px;align-items:flex-start;font-size:13px;font-weight:400;color:#222;margin:6px 0}.fd-panel .chk input{margin:2px 0 0;flex:none}
+.fd-panel .cnt{border:1px solid #dde;border-radius:8px;padding:8px 10px 10px;margin-bottom:10px;background:#fafbfd}
+.fd-panel .cnt .top{display:flex;justify-content:space-between;align-items:center;font-size:12px}
+.fd-panel .cnt .rm{background:none;color:#b33;border:0;padding:0;font-size:12px;cursor:pointer}
+.fd-fx{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
+.fd-fx .fd-fp{flex:1 1 100%;display:flex;align-items:center;justify-content:space-between;gap:8px;height:30px;padding:0 9px;border:1px solid #b9c2cf;border-radius:6px;background:#fff;color:#1a2233;font-size:14px;cursor:pointer;text-align:left;min-width:0}
+.fd-fx .fd-fp:hover{border-color:#1f3a68}.fd-fx .fd-fp[aria-expanded=true]{border-color:#1f3a68;box-shadow:0 0 0 2px rgba(31,58,104,.18)}
+.fd-fpn{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.fd-panel .fd-fx select{flex:1 1 40%;min-width:0;height:26px;padding:0 4px;font-size:12px;color:#445}.fd-panel .fd-fx select:disabled{opacity:.55}
+.fd-fx button.fd-fb,.fd-fx button.fd-fi{flex:none;width:26px;height:26px;padding:0;border:1px solid #b9c2cf;border-radius:6px;background:#fff;color:#334;font-size:12px;cursor:pointer;line-height:1}
+.fd-fx button[aria-pressed=true]{background:#1f3a68;border-color:#1f3a68;color:#fff}
+.fd-dfl{margin:14px 0 0;border:1px solid #d9dee7;border-radius:8px;background:#f5f7fb;padding:0}.fd-dfl>summary{cursor:pointer;padding:10px 12px;font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#345}
+.fd-dfl[open]>summary{border-bottom:1px solid #dde}.fd-dfl>.fd-hint{display:block;padding:8px 12px 0}.fd-dr{padding:8px 12px 10px}.fd-dr>b{font-size:13px;color:#223}.fd-dr>small{font-size:12px;color:#667}
+.fd-roles{margin:14px 0 0;padding:10px 12px;border:1px solid #d9dee7;border-radius:8px;background:#f5f7fb}.fd-roles>b{font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:#345;display:block}
+.fd-btns{position:sticky;bottom:-16px;background:#fff;padding:12px 0 16px;display:flex;flex-wrap:wrap;gap:8px;border-top:1px solid #dde;margin-top:18px}
+.fd-btns .btn{flex:1 1 46%}.fd-msg{display:block;min-height:16px;margin-top:2px;font-size:12px}
+.fd-view{flex:1;min-width:0}.fd-frame{width:100%;height:100%;border:1px solid #d9dee7;border-radius:10px;background:#e9ebee;display:block}
+.fd-tools{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:10px 0 2px}
+.fd-keys{flex:1 0 100%;font-size:12px;color:#445}.fd-keys summary{cursor:pointer;color:#1f3a68;font-weight:600}
+.fd-keys dl{display:grid;grid-template-columns:auto 1fr;gap:3px 12px;margin:8px 0}.fd-keys dt{font-weight:600;white-space:nowrap}.fd-keys dd{margin:0}
+.fd-tools .btn[disabled]{opacity:.45;cursor:default}
+.fd-fs0{border:0;margin:0;padding:0;min-width:0}
+.fd-status{margin:14px 0 0;font-size:12px;color:#556;min-height:16px}.fd-status[data-k=ok]{color:#287a3e}.fd-status[data-k=busy]{color:#8a6d00}.fd-status[data-k=bad]{color:#b33}
+.fd-people{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:12px;color:#556;margin-top:4px}.fd-people:empty{display:none}
+.fd-ph{font-weight:600}.fd-chip{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:#1f3a68;color:#fff;font-size:11px;font-weight:700}.fd-pn{color:#667}
+.fd-btns{display:grid;grid-template-columns:1fr 1fr;gap:8px}.fd-btns .btn{width:100%}
+.fd-dl{position:relative}.fd-menu{position:absolute;bottom:calc(100% + 4px);left:0;right:0;z-index:5;background:#fff;border:1px solid #cfd6e2;border-radius:8px;box-shadow:0 6px 18px rgba(20,40,80,.18);padding:4px;display:flex;flex-direction:column}
+.fd-menu[hidden]{display:none}.fd-menu button{border:0;background:none;text-align:left;padding:8px 10px;border-radius:6px;font-size:13px;cursor:pointer;color:#223}.fd-menu button:hover{background:#eef2f9}
+.fd-case{border:1px solid #d9dee7;border-radius:8px;background:#f7f9fc;padding:10px 12px;margin:12px 0 4px}.fd-case>b{display:block;font-size:12px;color:#445;margin-bottom:4px}
+.fd-cv{font-size:14px;display:flex;flex-direction:column;gap:2px;margin-bottom:8px}.fd-cv b{font-size:15px}.fd-cv span{color:#445}.fd-cv .m{color:#667}
+.fd-cbt{display:flex;gap:8px;flex-wrap:wrap}.fd-cbt [hidden]{display:none}
+.fd-warn{margin:10px 0;padding:10px 12px;border:1px solid #e0b04a;background:#fff6df;color:#5c3d08;border-radius:8px;font-size:13px;line-height:1.45}.fd-warn[hidden]{display:none}
+.cs-l{display:flex;flex-direction:column;gap:6px;margin-top:10px;max-height:46vh;overflow:auto}.cs-i{text-align:left;border:1px solid #d3d9e3;background:#fff;border-radius:8px;padding:9px 12px;cursor:pointer;font:inherit}.cs-i:hover,.cs-i:focus-visible{border-color:#1f3a68;background:#f3f6fb}.cs-i b{display:block}.cs-i small{color:#556}
+.dd-search{position:relative;flex:1 1 320px;min-width:220px}
+.dd-search svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:#7a869b;pointer-events:none}
+.dd-search input{width:100%;box-sizing:border-box;height:46px;padding:0 16px 0 44px;border:1px solid var(--dd-line);border-radius:12px;background:#fff;font:inherit;font-size:15px;color:var(--dd-ink);box-shadow:0 1px 2px rgba(16,38,74,.05)}
+.dd-search input:focus{outline:none;border-color:var(--dd-acc);box-shadow:0 0 0 3px rgba(43,93,184,.16)}
+.fd-wrap{gap:18px}
+.fd-panel{border:1px solid var(--dd-line);border-radius:16px;padding:18px 18px 0;box-shadow:0 4px 18px rgba(16,38,74,.07);scrollbar-width:thin}
+.fd-panel>h3{font-size:18px;color:var(--dd-navy);font-family:var(--font-head,inherit)}
+.fd-panel h2{display:flex;align-items:center;gap:8px;font-size:11.5px;letter-spacing:.08em;color:var(--dd-navy);border:0;margin:26px 0 6px;padding:0}
+.fd-panel h2::after{content:"";flex:1;height:1px;background:var(--dd-line)}
+.fd-panel label{font-size:12.5px;color:#34415a;margin:12px 0 5px}
+.fd-panel input[type=text],.fd-panel textarea,.fd-panel select{height:38px;border:1px solid #c9d2e1;border-radius:9px;padding:7px 11px;font-size:13.5px;transition:border-color .12s,box-shadow .12s}
+.fd-panel textarea{height:auto}
+.fd-panel input:hover,.fd-panel textarea:hover,.fd-panel select:hover{border-color:#9db0d0}
+.fd-panel input:focus,.fd-panel textarea:focus,.fd-panel select:focus{outline:none;border-color:var(--dd-acc);box-shadow:0 0 0 3px rgba(43,93,184,.16)}
+.fd-panel .cnt{border:1px solid var(--dd-line);border-radius:12px;background:var(--dd-soft);padding:10px 12px 12px}
+.fd-case,.fd-roles,.fd-dfl{border-radius:12px;border-color:var(--dd-line);background:var(--dd-soft)}
+.fd-case{padding:12px 14px}
+.fd-btns{margin:22px -18px 0;padding:14px 18px;bottom:0;border-top:1px solid var(--dd-line);background:rgba(255,255,255,.96);backdrop-filter:blur(6px);border-radius:0 0 16px 16px}
+.fd-btns .btn{border-radius:10px;height:40px}
+.fd-frame{border-radius:16px;border-color:var(--dd-line);background:#dfe5ef;box-shadow:inset 0 2px 8px rgba(16,38,74,.08)}
+.fd-status{padding:8px 10px;border-radius:8px;background:var(--dd-soft)}.fd-status:empty{display:none}
+.fd-badge{background:#dff2e6!important}
+dialog{border:0;padding:0;border-radius:10px;width:min(660px,calc(100vw - 24px));max-height:calc(100vh - 48px);box-shadow:0 24px 60px rgba(9,22,40,.35);font:inherit;overflow:hidden;margin:auto}dialog[open]{display:flex;flex-direction:column}dialog::backdrop{background:rgba(9,22,40,.55)}
 </style>
 </head>
 <body>
-<header class="top">
-  <div class="brand">Michigan Courts<small>Court document</small></div>
-  <div class="meta"><b id="t">Loading document…</b><span id="s"></span></div>
-  <div class="acts" id="acts" hidden>
-    <button class="btn" id="pdf" type="button">Download PDF</button>
-    <button class="btn o" id="prt" type="button">Print</button>
-    <button class="btn o" id="md" type="button">Download .md</button>
-  </div>
-  <div id="note" role="status" aria-live="polite"></div>
-</header>
-<main><div id="host"><div class="ld"><div class="spin"></div>Opening the document…</div></div></main>
-
+<div class="sg-top"><b>Michigan Courts</b><span>Signature request</span></div>
+<div class="sg-wrap" id="root"><div class="sg-card">Loading…</div></div>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
-import { getAuth } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
-import { getStorage, ref, getBytes } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-storage.js";
-
-const app = initializeApp({
-  apiKey: "AIzaSyA8sUFIq81cs6uQvqduardpGJ4R2DxO8NQ", authDomain: "micourt-dada6.firebaseapp.com", projectId: "micourt-dada6",
-  storageBucket: "micourt-dada6.firebasestorage.app", messagingSenderId: "1013564619997", appId: "1:1013564619997:web:8f259dab457915758f6f34"
-});
-const auth = getAuth(app), storage = getStorage(app);
-const FORMS = '/courts/online-services/portal/dashboard/assets/forms/';
-const PORTAL = 'https://migovt.org/courts/online-services/portal/';
-const $ = id => document.getElementById(id);
-let engine = null, token = 0, shown = false;
-
-const card = (title, text, link) => { $('host').innerHTML = `<div class="msg" role="alert"><h1></h1><p></p>${link ? `<a class="btn" href="${link[1]}">${link[0]}</a>` : ''}</div>`; $('host').querySelector('h1').textContent = title; $('host').querySelector('p').textContent = text; $('t').textContent = title; $('s').textContent = ''; $('acts').hidden = true; };
-/* #/filingUploads/<confirmation>/<file>.md  (each part percent-encoded) */
-const pathOf = () => { const h = location.hash.replace(/^#\/?/, ''); if (!h) return null; try { return h.split('/').map(decodeURIComponent).join('/'); } catch { return null; } };
-
-async function open() {
-  const my = ++token; shown = false; engine?.destroy(); engine = null; $('acts').hidden = true; $('note').textContent = '';
-  const path = pathOf();
-  if (!path || !/^(filingUploads|case-orders)\/[^/]+\/[^/]+\.md$/i.test(path)) return card('No document selected', 'This page opens court documents from a link on a docket or filing. Return to the page you came from and choose the document again.', ['Open the Online Portal', PORTAL]);
-  $('host').innerHTML = '<div class="ld"><div class="spin"></div>Opening the document…</div>';
-  await auth.authStateReady(); if (my !== token) return;
-  if (!auth.currentUser) return card('Sign in to view this document', 'Court documents are shown to people who are signed in to the Online Portal. Sign in, then open the document again.', ['Sign in to the Online Portal', PORTAL]);
-  let text;
-  try { text = new TextDecoder().decode(await getBytes(ref(storage, path), 4 * 1024 * 1024)); }
-  catch (e) { console.error(e); if (my !== token) return; return card(e?.code === 'storage/object-not-found' ? 'Document not found' : e?.code === 'storage/unauthorized' ? 'You do not have access' : 'We could not open this document', e?.code === 'storage/object-not-found' ? 'This document may have been removed.' : e?.code === 'storage/unauthorized' ? 'Your account is not allowed to view this document.' : 'Check your connection and try again.'); }
-  if (my !== token) return;
-  try {
-    const [{ byNumber }, { formOf, mountForm }] = await Promise.all([import(FORMS + 'registry.js?v=5'), import(FORMS + 'engine.js?v=20')]);
-    const num = formOf(text), form = num && byNumber(num);
-    if (!form) return card('This document cannot be shown', num ? `It was prepared on form "${num}", which this viewer does not support yet.` : 'We could not tell which form this file is for.');
-    const def = (await import(`${FORMS}${form.id}.js?v=18`)).default; if (my !== token) return;
-    $('host').innerHTML = '';
-    engine = await mountForm(def, $('host'), { md: text, readOnly: true, onNote: (t, bad) => { if (!shown && !bad) return; $('note').textContent = t; $('note').style.color = bad ? '#ffb4ab' : '#c6d3ea'; } });
-    if (my !== token) { engine.destroy(); return; }
-    shown = true; const c = engine.getCase(), title = `${def.number} · ${def.title}`;
-    $('t').textContent = title; $('s').textContent = [c.caseno && 'Case ' + c.caseno, c.judge].filter(Boolean).join(' · '); document.title = title + ' | Michigan Courts'; $('acts').hidden = false;
-  } catch (e) { console.error(e); if (my === token) card('We could not display this document', 'Refresh the page and try again.'); }
-}
-$('pdf').onclick = async () => { $('pdf').disabled = true; try { await engine?.exportPdf(); } finally { $('pdf').disabled = false; } };
-$('prt').onclick = () => engine?.print();
-$('md').onclick = () => engine?.exportMd();
-addEventListener('hashchange', open);
-open();
+import { getFirestore } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+import { byId } from '/courts/online-services/portal/dashboard/assets/forms/registry.js?v=5';
+import { mountForm } from '/courts/online-services/portal/dashboard/assets/forms/engine.js?v=22';
+import { firebaseBackend } from '/courts/online-services/portal/dashboard/assets/forms/backend.js?v=10';
+const app = initializeApp({ apiKey: "AIzaSyA8sUFIq81cs6uQvqduardpGJ4R2DxO8NQ", authDomain: "micourt-dada6.firebaseapp.com", projectId: "micourt-dada6", storageBucket: "micourt-dada6.firebasestorage.app", messagingSenderId: "1013564619997", appId: "1:1013564619997:web:8f259dab457915758f6f34" });
+const be = firebaseBackend({ db: getFirestore(app), app }), root = document.getElementById('root');
+const esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+const token = decodeURIComponent(location.hash.replace(/^#\/?/, '')).trim();
+const fail = (t, m) => { root.innerHTML = `<div class="sg-card"><h1>${esc(t)}</h1><p>${esc(m)}</p></div>`; };
+(async () => {
+  if (!/^[a-z0-9]{20,40}$/.test(token)) return fail('This link is not valid', 'Check that you copied the whole link, or ask the court for a new one.');
+  let l; try { l = await be.getSignLink(token); } catch (e) { console.error(e); return fail('We could not open this link', 'Check your connection and try again.'); }
+  if (!l || l.status === 'revoked') return fail('This link is no longer active', 'The court cancelled it or it does not exist. Contact the court for a new one.');
+  if (l.status === 'signed' || l.status === 'applied') return root.innerHTML = '<div class="sg-card sg-ok"><div class="tick" aria-hidden="true">✓</div><h1>Already signed</h1><p>Your signature was received. You do not need to do anything else.</p></div>';
+  if (l.expiresAt < Date.now()) return fail('This link has expired', 'Signing links last 14 days. Contact the court for a new one.');
+  const form = byId(l.formId); if (!form) return fail('This document type is not available', 'Contact the court.');
+  const def = (await import(`/courts/online-services/portal/dashboard/assets/forms/${form.id}.js?v=18`)).default;
+  let name = String(l.name || '').trim();
+  root.innerHTML = `<div class="sg-card"><h1>${esc(l.title)}</h1><p>The court has asked <b>${esc(name)}</b> to sign this document. You do not need an account. Read it, then click each signature line you are asked to sign.</p>
+    <div class="sg-chips" id="chips"></div><p class="sg-note">This link is private to you. Do not share it. It expires ${esc(new Date(l.expiresAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }))}.</p></div>
+    <div id="fd-host"></div>
+    <div class="sg-bar"><p id="st"></p><button class="btn" type="button" id="go" disabled>Submit my signature</button></div>`;
+  const eng = await mountForm(def, document.getElementById('fd-host'), { account: { name, uid: 'link:' + token }, role: 'Guest', uid: 'link:' + token, readOnly: true, signKeys: l.keys, md: l.md, actions: [], signature: '', sigPref: 'slash', onSaveSig: async () => { }, onRemoveSig: async () => { }, onSavePref: async () => { }, fileLabel: 'File', favs: [], onFavs: () => { } });
+  const paint = () => { const ls = eng.sigLines().filter(x => l.keys.includes(x.key)), done = ls.every(x => x.signed);
+    document.getElementById('chips').innerHTML = ls.map(x => `<em class="${x.signed ? 'ok' : ''}">${esc(x.label)} · ${x.signed ? 'signed' : 'to sign'}</em>`).join('');
+    document.getElementById('st').textContent = done ? 'All your lines are signed. Submit to send them to the court.' : `Sign ${ls.filter(x => !x.signed).length} more line${ls.filter(x => !x.signed).length === 1 ? '' : 's'} to continue.`;
+    const b = document.getElementById('go'); if (!b.dataset.busy) b.disabled = !done; };
+  paint(); const t = setInterval(paint, 600);
+  document.getElementById('go').onclick = async e => { const b = e.currentTarget; b.dataset.busy = '1'; b.disabled = true; b.textContent = 'Sending…';
+    try { clearInterval(t); await be.submitSignLink(token, eng.getMd(), name); eng.destroy(); root.innerHTML = '<div class="sg-card sg-ok"><div class="tick" aria-hidden="true">✓</div><h1>Thank you</h1><p>Your signature was sent to the court. You can close this page.</p></div>'; }
+    catch (er) { console.error(er); delete b.dataset.busy; b.textContent = 'Submit my signature'; document.getElementById('st').textContent = 'We could not send your signature. Check your connection and try again.'; setInterval(paint, 600); paint(); } };
+})().catch(e => { console.error(e); fail('Something went wrong', 'Reload the page. If it keeps happening, contact the court.'); });
 </script>
 </body>
 </html>

@@ -144,7 +144,7 @@ dialog.cdlg{width:min(440px,calc(100vw - 24px))}
 .dd-tile .go{position:absolute;right:12px;top:12px;width:26px;height:26px;border-radius:50%;background:var(--dd-soft);color:var(--dd-navy);display:flex;align-items:center;justify-content:center;font-size:17px;line-height:1;opacity:0;transition:opacity .15s}
 .dd-tile:hover .go,.dd-tile:focus-visible .go{opacity:1}
 .dd-chips{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 12px}.dd-chips button{font:inherit;font-size:12.5px;font-weight:600;padding:5px 12px;border-radius:999px;border:1px solid var(--dd-line);background:#fff;color:var(--dd-mut);cursor:pointer}
-.dd-chips button.on{background:var(--dd-navy);border-color:var(--dd-navy);color:#fff}
+.dd-chips .dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:7px;vertical-align:1px}.dd-chips button.on{background:var(--dd-navy);border-color:var(--dd-navy);color:#fff}
 /* document cards */
 .dd-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:16px}
 .dd-card{position:relative;background:#fff;border:1px solid var(--dd-line);border-radius:14px;overflow:hidden;display:flex;flex-direction:column;transition:transform .15s,box-shadow .15s,border-color .15s}
@@ -221,10 +221,10 @@ dialog.cdlg{width:min(440px,calc(100vw - 24px))}
 <script type="module">
 import { boot, db, app, $, esc, has, STAFF } from '/courts/online-services/portal/dashboard/assets/js/portal-shell.js?v=7';
 import { FORMS, byId, byNumber } from '/courts/online-services/portal/dashboard/assets/forms/registry.js?v=5';
-import { mountForm, formOf, fontAllowed, fontFits, fontLock, fontCss, GFONTS, FONT_TYPES, FONT_WARNING } from '/courts/online-services/portal/dashboard/assets/forms/engine.js?v=21';
+import { mountForm, formOf, fontAllowed, fontFits, fontLock, fontCss, GFONTS, FONT_TYPES, FONT_WARNING } from '/courts/online-services/portal/dashboard/assets/forms/engine.js?v=22';
 import { canLink, caption as capOf, judgeName, judgeLine } from '/courts/online-services/portal/dashboard/assets/forms/caseinfo.js?v=1';
 import { DraftSession, accessOf, roleIn } from '/courts/online-services/portal/dashboard/assets/forms/drafts.js?v=2';
-import { firebaseBackend } from '/courts/online-services/portal/dashboard/assets/forms/backend.js?v=9';
+import { firebaseBackend } from '/courts/online-services/portal/dashboard/assets/forms/backend.js?v=10';
 const { account, role, user } = await boot({ id: 'drafting', title: 'Document Drafting', subtitle: 'Prepare court forms. They save automatically, and you can share them to work on together.' });
 const root = $('page-body'), BASE = 'https://migovt.org/courts/online-services/portal/dashboard/document-drafting/', FORMS_PATH = '/courts/online-services/portal/dashboard/assets/forms/';
 const uid = account.uid, myName = (account.name || user?.email || 'Someone').trim(), be = firebaseBackend({ db, app });
@@ -261,11 +261,11 @@ addEventListener('pagehide', () => cur?.session?.flush().catch(() => { }));
 async function closeCurrent() {
   if (!cur) return true; const { session, engine } = cur;
   if (session) { await session.flush().catch(() => { }); if (session.isDirty() && !(await ask({ title: 'Changes not saved', message: 'Your latest changes could not be saved. If you leave now they will be lost.', ok: 'Leave anyway', cancel: 'Stay here', danger: true }))) return false; session.close(); }
-  engine?.destroy(); cur = null; return true;
+  cur?.unLinks?.(); engine?.destroy(); cur = null; return true;
 }
 
 /* ---------- library ---------- */
-const TINT = { General: '#2b5db8', Criminal: '#9b2c3a' };
+const TINT = { 'General': '#6b7280', 'Civil': '#2b5db8', 'Criminal': '#c0262d', 'Traffic & Civil Infractions': '#d9822b', 'Special Proceedings': '#17806d', 'Administrative': '#7b4fb8', 'Appellate': '#8a5a2b' };
 const ago = t => { const d = secs(t); if (!d) return ''; const m = Math.round((Date.now() - d) / 60000); if (m < 1) return 'Just now'; if (m < 60) return m + ' min ago'; const h = Math.round(m / 60); if (h < 24) return h + (h === 1 ? ' hour ago' : ' hours ago'); const dd = Math.round(h / 24); if (dd < 7) return dd + (dd === 1 ? ' day ago' : ' days ago'); return new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }); };
 const ini = n => (String(n || '?').match(/\p{L}/gu) || ['?']).slice(0, 2).join('').toUpperCase();
 const paper = (f, cls = '') => `<div class="${cls}">${cls === 'ic' ? '' : ''}<i class="h"></i><i></i><i class="s"></i><i></i><i class="s"></i><i class="l"></i>${cls === 'ic' ? '' : `<b>${esc(f?.number || 'DOC')}</b>`}</div>`;
@@ -276,7 +276,7 @@ function library(msg = '') {
       <a class="btn outline" href="${BASE}#settings">Settings</a><button class="btn outline" type="button" id="fd-open">Open a .md file</button><input type="file" id="fd-file" accept=".md,.markdown,.txt,text/markdown,text/plain" hidden></div>
     <div id="fd-msg" role="alert" style="color:#b33;font-size:13px;margin:-14px 0 14px;min-height:0">${esc(msg)}</div>
     <section class="dd-sec" aria-labelledby="dd-nh"><div class="dd-h"><h3 id="dd-nh">Start a new document</h3><span id="dd-nc"></span></div>
-      <div class="dd-chips" id="dd-g" role="group" aria-label="Form category"><button type="button" class="on" data-g="">All forms</button>${groups.map(g => `<button type="button" data-g="${esc(g)}">${esc(g)}</button>`).join('')}</div>
+      <div class="dd-chips" id="dd-g" role="group" aria-label="Form category"><button type="button" class="on" data-g="">All forms</button>${groups.map(g => `<button type="button" data-g="${esc(g)}"><i class="dot" style="background:${TINT[g] || '#2b5db8'}"></i>${esc(g)}</button>`).join('')}</div>
       <div class="dd-tiles" id="dd-t"></div></section>
     <section class="dd-sec" aria-labelledby="dd-dh"><div class="dd-h"><h3 id="dd-dh">Your documents</h3><span class="sp"></span>
       <div class="dd-seg" id="dd-tabs" role="tablist"></div><select class="dd-sort" id="dd-sort" aria-label="Sort documents"><option value="new">Recently updated</option><option value="old">Oldest first</option><option value="az">Name A–Z</option></select></div>
@@ -371,6 +371,11 @@ async function editor({ form, docId, md0 }) {
       }
     });
     cur = { session, engine, form };
+    links = []; const applying = new Set();
+    if (canEdit && docId) cur.unLinks = be.signLinks(docId, async ls => {   // signatures made through a signing link are copied onto the document here
+      links = ls; if (sharing) renderShare();
+      for (const l of ls) { if (l.status !== 'signed' || applying.has(l.id) || !cur?.engine) continue; applying.add(l.id);
+        try { const n = cur.engine.mergeSigned(l.signedMd, l.keys); if (n || (l.keys || []).every(k => (cur.engine.sigLines() || []).find(x => x.key === k)?.signed)) { await cur.session.flush(); await be.setSignLink(l.id, { status: 'applied' }); cur.engine.api.note(`${l.name} signed this document through a signing link.`); } } catch (e) { console.warn('Signing link not applied yet', e); applying.delete(l.id); } } }, e => console.warn('Signing links unavailable', e));
     $('fd-back').onclick = e => { e.preventDefault(); if (location.hash && location.hash !== '#') location.hash = ''; else route(); };
     session.attach({ save: !docId && !!md0 });
     if (canSign) engine.setStatus('You can sign the line assigned to you. The rest of this document is view only. Changes by others appear here as they happen.', '');
@@ -396,7 +401,7 @@ async function openCases() {
     const fill = cur.engine.def?.fromCase ? cur.engine.def.fromCase(c) : {};
     cur.engine.link({ id: c._id, col: c._col, caseno: c.caseId || '', judge: judgeLine(jn, bar), title: capOf(c), fill }); dlg.close(); };
 }
-const dlg = $('dlg'); let sharing = false, found = [], shareMsg = null, shMode = 'share', signAny = true; const signSel = new Set();
+const dlg = $('dlg'); let sharing = false, found = [], shareMsg = null, shMode = 'share', signAny = true, links = [], gname = '', gbusy = false; const SIGN_URL = t => 'https://migovt.org/courts/online-services/portal/dashboard/sign/#' + t; const signSel = new Set();
 const shareUrl = () => `${BASE}#d/${cur.session.docId}`;
 async function openShare(mode = 'share') {
   const s = cur?.session; if (!s) return; shMode = mode; signAny = true; signSel.clear();
@@ -413,12 +418,14 @@ function renderShare() {
     return `<li class="sh-p"><span><b>${esc(nm)}</b>${u === uid ? ' <small class="m">(you)</small>' : ''}</span>${r === 'owner' ? '<span class="m">Owner</span>' : owner ? `<select data-role="${esc(u)}" aria-label="Access for ${esc(nm)}"><option value="edit"${r === 'edit' ? ' selected' : ''}>Can edit</option><option value="view"${r === 'view' ? ' selected' : ''}>Can view</option></select><button class="btn outline sm" type="button" data-a="remove" data-uid="${esc(u)}">Remove</button>` : `<span class="m">${r === 'edit' ? 'Can edit' : 'Can view'}</span>`}</li>`; }).join('');
   const lines = cur?.engine?.sigLines?.() || [], open = lines.filter(l => !l.signed);
   const signers = (m.members || []).filter(u => m.roles?.[u] === 'sign').map(u => `<li class="sh-p" style="align-items:flex-start"><span style="flex:1"><b>${esc(m.names?.[u] || 'Unknown')}</b><span class="sh-ch">${(m.signKeys?.[u] || []).map(k => { const l = lines.find(x => x.key === k); return `<em class="${l?.signed ? 'ok' : ''}">${esc(l?.label || k)} · ${l?.signed ? 'signed' : 'awaiting'}</em>`; }).join('')}</span></span>${owner ? `<button class="btn outline sm" type="button" data-a="remove" data-uid="${esc(u)}">Remove</button>` : ''}</li>`).join('');
+  const guestRows = links.filter(l => l.status !== 'revoked').sort((a, b) => b.createdAt - a.createdAt).map(l => { const st = l.status === 'pending' && l.expiresAt < Date.now() ? 'expired' : l.status; return `<li class="sh-p" style="align-items:flex-start"><span style="flex:1"><b>${esc(l.name)}</b> <small class="m">no account · link</small><span class="sh-ch">${(l.keys || []).map(k => `<em class="${st === 'applied' || st === 'signed' ? 'ok' : ''}">${esc(lineName(k))} · ${st === 'applied' || st === 'signed' ? 'signed' : st === 'expired' ? 'link expired' : 'awaiting'}</em>`).join('')}</span></span>${owner && st === 'pending' ? `<button class="btn outline sm" type="button" data-a="copylink" data-t="${esc(l.id)}">Copy link</button><button class="btn outline sm" type="button" data-a="revoke" data-t="${esc(l.id)}">Cancel</button>` : ''}</li>`; }).join('');
   if (sgMode) {
     $('dlg-b').innerHTML = `<div class="sh"><p class="m" style="margin:0">Invite someone to sign this document. They can sign only the lines you choose and cannot change anything else.</p>
     ${owner ? (open.length ? `<fieldset class="sh-lines"><legend>They can sign as</legend><label class="chk"><input type="checkbox" id="sh-any"${signAny ? ' checked' : ''}> <b>Any signature line</b> <small class="m">(${open.length} unsigned)</small></label>${open.map(l => `<label class="chk sub"><input type="checkbox" name="sl" value="${esc(l.key)}"${signAny || signSel.has(l.key) ? ' checked' : ''}${signAny ? ' disabled' : ''}> ${esc(l.label)}${l.awaiting ? ` <small class="m">awaiting ${esc(l.awaiting)}</small>` : ''}</label>`).join('')}</fieldset>
     <div class="f"><span id="sh-ql">Who should sign?</span><div class="sh-box"><input id="sh-q" type="text" autocomplete="off" spellcheck="false" placeholder="Start typing a name or email" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="sh-sg" aria-labelledby="sh-ql"><div id="sh-sg" class="sh-sg" role="listbox" hidden></div></div></div>` : '<div class="note">Every signature line on this document is already signed.</div>') : '<p class="m">Only the owner can request signatures.</p>'}
+    ${owner && open.length && has(STAFF, role) ? `<div class="f sh-guest"><span id="sh-gl">Someone without an account <small class="m">(court staff only)</small></span><div class="sh-row"><input id="sh-gn" type="text" autocomplete="off" placeholder="Their full name" aria-labelledby="sh-gl" value="${esc(gname)}"><button class="btn" type="button" data-a="mklink"${gbusy ? ' disabled' : ''}>Create signing link</button></div><small class="m">Makes a private link, good for 14 days, that lets them sign the lines chosen above without logging in. Everyone else must log in to sign.</small></div>` : ''}
     <div class="sh-row"><input id="sh-url" type="text" readonly value="${esc(shareUrl())}" aria-label="Document link"><button class="btn outline" type="button" data-a="copy">Copy link</button></div>
-    <h4 style="margin:8px 0 0;font-size:13px">Signature requests</h4><ul class="sh-list">${signers || '<li class="m" style="padding:8px 0">No one has been asked to sign yet.</li>'}</ul></div>`;
+    <h4 style="margin:8px 0 0;font-size:13px">Signature requests</h4><ul class="sh-list">${signers}${guestRows}${signers || guestRows ? '' : '<li class="m" style="padding:8px 0">No one has been asked to sign yet.</li>'}</ul></div>`;
   } else $('dlg-b').innerHTML = `<div class="sh">
     <label class="f"><span>Anyone signed in with the link</span><select id="sh-link"${owner ? '' : ' disabled'}><option value="none"${m.linkAccess === 'none' ? ' selected' : ''}>Cannot open it (only people added below)</option><option value="view"${m.linkAccess === 'view' ? ' selected' : ''}>Can view</option><option value="edit"${m.linkAccess === 'edit' ? ' selected' : ''}>Can edit</option></select></label>
     <div class="sh-row"><input id="sh-url" type="text" readonly value="${esc(shareUrl())}" aria-label="Document link"><button class="btn outline" type="button" data-a="copy">Copy link</button></div>
@@ -454,7 +461,7 @@ async function suggest(now) {
 }
 const chosen = i => { const p = sg[i]; if (p) { addPerson(p, shMode === 'sign' ? 'sign' : $('sh-role').value); } };
 const syncLine = () => { const sgn = $('sh-role')?.value === 'sign'; if ($('sh-linewrap')) $('sh-linewrap').hidden = !sgn; if ($('sh-signhint')) $('sh-signhint').hidden = !sgn; };
-dlg.addEventListener('input', e => { if (e.target.id === 'sh-q') suggest(false); });
+dlg.addEventListener('input', e => { if (e.target.id === 'sh-q') suggest(false); else if (e.target.id === 'sh-gn') gname = e.target.value; });
 dlg.addEventListener('focusin', e => { if (e.target.id === 'sh-q' && e.target.value.trim()) suggest(false); });
 dlg.addEventListener('keydown', e => {
   if (e.target.id !== 'sh-q') return; const box = $('sh-sg');
@@ -478,6 +485,18 @@ dlg.addEventListener('click', async e => {
   if (e.target === dlg || e.target.closest('[data-close]')) { dlg.close(); sharing = false; return; }
   const b = e.target.closest('[data-a]'); if (!b || !cur?.session) return; const a = b.dataset.a, s = cur.session;
   if (a === 'copy') { try { await navigator.clipboard.writeText(shareUrl()); shMsg('Link copied.'); } catch { $('sh-url').select(); shMsg('Press Ctrl+C to copy the link.'); } }
+  else if (a === 'mklink') {
+    const name = ($('sh-gn')?.value || '').trim(); gname = name; if (!name) { shMsg('Enter the name of the person who will sign.', true); return; }
+    const keys = (cur.engine.sigLines?.() || []).filter(l => !l.signed && (signAny || signSel.has(l.key))).map(l => l.key); if (!keys.length) { shMsg('Choose at least one signature line.', true); return; }
+    const token = [...crypto.getRandomValues(new Uint8Array(18))].map(x => x.toString(36).padStart(2, '0')).join('').slice(0, 28); gbusy = true;
+    try { keys.forEach(k => cur.engine.assign(k, { uid: 'link:' + token, name })); await s.flush();
+      await be.createSignLink(token, { docId: s.docId, ownerUid: s.meta.ownerUid, title: s.meta.title || 'Untitled', formId: cur.form.id, name, keys, md: cur.engine.getMd(), createdBy: uid, createdByName: myName, expiresAt: Date.now() + 14 * 864e5 });
+      gname = ''; gbusy = false; let copied = false; try { await navigator.clipboard.writeText(SIGN_URL(token)); copied = true; } catch { }
+      shMsg(copied ? `Signing link for ${name} created and copied. Send it to them.` : `Signing link for ${name} created. Use Copy link next to their name.`); }
+    catch (er) { console.error(er); keys.forEach(k => cur.engine.assign(k, null)); gbusy = false; shMsg(er?.code === 'permission-denied' ? 'The Firestore rules do not allow signing links yet. (permission-denied)' : 'We could not create the link. Try again.', true); }
+  }
+  else if (a === 'copylink') { try { await navigator.clipboard.writeText(SIGN_URL(b.dataset.t)); shMsg('Signing link copied.'); } catch { shMsg(SIGN_URL(b.dataset.t)); } }
+  else if (a === 'revoke') { const l = links.find(x => x.id === b.dataset.t); try { await be.setSignLink(b.dataset.t, { status: 'revoked' }); (l?.keys || []).forEach(k => cur.engine.assign(k, null)); await s.flush(); shMsg('Signing link cancelled.'); } catch (er) { console.error(er); shMsg('We could not cancel that link. Try again.', true); } }
   else if (a === 'remove') { try { (s.meta?.signKeys?.[b.dataset.uid] || []).forEach(k => cur.engine.assign(k, null)); await s.flush(); await s.removeMember(b.dataset.uid); shMsg('Removed.'); } catch (er) { console.error(er); shMsg('We could not remove them. Try again.', true); } }
 });
 dlg.addEventListener('change', async e => {

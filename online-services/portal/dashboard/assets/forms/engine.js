@@ -403,10 +403,16 @@ export async function mountForm(def, host, { account, role, md, onDirty, onEdit,
     sty[k] = mode === 'image' ? normSt({ f: SIGFONT, g: mySig }) : mode === 'font' ? normSt({ f: r.font, s: 14 }) : mode === 'stamp' ? normSt({ f: r.font, s: 10 }) : blankSt();
     bars.forEach(syncBar); render(); mark(); commit(false);
   }
+  /* Signatures made through a signing link: only the listed lines are taken from the returned copy (value, style, record). */
+  function mergeSigned(txt, keys) {
+    let st; try { st = stateFromMd(txt); } catch { return 0; } let n = 0;
+    (keys || []).forEach(k => { const sg = st.n?.signed?.[k], el = src(k); if (!sg || !el || signed[k] || !sigKeys.has(k)) return; el.value = st.f?.[k] ?? sg.name; signed[k] = { ...sg }; sty[k] = normSt(st.s?.[k]); delete pending[k]; n++; });
+    if (n) { bars.forEach(syncBar); render(); mark(); commit(false); } return n;
+  }
   async function askSign(k) {
-    if (!eligible(k)) return; const { openSignDialog } = await import(new URL('./sigdlg.js?v=1', import.meta.url).href);
+    if (!eligible(k)) return; const { openSignDialog } = await import(new URL('./sigdlg.js?v=2', import.meta.url).href);
     const fl = TYPES.filter(t => t.id !== 'default' && t.id !== 'sigimg').flatMap(t => shown(t, k).map(f => ({ f, css: fontCss(f), stamp: t.id === 'stamp' })));
-    const r = await openSignDialog({ label: lineLabel(k), name: String(src(k)?.value || '').trim() || who.name, image: mySig, fonts: fl,
+    const r = await openSignDialog({ memoryOnly: /^guest$/i.test(role || ''), label: lineLabel(k), name: String(src(k)?.value || '').trim() || who.name, image: mySig, fonts: fl,
       saveImage: onSaveSig ? async png => { await onSaveSig(png); mySig = okImg(png); } : null, removeImage: onRemoveSig ? async () => { await onRemoveSig(); mySig = ''; } : null,
       savePref: onSavePref ? async p => { try { await onSavePref(p); myPref = p; } catch (e) { console.warn(e); } } : null });
     if (r) signLine(k, r);
@@ -734,5 +740,5 @@ export async function mountForm(def, host, { account, role, md, onDirty, onEdit,
   const setStatus = (t, kind = '') => { statusEl.textContent = t; statusEl.dataset.k = kind; };
   const initials = n => String(n || '?').split(/\s+/).filter(Boolean).slice(0, 2).map(w => w[0].toUpperCase()).join('');
   const setPeople = list => { peopleEl.innerHTML = list.length ? `<span class="fd-ph">Here now</span>${list.map(p => `<span class="fd-chip" title="${esc(p.name)}">${esc(initials(p.name))}</span>`).join('')}<span class="fd-pn">${esc(list.map(p => p.name).join(', '))}</span>` : ''; };
-  return { api, def, link, unlink, linkedCase: () => linked, sigLines: () => [...sigKeys].map(k => ({ key: k, label: lineLabel(k), signed: !!signed[k], signedBy: signed[k]?.name || '', awaiting: pending[k]?.name || '' })), assign: (k, person) => { if (!sigKeys.has(k) || signed[k]) return false; if (person) pending[k] = { name: person.name || '', uid: person.uid || '' }; else delete pending[k]; render(); mark(); commit(false); return true; }, unsigned: () => [...sigKeys].filter(k => !signed[k]).map(k => lineLabel(k)), setCase, getCase: () => ({ caseno: cnE?.value.trim() || '', judge: jdE?.value.trim() || '' }), exportPdf: () => pdf(), exportMd: saveMd, print: () => { fw.focus(); fw.print(); }, getMd, stateFromMd, curState: () => stateFromMd(getMd()), applyState, setStatus, setPeople, destroy() { closePicker(); document.removeEventListener('keydown', onKey); document.removeEventListener('click', outside); ro.disconnect(); removeEventListener('resize', size); host.innerHTML = ''; }, isDirty: () => dirty };
+  return { api, def, mergeSigned, link, unlink, linkedCase: () => linked, sigLines: () => [...sigKeys].map(k => ({ key: k, label: lineLabel(k), signed: !!signed[k], signedBy: signed[k]?.name || '', awaiting: pending[k]?.name || '' })), assign: (k, person) => { if (!sigKeys.has(k) || signed[k]) return false; if (person) pending[k] = { name: person.name || '', uid: person.uid || '' }; else delete pending[k]; render(); mark(); commit(false); return true; }, unsigned: () => [...sigKeys].filter(k => !signed[k]).map(k => lineLabel(k)), setCase, getCase: () => ({ caseno: cnE?.value.trim() || '', judge: jdE?.value.trim() || '' }), exportPdf: () => pdf(), exportMd: saveMd, print: () => { fw.focus(); fw.print(); }, getMd, stateFromMd, curState: () => stateFromMd(getMd()), applyState, setStatus, setPeople, destroy() { closePicker(); document.removeEventListener('keydown', onKey); document.removeEventListener('click', outside); ro.disconnect(); removeEventListener('resize', size); host.innerHTML = ''; }, isDirty: () => dirty };
 }

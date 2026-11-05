@@ -84,7 +84,7 @@ export function openSignDialog(o = {}) {
       const save = async png => {
         if (!png) { msg('We could not find a signature in that picture. Use dark ink on a light background.', true); return false; }
         if (png.length > 250000) { msg('That picture is too detailed. Try a simpler or smaller one.', true); return false; }
-        try { await o.saveImage(png); image = png; msg('Your signature picture is saved to your account.'); paint(); return true; }
+        try { await o.saveImage(png); image = png; msg(o.memoryOnly ? 'Your signature picture is ready to use.' : 'Your signature picture is saved to your account.'); paint(); return true; }
         catch (er) { console.error(er); msg(er?.code === 'permission-denied' ? 'The Firestore rules must let people write their own userSignatures record. (permission-denied)' : 'We could not save your signature. Try again.', true); return false; }
       };
       const ED = { img: null, rot: 0, crop: null, out: '' };

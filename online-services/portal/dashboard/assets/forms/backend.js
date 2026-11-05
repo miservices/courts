@@ -27,6 +27,12 @@ export function firebaseBackend({ db, app }) {
       });
     },
     async update(id, patch) { await updateDoc(doc(db, COL, id), patch); },
+    /* Signing links for people without an account: signLinks/{token} (created by court staff, signed from the public signing page). */
+    async createSignLink(token, d) { await setDoc(doc(db, 'signLinks', token), { ...d, status: 'pending', createdAt: Date.now() }); },
+    async getSignLink(token) { return data(await getDoc(doc(db, 'signLinks', token))); },
+    async submitSignLink(token, signedMd, signedName) { await updateDoc(doc(db, 'signLinks', token), { status: 'signed', signedMd, signedName, signedAt: Date.now() }); },
+    async setSignLink(token, patch) { await updateDoc(doc(db, 'signLinks', token), patch); },
+    signLinks(docId, cb, err) { return onSnapshot(query(collection(db, 'signLinks'), where('docId', '==', docId)), s => cb(s.docs.map(d => ({ id: d.id, ...d.data() }))), err); },
     list(uid, cb, err) { return onSnapshot(query(collection(db, COL), where('members', 'array-contains', uid)), s => cb(s.docs.map(d => ({ id: d.id, ...d.data() }))), err); },
     async remove(id) {
       const m = data(await getDoc(doc(db, COL, id)));
