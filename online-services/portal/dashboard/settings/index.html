@@ -9,6 +9,8 @@
 <link rel="stylesheet" href="/courts/online-services/portal/dashboard/assets/css/dashboard.css?v=5">
 <style>
 .sigbox{border:1px solid var(--line,#c9d3e3);border-radius:6px;background:#fff;min-height:110px;display:flex;align-items:center;justify-content:center;padding:10px;margin:10px 0}.sigbox img{max-width:100%;max-height:120px}
+.edg{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px 18px;margin-top:10px;max-width:600px}.edg label{display:flex;flex-direction:column;gap:4px;font-size:13px}.edg input{width:100%}
+.sigbox.ck{background:repeating-conic-gradient(#e9edf3 0 25%,#fff 0 50%) 0 0/16px 16px}
 .sigpad{display:block;width:100%;max-width:600px;height:180px;border:1px dashed #8a9bb5;border-radius:6px;background:#fff;touch-action:none;cursor:crosshair}
 .m{color:var(--muted);font-weight:400}.mt{margin-top:14px}
 .tools{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px;align-items:center}.tools .in{flex:1;min-width:200px;width:auto}.tools select.in{flex:0 0 auto;min-width:0}
@@ -92,11 +94,17 @@ function draw() {
     <div class="acts"><button class="btn" type="button" id="save-contact">Save contact details</button></div></section>
 
 
-  <section class="card" id="signature"><h3>Signature</h3><p class="m">Keep one signature on file. Upload a picture or draw it, then choose “My signature” as the text type on any signature line in the Document Builder. Saving a new one replaces the old one. Without a picture, signature lines show a typed signature: /s/ and your name in the standard font at 12 pt.</p><div id="m-sig"></div>
-    <div class="sigbox" id="sig-cur">${SIG ? `<img src="${esc(SIG)}" alt="Your signature">` : `<span style="font:12pt 'Times New Roman',serif;color:#000">/s/ ${esc(account.name || '')}</span>`}</div>
+  <section class="card" id="signature"><h3>Signature</h3><p class="m">Keep one signature on file. Upload a picture or draw it, then choose “My signature” as the text type on any signature line in the Document Builder. Saving a new one replaces the old one. Without a picture, signature lines show a typed signature: /s/ and your name in the standard font at 10 pt.</p><div id="m-sig"></div>
+    <div class="sigbox" id="sig-cur">${SIG ? `<img src="${esc(SIG)}" alt="Your signature">` : `<span style="font:10pt 'Times New Roman',serif;color:#000">/s/ ${esc(account.name || '')}</span>`}</div>
     <div class="acts"><label class="btn outline" for="sig-file" style="cursor:pointer">Upload a picture</label><input type="file" id="sig-file" accept="image/png,image/jpeg,image/webp" hidden><button class="btn outline" type="button" id="sig-draw">Draw it</button>${SIG ? '<button class="btn outline" type="button" id="sig-rm">Use a typed signature instead</button>' : ''}</div>
     <div id="sig-pad" hidden style="margin-top:14px"><canvas class="sigpad" id="sig-cv" width="1200" height="360" aria-label="Draw your signature here"></canvas>
-      <div class="acts" style="margin-top:10px"><button class="btn" type="button" id="sig-use">Save drawing</button><button class="btn outline" type="button" id="sig-clear">Clear</button><button class="btn outline" type="button" id="sig-cancel">Cancel</button></div></div></section>
+      <div class="acts" style="margin-top:10px"><button class="btn" type="button" id="sig-use">Save drawing</button><button class="btn outline" type="button" id="sig-clear">Clear</button><button class="btn outline" type="button" id="sig-cancel">Cancel</button></div></div>
+    <div id="sig-ed" hidden style="margin-top:14px"><p class="m" style="margin:0 0 8px">Drag on the picture to crop it. Adjust the sliders until the preview looks right, then save.</p>
+      <canvas id="ed-cv" style="display:block;width:100%;max-width:600px;border:1px solid #c9d3e3;border-radius:6px;background:#fff;cursor:crosshair;touch-action:none"></canvas>
+      <div class="edg"><label>Straighten <input type="range" id="ed-fine" min="-15" max="15" step="0.5" value="0"></label><label>Remove background <input type="range" id="ed-thr" min="120" max="250" step="1" value="235"></label><label>Ink darkness <input type="range" id="ed-ink" min="0" max="100" step="1" value="80"></label></div>
+      <div class="acts" style="margin-top:8px"><button class="btn outline sm" type="button" id="ed-l">Rotate left</button><button class="btn outline sm" type="button" id="ed-r">Rotate right</button><button class="btn outline sm" type="button" id="ed-reset">Reset crop</button></div>
+      <div class="m" style="margin:10px 0 4px">Preview (how it will look on a form)</div><div class="sigbox ck" style="margin:0"><img id="ed-pv" alt="Signature preview"></div>
+      <div class="acts" style="margin-top:10px"><button class="btn" type="button" id="ed-save">Save signature</button><button class="btn outline" type="button" id="ed-cancel">Cancel</button></div></div></section>
 
   <section class="card"><h3>Notifications</h3><p class="m">Choose what the portal tells you about. Notices that the court is required to send you cannot be turned off.</p><div id="m-prefs"></div>
     ${toggle('p-filings', 'Filings', 'Decisions on filings you submitted.')}${toggle('p-hearings', 'Hearings', 'Hearings scheduled, moved or cancelled in your cases.')}${toggle('p-financial', 'Fines and fees', 'Assessments, due dates, late fees and payment confirmations.')}
@@ -115,19 +123,46 @@ function draw() {
 }
 
 /* ── Signature: one per person, a small transparent PNG ── */
-function toPng(img) {   // scale down, make the paper white transparent, trim the empty edges
-  const W = 640, sc = Math.min(1, W / img.width, 200 / img.height), w = Math.max(1, Math.round(img.width * sc)), h = Math.max(1, Math.round(img.height * sc));
+function toPng(img, o = {}) {   // scale down, make the paper see-through, trim the empty edges
+  const thr = o.thr ?? 235, ink = o.ink ?? 0.8, W = 640, sc = Math.min(1, W / img.width, 200 / img.height), w = Math.max(1, Math.round(img.width * sc)), h = Math.max(1, Math.round(img.height * sc));
   const c = document.createElement('canvas'); c.width = w; c.height = h; const x = c.getContext('2d', { willReadFrequently: true }); x.drawImage(img, 0, 0, w, h);
   const d = x.getImageData(0, 0, w, h), p = d.data; let x0 = w, y0 = h, x1 = -1, y1 = -1;
   for (let i = 0; i < p.length; i += 4) {
     const lum = (p[i] * 0.299 + p[i + 1] * 0.587 + p[i + 2] * 0.114), a = p[i + 3];
-    const na = a * Math.min(1, Math.max(0, (235 - lum) / 90));   // white and near-white become see-through
-    p[i] = p[i + 1] = p[i + 2] = Math.min(40, lum * 0.2); p[i + 3] = na;
+    const na = a * Math.min(1, Math.max(0, (thr - lum) / 90));   // white and near-white become see-through
+    p[i] = p[i + 1] = p[i + 2] = Math.max(0, lum * (1 - ink)); p[i + 3] = na;
     if (na > 24) { const k = i / 4, px = k % w, py = (k / w) | 0; if (px < x0) x0 = px; if (px > x1) x1 = px; if (py < y0) y0 = py; if (py > y1) y1 = py; }
   }
   if (x1 < 0) return '';
-  x.putImageData(d, 0, 0); const pad = 4, cw = x1 - x0 + 1 + pad * 2, ch = y1 - y0 + 1 + pad * 2, o = document.createElement('canvas'); o.width = cw; o.height = ch;
-  o.getContext('2d').drawImage(c, x0 - pad, y0 - pad, cw, ch, 0, 0, cw, ch); return o.toDataURL('image/png');
+  x.putImageData(d, 0, 0); const pad = 4, cw = x1 - x0 + 1 + pad * 2, ch = y1 - y0 + 1 + pad * 2, out = document.createElement('canvas'); out.width = cw; out.height = ch;
+  out.getContext('2d').drawImage(c, x0 - pad, y0 - pad, cw, ch, 0, 0, cw, ch); return out.toDataURL('image/png');
+}
+/* The picture editor: rotate, straighten, crop, and tune the background and ink before saving. */
+const ED = { img: null, rot: 0, crop: null };
+function edBase() {
+  const im = ED.img, a = (ED.rot + (+$('ed-fine').value || 0)) * Math.PI / 180, w = im.width, h = im.height;
+  const cw = Math.abs(w * Math.cos(a)) + Math.abs(h * Math.sin(a)), ch = Math.abs(w * Math.sin(a)) + Math.abs(h * Math.cos(a)), k = Math.min(1, 1200 / Math.max(cw, ch));
+  const c = document.createElement('canvas'); c.width = Math.max(1, Math.round(cw * k)); c.height = Math.max(1, Math.round(ch * k)); const x = c.getContext('2d');
+  x.fillStyle = '#fff'; x.fillRect(0, 0, c.width, c.height); x.translate(c.width / 2, c.height / 2); x.rotate(a); x.scale(k, k); x.drawImage(im, -w / 2, -h / 2); return c;
+}
+function edDraw() {
+  if (!ED.img) return; const base = edBase(), cv = $('ed-cv'), x = cv.getContext('2d'); cv.width = base.width; cv.height = base.height; x.drawImage(base, 0, 0);
+  let r = ED.crop; if (r && (r.w < 8 || r.h < 8)) r = ED.crop = null;
+  if (r) { x.fillStyle = 'rgba(10,25,50,.5)'; x.fillRect(0, 0, cv.width, r.y); x.fillRect(0, r.y + r.h, cv.width, cv.height - r.y - r.h); x.fillRect(0, r.y, r.x, r.h); x.fillRect(r.x + r.w, r.y, cv.width - r.x - r.w, r.h); x.strokeStyle = '#1f3b73'; x.lineWidth = Math.max(2, cv.width / 300); x.strokeRect(r.x, r.y, r.w, r.h); }
+  let src = base; if (r) { src = document.createElement('canvas'); src.width = Math.round(r.w); src.height = Math.round(r.h); src.getContext('2d').drawImage(base, r.x, r.y, r.w, r.h, 0, 0, src.width, src.height); }
+  ED.out = toPng(src, { thr: +$('ed-thr').value, ink: +$('ed-ink').value / 100 }); $('ed-pv').src = ED.out || ''; $('ed-pv').alt = ED.out ? 'Signature preview' : 'Nothing found. Lower “Remove background” or crop differently.';
+}
+function edOpen(im) { ED.img = im; ED.rot = 0; ED.crop = null; $('ed-fine').value = 0; $('ed-thr').value = 235; $('ed-ink').value = 80; $('sig-pad').hidden = true; $('sig-ed').hidden = false; edDraw(); $('sig-ed').scrollIntoView({ block: 'nearest' }); }
+function wireEd() {
+  const cv = $('ed-cv'); let a = null; const pt = e => { const r = cv.getBoundingClientRect(); return [Math.max(0, Math.min(cv.width, (e.clientX - r.left) * cv.width / r.width)), Math.max(0, Math.min(cv.height, (e.clientY - r.top) * cv.height / r.height))]; };
+  cv.onpointerdown = e => { a = pt(e); ED.crop = { x: a[0], y: a[1], w: 0, h: 0 }; cv.setPointerCapture(e.pointerId); };
+  cv.onpointermove = e => { if (!a) return; const p = pt(e); ED.crop = { x: Math.min(a[0], p[0]), y: Math.min(a[1], p[1]), w: Math.abs(p[0] - a[0]), h: Math.abs(p[1] - a[1]) }; edDraw(); };
+  cv.onpointerup = cv.onpointercancel = () => { a = null; edDraw(); };
+  ['ed-fine', 'ed-thr', 'ed-ink'].forEach(i => { $(i).oninput = () => { if (i === 'ed-fine') ED.crop = null; edDraw(); }; });
+  $('ed-l').onclick = () => { ED.rot -= 90; ED.crop = null; edDraw(); }; $('ed-r').onclick = () => { ED.rot += 90; ED.crop = null; edDraw(); };
+  $('ed-reset').onclick = () => { ED.crop = null; edDraw(); };
+  $('ed-cancel').onclick = () => { $('sig-ed').hidden = true; ED.img = null; };
+  $('ed-save').onclick = async () => { await saveSig(ED.out); if (SIG === ED.out) { $('sig-ed').hidden = true; ED.img = null; } };
 }
 async function saveSig(png) {
   if (!png) return msg('m-sig', 'We could not find a signature in that picture. Use dark ink on a light background.', false);
@@ -136,11 +171,12 @@ async function saveSig(png) {
   catch (er) { console.error(er); msg('m-sig', er?.code === 'permission-denied' ? 'The Firestore rules must let people write their own userSignatures record. (permission-denied)' : 'We could not save your signature. Try again.', false); }
 }
 function wireSig() {
+  wireEd();
   $('sig-file').onchange = e => {
     const f = e.target.files[0]; e.target.value = ''; if (!f) return;
     if (!/^image\/(png|jpeg|webp)$/.test(f.type)) return msg('m-sig', 'Choose a PNG, JPG or WebP picture.', false);
     if (f.size > 5 * 1048576) return msg('m-sig', 'That picture is over 5 MB.', false);
-    const u = URL.createObjectURL(f), im = new Image(); im.onload = () => { URL.revokeObjectURL(u); saveSig(toPng(im)); }; im.onerror = () => { URL.revokeObjectURL(u); msg('m-sig', 'We could not read that picture.', false); }; im.src = u;
+    const u = URL.createObjectURL(f), im = new Image(); im.onload = () => { URL.revokeObjectURL(u); edOpen(im); }; im.onerror = () => { URL.revokeObjectURL(u); msg('m-sig', 'We could not read that picture.', false); }; im.src = u;
   };
   const cv = $('sig-cv'), cx = cv.getContext('2d'); let down = false, ink = false, last = null;
   const reset = () => { cx.clearRect(0, 0, cv.width, cv.height); ink = false; };

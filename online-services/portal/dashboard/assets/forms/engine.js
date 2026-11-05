@@ -33,6 +33,7 @@ body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#e9ebee;color:#2
 #preview .sv [data-f]{white-space:pre}
 #preview [data-f]:hover{background:rgba(255,214,102,.5)}
 #preview [data-f]:focus{outline:2px solid #1f3a68;background:rgba(31,58,104,.09)}
+#preview [data-sig],#preview [data-lock]{background:none!important;outline:none!important}#preview [data-sig]{cursor:pointer!important}#preview [data-lock]{cursor:default!important}#preview [data-lock]:empty::before{content:none!important}
 #preview [data-sys]{background:none!important;outline:none!important;cursor:default!important}#preview [data-sys]:empty::before{content:none!important}
 #preview [data-f]:empty{display:inline-block;min-width:3.5em;min-height:1em;vertical-align:bottom}
 #preview [data-f]:empty::before{content:attr(data-ph);color:#8a6d00;font:italic 400 .8em Arial,sans-serif;white-space:nowrap}
@@ -168,10 +169,10 @@ const FP_CSS = `.fp{position:fixed;z-index:2147483000;width:320px;max-width:calc
 .fp-f svg{fill:none}.fp-f:hover{background:#e8eef8;color:#10264a}.fp-f[aria-pressed=true]{color:#c58a00}.fp-f[aria-pressed=true] svg{fill:currentColor}`;
 const today = () => { const d = new Date(); return String(d.getMonth() + 1).padStart(2, '0') + '/' + String(d.getDate()).padStart(2, '0') + '/' + d.getFullYear(); };
 
-export async function mountForm(def, host, { account, role, md, onDirty, onEdit, readOnly = false, actions = [], onAction, favs: favList, onFavs, onFontNotice, onNote, fileLabel = 'File', signature = '' } = {}) {
+export async function mountForm(def, host, { account, role, md, onDirty, onEdit, readOnly = false, actions = [], onAction, favs: favList, onFavs, onFontNotice, onNote, fileLabel = 'File', signature = '', onSigInfo, settingsUrl = '' } = {}) {
   const allow = (f, key) => def.fontOpen || fontAllowed(f, role, key ? kindOf(key) : undefined) && (!key || fontFits(def, f, kindOf(key)));
-  const mySig = okImg(signature);
-  const typesFor = key => { const l = def.fontPolicy && key ? (def.fontPolicy[kindOf(key)] || def.fontPolicy.sig || []) : null; return (l ? TYPES.filter(t => l.includes(t.id)) : TYPES).filter(t => (t.id !== 'sigimg' || (key && kindOf(key) === 'sig' && mySig)) && (!key || t.fonts.some(f => allow(f, key)))); };
+  const mySig = okImg(signature), isCourt = STAFF_RE.test(role || ''), courtLock = k => !!def.courtKeys?.includes(k) && !isCourt, sigKeys = new Set();
+  const typesFor = key => { const l = def.fontPolicy && key ? (def.fontPolicy[kindOf(key)] || def.fontPolicy.sig || []) : null; return (l ? TYPES.filter(t => l.includes(t.id)) : TYPES).filter(t => t.id !== 'sigimg' && (!key || t.fonts.some(f => allow(f, key)))); };
   const shown = (t, key) => t.fonts.filter(f => !(f === 'Times New Roman' && def.font !== 'Times New Roman') && (!key || allow(f, key)));   // fonts this person cannot use are not listed
   const who = { name: (account?.name || account?.displayName || '').trim(), org: account?.organization || '', title: account?.title || account?.jobTitle || '', badge: account?.badgeNumber || account?.badge || '', bar: account?.barNumber || account?.barNo || '', phone: account?.phone || '', email: account?.email || '', address: (() => { const a = account?.address; if (!a || typeof a !== 'object') return typeof a === 'string' ? a : ''; const l2 = [a.city, [a.state, a.zip].filter(Boolean).join(' ')].filter(Boolean).join(', '); return [[a.street, a.unit].filter(Boolean).join(', '), l2].filter(Boolean).join('\n'); })(), today: today() };
   const roles = (def.roles || []).filter(r => !r.for || r.for.test(role || ''));
@@ -193,6 +194,7 @@ export async function mountForm(def, host, { account, role, md, onDirty, onEdit,
   const cnE = $('caseno'), jdE = $('judge');
   if (cnE) {
     [cnE, jdE].forEach(e => { if (e) { e.readOnly = true; e.tabIndex = -1; } });
+  if (def.courtKeys?.length && !isCourt) { def.courtKeys.forEach(id => { const e = $(id); if (e) e.disabled = true; }); $(def.courtKeys[0])?.insertAdjacentHTML('beforebegin', `<small class="fd-hint">${esc(def.courtNote || 'This part is completed by the court.')}</small>`); }
     const row = cnE.closest('.row') || cnE.parentElement; row.style.display = 'none'; row.insertAdjacentHTML('beforebegin', caseCard);
   }
   const paintCase = () => { const v = $('fd-cv'); if (!v || !cnE) return; const c = cnE.value.trim(), j = jdE?.value.trim() || ''; v.innerHTML = c ? `<b>${esc(c)}</b>${j ? `<span>${esc(j)}</span>` : ''}` : '<span class="m">' + (def.opensCase ? 'Assigned when the case is opened' : 'Added when you file') + '</span>'; };
@@ -244,11 +246,12 @@ export async function mountForm(def, host, { account, role, md, onDirty, onEdit,
        blank  what prints when the field is empty (the form's own blank line, e.g. "___")
        style  extra inline style (e.g. text-transform) */
     ed(key, o = {}) {
-      const e = src(key), raw0 = o.text !== undefined ? o.text : (e ? String(e.value || '').replace(/\r/g, '') : ''), sys = key === 'caseno' || key === 'judge', hm = key === 'judge' ? /^\s*Hon(?:\.|orable)?\s+(.*)$/i.exec(raw0) : null, raw = hm ? hm[1] : raw0, hon = key === 'judge' && (raw.trim() || o.hon) ? 'Hon. ' : '', blank = !raw && o.blank, simg = !sys && effOf(key).f === SIGFONT ? (sty[key]?.g || sty['~sig']?.g || mySig) : '', st = (sys ? fontCss('Special Elite') + ';' : simg ? 'display:inline-block;position:relative;min-width:170px;height:46px;vertical-align:bottom;color:transparent;' : styleOf(key)) + (o.style || '');   // case number and judge are stamped by the system
-      const body = `<span data-f="${esc(key)}" data-ph="${esc(o.ph || (e ? labelOf(e) : key))}"${o.off !== undefined ? ` data-off="${o.off}" data-len="${raw.length}"` : ''}${o.multi ? ' data-multi="1"' : ''}${blank ? ' data-blank="1"' : ''}${sys ? ' data-sys="1"' : ''}${st ? ` style="${esc(st)}"` : ''} ${readOnly || sys ? '' : ` contenteditable="${PLAIN}"`} spellcheck="false">${simg ? `<img src="${esc(simg)}" alt="" contenteditable="false" style="position:absolute;left:0;top:0;height:46px;max-width:100%;pointer-events:none;-webkit-user-select:none;user-select:none">` : ''}${esc(blank ? o.blank : raw)}${o.multi && raw.endsWith('\n') ? '\n' : ''}</span>`;
+      const e = src(key), raw0 = o.text !== undefined ? o.text : (e ? String(e.value || '').replace(/\r/g, '') : ''), sys = key === 'caseno' || key === 'judge', hm = key === 'judge' ? /^\s*Hon(?:\.|orable)?\s+(.*)$/i.exec(raw0) : null, raw = hm ? hm[1] : raw0, hon = key === 'judge' && (raw.trim() || o.hon) ? 'Hon. ' : '', blank = !raw && o.blank, isSig = !sys && !!o.pre && /\/s\//.test(o.pre), lk = !sys && courtLock(key), simg = isSig && effOf(key).f === SIGFONT ? (sty[key]?.g || '') : '', st = (sys ? fontCss('Special Elite') + ';' : isSig ? (simg ? 'display:inline-block;position:relative;min-width:170px;height:46px;vertical-align:bottom;color:transparent;' : '') : styleOf(key)) + (o.style || '');
+      if (isSig) sigKeys.add(key);   // case number and judge are stamped by the system
+      const body = `<span data-f="${esc(key)}" data-ph="${esc(o.ph || (e ? labelOf(e) : key))}"${o.off !== undefined ? ` data-off="${o.off}" data-len="${raw.length}"` : ''}${o.multi ? ' data-multi="1"' : ''}${blank ? ' data-blank="1"' : ''}${sys ? ' data-sys="1"' : ''}${isSig ? ' data-sig="1"' : ''}${lk ? ' data-lock="1"' : ''}${st ? ` style="${esc(st)}"` : ''} ${readOnly || sys || isSig || lk ? '' : ` contenteditable="${PLAIN}"`} spellcheck="false">${simg ? `<img src="${esc(simg)}" alt="" contenteditable="false" style="position:absolute;left:0;top:0;height:46px;max-width:100%;pointer-events:none;-webkit-user-select:none;user-select:none">` : ''}${esc(blank ? o.blank : raw)}${o.multi && raw.endsWith('\n') ? '\n' : ''}</span>`;
       const fx = effOf(key).f, pre = o.pre && /\/s\//.test(o.pre) && fx && typeOf(fx) !== 'default' ? '' : o.pre;   // a styled signature is not prefixed with /s/
-      const std = o.pre && /\/s\//.test(o.pre) && !simg && !effOf(key).s;   // the standard typed signature, "/s/ Name", is 12 pt
-      return std ? `<span style="font-size:${P(12)}">${hon + (raw && pre ? esc(pre) + body : body)}</span>` : hon + (raw && pre ? esc(pre) + body : body);   // the "Hon." label stays in the form's own font; only the name is stamped
+      const std = isSig && !simg;   // the standard typed signature, "/s/ Name", is 10 pt
+      return std ? `<span style="font-size:${P(10)}">${hon + (raw && pre ? esc(pre) + body : body)}</span>` : hon + (raw && pre ? esc(pre) + body : body);   // the "Hon." label stays in the form's own font; only the name is stamped
     },
     edt: (key, t, o = {}) => api.ed(key, { ...o, text: t, off: api.seg || 0, multi: true }),   // one page's share of a long text
     seg: 0,
@@ -359,11 +362,24 @@ export async function mountForm(def, host, { account, role, md, onDirty, onEdit,
     if (!el) { tb.hidden = true; return; }
     el.focus({ preventScroll: true }); setCaret(el, local); showTb(el);
   }
+  /* A signature line shows the picture in the signer's settings when the person signing is the account holder, otherwise the typed "/s/ Name". It is never changed inside the document. */
+  function autoSig(keys) {
+    const me = String(who.name || '').trim().toLowerCase(); let ch = false;
+    (keys || [...sigKeys]).forEach(k => {
+      const v = String(src(k)?.value || '').trim().toLowerCase(), has = sty[k]?.f === SIGFONT;
+      if (mySig && v && v === me) { if (!(has && sty[k].g === mySig)) { sty[k] = normSt({ f: SIGFONT, g: mySig }); ch = true; } }
+      else if (has) { sty[k] = blankSt(); ch = true; }
+    }); return ch;
+  }
+  const sigNote = `<small class="fd-hint">Your signature comes from your account settings and cannot be changed inside a document. ${settingsUrl ? `<a href="${esc(settingsUrl)}" target="_top">Change it in Settings</a>` : 'Change it in your account settings.'}</small>`;
+  function lockBars() {   // fields the person may not restyle get a note instead of the font controls
+    [...bars].forEach(bar => { const k = bar.dataset.for; if (k && k[0] !== '~' && (sigKeys.has(k) || courtLock(k))) { bars.splice(bars.indexOf(bar), 1); bar.className = 'fd-hint'; bar.innerHTML = sigKeys.has(k) ? sigNote : ''; } });
+  }
   function render() {
     paintCase(); rendering = true; const keep = fd.documentElement.scrollTop;
     const pages = paginate(def.build(api));
     preview.innerHTML = pages.map(p => `<div class="page"><div class="pc">${p.join('')}</div><div class="foot">${esc(def.footer || def.number)}</div></div>`).join(''); fit();
-    fd.documentElement.scrollTop = keep; rendering = false; restore();
+    fd.documentElement.scrollTop = keep; rendering = false; restore(); lockBars();
   }
   function fromPreview(el) {
     const key = el.dataset.f, tgt = src(key); if (!tgt) return;
@@ -411,8 +427,9 @@ export async function mountForm(def, host, { account, role, md, onDirty, onEdit,
   });
   preview.addEventListener('click', e => {
     if (readOnly) return;
-    const c = e.target.closest?.('[data-chk]'); if (c) { const i = $(c.dataset.chk); if (i) { i.checked = !i.checked; mark(); render(); commit(false); } return; }
-    const o = e.target.closest?.('[data-sel]'); if (o) { const [id, v] = o.dataset.sel.split('='), i = $(id); if (i) { if (i.value === v) i.selectedIndex = 0; else i.value = v; mark(); render(); commit(false); } }
+    if (e.target.closest?.('[data-sig]')) { onSigInfo?.(); return; }
+    const c = e.target.closest?.('[data-chk]'); if (c) { if (courtLock(c.dataset.chk)) return; const i = $(c.dataset.chk); if (i) { i.checked = !i.checked; mark(); render(); commit(false); } return; }
+    const o = e.target.closest?.('[data-sel]'); if (o) { const [id, v] = o.dataset.sel.split('='), i = $(id); if (i && !courtLock(id)) { if (i.value === v) i.selectedIndex = 0; else i.value = v; mark(); render(); commit(false); } }
   });
   fd.addEventListener('mousedown', e => { if (!e.target.closest('[data-f],#tb,.fp')) { editing = false; active = null; tb.hidden = true; } });
   tb.addEventListener('mousedown', e => e.preventDefault());
@@ -493,7 +510,7 @@ export async function mountForm(def, host, { account, role, md, onDirty, onEdit,
   let dirty = false; const mark = () => { if (!dirty) { dirty = true; onDirty?.(); } onEdit?.(); };
   const panel = $('fd-panel');
   panel.addEventListener('focusin', () => { editing = false; active = null; tb.hidden = true; });
-  panel.addEventListener('input', e => { if (e.target.closest('.fd-fx')) return; later(); mark(); commit(true); });
+  panel.addEventListener('input', e => { if (e.target.closest('.fd-fx')) return; if (sigKeys.has(e.target.id)) autoSig([e.target.id]); later(); mark(); commit(true); });
   panel.addEventListener('change', e => { const z = e.target.closest('.fd-fs'); if (z) setStyle(z.closest('.fd-fx').dataset.for, { s: parseFloat(z.value) || 0 }); });
   panel.addEventListener('click', e => {
     const fp = e.target.closest('.fd-fp'); if (fp) { if (pick && pick.anchor === fp) closePicker(); else openPicker(fp.closest('.fd-fx').dataset.for, fp, document, false); return; }
@@ -506,7 +523,7 @@ export async function mountForm(def, host, { account, role, md, onDirty, onEdit,
     const c = e.target.closest('[data-role]'); if (!c) return; const r = roles.find(x => x.id === c.dataset.role); if (!r) return;
     if (c.checked) { const got = {}; Object.entries(r.fill(api, who) || {}).forEach(([id, v]) => { const el = $(id); if (el && v) { el.value = v; got[id] = v; } }); applied[r.id] = got; }
     else { Object.entries(applied[r.id] || {}).forEach(([id, v]) => { const el = $(id); if (el && el.value === v) el.value = ''; }); delete applied[r.id]; }
-    render(); mark(); commit(false);
+    autoSig(); render(); mark(); commit(false);
   });
   /* ---- the font picker (one implementation, shown in the panel and over the preview) ---- */
   let pick = null;

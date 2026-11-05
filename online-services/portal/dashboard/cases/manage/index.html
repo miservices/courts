@@ -411,7 +411,7 @@ function docketRows() {
   return l.length ? l.map(e => `<div class="ent${e.struck ? ' struck' : ''}"><span class="en">${esc(e.eventNumber ?? '—')}</span>
       <div><div class="em"><span>${esc(fmtDT(e.date))}</span><span class="pill ${kind(e) === 'filing' ? 'live' : kind(e) === 'order' ? 'mid' : 'plain'}">${label[kind(e)] || 'Event'}</span>${e.sealed ? '<span class="pill bad">Sealed</span>' : ''}${e.struck ? '<span class="pill plain">Struck</span>' : ''}${e.confirmationNumber ? `<span>Filing ${esc(e.confirmationNumber)}</span>` : ''}</div>
         <div class="edsc">${esc(e.description)}</div>${hv(e.comment) ? `<div class="ecm">${esc(e.comment)}</div>` : ''}${hv(e.judge) && kind(e) === 'order' ? `<div class="ecm">${esc(e.judge)}</div>` : ''}</div>
-      <div class="ea">${e.documentLink ? `<a class="btn outline sm" href="${esc(e.documentLink)}" target="_blank" rel="noopener">Open document ↗</a>` : ''}${btn(`entry:${e.eventNumber}`, 'Manage')}</div></div>`).join('')
+      <div class="ea">${e.documentLink ? `<a class="btn outline sm" href="${esc(e.documentLink)}" target="_blank" rel="noopener">Open document ↗</a>` : ''}${mdPath(e.documentLink) ? `<a class="btn outline sm" href="https://migovt.org/courts/online-services/portal/dashboard/document-drafting/#import/${encodeURIComponent(mdPath(e.documentLink))}" target="_blank" rel="noopener">Complete in Document Builder ↗</a>` : ''}${btn(`entry:${e.eventNumber}`, 'Manage')}</div></div>`).join('')
     : empty('No docket entries', docketQ || docketFilter !== 'all' ? 'Nothing matches this filter.' : '');
 }
 function docketTab() {
@@ -870,6 +870,7 @@ function payModal(i) {
 }
 
 /* Orders and rulings */
+function mdPath(l) { const m = /^https:\/\/migovt\.org\/courts\/documents\/#\/((?:filingUploads|case-orders)\/.+\.md)$/i.exec(String(l || '')); try { return m ? decodeURIComponent(m[1]) : ''; } catch { return ''; }  }
 const mdSet = (t, label, v) => String(t).replace(new RegExp('^(- ' + label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ':)[ \\t]*.*$', 'mi'), (_, a) => v ? a + ' ' + v : a);
 const honor = n => { const w = String(n || '').split(/,|;| and /)[0].trim().replace(/^(hon\.?|honorable|chief judge|chief justice|judge|magistrate|justice)\s+/i, '').split(/\s+/).filter(Boolean); if (!w.length) return ''; if (w.length === 1) return 'Hon. ' + w[0]; let l = w.length - 1; while (l > 0 && /^(jr|sr|ii|iii|iv)\.?$/i.test(w[l])) l--; return 'Hon. ' + w[0][0].toUpperCase() + '. ' + w[l]; };
 async function myDrafts() { try { return (await getDocs(query(collection(db, 'draftDocs'), where('members', 'array-contains', account.uid)))).docs.map(d => ({ id: d.id, ...d.data() })).filter(d => d.file).sort((a, b) => (b.updatedAt?.seconds || 0) - (a.updatedAt?.seconds || 0)); } catch (e) { console.warn('Drafts unavailable', e); return []; } }
