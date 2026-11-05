@@ -3,6 +3,7 @@
 import a200 from './mc200a.js?v=15';
 
 const css = args => a200.css(args) + (({ U, P, B }) => `
+.u{text-align:left;padding-left:${P(4)}}
 .pt .c5{flex:1;border-top:${B} solid #000;padding-left:${P(5)}}
 .mt{width:${P(497.5)};border-bottom:${B} solid #000;padding:${P(9)} 0 ${P(9)} ${P(8)};line-height:${P(13)}}
 .sb{width:max-content;min-width:${P(104)};margin:${P(16)} auto 0;border:${B} solid #333;padding:${P(5)} ${P(14)};text-align:center;font-weight:bold;line-height:${P(12)}}
