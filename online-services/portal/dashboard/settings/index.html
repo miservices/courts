@@ -73,7 +73,8 @@ const { account, role, user } = await boot({ id: 'settings', title: 'Account Set
 const root = $('page-body'), staff = has(STAFF, role), atty = has(ATTY, role), enforce = has(['Justice System User', 'Prosecuting Attorney', 'Legal Services User'], role);
 const ymd = v => { if (!v) return ''; const d = v.toDate ? v.toDate() : new Date(v); return isNaN(d) ? String(v) : d.toISOString().slice(0, 10); };
 const dob = ymd(account.dob || account.dateOfBirth || account.birthDate || account.birthdate);
-let SIG = ''; try { const d = await getDoc(doc(db, 'userSignatures', account.uid)); SIG = d.exists() ? d.data().png || '' : ''; } catch (e) { console.warn(e); }
+let SIG = '', PREF = ''; try { const d = await getDoc(doc(db, 'userSignatures', account.uid)); SIG = d.exists() ? d.data().png || '' : ''; PREF = d.exists() ? d.data().pref || '' : ''; } catch (e) { console.warn(e); }
+const prefNow = () => PREF === 'slash' || !SIG ? 'slash' : 'image';
 const A = account.address && typeof account.address === 'object' ? account.address : {};
 const P = { filings: true, hearings: true, financial: true, enforcement: true, review: true, ...(account.notificationPrefs || {}) };
 const f = (label, id, v = '', o = {}) => `<label class="f"><span>${label}</span><input id="${id}" type="${o.type || 'text'}" value="${esc(v)}"${o.ac ? ` autocomplete="${o.ac}"` : ''}${o.ro ? ' readonly' : ''}${o.max ? ` maxlength="${o.max}"` : ''}>${o.hint ? `<small class="m">${o.hint}</small>` : ''}</label>`;
@@ -94,9 +95,11 @@ function draw() {
     <div class="acts"><button class="btn" type="button" id="save-contact">Save contact details</button></div></section>
 
 
-  <section class="card" id="signature"><h3>Signature</h3><p class="m">Keep one signature on file. Upload a picture or draw it, then choose “My signature” as the text type on any signature line in the Document Builder. Saving a new one replaces the old one. Without a picture, signature lines show a typed signature: /s/ and your name in the standard font at 10 pt.</p><div id="m-sig"></div>
-    <div class="sigbox" id="sig-cur">${SIG ? `<img src="${esc(SIG)}" alt="Your signature">` : `<span style="font:10pt 'Times New Roman',serif;color:#000">/s/ ${esc(account.name || '')}</span>`}</div>
-    <div class="acts"><label class="btn outline" for="sig-file" style="cursor:pointer">Upload a picture</label><input type="file" id="sig-file" accept="image/png,image/jpeg,image/webp" hidden><button class="btn outline" type="button" id="sig-draw">Draw it</button>${SIG ? '<button class="btn outline" type="button" id="sig-rm">Use a typed signature instead</button>' : ''}</div>
+  <section class="card" id="signature"><h3>Signatures</h3><p class="m">You have two signatures. Your <b>signature picture</b> is one you upload or draw. Your <b>/s/ signature</b> is always available: /s/ and your name in plain type at 10 pt. When you sign a line in a document you pick which one to use, and the one marked below is chosen for you. Once a line is signed it is locked and saved exactly as signed.</p><div id="m-sig"></div>
+    <div class="sigbox" id="sig-cur">${SIG ? `<img src="${esc(SIG)}" alt="Your signature picture">` : '<span class="m">No signature picture yet. Upload or draw one below.</span>'}</div>
+    <div class="sigbox" style="min-height:60px"><span style="font:10pt 'Times New Roman',serif;color:#000">/s/ ${esc(account.name || '')}</span></div>
+    <fieldset style="border:0;padding:0;margin:0 0 8px"><legend class="m" style="padding:0">Use this one by default</legend><label class="chk"><input type="radio" name="sig-pref" value="image"${prefNow() === 'image' ? ' checked' : ''}${SIG ? '' : ' disabled'}> <span>My signature picture</span></label> <label class="chk"><input type="radio" name="sig-pref" value="slash"${prefNow() === 'slash' ? ' checked' : ''}> <span>Plain /s/ ${esc(account.name || 'name')}</span></label></fieldset>
+    <div class="acts"><label class="btn outline" for="sig-file" style="cursor:pointer">Upload a picture</label><input type="file" id="sig-file" accept="image/png,image/jpeg,image/webp" hidden><button class="btn outline" type="button" id="sig-draw">Draw it</button>${SIG ? '<button class="btn outline" type="button" id="sig-rm">Remove my signature picture</button>' : ''}</div>
     <div id="sig-pad" hidden style="margin-top:14px"><canvas class="sigpad" id="sig-cv" width="1200" height="360" aria-label="Draw your signature here"></canvas>
       <div class="acts" style="margin-top:10px"><button class="btn" type="button" id="sig-use">Save drawing</button><button class="btn outline" type="button" id="sig-clear">Clear</button><button class="btn outline" type="button" id="sig-cancel">Cancel</button></div></div>
     <div id="sig-ed" hidden style="margin-top:14px"><p class="m" style="margin:0 0 8px">Drag on the picture to crop it. Adjust the sliders until the preview looks right, then save.</p>
@@ -167,11 +170,12 @@ function wireEd() {
 async function saveSig(png) {
   if (!png) return msg('m-sig', 'We could not find a signature in that picture. Use dark ink on a light background.', false);
   if (png.length > 250000) return msg('m-sig', 'That picture is too detailed. Try a simpler or smaller one.', false);
-  try { await setDoc(doc(db, 'userSignatures', account.uid), { png, uid: account.uid, updatedAt: new Date().toISOString() }); SIG = png; $('sig-pad').hidden = true; draw(); msg('m-sig', 'Your signature is saved.'); }
+  try { await setDoc(doc(db, 'userSignatures', account.uid), { png, uid: account.uid, updatedAt: new Date().toISOString() }, { merge: true }); SIG = png; if (!PREF) PREF = 'image'; $('sig-pad').hidden = true; draw(); msg('m-sig', 'Your signature is saved.'); }
   catch (er) { console.error(er); msg('m-sig', er?.code === 'permission-denied' ? 'The Firestore rules must let people write their own userSignatures record. (permission-denied)' : 'We could not save your signature. Try again.', false); }
 }
 function wireSig() {
   wireEd();
+  document.querySelectorAll('input[name=sig-pref]').forEach(r => r.onchange = async () => { try { await setDoc(doc(db, 'userSignatures', account.uid), { pref: r.value, uid: account.uid }, { merge: true }); PREF = r.value; msg('m-sig', 'Saved. New signatures will use ' + (r.value === 'image' ? 'your signature picture.' : 'a plain /s/ signature.')); } catch (er) { console.error(er); msg('m-sig', 'We could not save that. Try again.', false); } });
   $('sig-file').onchange = e => {
     const f = e.target.files[0]; e.target.value = ''; if (!f) return;
     if (!/^image\/(png|jpeg|webp)$/.test(f.type)) return msg('m-sig', 'Choose a PNG, JPG or WebP picture.', false);
@@ -188,7 +192,7 @@ function wireSig() {
   $('sig-draw').onclick = () => { $('sig-pad').hidden = false; reset(); msg('m-sig', ''); };
   $('sig-clear').onclick = reset; $('sig-cancel').onclick = () => { $('sig-pad').hidden = true; };
   $('sig-use').onclick = () => { if (!ink) return msg('m-sig', 'Draw your signature first.', false); const im = new Image(); im.onload = () => saveSig(toPng(im)); im.src = cv.toDataURL('image/png'); };
-  $('sig-rm')?.addEventListener('click', async () => { try { await deleteDoc(doc(db, 'userSignatures', account.uid)); SIG = ''; draw(); msg('m-sig', 'Done. Your signature lines will use the typed signature.'); } catch (er) { console.error(er); msg('m-sig', 'We could not remove it. Try again.', false); } });
+  $('sig-rm')?.addEventListener('click', async () => { try { await setDoc(doc(db, 'userSignatures', account.uid), { png: '', uid: account.uid, updatedAt: new Date().toISOString() }, { merge: true }); SIG = ''; draw(); msg('m-sig', 'Done. Your signature picture was removed. You can still sign with /s/.'); } catch (er) { console.error(er); msg('m-sig', 'We could not remove it. Try again.', false); } });
 }
 const val = id => ($(id)?.value || '').trim();
 const busy = (b, on, t) => { b.disabled = on; b.dataset.l = b.dataset.l || b.textContent; b.textContent = on ? t : b.dataset.l; };

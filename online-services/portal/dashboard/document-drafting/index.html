@@ -39,7 +39,7 @@ dialog>footer{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:10px;padd
 .fd-top{display:flex;gap:10px;align-items:center;margin-bottom:12px;flex-wrap:wrap}
 .fd-wrap{display:flex;gap:14px;align-items:stretch;min-height:480px}
 .fd-panel{width:400px;flex:none;overflow-y:auto;overscroll-behavior:contain;background:#fff;border:1px solid #d9dee7;border-radius:10px;padding:16px;font-size:13px}
-.fd-panel h3{margin:0 0 4px;font-size:16px}.fd-hint{color:#667;font-size:12px;font-weight:400}
+.fd-panel h3{margin:0 0 4px;font-size:16px}.fd-hint{color:#667;font-size:12px;font-weight:400}.fd-sg{margin:4px 0 10px}.fd-sgr{display:flex;gap:6px;align-items:center;flex-wrap:wrap}.fd-sgr select{flex:1;min-width:0}
 .fd-panel h2{font-size:12px;text-transform:uppercase;letter-spacing:.05em;margin:22px 0 8px;color:#345;border-bottom:1px solid #dde;padding:0 0 4px}
 .fd-panel label{display:block;font-size:12px;line-height:1.25;font-weight:600;color:#445;margin:10px 0 4px}
 .fd-panel input[type=text],.fd-panel textarea,.fd-panel select{display:block;width:100%;box-sizing:border-box;height:34px;padding:6px 8px;border:1px solid #b9c2cf;border-radius:6px;background:#fff;color:#1a2233;font-size:13px;font-family:inherit;line-height:1.3}
@@ -137,9 +137,9 @@ dialog.cdlg{width:min(440px,calc(100vw - 24px))}
 <script type="module">
 import { boot, db, app, $, esc, has, STAFF } from '/courts/online-services/portal/dashboard/assets/js/portal-shell.js?v=7';
 import { FORMS, byId, byNumber } from '/courts/online-services/portal/dashboard/assets/forms/registry.js?v=4';
-import { mountForm, formOf, fontAllowed, fontFits, fontLock, fontCss, GFONTS, FONT_TYPES, FONT_WARNING } from '/courts/online-services/portal/dashboard/assets/forms/engine.js?v=16';
-import { DraftSession, accessOf, roleIn } from '/courts/online-services/portal/dashboard/assets/forms/drafts.js?v=1';
-import { firebaseBackend } from '/courts/online-services/portal/dashboard/assets/forms/backend.js?v=6';
+import { mountForm, formOf, fontAllowed, fontFits, fontLock, fontCss, GFONTS, FONT_TYPES, FONT_WARNING } from '/courts/online-services/portal/dashboard/assets/forms/engine.js?v=17';
+import { DraftSession, accessOf, roleIn } from '/courts/online-services/portal/dashboard/assets/forms/drafts.js?v=2';
+import { firebaseBackend } from '/courts/online-services/portal/dashboard/assets/forms/backend.js?v=7';
 const { account, role, user } = await boot({ id: 'drafting', title: 'Document Drafting', subtitle: 'Prepare court forms. They save automatically, and you can share them to work on together.' });
 const root = $('page-body'), BASE = 'https://migovt.org/courts/online-services/portal/dashboard/document-drafting/', FORMS_PATH = '/courts/online-services/portal/dashboard/assets/forms/';
 const uid = account.uid, myName = (account.name || user?.email || 'Someone').trim(), be = firebaseBackend({ db, app });
@@ -225,14 +225,14 @@ async function editor({ form, docId, md0 }) {
     console.error(e); root.innerHTML = notice(e?.code === 'permission-denied' || e?.code === 'storage/unauthorized' ? 'You do not have access to this document. Ask the owner to share it with you.' : 'We could not open this document. Check your connection and try again.'); return;
   }
   if (my !== gen) return;
-  const canEdit = access === 'edit', title0 = meta?.title || `${form.number} – ${new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
-  root.innerHTML = `<div class="fd-top fd-bar"><a class="fd-back" href="${BASE}#" id="fd-back"><svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true"><path d="M12.5 4 6.5 10l6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>All documents</a><input id="fd-title" class="fd-title" type="text" maxlength="120" aria-label="Document name" value="${esc(title0)}"${canEdit ? '' : ' readonly'}><span class="m">${esc(form.number)}${canEdit ? '' : ' · View only'}</span></div><div id="fd-host"><div class="loading-inline"><span class="spin-sm"></span>Loading form…</div></div>`;
+  const canEdit = access === 'edit', canSign = access === 'sign', title0 = meta?.title || `${form.number} – ${new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
+  root.innerHTML = `<div class="fd-top fd-bar"><a class="fd-back" href="${BASE}#" id="fd-back"><svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true"><path d="M12.5 4 6.5 10l6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>All documents</a><input id="fd-title" class="fd-title" type="text" maxlength="120" aria-label="Document name" value="${esc(title0)}"${canEdit ? '' : ' readonly'}><span class="m">${esc(form.number)}${canEdit ? '' : canSign ? ' · Signature only' : ' · View only'}</span></div><div id="fd-host"><div class="loading-inline"><span class="spin-sm"></span>Loading form…</div></div>`;
   try {
     const def = (await import(`${FORMS_PATH}${form.id}.js?v=14`)).default; if (my !== gen) return;
     let session = null;
     if (favCache === null) { favCache = await be.getFavs(uid); if (favCache === null) { try { favCache = JSON.parse(localStorage.getItem('fd-font-favs') || '[]'); } catch { favCache = []; } } if (my !== gen) return; }
-    const signature = await be.getSignature(uid); if (my !== gen) return;
-    const engine = await mountForm(def, $('fd-host'), { account, role, signature, favs: favCache, onFavs: l => { favCache = l; try { localStorage.setItem('fd-font-favs', JSON.stringify(l)); } catch { } be.setFavs(uid, l).catch(e => console.warn('Favorites not saved', e)); }, md: text ?? md0, readOnly: !canEdit, fileLabel: has(STAFF, role) ? 'Enter order' : 'File', settingsUrl: SIG_URL, onSigInfo: async () => { if (await ask({ title: 'Change your signature in Settings', message: 'Your signature comes from your account settings and cannot be changed inside a document. Open Account Settings to change it.', ok: 'Open Settings', cancel: 'Not now' })) location.href = SIG_URL; }, actions: canEdit ? ['save', 'share', 'file'] : ['share'], onEdit: () => session?.touch(),
+    const sInfo = await be.getSignatureInfo(uid), signature = sInfo.png; if (my !== gen) return;
+    const engine = await mountForm(def, $('fd-host'), { account, role, signature, sigPref: sInfo.pref, uid, signKeys: canSign ? (meta?.signKeys?.[uid] || []) : null, favs: favCache, onFavs: l => { favCache = l; try { localStorage.setItem('fd-font-favs', JSON.stringify(l)); } catch { } be.setFavs(uid, l).catch(e => console.warn('Favorites not saved', e)); }, md: text ?? md0, readOnly: !canEdit, fileLabel: has(STAFF, role) ? 'Enter order' : 'File', settingsUrl: SIG_URL, onSigInfo: async () => { if (await ask({ title: 'About signatures', message: 'Signing is done with the Sign button next to the signature line in the panel. Your signature picture and /s/ preference are in Account Settings.', ok: 'Open Settings', cancel: 'Not now' })) location.href = SIG_URL; }, actions: canEdit ? ['save', 'share', 'file'] : [], onEdit: () => session?.touch(),
       onFontNotice: () => ask({ title: 'Keep your text readable', message: FONT_WARNING, ok: 'I understand', info: true }),
       onAction: a => a === 'save' ? session.save(true) : a === 'share' ? openShare() : fileIt(def) });
     if (my !== gen) { engine.destroy(); return; }
@@ -257,7 +257,8 @@ async function editor({ form, docId, md0 }) {
     cur = { session, engine, form };
     $('fd-back').onclick = e => { e.preventDefault(); if (location.hash && location.hash !== '#') location.hash = ''; else route(); };
     session.attach({ save: !docId && !!md0 });
-    if (!canEdit) engine.setStatus('You can view this document. Changes by others appear here as they happen.', '');
+    if (canSign) engine.setStatus('You can sign the line assigned to you. The rest of this document is view only. Changes by others appear here as they happen.', '');
+    else if (!canEdit) engine.setStatus('You can view this document. Changes by others appear here as they happen.', '');
     let tt = 0; $('fd-title').addEventListener('input', e => { clearTimeout(tt); tt = setTimeout(() => session.setTitle(e.target.value.trim() || title0), 500); });
 
   } catch (e) { console.error(e); if (my === gen) $('fd-host').innerHTML = '<div class="alert" role="alert">We could not load this form. Refresh the page and try again.</div>'; }
@@ -275,16 +276,19 @@ function renderShare() {
   const s = cur?.session; if (!s || !s.meta) return; const m = s.meta, owner = m.ownerUid === uid;
   const qEl = $('sh-q'), keep = qEl ? { v: qEl.value, f: document.activeElement === qEl, a: qEl.selectionStart, b: qEl.selectionEnd, r: $('sh-role')?.value } : null;
   $('dlg-t').textContent = 'Share'; $('dlg-w').textContent = m.title || 'Untitled';
+  const lineName = k => (cur?.engine?.sigLines?.() || []).find(l => l.key === k)?.label || k;
   const people = (m.members || []).map(u => { const nm = m.names?.[u] || 'Unknown', r = m.ownerUid === u ? 'owner' : m.roles?.[u] || 'view';
+    if (r === 'sign') return `<li class="sh-p"><span><b>${esc(nm)}</b>${u === uid ? ' <small class="m">(you)</small>' : ''}</span><span class="m">Signs only: ${esc((m.signKeys?.[u] || []).map(lineName).join(', ') || 'no line')}</span>${owner ? `<button class="btn outline sm" type="button" data-a="remove" data-uid="${esc(u)}">Remove</button>` : ''}</li>`;
     return `<li class="sh-p"><span><b>${esc(nm)}</b>${u === uid ? ' <small class="m">(you)</small>' : ''}</span>${r === 'owner' ? '<span class="m">Owner</span>' : owner ? `<select data-role="${esc(u)}" aria-label="Access for ${esc(nm)}"><option value="edit"${r === 'edit' ? ' selected' : ''}>Can edit</option><option value="view"${r === 'view' ? ' selected' : ''}>Can view</option></select><button class="btn outline sm" type="button" data-a="remove" data-uid="${esc(u)}">Remove</button>` : `<span class="m">${r === 'edit' ? 'Can edit' : 'Can view'}</span>`}</li>`; }).join('');
   $('dlg-b').innerHTML = `<div class="sh">
     <label class="f"><span>Anyone signed in with the link</span><select id="sh-link"${owner ? '' : ' disabled'}><option value="none"${m.linkAccess === 'none' ? ' selected' : ''}>Cannot open it (only people added below)</option><option value="view"${m.linkAccess === 'view' ? ' selected' : ''}>Can view</option><option value="edit"${m.linkAccess === 'edit' ? ' selected' : ''}>Can edit</option></select></label>
     <div class="sh-row"><input id="sh-url" type="text" readonly value="${esc(shareUrl())}" aria-label="Document link"><button class="btn outline" type="button" data-a="copy">Copy link</button></div>
-    ${owner ? `<div class="f"><span id="sh-ql">Add people</span><div class="sh-row"><div class="sh-box"><input id="sh-q" type="text" autocomplete="off" spellcheck="false" placeholder="Start typing a name or email" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="sh-sg" aria-labelledby="sh-ql"><div id="sh-sg" class="sh-sg" role="listbox" hidden></div></div><select id="sh-role" aria-label="Access"><option value="edit">Can edit</option><option value="view">Can view</option></select></div></div>` : '<p class="m">Only the owner can change who this is shared with.</p>'}
+    ${owner ? `<div class="f"><span id="sh-ql">Add people</span><div class="sh-row"><div class="sh-box"><input id="sh-q" type="text" autocomplete="off" spellcheck="false" placeholder="Start typing a name or email" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="sh-sg" aria-labelledby="sh-ql"><div id="sh-sg" class="sh-sg" role="listbox" hidden></div></div><select id="sh-role" aria-label="Access"><option value="edit">Can edit</option><option value="view">Can view</option>${(cur?.engine?.sigLines?.() || []).some(l => !l.signed) ? '<option value="sign">Can sign only</option>' : ''}</select></div><div class="sh-row" id="sh-linewrap" hidden><select id="sh-line" aria-label="Line this person signs">${(cur?.engine?.sigLines?.() || []).filter(l => !l.signed).map(l => `<option value="${esc(l.key)}">${esc(l.label)}</option>`).join('')}</select></div><small class="m" id="sh-signhint" hidden>This person can only sign the line you choose. They cannot change anything else in the document. Pick them below after choosing the line.</small></div>` : '<p class="m">Only the owner can change who this is shared with.</p>'}
     <ul class="sh-list">${people}</ul></div>`;
   $('dlg-e').innerHTML = shareMsg ? `<div class="${shareMsg.bad ? 'alert' : 'note'}" role="${shareMsg.bad ? 'alert' : 'status'}">${esc(shareMsg.t)}</div>` : '';
   $('dlg-f').innerHTML = '<button class="btn outline" type="button" data-close>Done</button>';
   if (keep && $('sh-q')) { $('sh-q').value = keep.v; if (keep.r) $('sh-role').value = keep.r; if (keep.f) { $('sh-q').focus(); try { $('sh-q').setSelectionRange(keep.a, keep.b); } catch { } } suggest(true); }
+  syncLine();
 }
 
 /* ---------- type-ahead for adding people ---------- */
@@ -310,6 +314,7 @@ async function suggest(now) {
   if (now) return run(); paintSuggest('busy'); sgT = setTimeout(run, 140);
 }
 const chosen = i => { const p = sg[i]; if (p) { addPerson(p, $('sh-role').value); } };
+const syncLine = () => { const sgn = $('sh-role')?.value === 'sign'; if ($('sh-linewrap')) $('sh-linewrap').hidden = !sgn; if ($('sh-signhint')) $('sh-signhint').hidden = !sgn; };
 dlg.addEventListener('input', e => { if (e.target.id === 'sh-q') suggest(false); });
 dlg.addEventListener('focusin', e => { if (e.target.id === 'sh-q' && e.target.value.trim()) suggest(false); });
 dlg.addEventListener('keydown', e => {
@@ -322,18 +327,26 @@ dlg.addEventListener('mousedown', e => { if (e.target.closest('.sg-i')) e.preven
 dlg.addEventListener('click', e => { const o = e.target.closest('.sg-i'); if (o) chosen(+o.dataset.i); else if (!e.target.closest('.sh-box')) paintSuggest('closed'); });
 const shMsg = (t, bad = false) => { shareMsg = { t, bad }; renderShare(); };
 async function addPerson(p, role) {
-  try { await cur.session.addMember(p.uid, p.name || p.email, role); found = []; sg = []; sgi = -1; if ($('sh-q')) $('sh-q').value = ''; shMsg(`${p.name} can now ${role === 'edit' ? 'edit' : 'view'} this document.`); } catch (e) { console.error(e); shMsg(e?.code === 'permission-denied' ? 'The Firestore rules do not allow sharing yet. (permission-denied)' : 'We could not share this. Try again.', true); }
+  try {
+    let keys = null;
+    if (role === 'sign') {   // the chosen line is marked as awaiting this person, and saved before they are told
+      const k = $('sh-line')?.value; if (!k) { shMsg('Choose the signature line this person will sign.', true); return; }
+      if (!cur.engine.assign(k, { uid: p.uid, name: p.name || p.email })) { shMsg('That line is already signed.', true); return; }
+      keys = [k]; await cur.session.flush();
+    }
+    await cur.session.addMember(p.uid, p.name || p.email, role, keys); found = []; sg = []; sgi = -1; if ($('sh-q')) $('sh-q').value = ''; shMsg(role === 'sign' ? `${p.name} can now sign that line only.` : `${p.name} can now ${role === 'edit' ? 'edit' : 'view'} this document.`); } catch (e) { console.error(e); shMsg(e?.code === 'permission-denied' ? 'The Firestore rules do not allow sharing yet. (permission-denied)' : 'We could not share this. Try again.', true); }
 }
 dlg.addEventListener('click', async e => {
   if (e.target === dlg || e.target.closest('[data-close]')) { dlg.close(); sharing = false; return; }
   const b = e.target.closest('[data-a]'); if (!b || !cur?.session) return; const a = b.dataset.a, s = cur.session;
   if (a === 'copy') { try { await navigator.clipboard.writeText(shareUrl()); shMsg('Link copied.'); } catch { $('sh-url').select(); shMsg('Press Ctrl+C to copy the link.'); } }
-  else if (a === 'remove') { try { await s.removeMember(b.dataset.uid); shMsg('Removed.'); } catch (er) { console.error(er); shMsg('We could not remove them. Try again.', true); } }
+  else if (a === 'remove') { try { (s.meta?.signKeys?.[b.dataset.uid] || []).forEach(k => cur.engine.assign(k, null)); await s.flush(); await s.removeMember(b.dataset.uid); shMsg('Removed.'); } catch (er) { console.error(er); shMsg('We could not remove them. Try again.', true); } }
 });
 dlg.addEventListener('change', async e => {
   const s = cur?.session; if (!s) return;
   try {
     if (e.target.id === 'sh-link') { await s.setLinkAccess(e.target.value); shMsg('Link setting saved.'); }
+    else if (e.target.id === 'sh-role') syncLine();
     else if (e.target.dataset.role) { await s.setRole(e.target.dataset.role, e.target.value); shMsg('Access updated.'); }
   } catch (er) { console.error(er); shMsg('We could not change that. Try again.', true); }
 });
@@ -343,6 +356,8 @@ const SIG_URL = 'https://migovt.org/courts/online-services/portal/dashboard/sett
 const FILE_URL = 'https://migovt.org/courts/online-services/portal/dashboard/file/';
 async function fileIt(def) {
   const s = cur?.session, e = cur?.engine; if (!s || !e) return;
+  const waiting = (e.sigLines?.() || []).filter(l => l.awaiting && !l.signed);
+  if (waiting.length && !(await ask({ title: 'Not signed yet', message: 'Still waiting for: ' + waiting.map(l => l.label + ' (' + l.awaiting + ')').join('; ') + '. Continue anyway?', ok: 'Continue', cancel: 'Go back' }))) return;
   try { if (!s.docId) await s.save(true); else await s.flush(); } catch (er) { console.warn(er); }
   if (!s.docId || s.isDirty()) { await ask({ title: 'Could not save yet', message: 'This document has to be saved before it can be filed. Check your connection and try again.', ok: 'OK', info: true }); return; }
   if (has(STAFF, role)) { try { sessionStorage.setItem('fd-order', JSON.stringify({ id: s.docId, title: cur.session?.title || e.api.val?.('title') || '', md: e.getMd() })); } catch { }   // handed over in this tab, so the order does not depend on a second Storage read
@@ -358,7 +373,7 @@ async function settingsView() {
   const fontSel = (k, first) => `<select id="st-${k}-f" aria-label="Font">${first}${FONT_TYPES.filter(t => t.id !== 'sigimg').map(t => { const l = t.fonts.filter(f => f !== 'Arial' && fontAllowed(f, role, k)); return l.length ? `<optgroup label="${esc(t.label)}">${l.map(f => `<option value="${esc(f)}"${cfg[k]?.f === f ? ' selected' : ''}>${esc(f)}</option>`).join('')}</optgroup>` : ''; }).join('')}</select>`;
   const row = (k, t, h, first) => `<div class="st-r"><div class="st-t"><b>${t}</b><small class="fd-hint">${h}</small></div>${fontSel(k, first)}<select id="st-${k}-s" aria-label="Size in points"><option value="">Auto size</option>${sizes.map(n => `<option value="${n}"${+cfg[k]?.s === n ? ' selected' : ''}>${n} pt</option>`).join('')}</select><div class="st-p" id="st-${k}-p"></div></div>`;
   root.innerHTML = `<div class="fd-top fd-bar"><a class="fd-back" href="${BASE}#"><svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true"><path d="M12.5 4 6.5 10l6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>All documents</a><h3 style="margin:0">Document builder settings</h3></div>
-    <section class="card"><h3>Signature</h3><p class="m">${mySig ? 'This is the signature on file. Choose “My signature” as the text type on any signature line to use it.' : 'Until you add a picture, signature lines show a typed signature: /s/ and your name in the standard font at 10 pt.'}</p>
+    <section class="card"><h3>Signature</h3><p class="m">${mySig ? 'This is the signature on file. You can sign any of your signature lines with it, or with a plain /s/.' : 'Until you add a picture, signature lines show a typed signature: /s/ and your name in the standard font at 10 pt.'}</p>
       <div style="border:1px solid #c9d3e3;border-radius:6px;background:#fff;padding:12px 16px;margin:8px 0 12px;min-height:48px;display:flex;align-items:center">${mySig ? `<img src="${esc(mySig)}" alt="Your signature" style="max-height:70px;max-width:100%">` : `<span style="font:10pt 'Times New Roman',serif;color:#000">/s/ ${esc(myName || 'Your name')}</span>`}</div>
       <a class="btn outline" href="https://migovt.org/courts/online-services/portal/dashboard/settings/#signature">${mySig ? 'Change or remove signature' : 'Add a signature'}</a></section>
     <section class="card"><h3>Document fonts</h3><p class="m">New documents start with these fonts. You can still change fonts inside any document.</p>

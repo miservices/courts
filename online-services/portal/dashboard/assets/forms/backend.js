@@ -44,6 +44,8 @@ export function firebaseBackend({ db, app }) {
     async getSettings(uid) { try { const s = await getDoc(doc(db, 'accountDirectory', uid)); return s.exists() && s.data().builderSettings ? s.data().builderSettings : null; } catch (e) { console.warn('Settings unavailable', e); return null; } },
     /* The person's one saved signature (a small PNG). Kept in its own record so only they can read it. */
     async getSignature(uid) { try { const s = await getDoc(doc(db, 'userSignatures', uid)); return s.exists() && s.data().png ? s.data().png : ''; } catch (e) { console.warn('Signature unavailable', e); return ''; } },
+    /* The picture and which signature the person prefers ('image' or 'slash'). */
+    async getSignatureInfo(uid) { try { const s = await getDoc(doc(db, 'userSignatures', uid)); const d = s.exists() ? s.data() : {}; return { png: d.png || '', pref: d.pref === 'slash' ? 'slash' : 'image' }; } catch (e) { console.warn('Signature unavailable', e); return { png: '', pref: 'slash' }; } },
     async getPleadingSettings(uid) { try { const s = await getDoc(doc(db, 'accountDirectory', uid)); return s.exists() && s.data().pleadingSettings ? s.data().pleadingSettings : null; } catch (e) { console.warn('Pleading settings unavailable', e); return null; } },
     async setPleadingSettings(uid, v) { await setDoc(doc(db, 'accountDirectory', uid), { pleadingSettings: v }, { merge: true }); },
     async setSettings(uid, v) { await setDoc(doc(db, 'accountDirectory', uid), { builderSettings: v }, { merge: true }); },

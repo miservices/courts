@@ -51,6 +51,7 @@ export const roleIn = (meta, uid) => !meta ? null : meta.ownerUid === uid ? 'own
 export function accessOf(meta, uid) {
   const r = roleIn(meta, uid);
   if (r === 'owner' || r === 'edit') return 'edit';
+  if (r === 'sign') return meta.linkAccess === 'edit' ? 'edit' : 'sign';   // may only sign the lines assigned to them
   if (r === 'view') return meta.linkAccess === 'edit' ? 'edit' : 'view';
   return meta.linkAccess === 'edit' ? 'edit' : meta.linkAccess === 'view' ? 'view' : null;
 }
@@ -64,7 +65,7 @@ export class DraftSession {
   constructor({ backend, adapter, uid, name, formId, title, docId = null, meta = null, clientId = newClientId(), debounce = 1200, maxWait = 6000, heartbeat = 30000, onStatus = () => { }, onMeta = () => { }, onConflict = () => { }, onCreated = () => { } }) {
     Object.assign(this, { backend, adapter, uid, name, formId, title, docId, meta, clientId, debounce, maxWait, heartbeatMs: heartbeat, onStatus, onMeta, onConflict, onCreated });
     this.baseRev = meta?.rev || 0; this.baseMd = null; this.saving = false; this.again = false; this.pulling = false; this.dirtyAt = 0; this.timer = null; this.retry = null; this.closed = false; this.unsub = null; this.hb = null;
-    this.canEdit = docId ? accessOf(meta, uid) === 'edit' : true;
+    this.canEdit = docId ? ['edit', 'sign'].includes(accessOf(meta, uid)) : true;
   }
   /* Call once the editor is showing the loaded document. fresh = a brand-new document (no file yet). */
   attach({ save = false } = {}) {
@@ -157,11 +158,11 @@ export class DraftSession {
   /* ---- sharing (owner only; the Firestore rules enforce it too) ---- */
   async _share(fn) {
     if (!this.docId || this.meta?.ownerUid !== this.uid) throw new Error('Only the owner can change sharing.');
-    const m = this.meta, patch = fn({ members: [...(m.members || [])], roles: { ...(m.roles || {}) }, names: { ...(m.names || {}) } }, m);
+    const m = this.meta, patch = fn({ members: [...(m.members || [])], roles: { ...(m.roles || {}) }, names: { ...(m.names || {}) }, signKeys: { ...(m.signKeys || {}) } }, m);
     await this.backend.update(this.docId, patch); this.meta = { ...m, ...patch }; this.onMeta(this.meta);
   }
   setLinkAccess(mode) { return this._share(() => ({ linkAccess: mode })); }
-  addMember(uid, name, role) { return this._share(s => { if (!s.members.includes(uid)) s.members.push(uid); s.roles[uid] = role; s.names[uid] = name; return s; }); }
-  setRole(uid, role) { return this._share(s => { s.roles[uid] = role; return s; }); }
-  removeMember(uid) { return this._share(s => { s.members = s.members.filter(x => x !== uid); delete s.roles[uid]; delete s.names[uid]; return s; }); }
+  addMember(uid, name, role, keys) { return this._share(s => { if (!s.members.includes(uid)) s.members.push(uid); s.roles[uid] = role; s.names[uid] = name; if (role === 'sign') s.signKeys[uid] = keys || []; else delete s.signKeys[uid]; return s; }); }
+  setRole(uid, role) { return this._share(s => { s.roles[uid] = role; if (role !== 'sign') delete s.signKeys[uid]; return s; }); }
+  removeMember(uid) { return this._share(s => { s.members = s.members.filter(x => x !== uid); delete s.roles[uid]; delete s.names[uid]; delete s.signKeys[uid]; return s; }); }
 }
