@@ -260,7 +260,8 @@ main{padding:36px 0 72px}
 
   const $ = id => document.getElementById(id);
   const STATES = ['check', 'start', 'work', 'pass', 'bar', 'err'];
-  const initials = n => String(n || '?').split(/\s+/).filter(Boolean).slice(0, 2).map(w => w[0].toUpperCase()).join('');
+  /* First + last initial, never the middle name (Lewis Cline Sullivan -> LS) */
+  const initials = n => { const w = String(n || '?').split(/\s+/).filter(Boolean); return ((w[0] || '?')[0] + (w.length > 1 ? w[w.length - 1][0] : '')).toUpperCase(); };
   const badCred = e => ['auth/wrong-password', 'auth/invalid-credential', 'auth/invalid-login-credentials'].includes(e?.code);
   const tooMany = e => e?.code === 'auth/too-many-requests';
 
@@ -347,7 +348,7 @@ main{padding:36px 0 72px}
   }
   async function writeAccount(uid, email, bar) {
     await setDoc(doc(db, 'accounts', uid), {
-      name: bar ? bar.name : ident.name, email, role: bar ? bar.role : 'Public User',
+      name: bar ? bar.name : ident.name, firstName: ident.first, middleName: ident.middle, lastName: ident.last, email, role: bar ? bar.role : 'Public User',
       pin: ident.pin, mipassPin: ident.pin, dob: ident.dob || null,
       barNumber: bar ? bar.barNumber : null, barStatus: bar ? bar.status : null,
       robloxUser: ident.roblox || null, discord: ident.discord || null,
@@ -402,7 +403,7 @@ main{padding:36px 0 72px}
     if (pin && name) {                                   // coming back from MiGOVT
       history.replaceState({}, '', location.pathname);   // keep the PIN out of the address bar
       if (!/^\d{4,20}$/.test(pin)) return fail('Sign-in failed', 'MiGOVT sent back an invalid PIN. Please try again.');
-      ident = { pin, name, dob: p.get('mipass_dob') || null, roblox: p.get('mipass_user') || null, discord: p.get('mipass_discord') || null, email: (p.get('mipass_email') || '').trim().toLowerCase() };
+      ident = { pin, name, first: (p.get('mipass_first') || '').trim() || null, middle: (p.get('mipass_middle') || '').trim() || null, last: (p.get('mipass_last') || '').trim() || null, dob: p.get('mipass_dob') || null, roblox: p.get('mipass_user') || null, discord: p.get('mipass_discord') || null, email: (p.get('mipass_email') || '').trim().toLowerCase() };
       work('Signing you in', 'Looking you up in the portal.');
       const a = await findAccount(ident.pin);
       return a ? signInExisting(a) : createNew();
