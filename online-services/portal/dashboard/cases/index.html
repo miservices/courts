@@ -134,7 +134,21 @@ let cases = [], mine = [], subs = [], cur = null, tab = 'overview', dFilter = 'a
 const LS = { q: '', status: 'active', shown: 25 };
 
 /* Struck docket entries are only visible in case management. Event numbers stay as entered, so a struck entry leaves its number unused. */
-const noStruck = c => Array.isArray(c.events) ? { ...c, events: c.events.filter(e => !e.struck) } : c;
+const CHIEF = ['Chief Judge', 'Justice', 'Chief Justice'];
+const applyVis = (c, ctx = {}) => {
+  if (!Array.isArray(c.events)) return c; const out = [];
+  for (const e of c.events) {
+    if (e.struck && e.strikeVisibility !== 'shown') continue;                 // struck and not shown to the public
+    if (e.sealed) {
+      const a = { parties: true, attorneys: true, staff: true, ...(e.sealAccess || {}) };
+      const ok = ctx.chief || (a.parties && ctx.party) || (a.attorneys && ctx.attorney) || (a.staff && ctx.staff);
+      if (!ok) { if (e.sealVisibility === 'hidden') continue; out.push({ eventNumber: e.eventNumber, date: e.date, type: e.type, sealed: true, description: 'Sealed entry', _masked: true }); continue; }
+    }
+    const { internalNote, ...pub } = e; out.push(pub);   // internal notes never leave case management
+  }
+  return { ...c, events: out };
+};
+const noStruck = c => { const l = link(c); return applyVis(c, { party: !!(l && (l.asParty.length || l.filer)), attorney: !!(l && l.clients.length), staff: has(STAFF, role), chief: CHIEF.includes(role) }); };
 async function loadAll() {
   const safe = p => p.catch(() => ({ docs: [] }));
   const [d, m, f] = await Promise.all([safe(getDocs(collection(db, 'cases'))), safe(getDocs(collection(db, 'mscCases'))), safe(getDocs(query(collection(db, 'pendingFilings'), where('filedByUid', '==', account.uid))))]);
@@ -218,7 +232,7 @@ function draw() {
 
 /* Overview */
 function overviewTab() {
-  const c = cur, lc = c.lowerCourt, orders = (c.events || []).filter(e => e.type === 'order' && !e.sealed).sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 3), nh = nextHearing(c);
+  const c = cur, lc = c.lowerCourt, orders = (c.events || []).filter(e => e.type === 'order' && !e._masked && !e.struck).sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 3), nh = nextHearing(c);
   return `${nh ? `<section class="card"><header><h3>Next hearing</h3>${btn(`ics:${(c.hearings || []).indexOf(nh)}`, 'Add to calendar')}</header>${kv([['Type', nh.type], ['Date', fmtDate(nh.date)], ['Time', fmtTime(nh.date)], ['Where', nh.attendance === 'video' ? 'Videoconference' : [roomLabel(nh.courtroom || c.courtroomNumber), c.court].filter(Boolean).join(' · ')], ['How to attend', ATT[nh.attendance || 'in-person']], ['Judicial officer', nh.officer || judgeName(c)]])}${nh.videoUrl ? `<p><a class="btn" href="${esc(nh.videoUrl)}" target="_blank" rel="noopener">Join by video ↗</a></p>` : ''}</section>` : ''}
     <section class="card"><header><h3>Case details</h3></header>${hv(c.docketSummary) ? `<div class="quote">${esc(c.docketSummary)}</div>` : ''}
       <dl class="details">${[['Case number', c.caseId], ['Court', c.court], ['Case type', c.caseType], ['Sub-type', subOf(c)], ['Status', c.status], ['Judge', judgeName(c)], ['Date filed', fmtDate(c.dates?.filed)], ['Date closed', fmtDate(c.dates?.closed)], ['Last updated', fmtDate(c.dates?.lastUpdated)]].filter(r => hv(r[1])).map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join('')}</dl></section>
@@ -229,10 +243,10 @@ function overviewTab() {
 /* Docket */
 function docketRows() {
   const q = dQ.toLowerCase().trim(), kind = e => (e.type || 'event').toLowerCase(), label = { filing: 'Filing', order: 'Order', appearance: 'Appearance' };
-  const l = [...(cur.events || [])].filter(e => (dFilter === 'all' || (dFilter === 'other' ? !['filing', 'order'].includes(kind(e)) : kind(e) === dFilter)) && (!q || e.sealed ? !q : [e.description, e.comment, e.filedBy, e.confirmationNumber, e.judge].join(' ').toLowerCase().includes(q)))
+  const l = [...(cur.events || [])].filter(e => (dFilter === 'all' || (dFilter === 'other' ? !['filing', 'order'].includes(kind(e)) : kind(e) === dFilter)) && (!q || e._masked ? !q : [e.description, e.comment, e.filedBy, e.confirmationNumber, e.judge].join(' ').toLowerCase().includes(q)))
     .sort((a, b) => (new Date(b.date || 0) - new Date(a.date || 0)) || (b.eventNumber || 0) - (a.eventNumber || 0));
-  return l.length ? l.map(e => e.sealed ? `<div class="ent"><span class="en">${esc(e.eventNumber ?? '—')}</span><div><div class="em"><span>${esc(fmtDT(e.date))}</span><span class="pill bad">Sealed</span></div><div class="sealed">This docket entry is sealed.</div></div><div></div></div>`
-      : `<div class="ent${e.struck ? ' struck' : ''}"><span class="en">${esc(e.eventNumber ?? '—')}</span><div><div class="em"><span>${esc(fmtDT(e.date))}</span><span class="pill ${kind(e) === 'filing' ? 'live' : kind(e) === 'order' ? 'mid' : 'plain'}">${label[kind(e)] || 'Event'}</span>${e.struck ? '<span class="pill plain">Struck</span>' : ''}${e.confirmationNumber ? `<span>${esc(e.confirmationNumber)}</span>` : ''}</div>
+  return l.length ? l.map(e => e._masked ? `<div class="ent"><span class="en">${esc(e.eventNumber ?? '—')}</span><div><div class="em"><span>${esc(fmtDT(e.date))}</span><span class="pill bad">Sealed</span></div><div class="sealed">This docket entry is sealed. You do not have access to it.</div></div><div></div></div>`
+      : `<div class="ent${e.struck ? ' struck' : ''}"><span class="en">${esc(e.eventNumber ?? '—')}</span><div><div class="em"><span>${esc(fmtDT(e.date))}</span><span class="pill ${kind(e) === 'filing' ? 'live' : kind(e) === 'order' ? 'mid' : 'plain'}">${label[kind(e)] || 'Event'}</span>${e.sealed ? '<span class="pill bad">Sealed</span>' : ''}${e.struck ? '<span class="pill plain">Struck</span>' : ''}${e.confirmationNumber ? `<span>${esc(e.confirmationNumber)}</span>` : ''}</div>
         <div class="edsc">${esc(e.description)}</div>${hv(e.comment) ? `<div class="ecm">${esc(e.comment)}</div>` : ''}${hv(e.filedBy) && kind(e) === 'filing' ? `<div class="ecm">Filed by ${esc(e.filedBy)}</div>` : ''}${hv(e.judge) && kind(e) === 'order' ? `<div class="ecm">${esc(e.judge)}</div>` : ''}</div>
         <div class="ea">${e.documentLink ? `<a class="btn outline sm" href="${esc(e.documentLink)}" target="_blank" rel="noopener">Open document ↗</a>` : ''}</div></div>`).join('')
     : empty('No docket entries', dQ || dFilter !== 'all' ? 'Nothing matches this filter.' : 'Nothing has been entered on this case yet.');

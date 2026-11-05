@@ -488,8 +488,23 @@ function decorate(c){
     next: nh, text };
 }
 
-/* Struck docket entries are only visible in case management. Event numbers stay as entered, so a struck entry leaves its number unused. */
-const noStruck = c => Array.isArray(c.events) ? { ...c, events: c.events.filter(e => !e.struck) } : c;
+/* Struck and sealed entries follow the visibility the judge chose (see applyVis). Event numbers stay as entered, so a hidden entry leaves its number unused. */
+/* (old note) Struck docket entries are only visible in case management. Event numbers stay as entered, so a struck entry leaves its number unused. */
+const CHIEF = ['Chief Judge', 'Justice', 'Chief Justice'];
+const applyVis = (c, ctx = {}) => {
+  if (!Array.isArray(c.events)) return c; const out = [];
+  for (const e of c.events) {
+    if (e.struck && e.strikeVisibility !== 'shown') continue;                 // struck and not shown to the public
+    if (e.sealed) {
+      const a = { parties: true, attorneys: true, staff: true, ...(e.sealAccess || {}) };
+      const ok = ctx.chief || (a.parties && ctx.party) || (a.attorneys && ctx.attorney) || (a.staff && ctx.staff);
+      if (!ok) { if (e.sealVisibility === 'hidden') continue; out.push({ eventNumber: e.eventNumber, date: e.date, type: e.type, sealed: true, description: 'Sealed entry', _masked: true }); continue; }
+    }
+    const { internalNote, ...pub } = e; out.push(pub);   // internal notes never leave case management
+  }
+  return { ...c, events: out };
+};
+const noStruck = c => applyVis(c, {});   // the public sees no one's sealed contents
 function loadAll(){
   if (!LOADING) LOADING = (async () => {
     const snap = await getDocs(collection(db,'cases'));
@@ -1121,14 +1136,16 @@ function eventHtml(e){
   const type = (e.type || 'event').toLowerCase();
   const isFiling = type === 'filing', isOrder = type === 'order';
   const kind = isFiling ? ['blue','Filing'] : isOrder ? ['','Order'] : ['','Event'];
-  const sealed = e.sealed === true;
+  const sealed = e.sealed === true, struck = e.struck === true;
   const time = fmtTime(e.date);
   const link = safeUrl(e.documentLink);
 
 let actions = '';
-if (isFiling || isOrder) {
+if (isFiling || isOrder || sealed) {
   if (sealed) {
-    actions = `<div class="sealed-note">Document sealed by court order. Not available for public access.</div>`;
+    actions = `<div class="sealed-note">Sealed by court order. Not available for public access.</div>`;
+  } else if (struck) {
+    actions = '';
   } else if (link) {
     actions = `<div class="eacts">
       <a class="btn alt sm" href="${esc(link)}" target="_blank" rel="noopener">Open</a>
@@ -1145,7 +1162,7 @@ if (isFiling || isOrder) {
     <span class="enum" aria-hidden="true">${esc(e.eventNumber ?? '—')}</span>
     <div class="ebody">
       <div class="etop"><span class="etime">${esc(time || '')}</span>
-        <span>${sealed ? '<span class="tag red">🔒 Sealed</span> ' : ''}<span class="tag ${kind[0] || ''}" ${kind[0] ? '' : 'style="background:#eef0f4;color:#4a5568;border-color:#cfd6e2"'}>${kind[1]}</span></span></div>
+        <span>${sealed ? '<span class="tag red">Sealed</span> ' : ''}${struck ? '<span class="tag" style="background:#eef0f4;color:#4a5568;border-color:#cfd6e2">Struck</span> ' : ''}<span class="tag ${kind[0] || ''}" ${kind[0] ? '' : 'style="background:#eef0f4;color:#4a5568;border-color:#cfd6e2"'}>${kind[1]}</span></span></div>
       <div class="edesc">${esc(e.description)}</div>
       ${hasVal(e.comment) ? `<div class="ecomment">${esc(e.comment)}</div>` : ''}
       ${meta.length ? `<div class="emeta">${meta.join(' &nbsp;·&nbsp; ')}</div>` : ''}

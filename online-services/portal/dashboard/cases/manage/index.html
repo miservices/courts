@@ -409,8 +409,8 @@ function docketRows() {
     .sort((a, b) => { const d = new Date(a.date || 0) - new Date(b.date || 0); return (d || (a.eventNumber || 0) - (b.eventNumber || 0)) * (docketNewest ? -1 : 1); });
   const label = { filing: 'Filing', order: 'Order', appearance: 'Appearance' };
   return l.length ? l.map(e => `<div class="ent${e.struck ? ' struck' : ''}"><span class="en">${esc(e.eventNumber ?? '—')}</span>
-      <div><div class="em"><span>${esc(fmtDT(e.date))}</span><span class="pill ${kind(e) === 'filing' ? 'live' : kind(e) === 'order' ? 'mid' : 'plain'}">${label[kind(e)] || 'Event'}</span>${e.sealed ? '<span class="pill bad">Sealed</span>' : ''}${e.struck ? '<span class="pill plain">Struck</span>' : ''}${e.confirmationNumber ? `<span>Filing ${esc(e.confirmationNumber)}</span>` : ''}</div>
-        <div class="edsc">${esc(e.description)}</div>${hv(e.comment) ? `<div class="ecm">${esc(e.comment)}</div>` : ''}${hv(e.judge) && kind(e) === 'order' ? `<div class="ecm">${esc(e.judge)}</div>` : ''}</div>
+      <div><div class="em"><span>${esc(fmtDT(e.date))}</span><span class="pill ${kind(e) === 'filing' ? 'live' : kind(e) === 'order' ? 'mid' : 'plain'}">${label[kind(e)] || 'Event'}</span>${e.sealed ? '<span class="pill bad">Sealed</span>' : ''}${e.sealed && e.sealVisibility === 'hidden' ? '<span class="pill plain">Hidden from public</span>' : ''}${e.struck ? '<span class="pill plain">Struck</span>' : ''}${e.struck && e.strikeVisibility !== 'shown' ? '<span class="pill plain">Hidden from public</span>' : ''}${e.confirmationNumber ? `<span>Filing ${esc(e.confirmationNumber)}</span>` : ''}</div>
+        <div class="edsc">${esc(e.description)}</div>${hv(e.comment) ? `<div class="ecm">${esc(e.comment)}</div>` : ''}${hv(e.judge) && kind(e) === 'order' ? `<div class="ecm">${esc(e.judge)}</div>` : ''}${hv(e.internalNote) ? `<div class="ecm"><b>Internal note:</b> ${esc(e.internalNote)}</div>` : ''}</div>
       <div class="ea">${e.documentLink ? `<a class="btn outline sm" href="${esc(e.documentLink)}" target="_blank" rel="noopener">Open document ↗</a>` : ''}${mdPath(e.documentLink) ? `<a class="btn outline sm" href="https://migovt.org/courts/online-services/portal/dashboard/document-drafting/#import/${encodeURIComponent(mdPath(e.documentLink))}" target="_blank" rel="noopener">Complete in Document Builder ↗</a>` : ''}${btn(`entry:${e.eventNumber}`, 'Manage')}</div></div>`).join('')
     : empty('No docket entries', docketQ || docketFilter !== 'all' ? 'Nothing matches this filter.' : '');
 }
@@ -544,6 +544,18 @@ const fld = (label, id, v = '', o = {}) => `<label class="f"><span>${label}</spa
 const area = (label, id, v = '', ph = '') => `<label class="f"><span>${label}</span><textarea id="${id}" placeholder="${esc(ph)}">${esc(v)}</textarea></label>`;
 const selF = (label, id, opts, v) => `<label class="f"><span>${label}</span><select id="${id}">${opts.map(x => { const [ov, ol] = Array.isArray(x) ? x : [x, x]; return `<option value="${esc(ov)}"${ov === v ? ' selected' : ''}>${esc(ol)}</option>`; }).join('')}</select></label>`;
 const dlist = (id, l) => `<datalist id="${id}">${l.map(x => `<option value="${esc(x)}">`).join('')}</datalist>`;
+/* Public visibility of struck and sealed entries. Chief judges and justices always keep access. */
+const visFields = (e = {}, strike = false) => {
+  const a = { parties: true, attorneys: true, staff: true, ...(e.sealAccess || {}) };
+  return `<div class="vis">${strike ? selF('If struck, should the public see the entry?', 'vz-strike', [['hidden', 'No, remove it from the public docket'], ['shown', 'Yes, show it with a line through it']], e.strikeVisibility || 'hidden') : ''}
+    ${selF('If sealed, should the public see that the entry exists?', 'vz-seal', [['listed', 'Yes, show a sealed entry (contents withheld)'], ['hidden', 'No, hide it completely']], e.sealVisibility || 'listed')}
+    <div class="f"><span>If sealed, who may open it besides the chief judge and justices?</span>
+      <label class="opt"><input type="checkbox" id="vz-a-parties" ${a.parties ? 'checked' : ''}><div><b>Parties to the case</b></div></label>
+      <label class="opt"><input type="checkbox" id="vz-a-atty" ${a.attorneys ? 'checked' : ''}><div><b>Attorneys of record</b></div></label>
+      <label class="opt"><input type="checkbox" id="vz-a-staff" ${a.staff ? 'checked' : ''}><div><b>Court staff</b></div></label></div>
+    ${area('Internal note: why this is ' + (strike ? 'struck or sealed' : 'sealed') + ' (court staff only, never shown to the public or parties)', 'vz-note', e.internalNote || '', 'e.g. Struck as duplicate of #12; sealed per MCR 8.119(I)')}</div>`;
+};
+const visRead = strike => ({ internalNote: val('vz-note') || null, ...(strike ? { strikeVisibility: val('vz-strike') || 'hidden' } : {}), sealVisibility: val('vz-seal') || 'listed', sealAccess: { parties: $('vz-a-parties').checked, attorneys: $('vz-a-atty').checked, staff: $('vz-a-staff').checked } });
 const g2 = (...c) => `<div class="cols">${c.join('')}</div>`, g3 = (...c) => `<div class="cols3">${c.join('')}</div>`;
 const val = id => ($(id)?.value || '').trim();
 const fileIn = (id, label) => `<div class="f"><span>${label}</span><div class="acts"><input class="vh" type="file" id="${id}" accept="application/pdf,.pdf"><label for="${id}" class="btn outline sm">Choose PDF</label><small id="${id}-n" style="display:inline">No file chosen</small></div></div>`;
@@ -790,10 +802,10 @@ function entryAddModal() {
   modal({ title: 'Add a docket entry', wide: true, ok: 'Add entry', body: g2(selF('Entry type', 'ea-type', [['event', 'Event'], ['filing', 'Filing'], ['order', 'Order']], 'event'), fld('Date and time', 'ea-date', inDT(now()), { type: 'datetime-local' }))
     + fld('Description', 'ea-desc', '', { ph: 'e.g. Proof of service filed', list: 'ea-list' }) + dlist('ea-list', ['Proof of service filed', 'Correspondence received', 'Transcript ordered', 'Exhibit received', 'Case file transferred', 'Clerk’s note', 'Notice mailed'])
     + fld('Filed or entered by (optional)', 'ea-by', '', { list: 'ea-parties' }) + dlist('ea-parties', partyNames()) + area('Comment', 'ea-comment') + g2(fld('Document link', 'ea-link', '', { ph: 'https://…' }), fileIn('ea-file', 'Or upload a PDF'))
-    + `<label class="opt"><input type="checkbox" id="ea-seal"><div><b>Seal this entry from public access</b></div></label>`,
+    + `<label class="opt"><input type="checkbox" id="ea-seal"><div><b>Seal this entry from public access</b></div></label>` + visFields({}, false),
     onOk: async () => {
       const desc = val('ea-desc'); if (!desc) bad('Enter a description.'); const type = val('ea-type'), file = $('ea-file').files[0], link = file ? await upload('case-filings', file) : val('ea-link') || null, sealed = $('ea-seal').checked;
-      await change(d => ({ events: withEvent(d, { type, date: isoDT(val('ea-date')) || now(), description: desc, comment: val('ea-comment') || null, documentLink: link, sealed, filedBy: val('ea-by') || account.name, enteredBy: account.name, enteredByRole: role, ...(type === 'order' ? { judge: cur.judge || null } : {}) }) }), `Added docket entry: ${desc}`);
+      await change(d => ({ events: withEvent(d, { type, date: isoDT(val('ea-date')) || now(), description: desc, comment: val('ea-comment') || null, documentLink: link, sealed, ...visRead(false), filedBy: val('ea-by') || account.name, enteredBy: account.name, enteredByRole: role, ...(type === 'order' ? { judge: cur.judge || null } : {}) }) }), `Added docket entry: ${desc}`);
       if (type === 'order' && !sealed) await notify({ type: 'NEF', title: 'Notice of Entry of Order', text: `${desc} was entered on the docket.` });
     } });
 }
@@ -882,7 +894,7 @@ async function orderModal(taskIdx, preDraft) {
   modal({ title: 'Enter an order or ruling', ok: 'Enter order', okCls: 'good', body: (t ? `<div class="quote">Ruling on: ${esc(t.title)}</div>` : '') + fld('Order title', 'or-title', t ? 'Order on ' + (t.docType || stripSuffix(t.title)) : drafts.find(d => d.id === preDraft)?.title || '', { ph: 'e.g. Order Granting Motion to Dismiss' })
     + selF('Judge or justice', 'or-judge', opts.length ? opts : [['', 'Unassigned']], def) + (!isJudicial ? `<p class="m">Entered by ${esc(account.name)} (${esc(role)}) on behalf of the selected judicial officer.</p>` : '')
     + (drafts.length ? selF('Use an order drafted in the Document Builder', 'or-draft', [['', 'None'], ...drafts.map(d => [d.id, d.title || 'Untitled document'])], preDraft || '') : '') + fileIn('or-file', 'Order document') + fld('Or paste a document link', 'or-link', '', { ph: 'https://…' }) + area('Comment or summary', 'or-comment', '', 'Brief summary of the ruling for the docket')
-    + `<label class="opt"><input type="checkbox" id="or-seal"><div><b>Seal this order from public access</b></div></label>`,
+    + `<label class="opt"><input type="checkbox" id="or-seal"><div><b>Seal this order from public access</b></div></label>` + visFields({}, false),
     onOk: async () => {
       const title = val('or-title'); if (!title) bad('Enter an order title.'); const judge = val('or-judge') || cur.judge || null, sealed = $('or-seal').checked, file = $('or-file').files[0];
       const dr = drafts.find(d => d.id === val('or-draft')); let link = null, fname = null;
@@ -895,7 +907,7 @@ async function orderModal(taskIdx, preDraft) {
         link = 'https://migovt.org/courts/documents/#/' + path.split('/').map(encodeURIComponent).join('/'); try { sessionStorage.removeItem('fd-order'); } catch { }
       } else link = file ? await upload('case-orders', file) : val('or-link') || null;
       const comment = val('or-comment') || null;
-      await change(d => ({ events: withEvent(d, { type: 'order', date: now(), description: title, documentLink: link, comment, judge, sealed, enteredBy: account.name, enteredByRole: role }) }),
+      await change(d => ({ events: withEvent(d, { type: 'order', date: now(), description: title, documentLink: link, comment, judge, sealed, ...visRead(false), enteredBy: account.name, enteredByRole: role }) }),
         `Entered order: ${title}${judge ? ' (Judge: ' + judge + ')' : ''}${file ? ' — uploaded ' + file.name : fname ? ' — drafted document ' + fname : ''}`);
       if (!sealed) await notify({ type: 'NEF', title: 'Notice of Entry of Order', text: `${title} was entered on the docket${judge ? ' by ' + judge : ''}.` });
       if (t) await setTask(taskIdx, 'Completed');
@@ -907,13 +919,13 @@ function entryModal(num) {
   const e = (cur.events || []).find(x => x.eventNumber === num); if (!e) return;
   modal({ title: `Docket entry ${num}`, wide: true, ok: 'Save changes', body: fld('Description', 'en-desc', e.description || '') + area('Comment', 'en-comment', e.comment || '')
     + g2(fld('Document link', 'en-link', e.documentLink || '', { ph: 'https://…' }), fileIn('en-file', 'Or upload a replacement PDF'))
-    + `<label class="opt"><input type="checkbox" id="en-seal" ${e.sealed ? 'checked' : ''}><div><b>Sealed from public access</b></div></label><label class="opt"><input type="checkbox" id="en-strike" ${e.struck ? 'checked' : ''}><div><b>Strike this entry</b><small>Struck entries stay on the docket with a line through them.</small></div></label>
+    + `<label class="opt"><input type="checkbox" id="en-seal" ${e.sealed ? 'checked' : ''}><div><b>Sealed from public access</b></div></label><label class="opt"><input type="checkbox" id="en-strike" ${e.struck ? 'checked' : ''}><div><b>Strike this entry</b><small>Struck entries stay on the docket here with a line through them.</small></div></label>${visFields(e, true)}
       <p class="m">For rulings, enter a separate order instead. Use this form to correct the same entry.</p>`,
     onOk: async () => {
       const file = $('en-file').files[0], link = file ? await upload('case-filings', file) : val('en-link') || null, desc = val('en-desc'), comment = val('en-comment') || null, sealed = $('en-seal').checked, struck = $('en-strike').checked;
       if (!desc) bad('Enter a description.');
       const lines = [(desc !== e.description || comment !== (e.comment || null)) && `Corrected docket entry #${num}`, link !== (e.documentLink || null) && `Replaced document on docket entry #${num}`, sealed !== !!e.sealed && `${sealed ? 'Sealed' : 'Unsealed'} docket entry #${num} from public access`, struck !== !!e.struck && `${struck ? 'Struck' : 'Unstruck'} docket entry #${num}`].filter(Boolean);
-      await eventChange(num, x => ({ ...x, description: desc, comment, documentLink: link, sealed, struck }), null);
+      await eventChange(num, x => ({ ...x, description: desc, comment, documentLink: link, sealed, struck, ...visRead(true) }), null);
       for (const l of lines) await addAudit(l);
     } });
 }
