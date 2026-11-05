@@ -137,9 +137,9 @@ dialog.cdlg{width:min(440px,calc(100vw - 24px))}
 <script type="module">
 import { boot, db, app, $, esc, has, STAFF } from '/courts/online-services/portal/dashboard/assets/js/portal-shell.js?v=7';
 import { FORMS, byId, byNumber } from '/courts/online-services/portal/dashboard/assets/forms/registry.js?v=4';
-import { mountForm, formOf, fontAllowed, fontFits, fontLock, fontCss, GFONTS, FONT_TYPES, FONT_WARNING } from '/courts/online-services/portal/dashboard/assets/forms/engine.js?v=12';
+import { mountForm, formOf, fontAllowed, fontFits, fontLock, fontCss, GFONTS, FONT_TYPES, FONT_WARNING } from '/courts/online-services/portal/dashboard/assets/forms/engine.js?v=14';
 import { DraftSession, accessOf, roleIn } from '/courts/online-services/portal/dashboard/assets/forms/drafts.js?v=1';
-import { firebaseBackend } from '/courts/online-services/portal/dashboard/assets/forms/backend.js?v=5';
+import { firebaseBackend } from '/courts/online-services/portal/dashboard/assets/forms/backend.js?v=6';
 const { account, role, user } = await boot({ id: 'drafting', title: 'Document Drafting', subtitle: 'Prepare court forms. They save automatically, and you can share them to work on together.' });
 const root = $('page-body'), BASE = 'https://migovt.org/courts/online-services/portal/dashboard/document-drafting/', FORMS_PATH = '/courts/online-services/portal/dashboard/assets/forms/';
 const uid = account.uid, myName = (account.name || user?.email || 'Someone').trim(), be = firebaseBackend({ db, app });
@@ -231,7 +231,8 @@ async function editor({ form, docId, md0 }) {
     const def = (await import(`${FORMS_PATH}${form.id}.js?v=13`)).default; if (my !== gen) return;
     let session = null;
     if (favCache === null) { favCache = await be.getFavs(uid); if (favCache === null) { try { favCache = JSON.parse(localStorage.getItem('fd-font-favs') || '[]'); } catch { favCache = []; } } if (my !== gen) return; }
-    const engine = await mountForm(def, $('fd-host'), { account, role, favs: favCache, onFavs: l => { favCache = l; try { localStorage.setItem('fd-font-favs', JSON.stringify(l)); } catch { } be.setFavs(uid, l).catch(e => console.warn('Favorites not saved', e)); }, md: text ?? md0, readOnly: !canEdit, fileLabel: has(STAFF, role) ? 'Enter order' : 'File', actions: canEdit ? ['save', 'share', 'file'] : ['share'], onEdit: () => session?.touch(),
+    const signature = await be.getSignature(uid); if (my !== gen) return;
+    const engine = await mountForm(def, $('fd-host'), { account, role, signature, favs: favCache, onFavs: l => { favCache = l; try { localStorage.setItem('fd-font-favs', JSON.stringify(l)); } catch { } be.setFavs(uid, l).catch(e => console.warn('Favorites not saved', e)); }, md: text ?? md0, readOnly: !canEdit, fileLabel: has(STAFF, role) ? 'Enter order' : 'File', actions: canEdit ? ['save', 'share', 'file'] : ['share'], onEdit: () => session?.touch(),
       onFontNotice: () => ask({ title: 'Keep your text readable', message: FONT_WARNING, ok: 'I understand', info: true }),
       onAction: a => a === 'save' ? session.save(true) : a === 'share' ? openShare() : fileIt(def) });
     if (my !== gen) { engine.destroy(); return; }
@@ -352,7 +353,7 @@ async function settingsView() {
   if (favCache === null) { favCache = await be.getFavs(uid); if (favCache === null) { try { favCache = JSON.parse(localStorage.getItem('fd-font-favs') || '[]'); } catch { favCache = []; } } }
   if (!document.getElementById('fd-gfonts')) { const l = document.createElement('link'); l.id = 'fd-gfonts'; l.rel = 'stylesheet'; l.href = GFONTS; document.head.appendChild(l); }
   const cfg = settings?.fonts || {}, sizes = [8, 9, 10, 11, 12, 13, 14, 15, 16];
-  const fontSel = (k, first) => `<select id="st-${k}-f" aria-label="Font">${first}${FONT_TYPES.map(t => `<optgroup label="${esc(t.label)}">${t.fonts.filter(f => !(k === 'body' && f === 'Arial') && f !== 'Arial').map(f => { const ok = fontAllowed(f, role, k); return `<option value="${esc(f)}"${ok ? '' : ' disabled'}${cfg[k]?.f === f ? ' selected' : ''}>${esc(f)}${ok ? '' : ' (' + esc(fontLock(f, k)) + ')'}</option>`; }).join('')}</optgroup>`).join('')}</select>`;
+  const fontSel = (k, first) => `<select id="st-${k}-f" aria-label="Font">${first}${FONT_TYPES.filter(t => t.id !== 'sigimg').map(t => { const l = t.fonts.filter(f => f !== 'Arial' && fontAllowed(f, role, k)); return l.length ? `<optgroup label="${esc(t.label)}">${l.map(f => `<option value="${esc(f)}"${cfg[k]?.f === f ? ' selected' : ''}>${esc(f)}</option>`).join('')}</optgroup>` : ''; }).join('')}</select>`;
   const row = (k, t, h, first) => `<div class="st-r"><div class="st-t"><b>${t}</b><small class="fd-hint">${h}</small></div>${fontSel(k, first)}<select id="st-${k}-s" aria-label="Size in points"><option value="">Auto size</option>${sizes.map(n => `<option value="${n}"${+cfg[k]?.s === n ? ' selected' : ''}>${n} pt</option>`).join('')}</select><div class="st-p" id="st-${k}-p"></div></div>`;
   root.innerHTML = `<div class="fd-top fd-bar"><a class="fd-back" href="${BASE}#"><svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true"><path d="M12.5 4 6.5 10l6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>All documents</a><h3 style="margin:0">Document builder settings</h3></div>
     <section class="card"><h3>Document fonts</h3><p class="m">New documents start with these fonts. You can still change fonts inside any document.</p>

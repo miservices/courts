@@ -42,6 +42,8 @@ export function firebaseBackend({ db, app }) {
     async setFavs(uid, list) { await setDoc(doc(db, 'accountDirectory', uid), { fontFavs: list }, { merge: true }); },
     /* Document builder settings (default fonts, and so on) follow the person across devices. */
     async getSettings(uid) { try { const s = await getDoc(doc(db, 'accountDirectory', uid)); return s.exists() && s.data().builderSettings ? s.data().builderSettings : null; } catch (e) { console.warn('Settings unavailable', e); return null; } },
+    /* The person's one saved signature (a small PNG). Kept in its own record so only they can read it. */
+    async getSignature(uid) { try { const s = await getDoc(doc(db, 'userSignatures', uid)); return s.exists() && s.data().png ? s.data().png : ''; } catch (e) { console.warn('Signature unavailable', e); return ''; } },
     async getPleadingSettings(uid) { try { const s = await getDoc(doc(db, 'accountDirectory', uid)); return s.exists() && s.data().pleadingSettings ? s.data().pleadingSettings : null; } catch (e) { console.warn('Pleading settings unavailable', e); return null; } },
     async setPleadingSettings(uid, v) { await setDoc(doc(db, 'accountDirectory', uid), { pleadingSettings: v }, { merge: true }); },
     async setSettings(uid, v) { await setDoc(doc(db, 'accountDirectory', uid), { builderSettings: v }, { merge: true }); },

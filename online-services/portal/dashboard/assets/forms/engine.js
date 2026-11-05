@@ -67,6 +67,7 @@ export function toMarkdown(def, api) {
   const dfl = all.filter(([id]) => id[0] === '~'), st = all.filter(([id]) => id[0] !== '~');
   if (dfl.length) { o.push('## Default fonts', ''); dfl.forEach(([id, v]) => o.push('- ' + dn[id] + ': ' + tok(v))); o.push(''); }
   if (st.length) { o.push('## Field styles', ''); st.forEach(([id, v]) => o.push('- ' + id + ': ' + tok(v))); o.push(''); }
+  const im = all.filter(([, v]) => v.f === 'Signature image' && v.g); if (im.length) { o.push('## Signature images', ''); im.forEach(([id, v]) => o.push('- ' + id + ': ' + v.g)); o.push(''); }
   return o.join('\n');
 }
 export function formOf(text) {   // which form a saved .md belongs to, or null
@@ -94,10 +95,11 @@ export function parseMd(def, txt) {
         multi[ml[t]] = buf.join('\n').trim();
       }
     } else if ((m = ln.match(/^##\s+(.+?)\s*$/))) {
-      curGroup = groups.find(g => norm(g.heading) === norm(m[1])) || null; curItem = null; mode = norm(m[1]) === 'field styles' ? 'sty' : norm(m[1]) === 'default fonts' ? 'dfl' : 'sec'; if (curGroup && !found.has(curGroup)) found.set(curGroup, []);
+      curGroup = groups.find(g => norm(g.heading) === norm(m[1])) || null; curItem = null; mode = norm(m[1]) === 'signature images' ? 'img' : norm(m[1]) === 'field styles' ? 'sty' : norm(m[1]) === 'default fonts' ? 'dfl' : 'sec'; if (curGroup && !found.has(curGroup)) found.set(curGroup, []);
     } else if ((m = ln.match(/^[-*]\s+(.+?):\s?(.*)$/))) {
       const k = norm(m[1]);
-      if (mode === 'sty' || mode === 'dfl') {
+      if (mode === 'img') { const id = m[1].trim().toLowerCase(); if (styles[id]) styles[id].g = m[2].trim(); }
+      else if (mode === 'sty' || mode === 'dfl') {
         const p = m[2].split(/[,;]/).map(x => x.trim()).filter(Boolean), isMeta = x => /^(not bold|bold|not italic|italic|\d+(\.\d+)?\s*pt|types:.*)$/i.test(x), ty = p.find(x => /^types:/i.test(x));
         const id = mode === 'dfl' ? ({ text: '~body', body: '~body', date: '~date', signature: '~sig', sig: '~sig' })[m[1].trim().toLowerCase()] : m[1].trim().toLowerCase();
         if (id) styles[id] = { f: p.find(x => !isMeta(x)) || '', s: parseFloat((p.find(x => /^\d+(\.\d+)?\s*pt$/i.test(x)) || '0')) || 0, b: p.some(x => /^bold$/i.test(x)) ? 1 : p.some(x => /^not bold$/i.test(x)) ? -1 : 0, i: p.some(x => /^italic$/i.test(x)) ? 1 : p.some(x => /^not italic$/i.test(x)) ? -1 : 0, t: ty ? ty.slice(6).trim() : '' };
@@ -123,6 +125,7 @@ const TYPES = [
   { id: 'default', label: 'Default', fonts: ['Arial', 'Times New Roman', 'Courier New'] },
   { id: 'hand', label: 'Handwriting', fonts: ['Caveat', 'Reenie Beanie', 'Indie Flower', 'Schoolbell'] },
   { id: 'stamp', label: 'Stamp', fonts: ['Special Elite'] },
+  { id: 'sigimg', label: 'My signature', fonts: ['Signature image'] },
   { id: 'cursive', label: 'Cursive', fonts: ['Cedarville Cursive', 'Alex Brush', 'Satisfy', 'Allura', 'Kaushan Script', 'Great Vibes', 'Mrs Saint Delafield', 'Arizonia', 'Corinthia', 'Herr Von Muellerhoff', 'Mr De Haviland', 'Whisper', 'Water Brush', 'Mr Dafoe'] }
 ];
 export const FONT_TYPES = TYPES;
@@ -143,8 +146,9 @@ export const fontCss = f => 'font-family:' + famOf(f) + (SCALE[f] ? `;font-size:
 const parseTypes = t => { const l = String(t || '').split('+').filter(x => TYPES.some(y => y.id === x)); return l.length ? TYPES.filter(y => l.includes(y.id)).map(y => y.id) : ['default']; };
 const normT = (t, f) => { const set = new Set(parseTypes(t)); if (f && typeOf(f)) set.add(typeOf(f)); return TYPES.filter(y => set.has(y.id)).map(y => y.id).join('+'); };
 const nb = x => x === true ? 1 : x === false || x == null ? 0 : Math.sign(+x) || 0;
-const blankSt = () => ({ f: '', s: 0, b: 0, i: 0, t: 'default' });
-const normSt = v => ({ f: v?.f || '', s: +v?.s || 0, b: nb(v?.b), i: nb(v?.i), t: normT(v?.t, v?.f) });
+const SIGFONT = 'Signature image', okImg = v => typeof v === 'string' && v.length < 300000 && /^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/.test(v) ? v : '';
+const blankSt = () => ({ f: '', s: 0, b: 0, i: 0, t: 'default', g: '' });
+const normSt = v => ({ f: v?.f || '', s: +v?.s || 0, b: nb(v?.b), i: nb(v?.i), t: normT(v?.t, v?.f), g: v?.f === SIGFONT ? okImg(v?.g) : '' });
 const FSIZES = [8, 9, 10, 11, 12, 13, 14, 15, 16];
 export const GFONTS = 'https://fonts.googleapis.com/css2?' + ['Caveat:wght@400;700', 'Reenie+Beanie', 'Indie+Flower', 'Schoolbell', 'Special+Elite', 'Cedarville+Cursive', 'Alex+Brush', 'Satisfy', 'Allura', 'Kaushan+Script', 'Great+Vibes', 'Mrs+Saint+Delafield', 'Arizonia', 'Corinthia', 'Herr+Von+Muellerhoff', 'Mr+De+Haviland', 'Whisper', 'Water+Brush', 'Mr+Dafoe'].map(f => 'family=' + f).join('&') + '&display=swap';
 const STAR = '<svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true"><path d="M10 2.2l2.4 5 5.5.7-4 3.8 1 5.4L10 14.4 5.1 17.1l1-5.4-4-3.8 5.5-.7z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>';
@@ -164,10 +168,11 @@ const FP_CSS = `.fp{position:fixed;z-index:2147483000;width:320px;max-width:calc
 .fp-f svg{fill:none}.fp-f:hover{background:#e8eef8;color:#10264a}.fp-f[aria-pressed=true]{color:#c58a00}.fp-f[aria-pressed=true] svg{fill:currentColor}`;
 const today = () => { const d = new Date(); return String(d.getMonth() + 1).padStart(2, '0') + '/' + String(d.getDate()).padStart(2, '0') + '/' + d.getFullYear(); };
 
-export async function mountForm(def, host, { account, role, md, onDirty, onEdit, readOnly = false, actions = [], onAction, favs: favList, onFavs, onFontNotice, onNote, fileLabel = 'File' } = {}) {
+export async function mountForm(def, host, { account, role, md, onDirty, onEdit, readOnly = false, actions = [], onAction, favs: favList, onFavs, onFontNotice, onNote, fileLabel = 'File', signature = '' } = {}) {
   const allow = (f, key) => def.fontOpen || fontAllowed(f, role, key ? kindOf(key) : undefined) && (!key || fontFits(def, f, kindOf(key)));
-  const typesFor = key => { const l = def.fontPolicy && key ? (def.fontPolicy[kindOf(key)] || def.fontPolicy.sig || []) : null; return l ? TYPES.filter(t => l.includes(t.id)) : TYPES; };
-  const shown = (t, key) => t.fonts.filter(f => !(f === 'Times New Roman' && def.font !== 'Times New Roman'));
+  const mySig = okImg(signature);
+  const typesFor = key => { const l = def.fontPolicy && key ? (def.fontPolicy[kindOf(key)] || def.fontPolicy.sig || []) : null; return (l ? TYPES.filter(t => l.includes(t.id)) : TYPES).filter(t => (t.id !== 'sigimg' || (key && kindOf(key) === 'sig' && mySig)) && (!key || t.fonts.some(f => allow(f, key)))); };
+  const shown = (t, key) => t.fonts.filter(f => !(f === 'Times New Roman' && def.font !== 'Times New Roman') && (!key || allow(f, key)));   // fonts this person cannot use are not listed
   const who = { name: (account?.name || account?.displayName || '').trim(), org: account?.organization || '', title: account?.title || account?.jobTitle || '', badge: account?.badgeNumber || account?.badge || '', bar: account?.barNumber || account?.barNo || '', phone: account?.phone || '', email: account?.email || '', address: (() => { const a = account?.address; if (!a || typeof a !== 'object') return typeof a === 'string' ? a : ''; const l2 = [a.city, [a.state, a.zip].filter(Boolean).join(' ')].filter(Boolean).join(', '); return [[a.street, a.unit].filter(Boolean).join(', '), l2].filter(Boolean).join('\n'); })(), today: today() };
   const roles = (def.roles || []).filter(r => !r.for || r.for.test(role || ''));
   const roleBox = roles.length && who.name ? `<div class="fd-roles"><b>Fill in my details as</b><small class="fd-hint">${esc(who.name)}. Tick every role you hold on this form. Untick to clear what it filled in.</small>${roles.map(r => `<label class="chk"><input type="checkbox" data-role="${esc(r.id)}"> <span>${esc(r.label)}${r.hint ? ` <small class="fd-hint">${esc(r.hint)}</small>` : ''}</span></label>`).join('')}</div>` : '';
@@ -239,8 +244,8 @@ export async function mountForm(def, host, { account, role, md, onDirty, onEdit,
        blank  what prints when the field is empty (the form's own blank line, e.g. "___")
        style  extra inline style (e.g. text-transform) */
     ed(key, o = {}) {
-      const e = src(key), raw0 = o.text !== undefined ? o.text : (e ? String(e.value || '').replace(/\r/g, '') : ''), sys = key === 'caseno' || key === 'judge', hm = key === 'judge' ? /^\s*Hon(?:\.|orable)?\s+(.*)$/i.exec(raw0) : null, raw = hm ? hm[1] : raw0, hon = key === 'judge' && (raw.trim() || o.hon) ? 'Hon. ' : '', blank = !raw && o.blank, st = (sys ? fontCss('Special Elite') + ';' : styleOf(key)) + (o.style || '');   // case number and judge are stamped by the system
-      const body = `<span data-f="${esc(key)}" data-ph="${esc(o.ph || (e ? labelOf(e) : key))}"${o.off !== undefined ? ` data-off="${o.off}" data-len="${raw.length}"` : ''}${o.multi ? ' data-multi="1"' : ''}${blank ? ' data-blank="1"' : ''}${sys ? ' data-sys="1"' : ''}${st ? ` style="${esc(st)}"` : ''} ${readOnly || sys ? '' : ` contenteditable="${PLAIN}"`} spellcheck="false">${esc(blank ? o.blank : raw)}${o.multi && raw.endsWith('\n') ? '\n' : ''}</span>`;
+      const e = src(key), raw0 = o.text !== undefined ? o.text : (e ? String(e.value || '').replace(/\r/g, '') : ''), sys = key === 'caseno' || key === 'judge', hm = key === 'judge' ? /^\s*Hon(?:\.|orable)?\s+(.*)$/i.exec(raw0) : null, raw = hm ? hm[1] : raw0, hon = key === 'judge' && (raw.trim() || o.hon) ? 'Hon. ' : '', blank = !raw && o.blank, simg = !sys && effOf(key).f === SIGFONT ? (sty[key]?.g || sty['~sig']?.g || mySig) : '', st = (sys ? fontCss('Special Elite') + ';' : simg ? 'display:inline-block;position:relative;min-width:170px;height:46px;vertical-align:bottom;color:transparent;' : styleOf(key)) + (o.style || '');   // case number and judge are stamped by the system
+      const body = `<span data-f="${esc(key)}" data-ph="${esc(o.ph || (e ? labelOf(e) : key))}"${o.off !== undefined ? ` data-off="${o.off}" data-len="${raw.length}"` : ''}${o.multi ? ' data-multi="1"' : ''}${blank ? ' data-blank="1"' : ''}${sys ? ' data-sys="1"' : ''}${st ? ` style="${esc(st)}"` : ''} ${readOnly || sys ? '' : ` contenteditable="${PLAIN}"`} spellcheck="false">${simg ? `<img src="${esc(simg)}" alt="" contenteditable="false" style="position:absolute;left:0;top:0;height:46px;max-width:100%;pointer-events:none;-webkit-user-select:none;user-select:none">` : ''}${esc(blank ? o.blank : raw)}${o.multi && raw.endsWith('\n') ? '\n' : ''}</span>`;
       const fx = effOf(key).f, pre = o.pre && /\/s\//.test(o.pre) && fx && typeOf(fx) !== 'default' ? '' : o.pre;   // a styled signature is not prefixed with /s/
       return hon + (raw && pre ? esc(pre) + body : body);   // the "Hon." label stays in the form's own font; only the name is stamped
     },
@@ -370,6 +375,7 @@ export async function mountForm(def, host, { account, role, md, onDirty, onEdit,
   function setStyle(key, patch) {
     const cur = sty[key]; if (!cur) return;
     if (patch.f && !allow(patch.f, key)) { api.note((fontLock(patch.f, kindOf(key)) || 'Not offered here') + ': ' + patch.f + ' is not available here.', true); return; }
+    if (patch.f === SIGFONT) { if (!mySig) { api.note('Add your signature in Account Settings first.', true); return; } patch = { ...patch, g: mySig }; }
     const n = { ...cur, ...patch };   // the size you chose stays when you pick another font
     n.t = normT(n.t, n.f); sty[key] = n; bars.forEach(syncBar); if (active && sty[active.key]) paintTb(active.key);
     if (key === '~body' && patch.f && typeOf(patch.f) !== 'default' && patch.f !== cur.f) onFontNotice?.(typeOf(patch.f), patch.f, FONT_WARNING);

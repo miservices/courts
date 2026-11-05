@@ -8,6 +8,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=Source+Serif+4:wght@500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/courts/online-services/portal/dashboard/assets/css/dashboard.css?v=5">
 <style>
+.sigbox{border:1px solid var(--line,#c9d3e3);border-radius:6px;background:#fff;min-height:110px;display:flex;align-items:center;justify-content:center;padding:10px;margin:10px 0}.sigbox img{max-width:100%;max-height:120px}
+.sigpad{display:block;width:100%;max-width:600px;height:180px;border:1px dashed #8a9bb5;border-radius:6px;background:#fff;touch-action:none;cursor:crosshair}
 .m{color:var(--muted);font-weight:400}.mt{margin-top:14px}
 .tools{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px;align-items:center}.tools .in{flex:1;min-width:200px;width:auto}.tools select.in{flex:0 0 auto;min-width:0}
 .chk{display:flex;gap:8px;align-items:center;font-weight:600;color:var(--navy);white-space:nowrap}.chk input{width:18px;height:18px}
@@ -62,13 +64,14 @@ dialog>footer{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:10px;padd
 
 <script type="module">
 import { boot, db, auth, $, esc, has, STAFF, SELF, ATTY } from '/courts/online-services/portal/dashboard/assets/js/portal-shell.js?v=7';
-import { doc, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+import { doc, updateDoc, getDoc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 import { EmailAuthProvider, reauthenticateWithCredential, updatePassword, verifyBeforeUpdateEmail } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
 
 const { account, role, user } = await boot({ id: 'settings', title: 'Account Settings', subtitle: 'Your contact details, security, and notification choices.' });
 const root = $('page-body'), staff = has(STAFF, role), atty = has(ATTY, role), enforce = has(['Justice System User', 'Prosecuting Attorney', 'Legal Services User'], role);
 const ymd = v => { if (!v) return ''; const d = v.toDate ? v.toDate() : new Date(v); return isNaN(d) ? String(v) : d.toISOString().slice(0, 10); };
 const dob = ymd(account.dob || account.dateOfBirth || account.birthDate || account.birthdate);
+let SIG = ''; try { const d = await getDoc(doc(db, 'userSignatures', account.uid)); SIG = d.exists() ? d.data().png || '' : ''; } catch (e) { console.warn(e); }
 const A = account.address && typeof account.address === 'object' ? account.address : {};
 const P = { filings: true, hearings: true, financial: true, enforcement: true, review: true, ...(account.notificationPrefs || {}) };
 const f = (label, id, v = '', o = {}) => `<label class="f"><span>${label}</span><input id="${id}" type="${o.type || 'text'}" value="${esc(v)}"${o.ac ? ` autocomplete="${o.ac}"` : ''}${o.ro ? ' readonly' : ''}${o.max ? ` maxlength="${o.max}"` : ''}>${o.hint ? `<small class="m">${o.hint}</small>` : ''}</label>`;
@@ -89,6 +92,12 @@ function draw() {
     <div class="acts"><button class="btn" type="button" id="save-contact">Save contact details</button></div></section>
 
 
+  <section class="card"><h3>Signature</h3><p class="m">Keep one signature on file. You can choose it as the text type for any signature line in the Document Builder. Upload a picture or draw it. Saving a new one replaces the old one.</p><div id="m-sig"></div>
+    <div class="sigbox" id="sig-cur">${SIG ? `<img src="${esc(SIG)}" alt="Your signature">` : '<span class="m">No signature on file.</span>'}</div>
+    <div class="acts"><label class="btn outline" for="sig-file" style="cursor:pointer">Upload a picture</label><input type="file" id="sig-file" accept="image/png,image/jpeg,image/webp" hidden><button class="btn outline" type="button" id="sig-draw">Draw it</button>${SIG ? '<button class="btn outline" type="button" id="sig-rm">Remove signature</button>' : ''}</div>
+    <div id="sig-pad" hidden style="margin-top:14px"><canvas class="sigpad" id="sig-cv" width="1200" height="360" aria-label="Draw your signature here"></canvas>
+      <div class="acts" style="margin-top:10px"><button class="btn" type="button" id="sig-use">Save drawing</button><button class="btn outline" type="button" id="sig-clear">Clear</button><button class="btn outline" type="button" id="sig-cancel">Cancel</button></div></div></section>
+
   <section class="card"><h3>Notifications</h3><p class="m">Choose what the portal tells you about. Notices that the court is required to send you cannot be turned off.</p><div id="m-prefs"></div>
     ${toggle('p-filings', 'Filings', 'Decisions on filings you submitted.')}${toggle('p-hearings', 'Hearings', 'Hearings scheduled, moved or cancelled in your cases.')}${toggle('p-financial', 'Fines and fees', 'Assessments, due dates, late fees and payment confirmations.')}
     ${enforce || staff ? toggle('p-enforcement', 'Enforcement', staff ? 'Warrant rulings and supervision reports.' : 'Rulings on your warrant requests and reports returned to you.') : ''}${staff ? toggle('p-review', 'Items waiting for my review', 'The counts shown beside Manage Filings and Enforcement administration.') : ''}
@@ -102,7 +111,48 @@ function draw() {
     <div class="cols">${f('New email address', 'em-new', '', { type: 'email', ac: 'email' })}${f('Current password', 'em-pw', '', { type: 'password', ac: 'current-password' })}</div>
     <div class="acts"><button class="btn outline" type="button" id="save-mail">Send verification link</button></div></section>`;
   $('pin')?.addEventListener('click', () => { pinShown = !pinShown; draw(); });
-  $('save-contact').onclick = saveContact; $('save-prefs').onclick = savePrefs; $('save-pass').onclick = savePass; $('save-mail').onclick = saveMail;
+  wireSig(); $('save-contact').onclick = saveContact; $('save-prefs').onclick = savePrefs; $('save-pass').onclick = savePass; $('save-mail').onclick = saveMail;
+}
+
+/* ── Signature: one per person, a small transparent PNG ── */
+function toPng(img) {   // scale down, make the paper white transparent, trim the empty edges
+  const W = 640, sc = Math.min(1, W / img.width, 200 / img.height), w = Math.max(1, Math.round(img.width * sc)), h = Math.max(1, Math.round(img.height * sc));
+  const c = document.createElement('canvas'); c.width = w; c.height = h; const x = c.getContext('2d', { willReadFrequently: true }); x.drawImage(img, 0, 0, w, h);
+  const d = x.getImageData(0, 0, w, h), p = d.data; let x0 = w, y0 = h, x1 = -1, y1 = -1;
+  for (let i = 0; i < p.length; i += 4) {
+    const lum = (p[i] * 0.299 + p[i + 1] * 0.587 + p[i + 2] * 0.114), a = p[i + 3];
+    const na = a * Math.min(1, Math.max(0, (235 - lum) / 90));   // white and near-white become see-through
+    p[i] = p[i + 1] = p[i + 2] = Math.min(40, lum * 0.2); p[i + 3] = na;
+    if (na > 24) { const k = i / 4, px = k % w, py = (k / w) | 0; if (px < x0) x0 = px; if (px > x1) x1 = px; if (py < y0) y0 = py; if (py > y1) y1 = py; }
+  }
+  if (x1 < 0) return '';
+  x.putImageData(d, 0, 0); const pad = 4, cw = x1 - x0 + 1 + pad * 2, ch = y1 - y0 + 1 + pad * 2, o = document.createElement('canvas'); o.width = cw; o.height = ch;
+  o.getContext('2d').drawImage(c, x0 - pad, y0 - pad, cw, ch, 0, 0, cw, ch); return o.toDataURL('image/png');
+}
+async function saveSig(png) {
+  if (!png) return msg('m-sig', 'We could not find a signature in that picture. Use dark ink on a light background.', false);
+  if (png.length > 250000) return msg('m-sig', 'That picture is too detailed. Try a simpler or smaller one.', false);
+  try { await setDoc(doc(db, 'userSignatures', account.uid), { png, uid: account.uid, updatedAt: new Date().toISOString() }); SIG = png; $('sig-pad').hidden = true; draw(); msg('m-sig', 'Your signature is saved.'); }
+  catch (er) { console.error(er); msg('m-sig', er?.code === 'permission-denied' ? 'The Firestore rules must let people write their own userSignatures record. (permission-denied)' : 'We could not save your signature. Try again.', false); }
+}
+function wireSig() {
+  $('sig-file').onchange = e => {
+    const f = e.target.files[0]; e.target.value = ''; if (!f) return;
+    if (!/^image\/(png|jpeg|webp)$/.test(f.type)) return msg('m-sig', 'Choose a PNG, JPG or WebP picture.', false);
+    if (f.size > 5 * 1048576) return msg('m-sig', 'That picture is over 5 MB.', false);
+    const u = URL.createObjectURL(f), im = new Image(); im.onload = () => { URL.revokeObjectURL(u); saveSig(toPng(im)); }; im.onerror = () => { URL.revokeObjectURL(u); msg('m-sig', 'We could not read that picture.', false); }; im.src = u;
+  };
+  const cv = $('sig-cv'), cx = cv.getContext('2d'); let down = false, ink = false, last = null;
+  const reset = () => { cx.clearRect(0, 0, cv.width, cv.height); ink = false; };
+  cx.lineCap = cx.lineJoin = 'round'; cx.lineWidth = 7; cx.strokeStyle = '#111';
+  const pt = e => { const r = cv.getBoundingClientRect(); return [(e.clientX - r.left) * cv.width / r.width, (e.clientY - r.top) * cv.height / r.height]; };
+  cv.onpointerdown = e => { down = true; ink = true; cv.setPointerCapture(e.pointerId); last = pt(e); cx.beginPath(); cx.arc(last[0], last[1], 3.5, 0, 7); cx.fillStyle = '#111'; cx.fill(); };
+  cv.onpointermove = e => { if (!down) return; const p = pt(e); cx.beginPath(); cx.moveTo(last[0], last[1]); cx.lineTo(p[0], p[1]); cx.stroke(); last = p; };
+  cv.onpointerup = cv.onpointercancel = () => { down = false; };
+  $('sig-draw').onclick = () => { $('sig-pad').hidden = false; reset(); msg('m-sig', ''); };
+  $('sig-clear').onclick = reset; $('sig-cancel').onclick = () => { $('sig-pad').hidden = true; };
+  $('sig-use').onclick = () => { if (!ink) return msg('m-sig', 'Draw your signature first.', false); const im = new Image(); im.onload = () => saveSig(toPng(im)); im.src = cv.toDataURL('image/png'); };
+  $('sig-rm')?.addEventListener('click', async () => { try { await deleteDoc(doc(db, 'userSignatures', account.uid)); SIG = ''; draw(); msg('m-sig', 'Your signature was removed.'); } catch (er) { console.error(er); msg('m-sig', 'We could not remove it. Try again.', false); } });
 }
 const val = id => ($(id)?.value || '').trim();
 const busy = (b, on, t) => { b.disabled = on; b.dataset.l = b.dataset.l || b.textContent; b.textContent = on ? t : b.dataset.l; };
