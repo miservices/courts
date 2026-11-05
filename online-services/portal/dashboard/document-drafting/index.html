@@ -41,6 +41,7 @@ dialog>footer{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:10px;padd
 .fd-panel{width:400px;flex:none;overflow-y:auto;overscroll-behavior:contain;background:#fff;border:1px solid #d9dee7;border-radius:10px;padding:16px;font-size:13px}
 .fd-panel h3{margin:0 0 4px;font-size:16px}.fd-hint{color:#667;font-size:12px;font-weight:400}.fd-lkd{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin:4px 0 8px;font-size:13px}.fd-badge{background:#e6f4ea;color:#1b6b3a;border-radius:10px;padding:1px 8px;font-size:11px;font-weight:700}.fd-lkb{margin-left:auto}.fd-cfr{display:flex;gap:8px;align-items:center;margin:4px 0;font-size:12px}.fd-cfr>span{min-width:76px}.fd-rq{margin:6px 0;padding:8px 10px;background:#fff8e6;border:1px solid #f0d99a;border-radius:6px;font-size:12.5px}.fd-rq button{margin:6px 6px 0 0}
 .cs-list{list-style:none;margin:8px 0 0;padding:0;max-height:300px;overflow:auto}.cs-list li{border:1px solid #d9dee8;border-radius:6px;margin-bottom:6px}.cs-list button{all:unset;display:block;width:100%;box-sizing:border-box;padding:8px 10px;cursor:pointer}.cs-list button:hover,.cs-list button:focus-visible{background:#eef2fa}.cs-list small{color:#667;display:block}
+.sh-lines{border:1px solid var(--dd-line,#dbe1ec);border-radius:10px;padding:10px 14px;margin:0}.sh-lines legend{font-size:12px;font-weight:700;padding:0 6px;color:#34415a}.sh-lines .chk{margin:6px 0;font-weight:500}.sh-lines .sub{margin-left:22px}.sh-ch{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}.sh-ch em{font-style:normal;font-size:11.5px;font-weight:600;padding:2px 9px;border-radius:999px;background:#fff3d6;color:#7a5410}.sh-ch em.ok{background:#e3f3ea;color:#23683f}
 .fd-sg{margin:4px 0 10px}.fd-sgr{display:flex;gap:6px;align-items:center;flex-wrap:wrap}.fd-sgr select{flex:1;min-width:0}
 .fd-panel h2{font-size:12px;text-transform:uppercase;letter-spacing:.05em;margin:22px 0 8px;color:#345;border-bottom:1px solid #dde;padding:0 0 4px}
 .fd-panel label{display:block;font-size:12px;line-height:1.25;font-weight:600;color:#445;margin:10px 0 4px}
@@ -220,7 +221,7 @@ dialog.cdlg{width:min(440px,calc(100vw - 24px))}
 <script type="module">
 import { boot, db, app, $, esc, has, STAFF } from '/courts/online-services/portal/dashboard/assets/js/portal-shell.js?v=7';
 import { FORMS, byId, byNumber } from '/courts/online-services/portal/dashboard/assets/forms/registry.js?v=5';
-import { mountForm, formOf, fontAllowed, fontFits, fontLock, fontCss, GFONTS, FONT_TYPES, FONT_WARNING } from '/courts/online-services/portal/dashboard/assets/forms/engine.js?v=20';
+import { mountForm, formOf, fontAllowed, fontFits, fontLock, fontCss, GFONTS, FONT_TYPES, FONT_WARNING } from '/courts/online-services/portal/dashboard/assets/forms/engine.js?v=21';
 import { canLink, caption as capOf, judgeName, judgeLine } from '/courts/online-services/portal/dashboard/assets/forms/caseinfo.js?v=1';
 import { DraftSession, accessOf, roleIn } from '/courts/online-services/portal/dashboard/assets/forms/drafts.js?v=2';
 import { firebaseBackend } from '/courts/online-services/portal/dashboard/assets/forms/backend.js?v=9';
@@ -347,9 +348,9 @@ async function editor({ form, docId, md0 }) {
     let session = null;
     if (favCache === null) { favCache = await be.getFavs(uid); if (favCache === null) { try { favCache = JSON.parse(localStorage.getItem('fd-font-favs') || '[]'); } catch { favCache = []; } } if (my !== gen) return; }
     const sInfo = await be.getSignatureInfo(uid), signature = sInfo.png; if (my !== gen) return;
-    const engine = await mountForm(def, $('fd-host'), { account, role, signature, sigPref: sInfo.pref, uid, onSaveSig: png => be.setSignature(uid, png), onRemoveSig: () => be.setSignature(uid, ''), onSavePref: p => be.setSigPref(uid, p), onCaseLink: () => openCases(), signKeys: canSign ? (meta?.signKeys?.[uid] || []) : null, favs: favCache, onFavs: l => { favCache = l; try { localStorage.setItem('fd-font-favs', JSON.stringify(l)); } catch { } be.setFavs(uid, l).catch(e => console.warn('Favorites not saved', e)); }, md: text ?? md0, readOnly: !canEdit, fileLabel: has(STAFF, role) ? 'Enter order' : 'File', settingsUrl: SIG_URL, onSigInfo: async () => { if (await ask({ title: 'About signatures', message: 'Signing is done with the Sign button next to the signature line in the panel. Your signature picture and /s/ preference are in Account Settings.', ok: 'Open Settings', cancel: 'Not now' })) location.href = SIG_URL; }, actions: canEdit ? ['save', 'share', 'file'] : [], onEdit: () => session?.touch(),
+    const engine = await mountForm(def, $('fd-host'), { account, role, signature, sigPref: sInfo.pref, uid, onSaveSig: png => be.setSignature(uid, png), onRemoveSig: () => be.setSignature(uid, ''), onSavePref: p => be.setSigPref(uid, p), onCaseLink: () => openCases(), signKeys: canSign ? (meta?.signKeys?.[uid] || []) : null, favs: favCache, onFavs: l => { favCache = l; try { localStorage.setItem('fd-font-favs', JSON.stringify(l)); } catch { } be.setFavs(uid, l).catch(e => console.warn('Favorites not saved', e)); }, md: text ?? md0, readOnly: !canEdit, fileLabel: has(STAFF, role) ? 'Enter order' : 'File', settingsUrl: SIG_URL, onSigInfo: async () => { if (await ask({ title: 'About signatures', message: 'Signing is done with the Sign button next to the signature line in the panel. Your signature picture and /s/ preference are in Account Settings.', ok: 'Open Settings', cancel: 'Not now' })) location.href = SIG_URL; }, actions: canEdit ? ['save', 'share', 'signshare', 'file'] : [], onEdit: () => session?.touch(),
       onFontNotice: () => ask({ title: 'Keep your text readable', message: FONT_WARNING, ok: 'I understand', info: true }),
-      onAction: a => a === 'save' ? session.save(true) : a === 'share' ? openShare() : fileIt(def) });
+      onAction: a => a === 'save' ? session.save(true) : a === 'share' ? openShare('share') : a === 'signshare' ? openShare('sign') : fileIt(def) });
     if (my !== gen) { engine.destroy(); return; }
     if (!docId && !md0 && settings?.fonts) {   // a brand new document starts with the person's own default fonts
       const m = {}; Object.entries({ body: '~body', date: '~date', sig: '~sig' }).forEach(([k, id]) => { const v = settings.fonts[k]; if (v?.f && fontAllowed(v.f, role, k) && fontFits(def, v.f, k)) m[id] = { f: v.f, s: +v.s || 0 }; });
@@ -395,29 +396,37 @@ async function openCases() {
     const fill = cur.engine.def?.fromCase ? cur.engine.def.fromCase(c) : {};
     cur.engine.link({ id: c._id, col: c._col, caseno: c.caseId || '', judge: judgeLine(jn, bar), title: capOf(c), fill }); dlg.close(); };
 }
-const dlg = $('dlg'); let sharing = false, found = [], shareMsg = null;
+const dlg = $('dlg'); let sharing = false, found = [], shareMsg = null, shMode = 'share', signAny = true; const signSel = new Set();
 const shareUrl = () => `${BASE}#d/${cur.session.docId}`;
-async function openShare() {
-  const s = cur?.session; if (!s) return;
+async function openShare(mode = 'share') {
+  const s = cur?.session; if (!s) return; shMode = mode; signAny = true; signSel.clear();
   if (!s.docId) { await s.save(true); if (!s.docId) { cur.engine.api.note('Could not save this document yet, so it cannot be shared. Try again in a moment.', true); return; } }
   sharing = true; found = []; shareMsg = null; renderShare(); if (!dlg.open) dlg.showModal();
 }
 function renderShare() {
   const s = cur?.session; if (!s || !s.meta) return; const m = s.meta, owner = m.ownerUid === uid;
   const qEl = $('sh-q'), keep = qEl ? { v: qEl.value, f: document.activeElement === qEl, a: qEl.selectionStart, b: qEl.selectionEnd, r: $('sh-role')?.value } : null;
-  $('dlg-t').textContent = 'Share'; $('dlg-w').textContent = m.title || 'Untitled';
+  const sgMode = shMode === 'sign'; $('dlg-t').textContent = sgMode ? 'Request signature' : 'Share'; $('dlg-w').textContent = m.title || 'Untitled';
   const lineName = k => (cur?.engine?.sigLines?.() || []).find(l => l.key === k)?.label || k;
   const people = (m.members || []).map(u => { const nm = m.names?.[u] || 'Unknown', r = m.ownerUid === u ? 'owner' : m.roles?.[u] || 'view';
     if (r === 'sign') return `<li class="sh-p"><span><b>${esc(nm)}</b>${u === uid ? ' <small class="m">(you)</small>' : ''}</span><span class="m">Signs only: ${esc((m.signKeys?.[u] || []).map(lineName).join(', ') || 'no line')}</span>${owner ? `<button class="btn outline sm" type="button" data-a="remove" data-uid="${esc(u)}">Remove</button>` : ''}</li>`;
     return `<li class="sh-p"><span><b>${esc(nm)}</b>${u === uid ? ' <small class="m">(you)</small>' : ''}</span>${r === 'owner' ? '<span class="m">Owner</span>' : owner ? `<select data-role="${esc(u)}" aria-label="Access for ${esc(nm)}"><option value="edit"${r === 'edit' ? ' selected' : ''}>Can edit</option><option value="view"${r === 'view' ? ' selected' : ''}>Can view</option></select><button class="btn outline sm" type="button" data-a="remove" data-uid="${esc(u)}">Remove</button>` : `<span class="m">${r === 'edit' ? 'Can edit' : 'Can view'}</span>`}</li>`; }).join('');
-  $('dlg-b').innerHTML = `<div class="sh">
+  const lines = cur?.engine?.sigLines?.() || [], open = lines.filter(l => !l.signed);
+  const signers = (m.members || []).filter(u => m.roles?.[u] === 'sign').map(u => `<li class="sh-p" style="align-items:flex-start"><span style="flex:1"><b>${esc(m.names?.[u] || 'Unknown')}</b><span class="sh-ch">${(m.signKeys?.[u] || []).map(k => { const l = lines.find(x => x.key === k); return `<em class="${l?.signed ? 'ok' : ''}">${esc(l?.label || k)} · ${l?.signed ? 'signed' : 'awaiting'}</em>`; }).join('')}</span></span>${owner ? `<button class="btn outline sm" type="button" data-a="remove" data-uid="${esc(u)}">Remove</button>` : ''}</li>`).join('');
+  if (sgMode) {
+    $('dlg-b').innerHTML = `<div class="sh"><p class="m" style="margin:0">Invite someone to sign this document. They can sign only the lines you choose and cannot change anything else.</p>
+    ${owner ? (open.length ? `<fieldset class="sh-lines"><legend>They can sign as</legend><label class="chk"><input type="checkbox" id="sh-any"${signAny ? ' checked' : ''}> <b>Any signature line</b> <small class="m">(${open.length} unsigned)</small></label>${open.map(l => `<label class="chk sub"><input type="checkbox" name="sl" value="${esc(l.key)}"${signAny || signSel.has(l.key) ? ' checked' : ''}${signAny ? ' disabled' : ''}> ${esc(l.label)}${l.awaiting ? ` <small class="m">awaiting ${esc(l.awaiting)}</small>` : ''}</label>`).join('')}</fieldset>
+    <div class="f"><span id="sh-ql">Who should sign?</span><div class="sh-box"><input id="sh-q" type="text" autocomplete="off" spellcheck="false" placeholder="Start typing a name or email" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="sh-sg" aria-labelledby="sh-ql"><div id="sh-sg" class="sh-sg" role="listbox" hidden></div></div></div>` : '<div class="note">Every signature line on this document is already signed.</div>') : '<p class="m">Only the owner can request signatures.</p>'}
+    <div class="sh-row"><input id="sh-url" type="text" readonly value="${esc(shareUrl())}" aria-label="Document link"><button class="btn outline" type="button" data-a="copy">Copy link</button></div>
+    <h4 style="margin:8px 0 0;font-size:13px">Signature requests</h4><ul class="sh-list">${signers || '<li class="m" style="padding:8px 0">No one has been asked to sign yet.</li>'}</ul></div>`;
+  } else $('dlg-b').innerHTML = `<div class="sh">
     <label class="f"><span>Anyone signed in with the link</span><select id="sh-link"${owner ? '' : ' disabled'}><option value="none"${m.linkAccess === 'none' ? ' selected' : ''}>Cannot open it (only people added below)</option><option value="view"${m.linkAccess === 'view' ? ' selected' : ''}>Can view</option><option value="edit"${m.linkAccess === 'edit' ? ' selected' : ''}>Can edit</option></select></label>
     <div class="sh-row"><input id="sh-url" type="text" readonly value="${esc(shareUrl())}" aria-label="Document link"><button class="btn outline" type="button" data-a="copy">Copy link</button></div>
-    ${owner ? `<div class="f"><span id="sh-ql">Add people</span><div class="sh-row"><div class="sh-box"><input id="sh-q" type="text" autocomplete="off" spellcheck="false" placeholder="Start typing a name or email" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="sh-sg" aria-labelledby="sh-ql"><div id="sh-sg" class="sh-sg" role="listbox" hidden></div></div><select id="sh-role" aria-label="Access"><option value="edit">Can edit</option><option value="view">Can view</option>${(cur?.engine?.sigLines?.() || []).some(l => !l.signed) ? '<option value="sign">Can sign only</option>' : ''}</select></div><div class="sh-row" id="sh-linewrap" hidden><select id="sh-line" aria-label="Line this person signs">${(cur?.engine?.sigLines?.() || []).filter(l => !l.signed).map(l => `<option value="${esc(l.key)}">${esc(l.label)}</option>`).join('')}</select></div><small class="m" id="sh-signhint" hidden>This person can only sign the line you choose. They cannot change anything else in the document. Pick them below after choosing the line.</small></div>` : '<p class="m">Only the owner can change who this is shared with.</p>'}
+    ${owner ? `<div class="f"><span id="sh-ql">Add people</span><div class="sh-row"><div class="sh-box"><input id="sh-q" type="text" autocomplete="off" spellcheck="false" placeholder="Start typing a name or email" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="sh-sg" aria-labelledby="sh-ql"><div id="sh-sg" class="sh-sg" role="listbox" hidden></div></div><select id="sh-role" aria-label="Access"><option value="edit">Can edit</option><option value="view">Can view</option></select></div><small class="m">To let someone sign without editing, use Request signature instead.</small></div>` : '<p class="m">Only the owner can change who this is shared with.</p>'}
     <ul class="sh-list">${people}</ul></div>`;
   $('dlg-e').innerHTML = shareMsg ? `<div class="${shareMsg.bad ? 'alert' : 'note'}" role="${shareMsg.bad ? 'alert' : 'status'}">${esc(shareMsg.t)}</div>` : '';
   $('dlg-f').innerHTML = '<button class="btn outline" type="button" data-close>Done</button>';
-  if (keep && $('sh-q')) { $('sh-q').value = keep.v; if (keep.r) $('sh-role').value = keep.r; if (keep.f) { $('sh-q').focus(); try { $('sh-q').setSelectionRange(keep.a, keep.b); } catch { } } suggest(true); }
+  if (keep && $('sh-q')) { $('sh-q').value = keep.v; if (keep.r && $('sh-role')) $('sh-role').value = keep.r; if (keep.f) { $('sh-q').focus(); try { $('sh-q').setSelectionRange(keep.a, keep.b); } catch { } } suggest(true); }
   syncLine();
 }
 
@@ -443,7 +452,7 @@ async function suggest(now) {
   };
   if (now) return run(); paintSuggest('busy'); sgT = setTimeout(run, 140);
 }
-const chosen = i => { const p = sg[i]; if (p) { addPerson(p, $('sh-role').value); } };
+const chosen = i => { const p = sg[i]; if (p) { addPerson(p, shMode === 'sign' ? 'sign' : $('sh-role').value); } };
 const syncLine = () => { const sgn = $('sh-role')?.value === 'sign'; if ($('sh-linewrap')) $('sh-linewrap').hidden = !sgn; if ($('sh-signhint')) $('sh-signhint').hidden = !sgn; };
 dlg.addEventListener('input', e => { if (e.target.id === 'sh-q') suggest(false); });
 dlg.addEventListener('focusin', e => { if (e.target.id === 'sh-q' && e.target.value.trim()) suggest(false); });
@@ -460,11 +469,10 @@ async function addPerson(p, role) {
   try {
     let keys = null;
     if (role === 'sign') {   // the chosen line is marked as awaiting this person, and saved before they are told
-      const k = $('sh-line')?.value; if (!k) { shMsg('Choose the signature line this person will sign.', true); return; }
-      if (!cur.engine.assign(k, { uid: p.uid, name: p.name || p.email })) { shMsg('That line is already signed.', true); return; }
-      keys = [k]; await cur.session.flush();
+      keys = (cur.engine.sigLines?.() || []).filter(l => !l.signed && (signAny || signSel.has(l.key))).map(l => l.key); if (!keys.length) { shMsg('Choose at least one signature line.', true); return; }
+      keys.forEach(k => cur.engine.assign(k, { uid: p.uid, name: p.name || p.email })); await cur.session.flush();
     }
-    await cur.session.addMember(p.uid, p.name || p.email, role, keys); found = []; sg = []; sgi = -1; if ($('sh-q')) $('sh-q').value = ''; shMsg(role === 'sign' ? `${p.name} can now sign that line only.` : `${p.name} can now ${role === 'edit' ? 'edit' : 'view'} this document.`); } catch (e) { console.error(e); shMsg(e?.code === 'permission-denied' ? 'The Firestore rules do not allow sharing yet. (permission-denied)' : 'We could not share this. Try again.', true); }
+    await cur.session.addMember(p.uid, p.name || p.email, role, keys); found = []; sg = []; sgi = -1; if ($('sh-q')) $('sh-q').value = ''; shMsg(role === 'sign' ? `${p.name} can now sign ${keys.length > 1 ? 'those lines' : 'that line'} only.` : `${p.name} can now ${role === 'edit' ? 'edit' : 'view'} this document.`); } catch (e) { console.error(e); shMsg(e?.code === 'permission-denied' ? 'The Firestore rules do not allow sharing yet. (permission-denied)' : 'We could not share this. Try again.', true); }
 }
 dlg.addEventListener('click', async e => {
   if (e.target === dlg || e.target.closest('[data-close]')) { dlg.close(); sharing = false; return; }
@@ -477,6 +485,7 @@ dlg.addEventListener('change', async e => {
   try {
     if (e.target.id === 'sh-link') { await s.setLinkAccess(e.target.value); shMsg('Link setting saved.'); }
     else if (e.target.id === 'sh-role') syncLine();
+    else if (e.target.id === 'sh-any' || e.target.name === 'sl') { if (e.target.id === 'sh-any') signAny = e.target.checked; else e.target.checked ? signSel.add(e.target.value) : signSel.delete(e.target.value); renderShare(); }
     else if (e.target.dataset.role) { await s.setRole(e.target.dataset.role, e.target.value); shMsg('Access updated.'); }
   } catch (er) { console.error(er); shMsg('We could not change that. Try again.', true); }
 });
