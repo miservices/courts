@@ -345,7 +345,8 @@ async function fileIt(def) {
   const s = cur?.session, e = cur?.engine; if (!s || !e) return;
   try { if (!s.docId) await s.save(true); else await s.flush(); } catch (er) { console.warn(er); }
   if (!s.docId || s.isDirty()) { await ask({ title: 'Could not save yet', message: 'This document has to be saved before it can be filed. Check your connection and try again.', ok: 'OK', info: true }); return; }
-  if (has(STAFF, role)) { location.href = 'https://migovt.org/courts/online-services/portal/dashboard/cases/manage/?order=' + encodeURIComponent(s.docId); return; }
+  if (has(STAFF, role)) { try { sessionStorage.setItem('fd-order', JSON.stringify({ id: s.docId, title: cur.session?.title || e.api.val?.('title') || '', md: e.getMd() })); } catch { }   // handed over in this tab, so the order does not depend on a second Storage read
+    location.href = 'https://migovt.org/courts/online-services/portal/dashboard/cases/manage/?order=' + encodeURIComponent(s.docId); return; }
   location.href = FILE_URL + '#from=' + encodeURIComponent(s.docId);
 }
 

@@ -875,7 +875,8 @@ const mdSet = (t, label, v) => String(t).replace(new RegExp('^(- ' + label.repla
 const honor = n => { const w = String(n || '').split(/,|;| and /)[0].trim().replace(/^(hon\.?|honorable|chief judge|chief justice|judge|magistrate|justice)\s+/i, '').split(/\s+/).filter(Boolean); if (!w.length) return ''; if (w.length === 1) return 'Hon. ' + w[0]; let l = w.length - 1; while (l > 0 && /^(jr|sr|ii|iii|iv)\.?$/i.test(w[l])) l--; return 'Hon. ' + w[0][0].toUpperCase() + '. ' + w[l]; };
 async function myDrafts() { try { return (await getDocs(query(collection(db, 'draftDocs'), where('members', 'array-contains', account.uid)))).docs.map(d => ({ id: d.id, ...d.data() })).filter(d => d.file).sort((a, b) => (b.updatedAt?.seconds || 0) - (a.updatedAt?.seconds || 0)); } catch (e) { console.warn('Drafts unavailable', e); return []; } }
 async function orderModal(taskIdx, preDraft) {
-  const drafts = await myDrafts();
+  const drafts = await myDrafts(); let hand = null; try { hand = JSON.parse(sessionStorage.getItem('fd-order') || 'null'); } catch { }
+  if (hand?.md && !drafts.some(d => d.id === hand.id)) drafts.unshift({ id: hand.id, title: hand.title || 'Drafted order', file: null });
   const t = taskIdx != null && taskIdx >= 0 ? cm.tasks[taskIdx] : null, p = pool(cur.court), me = p.find(j => j.name === account.name), def = isJudicial && me ? me.name : cur.judge || '';
   const opts = [...new Set([cur.judge, ...p.map(j => j.name)].filter(Boolean))].map(n => [n, n === cur.judge ? `${n} — judge of record` : `${n} — ${p.find(j => j.name === n)?.role || ''}`]);
   modal({ title: 'Enter an order or ruling', ok: 'Enter order', okCls: 'good', body: (t ? `<div class="quote">Ruling on: ${esc(t.title)}</div>` : '') + fld('Order title', 'or-title', t ? 'Order on ' + (t.docType || stripSuffix(t.title)) : drafts.find(d => d.id === preDraft)?.title || '', { ph: 'e.g. Order Granting Motion to Dismiss' })
@@ -886,11 +887,12 @@ async function orderModal(taskIdx, preDraft) {
       const title = val('or-title'); if (!title) bad('Enter an order title.'); const judge = val('or-judge') || cur.judge || null, sealed = $('or-seal').checked, file = $('or-file').files[0];
       const dr = drafts.find(d => d.id === val('or-draft')); let link = null, fname = null;
       if (dr) {   // the drafted order is copied to the case, with the case number and judge filled in by the system
-        let t = new TextDecoder().decode(await getBytes(sRef(storage, `draftDocs/${dr.id}/${dr.file}`), 4 * 1024 * 1024));
+        let t = hand?.md && hand.id === dr.id ? hand.md : null;
+        if (t === null) { try { t = new TextDecoder().decode(await getBytes(sRef(storage, `draftDocs/${dr.id}/${dr.file}`), 4 * 1024 * 1024)); } catch (er) { console.error(er); bad('We could not read that draft. Open it in the Document Builder and choose Enter order there.'); } }
         t = mdSet(mdSet(t, 'Case No.', cur.caseId || ''), 'Judge', honor(judge));
         fname = (dr.title || 'Order').replace(/[^A-Za-z0-9._-]+/g, '_') + '.md';
         const path = `case-orders/${cur._id}/${Date.now()}-${fname}`; await uploadBytes(sRef(storage, path), new Blob([t], { type: 'text/markdown' }), { contentType: 'text/markdown' });
-        link = 'https://migovt.org/courts/documents/#/' + path.split('/').map(encodeURIComponent).join('/');
+        link = 'https://migovt.org/courts/documents/#/' + path.split('/').map(encodeURIComponent).join('/'); try { sessionStorage.removeItem('fd-order'); } catch { }
       } else link = file ? await upload('case-orders', file) : val('or-link') || null;
       const comment = val('or-comment') || null;
       await change(d => ({ events: withEvent(d, { type: 'order', date: now(), description: title, documentLink: link, comment, judge, sealed, enteredBy: account.name, enteredByRole: role }) }),
