@@ -83,7 +83,6 @@ const cb = (on, key) => `<div class="cb"${key ? ` data-chk="${key}" title="Click
 function build(api) {
   const { $, P, B } = api, E = api.ed, seq = [], on = id => $(id).checked, sv = id => $(id).value;
   const caseHd = `<div class="ch">Case Number: <span class="u">${E('caseno')}</span></div>`;
-  const prHd = `<div class="b" style="line-height:${P(12)}">PRETRIAL RELEASE ORDER</div><div style="font-size:${P(7.5)};line-height:${P(10)}">Case number provided herein</div>`;
   const matter = `<div class="mt"><b>In the matter of:</b> The People of the State of Michigan v. ${E('defn', { blank: '[Defendant Name]' })}</div>`;
   const sig = (d, n, s, g = 44, g2 = 34) => `<div class="sr" style="margin-top:${P(g)}"><div class="sc" style="margin-left:${P(283)};width:${P(213)}"><div class="sv lf"><div class="in">${E(n)}</div></div><div class="sl">Judge or Magistrate (type or print)</div></div></div>
    <div class="sr" style="margin-top:${P(g2)}"><div class="sc" style="margin-left:${P(3)};width:${P(98)}"><div class="sv lf"><div class="in">${E(d)}</div></div><div class="sl">Date</div></div><div class="sc" style="margin-left:${P(182)};width:${P(213)}"><div class="sv lf"><div class="in">${E(s, { pre: '/s/ ' })}</div></div><div class="sl">Signature</div></div></div>`;
@@ -118,8 +117,8 @@ function build(api) {
   seq.push({ pb: 'blank', html: `<div class="c" style="padding-top:${P(314)}"><div class="b" style="font-size:${P(19.4)};line-height:${P(22)}">THIS PAGE IS INTENTIONALLY LEFT BLANK</div><div style="margin-top:${P(20.5)};font-size:${P(11.8)};line-height:${P(15)}">ORDER AFTER ARRAIGNMENT ON PREVIOUS PAGE(S)<br>PRETRIAL RELEASE ORDER ON NEXT PAGE(S)</div></div>` });
 
   /* pretrial release order */
-  seq.push({ pb: 'new', html: hdr(P, B, 'PRETRIAL RELEASE ORDER<br>(INITIAL ORDER)', 'As provided herein', 'As provided herein') });
-  seq.push({ ch: prHd });
+  seq.push({ pb: 'new', html: hdr(P, B, 'PRETRIAL RELEASE ORDER<br>(INITIAL ORDER)', E('judge'), E('caseno')) });
+  seq.push({ ch: caseHd });
   seq.push({ html: `<div class="pt"><div class="c1">THE PEOPLE OF THE<br>STATE OF MICHIGAN</div><div class="c2">v</div><div class="c5"><div class="lb">Defendant’s name and personal identification number</div><div class="vv"><div>${E('defn')}</div><div>${E('pin')}</div></div></div></div>${matter}` });
   const row = (n, k, t, d) => `<div class="rr"><div>${n}</div><div>${cb(on(k), k)}</div><div>${t}</div><div>${d}</div></div>`;
   seq.push({ html: `<div class="rt"><div class="rr h"><div>Item</div><div>Ordered (Y/N)</div><div>Release Type</div><div>Amount / Details</div></div>
