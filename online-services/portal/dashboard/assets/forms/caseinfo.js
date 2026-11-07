@@ -39,3 +39,8 @@ export function hearingFill(c, re) {
 }
 /* "FIRST-DEGREE MURDER (MCL 750.316)" */
 export const chargeLine = ch => { const n = String(ch.chargeName || ch.title || '').trim().toUpperCase(), s = String(ch.statute || '').trim(); return s ? `${n} (${s})` : n; };
+
+/* Case numbers: official form is YYYY-####-TYPE (2026-0108-CR). The default shown on forms can use a 2-digit year (26-0108-CR) or the full year, by the person's setting. */
+export const fmtCaseNo = (no, yearMode = '2') => { const m = /^(\d{2}|\d{4})-(.+)$/.exec(String(no || '').trim()); if (!m) return String(no || ''); const y = m[1]; return (yearMode === '4' ? (y.length === 2 ? '20' + y : y) : y.slice(-2)) + '-' + m[2]; };
+/* Alternate spellings of a case number so a search for 26-0108 finds 2026-0108-CR. */
+export const caseAlias = id => { const m = /^(\d{2}|\d{4})-(\d+)(?:-([A-Za-z]+))?$/.exec(String(id || '')); if (!m) return ''; const yy = m[1].slice(-2), yyyy = m[1].length === 2 ? '20' + m[1] : m[1], n = m[2], t = m[3] ? '-' + m[3] : ''; return [`${yy}-${n}${t}`, `${yy}-${n}`, `${yyyy}-${n}${t}`, `${yyyy}-${n}`].join(' '); };

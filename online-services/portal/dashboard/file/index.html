@@ -28,6 +28,7 @@
 <div class="auth-loading-overlay" id="auth-overlay" role="status"><div class="alo-title">Online Portal</div><div class="spin"></div><div>Verifying your session…</div></div>
 
 <script type="module">
+const caseAlias = id => { const m = /^(\d{2}|\d{4})-(\d+)(?:-([A-Za-z]+))?$/.exec(String(id || '')); if (!m) return ''; const yy = m[1].slice(-2), yyyy = m[1].length === 2 ? '20' + m[1] : m[1], n = m[2], t = m[3] ? '-' + m[3] : ''; return [`${yy}-${n}${t}`, `${yy}-${n}`, `${yyyy}-${n}${t}`, `${yyyy}-${n}`].join(' '); };
 import { boot, db, app, $, esc, has, ATTY, STAFF, CASE_CODES, DISTRICT_COURT, SUPREME_COURT, reserveCaseNumber, reserveFilingNumber, colFor } from '/courts/online-services/portal/dashboard/assets/js/portal-shell.js?v=7';
 import { byNumber as formByNumber } from '/courts/online-services/portal/dashboard/assets/forms/registry.js?v=8';
 import { firebaseBackend } from '/courts/online-services/portal/dashboard/assets/forms/backend.js?v=4';
@@ -114,7 +115,7 @@ const counselOf = p => [p.attorney, ...(p.attorneys || [])].filter(a => a && a.n
 const attyOn = p => counselOf(p).some(a => lc(a.name) === lc(account.name));
 const isMine = c => (c.relatedUserIds || []).includes(account.uid) || partiesOf(c).some(p => lc(p.name) === lc(account.name) || attyOn(p));
 const caption = c => { const p = partiesOf(c); return p[0] && p[1] ? `${p[0].name} v. ${p[1].name}` : c.caseId; };
-const byQ = (c, q) => (c.caseId + ' ' + partiesOf(c).map(p => p.name).join(' ')).toLowerCase().includes(q);
+const byQ = (c, q) => (c.caseId + ' ' + caseAlias(c.caseId) + ' ' + partiesOf(c).map(p => p.name).join(' ')).toLowerCase().includes(q);
 // How the signed-in user stands in an existing case: counsel of record for some parties, or a party themselves.
 const standing = c => { const ps = partiesOf(c), rep = ps.filter(attyOn), own = ps.find(p => lc(p.name) === lc(account.name));
   return rep.length ? { counsel: true, text: 'Attorney for ' + rep.map(p => p.name).join(' and '), reps: rep.map(p => p.name).join(', ') } : { counsel: false, text: own ? own.role : 'Party of Record', reps: null }; };
@@ -375,7 +376,9 @@ async function submit() {
     /* Every filed document (court form or PDF) gets a court stamp record: "A TRUE COPY", the filing date and the court. It starts in the top right; the clerk can move it later. Best effort. */
     try {
       const dt = new Date(), ds = `${String(dt.getMonth() + 1).padStart(2, '0')}/${String(dt.getDate()).padStart(2, '0')}/${dt.getFullYear()}`, label = court === SUPREME_COURT ? 'MI SUPREME COURT' : '7TH DISTRICT COURT';
-      await Promise.all(documents.filter(x => x.storagePath).map((x, i) => setDoc(doc(db, 'docStamps', x.storagePath.split('/').join('__')), { path: x.storagePath, docId: documents.length > 1 ? `${conf}-${i + 1}` : conf, label, date: ds, x: 0.7, y: 0.004, page: 1, filedByUid: account.uid, confirmationNumber: conf, filedAt: Date.now() })));
+      const used = new Set(); const nextNo = () => { let n; do n = String(Math.floor(Math.random() * 10000)).padStart(4, '0'); while (used.has(n)); used.add(n); return n; };   // random 4 digits, never repeated inside one filing
+      documents.filter(x => x.storagePath).forEach(x => { x.docNumber = nextNo(); x.docId = `${conf}-${x.docNumber}`; });
+      await Promise.all(documents.filter(x => x.storagePath).map(x => setDoc(doc(db, 'docStamps', x.storagePath.split('/').join('__')), { path: x.storagePath, docId: x.docId, label, date: ds, x: 0.7, y: 0.004, page: 1, filedByUid: account.uid, confirmationNumber: conf, filedAt: Date.now() })));
     } catch (e) { console.warn('Could not save the court stamp', e); }
     S.links.forEach(l => documents.push({ type: 'gdrive', name: 'Google Drive Document', link: l.url.trim(), documentType: l.type, fee: fee(l.type, court) }));
 

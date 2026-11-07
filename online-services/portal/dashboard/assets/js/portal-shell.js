@@ -37,7 +37,7 @@ export const colFor = court => court === SUPREME_COURT ? 'mscCases' : 'cases';  
 export async function reserveCaseNumber(court, caseType) {
   const sc = court === SUPREME_COURT, year = new Date().getFullYear(), ref = doc(db, 'caseNumberCounters', sc ? 'supreme' : 'district-' + year);
   const n = await runTransaction(db, async tx => { const s = await tx.get(ref); const v = (s.exists() ? s.data().value || 0 : 0) + 1; tx.set(ref, { value: v, ...(sc ? {} : { year }), updatedAt: new Date().toISOString() }); return v; });
-  return sc ? `MSC ${n}` : `${String(year).slice(-2)}-${n}-${CASE_CODES[caseType] || 'CV'}`;
+  return sc ? `MSC ${n}` : `${year}-${String(100 + n).padStart(4, '0')}-${CASE_CODES[caseType] || 'CV'}`;   // YYYY-####-TYPE, numbers start at 0101
 }
 
 /* Filing numbers: [CASE-NUMBER]-F-[N]. The first filing of a new case is always F-1; later filings take the next number from the case's counter. */
@@ -168,7 +168,7 @@ export function boot({ id, title, subtitle }) {
       const link = (i, l, p) => { const href = BASE + p, on = new URL(href).pathname === here; return `<a href="${href}" data-nav="${i}" class="${on ? 'active' : ''}" ${on ? 'aria-current="page"' : ''}>${svg(i)}${esc(l)}</a>`; };
       const nav = NAV.map(([t, items]) => { const v = items.filter(i => ok(i[3], role)); return v.length ? (t ? `<div class="sb-label">${esc(t)}</div>` : '') + v.map(i => link(i[0], i[1], i[2])).join('') : ''; }).join('');
       $('sidebar-root').innerHTML = `
-        <a class="sb-brand" href="${BASE}"><svg viewBox="0 0 100 100" aria-hidden="true"><rect x="1.5" y="1.5" width="97" height="97" rx="13" fill="#10264a" stroke="#5b9be0" stroke-width="3"/><path d="M27 16h32l16 16v52H27z" fill="#fff"/><path d="M59 16v16h16z" fill="#9cc4f5"/><g fill="none" stroke="#10264a" stroke-width="4.5" transform="translate(10.5 8) scale(.9)" stroke-linecap="round" stroke-linejoin="round"><path d="M45 36v38M33 74h24M31 44h28"/><path d="M31 44l-7 15a7 7 0 0 0 14 0zM59 44l-7 15a7 7 0 0 0 14 0z"/></g><rect x="27" y="86" width="48" height="6" fill="#9cc4f5"/></svg><span><b>Online Portal</b><small>Michigan Courts</small></span></a>
+        <a class="sb-brand" href="${BASE}"><svg viewBox="0 0 52 52" aria-hidden="true"><circle cx="26" cy="26" r="25" fill="#fff"/><g stroke="#10264a" stroke-width="2" stroke-linecap="round" fill="none"><path d="M26 11v26M17 15h18M19 38h14"/><path d="M17 15l-6 12h12zM35 15l-6 12h12z" stroke-width="1.6" stroke-linejoin="round"/></g></svg><span><b>Online Portal</b><small>Michigan Courts</small></span></a>
         <nav class="sb-nav" aria-label="Portal">${nav}<div class="sb-label">Quick links</div>
           ${LINKS.filter(l => ok(l[2], role)).map(l => `<a href="${l[1]}">${svg('link')}${esc(l[0])}</a>`).join('')}
           <div class="sb-bottom">${link('settings', 'Account Settings', 'settings/')}</div></nav>

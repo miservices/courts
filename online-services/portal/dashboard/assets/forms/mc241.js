@@ -1,7 +1,7 @@
 /* MC 241: Order After Preliminary Examination.
    Completed by the court: the judge or magistrate, or court staff for them. */
 import a200 from './mc200a.js?v=16';
-import { defendants, hearingFill, chargeLine } from './caseinfo.js?v=2';
+import { defendants, hearingFill, chargeLine } from './caseinfo.js?v=3';
 
 const css = args => a200.css(args) + (({ U, P, B }) => `
 .u{text-align:left;padding-left:${P(4)}}

@@ -70,7 +70,8 @@ dialog>footer{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:10px;padd
 <div class="auth-loading-overlay" id="auth-overlay" role="status"><div class="alo-title">Online Portal</div><div class="spin"></div><div>Verifying your session…</div></div>
 
 <script type="module">
-import { boot, db, $, esc, has, SELF, colFor } from '/courts/online-services/portal/dashboard/assets/js/portal-shell.js?v=6';
+const caseAlias = id => { const m = /^(\d{2}|\d{4})-(\d+)(?:-([A-Za-z]+))?$/.exec(String(id || '')); if (!m) return ''; const yy = m[1].slice(-2), yyyy = m[1].length === 2 ? '20' + m[1] : m[1], n = m[2], t = m[3] ? '-' + m[3] : ''; return [`${yy}-${n}${t}`, `${yy}-${n}`, `${yyyy}-${n}${t}`, `${yyyy}-${n}`].join(' '); };
+import { boot, db, $, esc, has, SELF, colFor } from '/courts/online-services/portal/dashboard/assets/js/portal-shell.js?v=7';
 import { collection, getDocs } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 
 const { account, role } = await boot({ id: 'hearings', title: 'My hearings', subtitle: 'Hearings in the cases where you are a party or an attorney.' });
@@ -126,7 +127,7 @@ setHead('Hearings in the cases where you are a party or an attorney.');
 
 /* ── Render ────────────────────────────────────────────────────────── */
 const shown = () => all.filter(x => { const st = stateOf({ ...x.h, when: x.when });
-  return (show === 'all' || (show === 'upcoming' ? st === 'upcoming' : st !== 'upcoming')) && (!q || [x.cap, x.c.caseId, x.h.type, x.h.officer].join(' ').toLowerCase().includes(q)); });
+  return (show === 'all' || (show === 'upcoming' ? st === 'upcoming' : st !== 'upcoming')) && (!q || [x.cap, x.c.caseId, caseAlias(x.c.caseId), x.h.type, x.h.officer].join(' ').toLowerCase().includes(q)); });
 function row(x) {
   const st = stateOf({ ...x.h, when: x.when }), where = x.mode === 'video' ? 'Videoconference' : roomLabel(x.h.courtroom || x.c.courtroomNumber);
   return `<button type="button" class="hr" data-a="open:${esc(x.key)}"><div class="t">${esc(fmtTime(x.when))}<small>${esc(x.when.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }))}</small></div>

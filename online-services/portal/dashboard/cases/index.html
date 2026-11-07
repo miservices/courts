@@ -66,6 +66,7 @@ tr[data-open]{cursor:pointer}
 <div class="auth-loading-overlay" id="auth-overlay" role="status"><div class="alo-title">Online Portal</div><div class="spin"></div><div>Verifying your session…</div></div>
 
 <script type="module">
+const caseAlias = id => { const m = /^(\d{2}|\d{4})-(\d+)(?:-([A-Za-z]+))?$/.exec(String(id || '')); if (!m) return ''; const yy = m[1].slice(-2), yyyy = m[1].length === 2 ? '20' + m[1] : m[1], n = m[2], t = m[3] ? '-' + m[3] : ''; return [`${yy}-${n}${t}`, `${yy}-${n}`, `${yyyy}-${n}${t}`, `${yyyy}-${n}`].join(' '); };
 import { boot, db, $, esc, has, SELF, STAFF, colFor, DISTRICT_COURT, SUPREME_COURT } from '/courts/online-services/portal/dashboard/assets/js/portal-shell.js?v=7';
 import { collection, getDocs, getDoc, doc, query, where } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 
@@ -179,7 +180,7 @@ function showList() {
 }
 function drawResults() {
   const q = LS.q.toLowerCase().trim();
-  const l = mine.filter(({ c }) => (LS.status === 'all' || (LS.status === 'closed') === closedOf(c)) && (!q || [caption(c), c.caseId, judgeName(c), plist(c).map(p => p.name).join(' ')].join(' ').toLowerCase().includes(q)))
+  const l = mine.filter(({ c }) => (LS.status === 'all' || (LS.status === 'closed') === closedOf(c)) && (!q || [caption(c), c.caseId, caseAlias(c.caseId), judgeName(c), plist(c).map(p => p.name).join(' ')].join(' ').toLowerCase().includes(q)))
     .sort((a, b) => new Date(b.c.dates?.lastUpdated || b.c.dates?.filed || 0) - new Date(a.c.dates?.lastUpdated || a.c.dates?.filed || 0));
   const shown = l.slice(0, LS.shown);
   $('ls-res').innerHTML = shown.length ? `<div class="table-scroll"><table><thead><tr><th>Case</th><th>Your role</th><th>Status</th><th>Next hearing</th><th>Balance</th><th>Updated</th></tr></thead><tbody>${shown.map(({ c, lk }) => { const nh = nextHearing(c), b = balanceOf(c).bal;

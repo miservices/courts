@@ -464,12 +464,13 @@ function nextHearingOf(c){
   return list[0] || null;
 }
 
+const caseAlias = id => { const m = /^(\d{2}|\d{4})-(\d+)(?:-([A-Za-z]+))?$/.exec(String(id || '')); if (!m) return ''; const yy = m[1].slice(-2), yyyy = m[1].length === 2 ? '20' + m[1] : m[1], n = m[2], t = m[3] ? '-' + m[3] : ''; return [`${yy}-${n}${t}`, `${yy}-${n}`, `${yyyy}-${n}${t}`, `${yyyy}-${n}`].join(' '); };
 function decorate(c){
   const parties = partyList(c);
   const judge = c.judge || (Array.isArray(c.judges) ? c.judges[0] : '') || '';
   const nh = nextHearingOf(c);
   const text = [
-    c.caseId, getCaseTitle(c), c.docketSummary, c.caseType, c.status, judge,
+    c.caseId, caseAlias(c.caseId), getCaseTitle(c), c.docketSummary, c.caseType, c.status, judge,
     ...parties.flatMap(p => [p.name, ...(Array.isArray(p.aliases) ? p.aliases : []), p.attorney?.name]),
     ...(c.charges || []).flatMap(ch => [ch.chargeName, ch.title, ch.statute])
   ].filter(hasVal).join(' ').toLowerCase();

@@ -33,6 +33,8 @@ main{flex:1;display:flex;flex-direction:column;padding:14px 16px 18px;min-height
 .msg a.btn{background:var(--navy);color:#fff;border-color:var(--navy)}
 .spin{width:22px;height:22px;border:3px solid #b8cdee;border-top-color:var(--navy);border-radius:50%;animation:s .8s linear infinite;margin:0 auto 10px}@keyframes s{to{transform:rotate(360deg)}}
 .ld{text-align:center;margin:12vh auto;color:var(--muted)}
+#sc{width:100%;display:flex;align-items:center;gap:18px;flex-wrap:wrap;font-size:12.5px;color:#dbe5f7;border-top:1px solid rgba(255,255,255,.18);padding-top:8px}#sc[hidden]{display:none}
+#sc label{display:flex;align-items:center;gap:8px}#sc input[type=range]{width:130px;accent-color:#ffd666}#sc .btn{padding:4px 10px;font-size:12px}
 #note{font-size:12.5px;color:#c6d3ea;min-height:16px;width:100%}
 #pdfv{overflow:auto;height:100%;background:#cfd6e3;border:1px solid var(--line);border-radius:8px;padding:14px 0}
 .pgw{position:relative;margin:0 auto 14px;background:#fff;box-shadow:0 1px 6px rgba(0,0,0,.25)}.pgw canvas{display:block;width:100%;height:auto}
@@ -51,13 +53,14 @@ main{flex:1;display:flex;flex-direction:column;padding:14px 16px 18px;min-height
     <button class="btn o" id="md" type="button">Download .md</button>
   </div>
   <div id="note" role="status" aria-live="polite"></div>
+  <div class="sc" id="sc" hidden><b>Stamp</b><label>Ink <input id="c-ink" type="range" min="0" max="100" step="1" aria-label="Stamp ink: lighter to darker"></label><label>Tilt <input id="c-rot" type="range" min="-20" max="20" step="1" aria-label="Stamp tilt in degrees"></label><label>Size <input id="c-size" type="range" min="60" max="160" step="5" aria-label="Stamp size"></label><button class="btn o" id="c-reset" type="button">Reset</button></div>
 </header>
 <main><div id="host"><div class="ld"><div class="spin"></div>Opening the document…</div></div></main>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
 import { getAuth } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
-import { getStorage, ref, getBytes } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-storage.js";
+import { getStorage, ref, getBytes, getMetadata } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-storage.js";
 import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 
 const app = initializeApp({
@@ -77,84 +80,108 @@ const pathOf = () => { const h = location.hash.replace(/^#\/?/, ''); if (!h) ret
 
 /* The folder sticker: the document ID (the filing number, plus the document's number when it has one), the filing date and the court. */
 const stickerOf = (path, st) => ({ id: (st && st.docId) || path.split('/')[1] || 'DOCUMENT', date: st?.date || '', label: st?.label || '' });
+const SC = 'storage/object-not-found';
+const bad = (t) => { $('note').textContent = t; $('note').style.color = '#ffb4ab'; }, good = t => { $('note').textContent = t; $('note').style.color = '#c6d3ea'; };
+let stampRec = null, stampRef = null, canMove = false;
+
+/* Every document carries the court stamp. One that has no record yet (filed before stamps existed) gets one built from the file's upload date. */
+async function loadStamp(path) {
+  stampRef = doc(db, 'docStamps', path.split('/').join('__')); let st = null;
+  try { const sn = await getDoc(stampRef); st = sn.exists() ? sn.data() : null; } catch (e) { console.warn('Stamp unavailable', e); }
+  if (!st) {
+    let dt = new Date(); try { dt = new Date((await getMetadata(ref(storage, path))).timeCreated); } catch { }
+    const p2 = n => String(n).padStart(2, '0'), cn = path.split('/')[1] || '';
+    st = { synth: true, path, date: `${p2(dt.getMonth() + 1)}/${p2(dt.getDate())}/${dt.getFullYear()}`, label: /^MSC/i.test(cn) ? 'MI SUPREME COURT' : '7TH DISTRICT COURT', x: 0.7, y: 0.004, page: 1 };
+  }
+  if (auth.currentUser) try { const a = await getDoc(doc(db, 'accounts', auth.currentUser.uid)); const r = a.exists() ? a.data().role : ''; canMove = !!r && r !== 'Public User'; } catch { canMove = false; }
+  stampRec = st;
+}
+/* Save a change to the stamp (position, ink, tilt, size). A stamp built on the fly is saved in full the first time. */
+async function saveStamp(p) {
+  if (!auth.currentUser) return;
+  try { const base = stampRec.synth ? { path: stampRec.path, label: stampRec.label, date: stampRec.date, filedByUid: auth.currentUser.uid, x: stampRec.x, y: stampRec.y, page: stampRec.page } : {};
+    await setDoc(stampRef, { ...base, ...p, movedBy: auth.currentUser.uid, movedAt: Date.now() }, { merge: true }); stampRec = { ...stampRec, ...p, synth: false }; good('Stamp saved.'); }
+  catch (e) { console.error(e); bad('We could not save the stamp change.'); }
+}
+/* Ink, tilt and size controls, for anyone who may edit the stamp. */
+function showControls(apply) {
+  const bar = $('sc'); if (!canMove) { bar.hidden = true; return; } bar.hidden = false;
+  const set = (id, v) => { $(id).value = v; }; set('c-ink', Math.round((stampRec.ink ?? 0.9) * 100)); set('c-rot', stampRec.rot ?? -3); set('c-size', Math.round((stampRec.scale ?? 1) * 100));
+  const read = () => ({ ink: +$('c-ink').value / 100, rot: +$('c-rot').value, scale: +$('c-size').value / 100 });
+  bar.oninput = () => { const v = read(); stampRec = { ...stampRec, ...v }; apply(v); };
+  bar.onchange = () => saveStamp(read());
+  $('c-reset').onclick = () => { set('c-ink', 90); set('c-rot', -3); set('c-size', 100); const v = read(); stampRec = { ...stampRec, ...v }; apply(v); saveStamp(v); };
+}
 async function open() {
-  const my = ++token; shown = false; pdfBytes = null; pdfStamp = null; $('md').hidden = false; engine?.destroy(); engine = null; $('acts').hidden = true; $('note').textContent = '';
+  const my = ++token; shown = false; pdfBytes = null; pdfStamp = null; $('md').hidden = false; $('sc').hidden = true; engine?.destroy(); engine = null; $('acts').hidden = true; $('note').textContent = '';
   const path = pathOf();
   if (!path || !/^(filingUploads|case-orders)\/[^/]+\/[^/]+\.(md|pdf)$/i.test(path)) return card('No document selected', 'This page opens court documents from a link on a docket or filing. Return to the page you came from and choose the document again.', ['Open the Online Portal', PORTAL]);
   $('host').innerHTML = '<div class="ld"><div class="spin"></div>Opening the document…</div>';
   await auth.authStateReady(); if (my !== token) return;
-  if (!auth.currentUser) return card('Sign in to view this document', 'Court documents are shown to people who are signed in to the Online Portal. Sign in, then open the document again.', ['Sign in to the Online Portal', PORTAL]);
-  /* The court stamp record (A TRUE COPY, date, court, position), and whether this person may move it: anyone except a public user. */
-  const sref = doc(db, 'docStamps', path.split('/').join('__')); let stamp = null, canMove = false;
-  try { const sn = await getDoc(sref); stamp = sn.exists() ? sn.data() : null; } catch (e) { console.warn('Stamp unavailable', e); }
-  if (stamp) { try { const a = await getDoc(doc(db, 'accounts', auth.currentUser.uid)); const r = a.exists() ? a.data().role : ''; canMove = !!r && r !== 'Public User'; } catch { } }
-  const moved = async p => { try { await setDoc(sref, { ...p, movedBy: auth.currentUser.uid, movedAt: Date.now() }, { merge: true }); stamp = { ...stamp, ...p }; pdfStamp = stamp; $('note').textContent = 'Stamp moved.'; $('note').style.color = '#c6d3ea'; } catch (e) { console.error(e); $('note').textContent = 'We could not save the new stamp position.'; $('note').style.color = '#ffb4ab'; } };
-  if (/\.pdf$/i.test(path)) return openPdf(my, path, stamp, canMove, moved);
+  await loadStamp(path); if (my !== token) return;
+  if (/\.pdf$/i.test(path)) return openPdf(my, path);
   let text;
   try { text = new TextDecoder().decode(await getBytes(ref(storage, path), 4 * 1024 * 1024)); }
-  catch (e) { console.error(e); if (my !== token) return; return card(e?.code === 'storage/object-not-found' ? 'Document not found' : e?.code === 'storage/unauthorized' ? 'You do not have access' : 'We could not open this document', e?.code === 'storage/object-not-found' ? 'This document may have been removed.' : e?.code === 'storage/unauthorized' ? 'Your account is not allowed to view this document.' : 'Check your connection and try again.'); }
+  catch (e) { console.error(e); if (my !== token) return; return card(e?.code === SC ? 'Document not found' : e?.code === 'storage/unauthorized' ? 'You do not have access' : 'We could not open this document', e?.code === SC ? 'This document may have been removed.' : e?.code === 'storage/unauthorized' ? (auth.currentUser ? 'Your account is not allowed to view this document.' : 'This document is not open to the public. Sign in to the Online Portal and open it again.') : 'Check your connection and try again.'); }
   if (my !== token) return;
   try {
-    const [{ byNumber }, { formOf, mountForm }] = await Promise.all([import(FORMS + 'registry.js?v=8'), import(FORMS + 'engine.js?v=28')]);
+    const [{ byNumber }, { formOf, mountForm }] = await Promise.all([import(FORMS + 'registry.js?v=8'), import(FORMS + 'engine.js?v=29')]);
     const num = formOf(text), form = num && byNumber(num);
     if (!form) return card('This document cannot be shown', num ? `It was prepared on form "${num}", which this viewer does not support yet.` : 'We could not tell which form this file is for.');
     const def = (await import(`${FORMS}${form.id}.js?v=22`)).default; if (my !== token) return;
     $('host').innerHTML = '';
-    engine = await mountForm(def, $('host'), { md: text, readOnly: true, unofficial: true, sticker: stickerOf(path, stamp), stamp: stamp ? { label: stamp.label, date: stamp.date, x: stamp.x, y: stamp.y, page: stamp.page } : null, onStampMove: canMove ? moved : null, onNote: (t, bad) => { if (!shown && !bad) return; $('note').textContent = t; $('note').style.color = bad ? '#ffb4ab' : '#c6d3ea'; } });
+    engine = await mountForm(def, $('host'), { md: text, readOnly: true, sticker: stickerOf(path, stampRec), stamp: { ...stampRec }, onStampMove: canMove ? p => saveStamp(p) : null, onNote: (t, b) => { if (!shown && !b) return; $('note').textContent = t; $('note').style.color = b ? '#ffb4ab' : '#c6d3ea'; } });
     if (my !== token) { engine.destroy(); return; }
-    shown = true; if (stamp && canMove) { $('note').textContent = 'You can drag the stamp to move it.'; } const c = engine.getCase(), title = `${def.number} · ${def.title}`;
+    showControls(v => engine.setStamp(v));
+    shown = true; if (canMove) good('You can drag the stamp to move it.'); const c = engine.getCase(), title = `${def.number} · ${def.title}`;
     $('t').textContent = title; $('s').textContent = [c.caseno && 'Case ' + c.caseno, c.judge].filter(Boolean).join(' · '); document.title = title + ' | Michigan Courts'; $('acts').hidden = false;
   } catch (e) { console.error(e); if (my === token) card('We could not display this document', 'Refresh the page and try again.'); }
 }
-async function openPdf(my, path, stamp, canMove, moved) {
+async function openPdf(my, path) {
   let bytes;
   try { bytes = await getBytes(ref(storage, path), 8 * 1024 * 1024); }
-  catch (e) { console.error(e); if (my !== token) return; return card(e?.code === 'storage/object-not-found' ? 'Document not found' : e?.code === 'storage/unauthorized' ? 'You do not have access' : 'We could not open this document', 'Go back and try the link again.'); }
+  catch (e) { console.error(e); if (my !== token) return; return card(e?.code === SC ? 'Document not found' : e?.code === 'storage/unauthorized' ? 'You do not have access' : 'We could not open this document', 'Go back and try the link again.'); }
   if (my !== token) return;
   try {
     if (!window.pdfjsLib) await loadScript('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js');
     pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-    const { stampSvg, stickerSvg } = await import(FORMS + 'engine.js?v=28');
-    pdfBytes = bytes; pdfSticker = stickerOf(path, stamp); pdfStamp = stamp ? { ...stamp } : null;
+    const { stampSvg, stickerSvg } = await import(FORMS + 'engine.js?v=29');
+    pdfBytes = bytes; pdfSticker = stickerOf(path, stampRec);
     const pdf = await pdfjsLib.getDocument({ data: bytes.slice(0) }).promise; if (my !== token) return;
     $('host').innerHTML = '<div id="pdfv"></div>'; const view = $('pdfv'), W = Math.min(816, Math.max(320, view.clientWidth - 24));
     for (let n = 1; n <= pdf.numPages; n++) {
       const pg = await pdf.getPage(n), vp0 = pg.getViewport({ scale: 1 }), sc = (W / vp0.width), vp = pg.getViewport({ scale: sc * 2 }), cv = document.createElement('canvas'), w = document.createElement('div');
       cv.width = vp.width; cv.height = vp.height; w.className = 'pgw'; w.style.width = W + 'px'; w.appendChild(cv); view.appendChild(w);
       await pg.render({ canvasContext: cv.getContext('2d'), viewport: vp }).promise; if (my !== token) return;
-      if (n === 1) { const sk = document.createElement('div'); sk.innerHTML = stickerSvg(pdfSticker); const sv = sk.firstElementChild, sw = +sv.dataset.w; sk.style.cssText = `position:absolute;right:${26 / 8.16}%;bottom:${40 / 10.56}%;width:${sw / 8.16}%;pointer-events:none`; sv.setAttribute('width', '100%'); sv.removeAttribute('height'); w.appendChild(sk); }
-      if (!pdfStamp) { const u = document.createElement('div'); u.className = 'unof'; u.textContent = 'This copy was viewed from the public case record and is not an official or certified document. Contact the Clerk for a certified copy.'; w.appendChild(u); }
+      if (n === 1) { const sk = document.createElement('div'); sk.innerHTML = stickerSvg(pdfSticker, .6); const sv = sk.firstElementChild, sw = +sv.dataset.w * .6; sk.style.cssText = `position:absolute;right:${16 / 8.16}%;bottom:${5 / 10.56}%;width:${sw / 8.16}%;pointer-events:none`; sv.setAttribute('width', '100%'); sv.removeAttribute('height'); w.appendChild(sk); }
     }
-    const pages = [...view.querySelectorAll('.pgw')];
-    if (pdfStamp) {
-      const host = document.createElement('div'); host.innerHTML = stampSvg({ ...pdfStamp, move: canMove }); const sv = host.firstElementChild; sv.style.width = (176 / 816 * 100) + '%'; sv.style.height = 'auto';
-      pages[Math.min(pages.length, Math.max(1, pdfStamp.page || 1)) - 1].appendChild(sv);
-      if (canMove) { $('note').textContent = 'You can drag the stamp to move it.';
-        sv.addEventListener('pointerdown', e => { e.preventDefault(); const r0 = sv.getBoundingClientRect(), gx = e.clientX - r0.left, gy = e.clientY - r0.top; sv.setPointerCapture(e.pointerId); sv.style.cursor = 'grabbing'; let pos = null;
-          const mv = ev => { const g = pages.find(q => { const b = q.getBoundingClientRect(); return ev.clientX >= b.left && ev.clientX <= b.right && ev.clientY >= b.top && ev.clientY <= b.bottom; }) || sv.parentElement, b = g.getBoundingClientRect(), x = Math.min(1 - r0.width / b.width, Math.max(0, (ev.clientX - gx - b.left) / b.width)), y = Math.min(1 - r0.height / b.height, Math.max(0, (ev.clientY - gy - b.top) / b.height));
-            if (g !== sv.parentElement) g.appendChild(sv); sv.style.left = (x * 100).toFixed(3) + '%'; sv.style.top = (y * 100).toFixed(3) + '%'; pos = { x: +x.toFixed(4), y: +y.toFixed(4), page: pages.indexOf(g) + 1 }; };
-          const up = () => { sv.removeEventListener('pointermove', mv); sv.removeEventListener('pointerup', up); sv.style.cursor = 'grab'; if (pos) { pdfStamp = { ...pdfStamp, ...pos }; moved(pos); } };
-          sv.addEventListener('pointermove', mv); sv.addEventListener('pointerup', up); }); }
-    }
-    shown = true; document.title = 'Court document | Michigan Courts'; $('t').textContent = decodeURIComponent(path.split('/').pop()); $('s').textContent = pdfStamp ? `${pdfStamp.label} · ${pdfStamp.date}` : ''; $('acts').hidden = false; $('md').hidden = true; $('pdf').textContent = 'Download PDF';
+    const pages = [...view.querySelectorAll('.pgw')]; pdfStamp = stampRec;
+    /* The stamp: placed by fraction of the page, drawn at the same size as on court forms (176 px on an 816 px page). */
+    const place = () => {
+      view.querySelectorAll('[data-stamp]').forEach(n => n.remove());
+      const host = document.createElement('div'); host.innerHTML = stampSvg({ ...stampRec, move: canMove }); const sv = host.firstElementChild; sv.style.width = (176 * (stampRec.scale || 1) / 816 * 100) + '%'; sv.style.height = 'auto'; sv.removeAttribute('height'); sv.removeAttribute('width');
+      pages[Math.min(pages.length, Math.max(1, stampRec.page || 1)) - 1].appendChild(sv);
+      if (canMove) sv.addEventListener('pointerdown', e => { e.preventDefault(); const r0 = sv.getBoundingClientRect(), gx = e.clientX - r0.left, gy = e.clientY - r0.top; sv.setPointerCapture(e.pointerId); sv.style.cursor = 'grabbing'; let pos = null;
+        const mv = ev => { const g = pages.find(q => { const b = q.getBoundingClientRect(); return ev.clientX >= b.left && ev.clientX <= b.right && ev.clientY >= b.top && ev.clientY <= b.bottom; }) || sv.parentElement, b = g.getBoundingClientRect(), x = Math.min(1 - r0.width / b.width, Math.max(0, (ev.clientX - gx - b.left) / b.width)), y = Math.min(1 - r0.height / b.height, Math.max(0, (ev.clientY - gy - b.top) / b.height));
+          if (g !== sv.parentElement) g.appendChild(sv); sv.style.left = (x * 100).toFixed(3) + '%'; sv.style.top = (y * 100).toFixed(3) + '%'; pos = { x: +x.toFixed(4), y: +y.toFixed(4), page: pages.indexOf(g) + 1 }; };
+        const up = () => { sv.removeEventListener('pointermove', mv); sv.removeEventListener('pointerup', up); sv.style.cursor = 'grab'; if (pos) { stampRec = { ...stampRec, ...pos }; pdfStamp = stampRec; saveStamp(pos); } };
+        sv.addEventListener('pointermove', mv); sv.addEventListener('pointerup', up); });
+    };
+    place(); showControls(() => { pdfStamp = stampRec; place(); }); if (canMove) good('You can drag the stamp to move it.');
+    shown = true; document.title = 'Court document | Michigan Courts'; $('t').textContent = decodeURIComponent(path.split('/').pop()); $('s').textContent = `${stampRec.label} · ${stampRec.date}`; $('acts').hidden = false; $('md').hidden = true; $('pdf').textContent = 'Download PDF';
   } catch (e) { console.error(e); if (my === token) card('We could not display this document', 'Refresh the page and try again.'); }
 }
-/* A downloaded copy carries the stamp: it is drawn onto the original pages where it currently sits. */
+/* A downloaded copy carries the sticker and the stamp, drawn onto the original pages. */
 async function stampedPdf() {
   if (!window.PDFLib) await loadScript('https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js');
-  const { PDFDocument, degrees } = PDFLib, d = await PDFDocument.load(pdfBytes.slice(0));
-  { const { stickerSvg } = await import(FORMS + 'engine.js?v=28'), img = new Image(), K = 4, svg = stickerSvg(pdfSticker, K), sw = +/data-w="(\d+)"/.exec(svg)[1];
-    await new Promise((res, rej) => { img.onload = res; img.onerror = rej; img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg); });
-    const cv = document.createElement('canvas'); cv.width = sw * K; cv.height = 92 * K; cv.getContext('2d').drawImage(img, 0, 0);
-    const png = await d.embedPng(await (await fetch(cv.toDataURL('image/png'))).arrayBuffer()), pg = d.getPages()[0], { width, height } = pg.getSize(), w = width * (sw / 816), h = w * 92 / sw;
-    pg.drawImage(png, { x: width - width * (26 / 816) - w, y: height * (40 / 1056), width: w, height: h }); }
+  const { PDFDocument, degrees } = PDFLib, d = await PDFDocument.load(pdfBytes.slice(0)), { stampSvg, stickerSvg } = await import(FORMS + 'engine.js?v=29'), K = 4;
+  const toPng = async (svg, w, h) => { const img = new Image(); await new Promise((res, rej) => { img.onload = res; img.onerror = rej; img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg); }); const cv = document.createElement('canvas'); cv.width = w; cv.height = h; cv.getContext('2d').drawImage(img, 0, 0, w, h); return d.embedPng(await (await fetch(cv.toDataURL('image/png'))).arrayBuffer()); };
+  { const sk = stickerSvg(pdfSticker, K), sw = +/data-w="(\d+)"/.exec(sk)[1], png = await toPng(sk, sw * K, 92 * K), pg = d.getPages()[0], { width, height } = pg.getSize(), w = width * (sw * .6 / 816), h = w * 92 / sw;
+    pg.drawImage(png, { x: width - width * (16 / 816) - w, y: height * (5 / 1056), width: w, height: h }); }
   if (pdfStamp) {
-    const { stampSvg } = await import(FORMS + 'engine.js?v=28');
-    const svg = stampSvg({ ...pdfStamp, x: 0, y: 0, move: false }).replace(/style="[^"]*"/, 'xmlns="http://www.w3.org/2000/svg"').replace('width="176" height="76"', 'width="660" height="285"');
-    const img = new Image(); await new Promise((res, rej) => { img.onload = res; img.onerror = rej; img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg); });
-    const cv = document.createElement('canvas'); cv.width = 660; cv.height = 285; cv.getContext('2d').drawImage(img, 0, 0);
-    const png = await d.embedPng(await (await fetch(cv.toDataURL('image/png'))).arrayBuffer()), pgs = d.getPages(), pg = pgs[Math.min(pgs.length, Math.max(1, pdfStamp.page || 1)) - 1], { width, height } = pg.getSize(), w = width * (176 / 816), h = w * 95 / 220;
-    pg.drawImage(png, { x: pdfStamp.x * width, y: height - pdfStamp.y * height - h, width: w, height: h, rotate: degrees(3) });
+    const sc = pdfStamp.scale || 1, svg = stampSvg({ ...pdfStamp, x: 0, y: 0, move: false }).replace(/style="[^"]*"/, 'xmlns="http://www.w3.org/2000/svg"').replace(/width="[\d.]+" height="[\d.]+"/, `width="${176 * K}" height="${76 * K}"`);
+    const png = await toPng(svg, 176 * K, 76 * K), pgs = d.getPages(), pg = pgs[Math.min(pgs.length, Math.max(1, pdfStamp.page || 1)) - 1], { width, height } = pg.getSize(), w = width * (176 * sc / 816), h = w * 95 / 220;
+    pg.drawImage(png, { x: pdfStamp.x * width, y: height - pdfStamp.y * height - h, width: w, height: h, rotate: degrees(-(pdfStamp.rot ?? -3)) });
   }
   return d.save();
 }
