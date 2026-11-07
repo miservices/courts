@@ -34,6 +34,10 @@ main{flex:1;display:flex;flex-direction:column;padding:14px 16px 18px;min-height
 .spin{width:22px;height:22px;border:3px solid #b8cdee;border-top-color:var(--navy);border-radius:50%;animation:s .8s linear infinite;margin:0 auto 10px}@keyframes s{to{transform:rotate(360deg)}}
 .ld{text-align:center;margin:12vh auto;color:var(--muted)}
 #note{font-size:12.5px;color:#c6d3ea;min-height:16px;width:100%}
+#pdfv{overflow:auto;height:100%;background:#cfd6e3;border:1px solid var(--line);border-radius:8px;padding:14px 0}
+.pgw{position:relative;margin:0 auto 14px;background:#fff;box-shadow:0 1px 6px rgba(0,0,0,.25)}.pgw canvas{display:block;width:100%;height:auto}
+.unof{position:absolute;left:0;right:0;bottom:0;background:#eef1f6;border-top:2px solid var(--navy);font:11px/15px Arial,sans-serif;color:var(--navy);padding:5px 12px;text-align:center}
+@media print{#pdfv{overflow:visible;background:#fff;border:0;padding:0}.pgw{box-shadow:none;margin:0;break-after:page}header.top{display:none}}
 @media print{header.top{display:none}body{background:#fff}}
 </style>
 </head>
@@ -54,46 +58,110 @@ main{flex:1;display:flex;flex-direction:column;padding:14px 16px 18px;min-height
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
 import { getAuth } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
 import { getStorage, ref, getBytes } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-storage.js";
+import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 
 const app = initializeApp({
   apiKey: "AIzaSyA8sUFIq81cs6uQvqduardpGJ4R2DxO8NQ", authDomain: "micourt-dada6.firebaseapp.com", projectId: "micourt-dada6",
   storageBucket: "micourt-dada6.firebasestorage.app", messagingSenderId: "1013564619997", appId: "1:1013564619997:web:8f259dab457915758f6f34"
 });
-const auth = getAuth(app), storage = getStorage(app);
+const auth = getAuth(app), storage = getStorage(app), db = getFirestore(app);
 const FORMS = '/courts/online-services/portal/dashboard/assets/forms/';
 const PORTAL = 'https://migovt.org/courts/online-services/portal/';
 const $ = id => document.getElementById(id);
-let engine = null, token = 0, shown = false;
+let engine = null, token = 0, shown = false, pdfBytes = null, pdfStamp = null, pdfSticker = null;
+const loadScript = src => new Promise((res, rej) => { const s = document.createElement('script'); s.src = src; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
 
 const card = (title, text, link) => { $('host').innerHTML = `<div class="msg" role="alert"><h1></h1><p></p>${link ? `<a class="btn" href="${link[1]}">${link[0]}</a>` : ''}</div>`; $('host').querySelector('h1').textContent = title; $('host').querySelector('p').textContent = text; $('t').textContent = title; $('s').textContent = ''; $('acts').hidden = true; };
 /* #/filingUploads/<confirmation>/<file>.md  (each part percent-encoded) */
 const pathOf = () => { const h = location.hash.replace(/^#\/?/, ''); if (!h) return null; try { return h.split('/').map(decodeURIComponent).join('/'); } catch { return null; } };
 
+/* The folder sticker: the document ID (the filing number, plus the document's number when it has one), the filing date and the court. */
+const stickerOf = (path, st) => ({ id: (st && st.docId) || path.split('/')[1] || 'DOCUMENT', date: st?.date || '', label: st?.label || '' });
 async function open() {
-  const my = ++token; shown = false; engine?.destroy(); engine = null; $('acts').hidden = true; $('note').textContent = '';
+  const my = ++token; shown = false; pdfBytes = null; pdfStamp = null; $('md').hidden = false; engine?.destroy(); engine = null; $('acts').hidden = true; $('note').textContent = '';
   const path = pathOf();
-  if (!path || !/^(filingUploads|case-orders)\/[^/]+\/[^/]+\.md$/i.test(path)) return card('No document selected', 'This page opens court documents from a link on a docket or filing. Return to the page you came from and choose the document again.', ['Open the Online Portal', PORTAL]);
+  if (!path || !/^(filingUploads|case-orders)\/[^/]+\/[^/]+\.(md|pdf)$/i.test(path)) return card('No document selected', 'This page opens court documents from a link on a docket or filing. Return to the page you came from and choose the document again.', ['Open the Online Portal', PORTAL]);
   $('host').innerHTML = '<div class="ld"><div class="spin"></div>Opening the document…</div>';
   await auth.authStateReady(); if (my !== token) return;
   if (!auth.currentUser) return card('Sign in to view this document', 'Court documents are shown to people who are signed in to the Online Portal. Sign in, then open the document again.', ['Sign in to the Online Portal', PORTAL]);
+  /* The court stamp record (A TRUE COPY, date, court, position), and whether this person may move it: anyone except a public user. */
+  const sref = doc(db, 'docStamps', path.split('/').join('__')); let stamp = null, canMove = false;
+  try { const sn = await getDoc(sref); stamp = sn.exists() ? sn.data() : null; } catch (e) { console.warn('Stamp unavailable', e); }
+  if (stamp) { try { const a = await getDoc(doc(db, 'accounts', auth.currentUser.uid)); const r = a.exists() ? a.data().role : ''; canMove = !!r && r !== 'Public User'; } catch { } }
+  const moved = async p => { try { await setDoc(sref, { ...p, movedBy: auth.currentUser.uid, movedAt: Date.now() }, { merge: true }); stamp = { ...stamp, ...p }; pdfStamp = stamp; $('note').textContent = 'Stamp moved.'; $('note').style.color = '#c6d3ea'; } catch (e) { console.error(e); $('note').textContent = 'We could not save the new stamp position.'; $('note').style.color = '#ffb4ab'; } };
+  if (/\.pdf$/i.test(path)) return openPdf(my, path, stamp, canMove, moved);
   let text;
   try { text = new TextDecoder().decode(await getBytes(ref(storage, path), 4 * 1024 * 1024)); }
   catch (e) { console.error(e); if (my !== token) return; return card(e?.code === 'storage/object-not-found' ? 'Document not found' : e?.code === 'storage/unauthorized' ? 'You do not have access' : 'We could not open this document', e?.code === 'storage/object-not-found' ? 'This document may have been removed.' : e?.code === 'storage/unauthorized' ? 'Your account is not allowed to view this document.' : 'Check your connection and try again.'); }
   if (my !== token) return;
   try {
-    const [{ byNumber }, { formOf, mountForm }] = await Promise.all([import(FORMS + 'registry.js?v=8'), import(FORMS + 'engine.js?v=26')]);
+    const [{ byNumber }, { formOf, mountForm }] = await Promise.all([import(FORMS + 'registry.js?v=8'), import(FORMS + 'engine.js?v=28')]);
     const num = formOf(text), form = num && byNumber(num);
     if (!form) return card('This document cannot be shown', num ? `It was prepared on form "${num}", which this viewer does not support yet.` : 'We could not tell which form this file is for.');
     const def = (await import(`${FORMS}${form.id}.js?v=22`)).default; if (my !== token) return;
     $('host').innerHTML = '';
-    engine = await mountForm(def, $('host'), { md: text, readOnly: true, unofficial: true, onNote: (t, bad) => { if (!shown && !bad) return; $('note').textContent = t; $('note').style.color = bad ? '#ffb4ab' : '#c6d3ea'; } });
+    engine = await mountForm(def, $('host'), { md: text, readOnly: true, unofficial: true, sticker: stickerOf(path, stamp), stamp: stamp ? { label: stamp.label, date: stamp.date, x: stamp.x, y: stamp.y, page: stamp.page } : null, onStampMove: canMove ? moved : null, onNote: (t, bad) => { if (!shown && !bad) return; $('note').textContent = t; $('note').style.color = bad ? '#ffb4ab' : '#c6d3ea'; } });
     if (my !== token) { engine.destroy(); return; }
-    shown = true; const c = engine.getCase(), title = `${def.number} · ${def.title}`;
+    shown = true; if (stamp && canMove) { $('note').textContent = 'You can drag the stamp to move it.'; } const c = engine.getCase(), title = `${def.number} · ${def.title}`;
     $('t').textContent = title; $('s').textContent = [c.caseno && 'Case ' + c.caseno, c.judge].filter(Boolean).join(' · '); document.title = title + ' | Michigan Courts'; $('acts').hidden = false;
   } catch (e) { console.error(e); if (my === token) card('We could not display this document', 'Refresh the page and try again.'); }
 }
-$('pdf').onclick = async () => { $('pdf').disabled = true; try { await engine?.exportPdf(); } finally { $('pdf').disabled = false; } };
-$('prt').onclick = () => engine?.print();
+async function openPdf(my, path, stamp, canMove, moved) {
+  let bytes;
+  try { bytes = await getBytes(ref(storage, path), 8 * 1024 * 1024); }
+  catch (e) { console.error(e); if (my !== token) return; return card(e?.code === 'storage/object-not-found' ? 'Document not found' : e?.code === 'storage/unauthorized' ? 'You do not have access' : 'We could not open this document', 'Go back and try the link again.'); }
+  if (my !== token) return;
+  try {
+    if (!window.pdfjsLib) await loadScript('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js');
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    const { stampSvg, stickerSvg } = await import(FORMS + 'engine.js?v=28');
+    pdfBytes = bytes; pdfSticker = stickerOf(path, stamp); pdfStamp = stamp ? { ...stamp } : null;
+    const pdf = await pdfjsLib.getDocument({ data: bytes.slice(0) }).promise; if (my !== token) return;
+    $('host').innerHTML = '<div id="pdfv"></div>'; const view = $('pdfv'), W = Math.min(816, Math.max(320, view.clientWidth - 24));
+    for (let n = 1; n <= pdf.numPages; n++) {
+      const pg = await pdf.getPage(n), vp0 = pg.getViewport({ scale: 1 }), sc = (W / vp0.width), vp = pg.getViewport({ scale: sc * 2 }), cv = document.createElement('canvas'), w = document.createElement('div');
+      cv.width = vp.width; cv.height = vp.height; w.className = 'pgw'; w.style.width = W + 'px'; w.appendChild(cv); view.appendChild(w);
+      await pg.render({ canvasContext: cv.getContext('2d'), viewport: vp }).promise; if (my !== token) return;
+      if (n === 1) { const sk = document.createElement('div'); sk.innerHTML = stickerSvg(pdfSticker); const sv = sk.firstElementChild, sw = +sv.dataset.w; sk.style.cssText = `position:absolute;right:${26 / 8.16}%;bottom:${40 / 10.56}%;width:${sw / 8.16}%;pointer-events:none`; sv.setAttribute('width', '100%'); sv.removeAttribute('height'); w.appendChild(sk); }
+      if (!pdfStamp) { const u = document.createElement('div'); u.className = 'unof'; u.textContent = 'This copy was viewed from the public case record and is not an official or certified document. Contact the Clerk for a certified copy.'; w.appendChild(u); }
+    }
+    const pages = [...view.querySelectorAll('.pgw')];
+    if (pdfStamp) {
+      const host = document.createElement('div'); host.innerHTML = stampSvg({ ...pdfStamp, move: canMove }); const sv = host.firstElementChild; sv.style.width = (176 / 816 * 100) + '%'; sv.style.height = 'auto';
+      pages[Math.min(pages.length, Math.max(1, pdfStamp.page || 1)) - 1].appendChild(sv);
+      if (canMove) { $('note').textContent = 'You can drag the stamp to move it.';
+        sv.addEventListener('pointerdown', e => { e.preventDefault(); const r0 = sv.getBoundingClientRect(), gx = e.clientX - r0.left, gy = e.clientY - r0.top; sv.setPointerCapture(e.pointerId); sv.style.cursor = 'grabbing'; let pos = null;
+          const mv = ev => { const g = pages.find(q => { const b = q.getBoundingClientRect(); return ev.clientX >= b.left && ev.clientX <= b.right && ev.clientY >= b.top && ev.clientY <= b.bottom; }) || sv.parentElement, b = g.getBoundingClientRect(), x = Math.min(1 - r0.width / b.width, Math.max(0, (ev.clientX - gx - b.left) / b.width)), y = Math.min(1 - r0.height / b.height, Math.max(0, (ev.clientY - gy - b.top) / b.height));
+            if (g !== sv.parentElement) g.appendChild(sv); sv.style.left = (x * 100).toFixed(3) + '%'; sv.style.top = (y * 100).toFixed(3) + '%'; pos = { x: +x.toFixed(4), y: +y.toFixed(4), page: pages.indexOf(g) + 1 }; };
+          const up = () => { sv.removeEventListener('pointermove', mv); sv.removeEventListener('pointerup', up); sv.style.cursor = 'grab'; if (pos) { pdfStamp = { ...pdfStamp, ...pos }; moved(pos); } };
+          sv.addEventListener('pointermove', mv); sv.addEventListener('pointerup', up); }); }
+    }
+    shown = true; document.title = 'Court document | Michigan Courts'; $('t').textContent = decodeURIComponent(path.split('/').pop()); $('s').textContent = pdfStamp ? `${pdfStamp.label} · ${pdfStamp.date}` : ''; $('acts').hidden = false; $('md').hidden = true; $('pdf').textContent = 'Download PDF';
+  } catch (e) { console.error(e); if (my === token) card('We could not display this document', 'Refresh the page and try again.'); }
+}
+/* A downloaded copy carries the stamp: it is drawn onto the original pages where it currently sits. */
+async function stampedPdf() {
+  if (!window.PDFLib) await loadScript('https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js');
+  const { PDFDocument, degrees } = PDFLib, d = await PDFDocument.load(pdfBytes.slice(0));
+  { const { stickerSvg } = await import(FORMS + 'engine.js?v=28'), img = new Image(), K = 4, svg = stickerSvg(pdfSticker, K), sw = +/data-w="(\d+)"/.exec(svg)[1];
+    await new Promise((res, rej) => { img.onload = res; img.onerror = rej; img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg); });
+    const cv = document.createElement('canvas'); cv.width = sw * K; cv.height = 92 * K; cv.getContext('2d').drawImage(img, 0, 0);
+    const png = await d.embedPng(await (await fetch(cv.toDataURL('image/png'))).arrayBuffer()), pg = d.getPages()[0], { width, height } = pg.getSize(), w = width * (sw / 816), h = w * 92 / sw;
+    pg.drawImage(png, { x: width - width * (26 / 816) - w, y: height * (40 / 1056), width: w, height: h }); }
+  if (pdfStamp) {
+    const { stampSvg } = await import(FORMS + 'engine.js?v=28');
+    const svg = stampSvg({ ...pdfStamp, x: 0, y: 0, move: false }).replace(/style="[^"]*"/, 'xmlns="http://www.w3.org/2000/svg"').replace('width="176" height="76"', 'width="660" height="285"');
+    const img = new Image(); await new Promise((res, rej) => { img.onload = res; img.onerror = rej; img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg); });
+    const cv = document.createElement('canvas'); cv.width = 660; cv.height = 285; cv.getContext('2d').drawImage(img, 0, 0);
+    const png = await d.embedPng(await (await fetch(cv.toDataURL('image/png'))).arrayBuffer()), pgs = d.getPages(), pg = pgs[Math.min(pgs.length, Math.max(1, pdfStamp.page || 1)) - 1], { width, height } = pg.getSize(), w = width * (176 / 816), h = w * 95 / 220;
+    pg.drawImage(png, { x: pdfStamp.x * width, y: height - pdfStamp.y * height - h, width: w, height: h, rotate: degrees(3) });
+  }
+  return d.save();
+}
+$('pdf').onclick = async () => {
+  if (pdfBytes) { $('pdf').disabled = true; try { const out = await stampedPdf(), a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([out], { type: 'application/pdf' })); a.download = ($('t').textContent || 'document.pdf').replace(/[^\w.\- ]+/g, '_'); document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 100); } catch (e) { console.error(e); $('note').textContent = 'We could not make the PDF. Use Print instead.'; $('note').style.color = '#ffb4ab'; } finally { $('pdf').disabled = false; } return; }
+ $('pdf').disabled = true; try { await engine?.exportPdf(); } finally { $('pdf').disabled = false; } };
+$('prt').onclick = () => pdfBytes ? window.print() : engine?.print();
 $('md').onclick = () => engine?.exportMd();
 addEventListener('hashchange', open);
 open();

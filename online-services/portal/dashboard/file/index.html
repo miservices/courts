@@ -370,8 +370,13 @@ async function submit() {
       }
       const d = { type: 'pdf', name: f.file.name, size: f.file.size, documentType: f.type, fee: fee(f.type, court), fileUrl: null };
       const path = `filingUploads/${conf}/${Date.now()}-${f.file.name}`, r = st.ref(st.getStorage(app), path);
-      await st.uploadBytes(r, f.file, { contentType: 'application/pdf' }); d.fileUrl = await st.getDownloadURL(r); d.storagePath = path; documents.push(d);
+      await st.uploadBytes(r, f.file, { contentType: 'application/pdf' }); d.downloadUrl = await st.getDownloadURL(r); d.fileUrl = viewerUrl(path); d.storagePath = path; documents.push(d);   // opened in the court viewer so the "A TRUE COPY" stamp shows
     }
+    /* Every filed document (court form or PDF) gets a court stamp record: "A TRUE COPY", the filing date and the court. It starts in the top right; the clerk can move it later. Best effort. */
+    try {
+      const dt = new Date(), ds = `${String(dt.getMonth() + 1).padStart(2, '0')}/${String(dt.getDate()).padStart(2, '0')}/${dt.getFullYear()}`, label = court === SUPREME_COURT ? 'MI SUPREME COURT' : '7TH DISTRICT COURT';
+      await Promise.all(documents.filter(x => x.storagePath).map((x, i) => setDoc(doc(db, 'docStamps', x.storagePath.split('/').join('__')), { path: x.storagePath, docId: documents.length > 1 ? `${conf}-${i + 1}` : conf, label, date: ds, x: 0.7, y: 0.004, page: 1, filedByUid: account.uid, confirmationNumber: conf, filedAt: Date.now() })));
+    } catch (e) { console.warn('Could not save the court stamp', e); }
     S.links.forEach(l => documents.push({ type: 'gdrive', name: 'Google Drive Document', link: l.url.trim(), documentType: l.type, fee: fee(l.type, court) }));
 
     const obj = { confirmationNumber: conf, filingType: S.type, court, caseType: isNew ? S.ctype : S.kase.caseType || '', documentType: documents[0]?.documentType || 'Appearance (MC 02)',
