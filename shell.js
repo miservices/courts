@@ -229,7 +229,7 @@
     return `<footer class="mc-shell-footer">
       <div class="mc-shell-footer-main">
         <div class="mc-shell-footer-brand">${SEAL}
-          <div><strong>Michigan Courts</strong><span>State Court Administrative Office<br>P.O. Box 30048, Lansing, MI 48909</span></div>
+          <div><strong>Michigan Courts</strong><span>State Court Administrative Office<br>P.O. Box 30048, Flint, MI 48502</span></div>
         </div>
         ${footerCol('Supreme Court', group('directory', 0).links)}
         ${footerCol('Offices & agencies', group('directory', 1).links)}
