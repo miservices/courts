@@ -96,7 +96,7 @@ const panel = `
  <textarea id="other" rows="2" placeholder="Other (describe)"></textarea>
  <div class="row"><div><label>Agency</label><input type="text" id="agency"></div><div><label>Title</label><input type="text" id="title"></div></div>
  <div class="row"><div><label>Badge No.</label><input type="text" id="badge"></div><div><label>Name (type or print)</label><input type="text" id="aname" data-font="none"></div></div>
- <div class="row"><div><label>Date</label><input type="text" id="d3" data-font="none"></div><div><label>Electronic signature (/s/)</label><input type="text" id="esig" data-font="none"></div></div>
+ <div class="row"><div><label>Date</label><input type="text" id="d3" data-font="none"></div><div><label>Affiant signature (/s/)</label><input type="text" id="esig" data-font="none"></div></div>
 `;
 
 const hdr=(P,B,mid,j,c)=>`<div class="hd"><div class="h1"><div class="b" style="padding-left:${P(33.5)}">STATE OF MICHIGAN</div><div class="r">THE DISTRICT COURT FOR</div><div class="r">GENESEE COUNTY</div></div><div class="h2">${mid}</div><div class="h3"><div><b>JUDGE</b><span class="jv">${j}</span></div><div><b>CASE NO.</b><span class="jv">${c}</span></div></div></div>`;
@@ -105,6 +105,16 @@ const blank=(v,b)=>v||b;
 const cb=(on,key)=>`<div class="cb"${key?` data-chk="${key}" title="Click to check or uncheck"`:''}>${on?'✓':''}</div>`;
 
 
+const PEN={imp:'imprisonment',fine:'a fine',and:'imprisonment and a fine',or:'imprisonment or a fine',orboth:'imprisonment or a fine, or both'};
+function penal(i,e,api){
+ const k=api.qa('.cnt')[i].querySelector('.f-pt').value||'orboth';
+ const imp=`imprisonment for not more than ${e('mi','___')} minutes ${e('se','___')} seconds`, fin=`a fine of not more than $${e('fi','______')}`;
+ if(k==='imp')return `punishable by ${imp}.`;
+ if(k==='fine')return `punishable by ${fin}.`;
+ if(k==='and')return `punishable by ${imp}, and ${fin}.`;
+ if(k==='or')return `punishable by ${imp}, or ${fin}.`;
+ return `punishable by ${imp}, or ${fin}, or both.`;
+}
 function build(api){
  const {$,qa,P,B,esc}=api, V=api.val, E=api.ed;
  const seq=[];
@@ -119,7 +129,7 @@ function build(api){
  seq.push({html:`<div class="ip">The complaining witness, upon a sworn complaint, states that on or about the date range provided above, in Genesee County, Michigan, the defendant, did:</div>`});
  [...qa('.cnt')].forEach((c,i)=>{
   const e=(k,blank,style)=>E('@'+i+'.'+k,{blank,style});
-  seq.push({html:`<div class="cn ${i?'':'cn0'}"><div class="ct">COUNT ${i+1}: ${e('ch','[CHARGE NAME]','text-transform:uppercase')}</div><div class="cx">${e('cl','[CLASSIFICATION]')}: punishable by imprisonment for not more than ${e('mi','___')} minutes ${e('se','___')} seconds, or a fine of not more than $${e('fi','______')} or both.</div></div>`});
+  seq.push({html:`<div class="cn ${i?'':'cn0'}"><div class="ct">COUNT ${i+1}: ${e('ch','[CHARGE NAME]','text-transform:uppercase')}</div><div class="cx">${e('cl','[CLASSIFICATION]')}${(api.qa('.cnt')[i].querySelector('.f-st').value.trim())?' ('+e('st','')+')':''}: ${penal(i,e,api)}</div></div>`});
  });
  seq.push({html:`<div class="ip" style="padding-top:${P(37)}">The complaining witness asks that the defendant be apprehended and dealt with according to law.</div>
   <div class="sr"><div class="sc" style="width:${P(98)}"><div class="sv lf"><div class="in">${E('d1')}</div></div><div class="sl">Date</div></div><div class="sc" style="margin-left:${P(199)};width:${P(99)}"><div class="sv lf"><div class="in">${E('d2')}</div></div><div class="sl">Date</div></div></div>
@@ -151,7 +161,7 @@ function build(api){
   <div class="at"><div><div class="lb">Agency</div><div class="vv">${E('agency')}</div></div><div><div class="lb">Title</div><div class="vv">${E('title')}</div></div><div><div class="lb">Badge No.</div><div class="vv">${E('badge')}</div></div><div><div class="lb">Name (type or print)</div><div class="vv">${E('aname')}</div></div></div>
   <div class="ad"><div style="width:${P(208)};padding-left:${P(5)};font-size:${P(7.5)};line-height:${P(9.3)};padding-top:${P(0)}">I declare under the penalties of perjury that this affidavit has been examined by me and that its contents are true to the best of my information, knowledge and belief.</div>
    <div class="sc" style="margin-left:${P(25)};width:${P(70)}"><div class="sv lf"><div class="in">${E('d3')}</div></div><div class="sl">Date</div></div>
-   <div class="sc" style="margin-left:${P(26)};width:${P(162)}"><div class="sv" style="text-align:left;padding-left:${P(6)}"><div class="in">${E('esig',{pre:'/s/ '})}</div></div><div class="sl" style="padding-left:${P(6)}">Affiant electronic signature</div></div></div>`});
+   <div class="sc" style="margin-left:${P(26)};width:${P(162)}"><div class="sv" style="text-align:left;padding-left:${P(6)}"><div class="in">${E('esig',{pre:'/s/ '})}</div></div><div class="sl" style="padding-left:${P(6)}">Affiant signature</div></div></div>`});
  return seq;
 }
 
@@ -160,23 +170,25 @@ function addCount(api) {
   const d = document.createElement('div'); d.className = 'cnt';
   d.innerHTML = `<div class="top"><b class="cn-n"></b><button type="button" class="rm">Remove</button></div>
  <label>Charge name</label><input type="text" class="f-ch">
+ <label>Statute (e.g. MCL 750.316)</label><input type="text" class="f-st">
  <label>Classification (e.g. Misdemeanor)</label><input type="text" class="f-cl">
+ <label>Penalty</label><select class="f-pt"><option value="orboth">Imprisonment or a fine, or both</option><option value="imp">Imprisonment only</option><option value="fine">Fine only</option><option value="and">Imprisonment and a fine</option><option value="or">Imprisonment or a fine</option></select>
  <div class="row r3"><div><label>Minutes</label><input type="text" class="f-mi"></div><div><label>Seconds</label><input type="text" class="f-se"></div><div><label>Fine $</label><input type="text" class="f-fi"></div></div>`;
   d.querySelector('.rm').onclick = () => { d.remove(); numberCounts(api); api.render(); };
   api.$('counts').appendChild(d); numberCounts(api); return d;
 }
 function numberCounts(api) { const l = api.qa('.cnt'); l.forEach((c, i) => { c.querySelector('.cn-n').textContent = 'Count ' + (i + 1); c.querySelector('.rm').style.display = l.length > 1 ? '' : 'none'; }); }
-const CNT = [['ch', 'Charge name'], ['cl', 'Classification'], ['mi', 'Minutes'], ['se', 'Seconds'], ['fi', 'Fine']];
+const CNT = [['ch', 'Charge name'], ['st', 'Statute'], ['cl', 'Classification'], ['pt', 'Penalty'], ['mi', 'Minutes'], ['se', 'Seconds'], ['fi', 'Fine']];
 
 export default {
   opensCase: true,
-  id: 'mc200a', number: 'MC 200A', title: 'Criminal Complaint and Affidavit of Probable Cause', footer: 'MC 200A',
+  id: 'mc200a', number: 'MC 200', title: 'Criminal Complaint Packet', footer: 'MC 200',
   css, panel,
   init(api) { addCount(api); api.$('addc').onclick = () => { addCount(api); api.render(); }; },
   contHeader: api => `<div class="ch">Case Number: <span class="u">${api.ed('caseno')}</span></div>`,
   resolve: (api, k) => { const m = /^(\d+)\.(\w+)$/.exec(k); return m && api.qa('.cnt')[+m[1]]?.querySelector('.f-' + m[2]); },
   build,
-  courtKeys: ['ordsel', 'od', 'jname', 'jsig'], courtNote: 'The order is completed by the judge or magistrate, or by court staff for them. Only the judge or magistrate can sign it: staff share the document with them as "Can sign only".',
+  courtKeys: ['ordsel', 'od', 'jname', 'jsig'], courtNote: 'The order is completed by the judge or magistrate, or by court staff for them.',
   roles: [
     { id: 'cw', label: 'Complaining witness', fill: (api, w) => ({ cw: w.name, sig1: w.name, d1: w.today }) },
     { id: 'affiant', label: 'Affiant', hint: 'usually the complaining witness too', fill: (api, w) => ({ aff: w.name, aname: w.name, esig: w.name, d3: w.today, agency: w.org, title: w.title, badge: w.badge }) },
@@ -185,7 +197,7 @@ export default {
     { id: 'chambers', label: 'Court staff completing the order for the judge', hint: 'fills the date only; use Sign on the judge\'s line to sign for them, or share the document so the judge can sign', for: /law clerk|judicial assistant|deputy clerk|county clerk|court administrator|court reporter/i, fill: (api, w) => ({ od: w.today }) }
   ],
   md: { alias: { 'defendant full name': 'def' }, malias: { 'defendant full name and address': 'def' },
-    migrate: r => { const d = r.multi.def ?? r.single.def; if (d !== undefined && r.single.defn === undefined && r.multi.defa === undefined) { const [n, ...rest] = String(d).split('\n'); r.single.defn = n.trim(); r.multi.defa = rest.join('\n').trim(); } delete r.multi.def; delete r.single.def; }, title: 'Criminal Complaint and Affidavit of Probable Cause', sections: [
+    migrate: r => { const d = r.multi.def ?? r.single.def; if (d !== undefined && r.single.defn === undefined && r.multi.defa === undefined) { const [n, ...rest] = String(d).split('\n'); r.single.defn = n.trim(); r.multi.defa = rest.join('\n').trim(); } delete r.multi.def; delete r.single.def; }, title: 'Criminal Complaint Packet', sections: [
     { name: 'Parties and venue', fields: [['judge','Judge'],['caseno','Case No.'],['victim','Victim or complainant'],['cw','Complaining witness'],['defn','Defendant name'],['codef','Co-defendants'],['city','City/Twp/Village'],['county','County'],['date','Date on or about']],
       multi: [['defa','Defendant address'],['wit','Witnesses']],
       groups: [{ heading: 'Counts', item: 'Count', fields: CNT,
@@ -193,7 +205,7 @@ export default {
         set(api, items) { api.$('counts').innerHTML = ''; (items.length ? items : [{}]).forEach(it => { const d = addCount(api); CNT.forEach(([k]) => d.querySelector('.f-' + k).value = it[k] || ''); }); numberCounts(api); } }] },
     { name: 'Complaint signatures', fields: [['d1','Complaint date (witness)'],['d2','Complaint date (prosecutor)'],['sig1','Complaining witness signature'],['sig2','Prosecutor signature']] },
     { name: 'Order', fields: [['ordsel','Order selection (0 none, 1 warrant, 2 summons, 3 rejected)'],['od','Order date'],['jname','Judge or magistrate name'],['jsig','Judge or magistrate signature']] },
-    { name: 'Affidavit', fields: [['aff','Affiant name'],['b1','Basis - personal observations'],['b2','Basis - statements by witnesses or victims'],['b3','Basis - physical evidence'],['b4','Basis - records or documents'],['b5','Basis - other'],['agency','Agency'],['title','Title'],['badge','Badge No.'],['aname','Affiant name (printed)'],['d3','Affidavit date'],['esig','Affiant electronic signature']],
+    { name: 'Affidavit', fields: [['aff','Affiant name'],['b1','Basis - personal observations'],['b2','Basis - statements by witnesses or victims'],['b3','Basis - physical evidence'],['b4','Basis - records or documents'],['b5','Basis - other'],['agency','Agency'],['title','Title'],['badge','Badge No.'],['aname','Affiant name (printed)'],['d3','Affidavit date'],['esig','Affiant signature']],
       multi: [['narr','Narrative'],['other','Other basis']] }
   ] }
 };

@@ -28,3 +28,14 @@ export function canLink(c, account, uid, staff) {
   if ((c.relatedUserIds || []).includes(uid)) return true;
   return plist(c).some(p => norm(p.name) === me || counselOf(p).some(a => norm(a.name) === me || (bar && String(a.barNumber || '').trim() === bar)));
 }
+
+/* The scheduled hearing of a kind (e.g. /arraign/i) as form text: the next one that has no result yet, otherwise the latest. */
+export function hearingFill(c, re) {
+  const l = (c.hearings || []).filter(h => re.test(h.type || '') && h.date && !isNaN(new Date(h.date))).sort((a, b) => new Date(a.date) - new Date(b.date));
+  if (!l.length) return null;
+  const open = l.find(h => !String(h.result || '').trim() && h.result !== 'Cancelled'), h = open || l[l.length - 1], d = new Date(h.date);
+  const p = n => String(n).padStart(2, '0'), hrs = d.getHours(), timed = !(hrs === 0 && d.getMinutes() === 0);
+  return { date: `${p(d.getMonth() + 1)}/${p(d.getDate())}/${d.getFullYear()}`, time: timed ? `${hrs % 12 || 12}:${p(d.getMinutes())} ${hrs < 12 ? 'AM' : 'PM'}` : '' };
+}
+/* "FIRST-DEGREE MURDER (MCL 750.316)" */
+export const chargeLine = ch => { const n = String(ch.chargeName || ch.title || '').trim().toUpperCase(), s = String(ch.statute || '').trim(); return s ? `${n} (${s})` : n; };

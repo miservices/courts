@@ -29,7 +29,7 @@
 
 <script type="module">
 import { boot, db, app, $, esc, has, ATTY, STAFF, CASE_CODES, DISTRICT_COURT, SUPREME_COURT, reserveCaseNumber, reserveFilingNumber, colFor } from '/courts/online-services/portal/dashboard/assets/js/portal-shell.js?v=7';
-import { byNumber as formByNumber } from '/courts/online-services/portal/dashboard/assets/forms/registry.js?v=4';
+import { byNumber as formByNumber } from '/courts/online-services/portal/dashboard/assets/forms/registry.js?v=8';
 import { firebaseBackend } from '/courts/online-services/portal/dashboard/assets/forms/backend.js?v=4';
 import { collection, getDocs, addDoc, query, where, doc, getDoc, updateDoc, setDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 
@@ -336,6 +336,17 @@ function check() {
 }
 
 /* ── Submit ─────────────────────────────────────────────────────────── */
+
+/* Charges listed on a criminal complaint (the "### Count N" blocks of the .md) become the case's charges. ALL CAPS names are converted to normal capitalization. */
+const SMALL = new Set(['of', 'the', 'a', 'an', 'and', 'or', 'in', 'on', 'to', 'for', 'with', 'by', 'at', 'from']);
+const niceCase = n => { n = String(n || '').trim(); if (!n || /[a-z]/.test(n)) return n; return n.toLowerCase().replace(/[a-z0-9']+/g, (w, i) => i > 0 && SMALL.has(w) ? w : w[0].toUpperCase() + w.slice(1)); };
+function chargesOf(text) {
+  const out = [], parts = String(text).replace(/\r/g, '').split(/^### Count \d+\s*$/m).slice(1);
+  parts.forEach(b => { const g = l => { const m = new RegExp('^- ' + l + ':[ \\t]*(.*)$', 'mi').exec(b); return m ? m[1].trim() : ''; };
+    const name = niceCase(g('Charge name')); if (!name) return;
+    const cl = g('Classification'); out.push({ chargeName: name, statute: g('Statute') || null, classification: cl ? cl[0].toUpperCase() + cl.slice(1).toLowerCase() : null, disposition: 'Pending', count: out.length + 1 }); });
+  return out;
+}
 async function submit() {
   S.busy = true; S.err = ''; render();
   try {
@@ -369,6 +380,7 @@ async function submit() {
       filedBy: account.name, filedByUid: account.uid, isFilingAsCounsel: counsel, counselRepresents: counsel ? repNames : null, barNumber: counsel ? account.barNumber || null : null,
       dateFiled: now, status: 'Pending', accepted: false, urgent: false,
       ...(documents.some(d => /\bMC 20\b/.test(d.documentType || '')) ? { feeWaiver: { status: 'Pending clerk review', decisions: [] } } : {}) };
+    if (isNew) { const chg = S.files.filter(f => f.md && f.md.number === 'MC 200').flatMap(f => chargesOf(f.md.text)); if (chg.length) obj.charges = chg; }
     if (isNew) { obj.reservedCaseId = caseNo; if (S.lower && court === SUPREME_COURT) obj.lowerCourt = S.lower; }
     else {
       obj.caseId = S.kase.caseId; obj.caseFirestoreId = S.kase._id;

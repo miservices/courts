@@ -220,8 +220,8 @@ dialog.cdlg{width:min(440px,calc(100vw - 24px))}
 
 <script type="module">
 import { boot, db, app, $, esc, has, STAFF } from '/courts/online-services/portal/dashboard/assets/js/portal-shell.js?v=7';
-import { FORMS, byId, byNumber } from '/courts/online-services/portal/dashboard/assets/forms/registry.js?v=7';
-import { mountForm, formOf, fontAllowed, fontFits, fontLock, fontCss, GFONTS, FONT_TYPES, FONT_WARNING } from '/courts/online-services/portal/dashboard/assets/forms/engine.js?v=24';
+import { FORMS, byId, byNumber } from '/courts/online-services/portal/dashboard/assets/forms/registry.js?v=8';
+import { mountForm, formOf, fontAllowed, fontFits, fontLock, fontCss, GFONTS, FONT_TYPES, FONT_WARNING } from '/courts/online-services/portal/dashboard/assets/forms/engine.js?v=26';
 import { canLink, caption as capOf, judgeName, judgeLine } from '/courts/online-services/portal/dashboard/assets/forms/caseinfo.js?v=1';
 import { DraftSession, accessOf, roleIn } from '/courts/online-services/portal/dashboard/assets/forms/drafts.js?v=3';
 import { firebaseBackend } from '/courts/online-services/portal/dashboard/assets/forms/backend.js?v=10';
@@ -344,11 +344,11 @@ async function editor({ form, docId, md0 }) {
   const canEdit = access === 'edit', canSign = access === 'sign', title0 = meta?.title || `${form.number} – ${new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
   root.innerHTML = `<div class="fd-top fd-bar"><a class="fd-back" href="${BASE}#" id="fd-back"><svg viewBox="0 0 20 20" width="16" height="16" aria-hidden="true"><path d="M12.5 4 6.5 10l6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>All documents</a><input id="fd-title" class="fd-title" type="text" maxlength="120" aria-label="Document name" value="${esc(title0)}"${canEdit ? '' : ' readonly'}><span class="m">${esc(form.number)}${canEdit ? '' : canSign ? ' · Signature only' : ' · View only'}</span></div><div id="fd-host"><div class="loading-inline"><span class="spin-sm"></span>Loading form…</div></div>`;
   try {
-    const def = (await import(`${FORMS_PATH}${form.id}.js?v=21`)).default; if (my !== gen) return;
+    const def = (await import(`${FORMS_PATH}${form.id}.js?v=22`)).default; if (my !== gen) return;
     let session = null;
     if (favCache === null) { favCache = await be.getFavs(uid); if (favCache === null) { try { favCache = JSON.parse(localStorage.getItem('fd-font-favs') || '[]'); } catch { favCache = []; } } if (my !== gen) return; }
     const sInfo = await be.getSignatureInfo(uid), signature = sInfo.png; if (my !== gen) return;
-    const engine = await mountForm(def, $('fd-host'), { account, role, signature, sigPref: sInfo.pref, uid, onSaveSig: png => be.setSignature(uid, png), onRemoveSig: () => be.setSignature(uid, ''), onSavePref: p => be.setSigPref(uid, p), onCaseLink: () => openCases(), signKeys: canSign ? (meta?.signKeys?.[uid] || []) : null, favs: favCache, onFavs: l => { favCache = l; try { localStorage.setItem('fd-font-favs', JSON.stringify(l)); } catch { } be.setFavs(uid, l).catch(e => console.warn('Favorites not saved', e)); }, md: text ?? md0, readOnly: !canEdit, fileLabel: has(STAFF, role) ? 'Enter order' : 'File', settingsUrl: SIG_URL, onSigInfo: async () => { if (await ask({ title: 'About signatures', message: 'Signing is done with the Sign button next to the signature line in the panel. Your signature picture and /s/ preference are in Account Settings.', ok: 'Open Settings', cancel: 'Not now' })) location.href = SIG_URL; }, actions: canEdit ? ['save', 'share', 'signshare', 'file'] : [], onEdit: () => session?.touch(),
+    const engine = await mountForm(def, $('fd-host'), { account, role, signature, sigPref: sInfo.pref, sysFont: (settings?.fonts?.case?.f && fontAllowed(settings.fonts.case.f, role, 'sig')) ? settings.fonts.case.f : '', uid, onSaveSig: png => be.setSignature(uid, png), onRemoveSig: () => be.setSignature(uid, ''), onSavePref: p => be.setSigPref(uid, p), onCaseLink: () => openCases(), signKeys: canSign ? (meta?.signKeys?.[uid] || []) : null, favs: favCache, onFavs: l => { favCache = l; try { localStorage.setItem('fd-font-favs', JSON.stringify(l)); } catch { } be.setFavs(uid, l).catch(e => console.warn('Favorites not saved', e)); }, md: text ?? md0, readOnly: !canEdit, fileLabel: has(STAFF, role) ? 'Enter order' : 'File', settingsUrl: SIG_URL, onSigInfo: async () => { if (await ask({ title: 'About signatures', message: 'Signing is done with the Sign button next to the signature line in the panel. Your signature picture and /s/ preference are in Account Settings.', ok: 'Open Settings', cancel: 'Not now' })) location.href = SIG_URL; }, actions: canEdit ? ['save', 'share', 'signshare', 'file'] : [], onEdit: () => session?.touch(),
       onFontNotice: () => ask({ title: 'Keep your text readable', message: FONT_WARNING, ok: 'I understand', info: true }),
       onAction: a => a === 'save' ? session.save(true) : a === 'share' ? openShare('share') : a === 'signshare' ? openShare('sign') : fileIt(def) });
     if (my !== gen) { engine.destroy(); return; }
@@ -536,19 +536,20 @@ async function settingsView() {
       <a class="btn outline" href="https://migovt.org/courts/online-services/portal/dashboard/settings/#signature">${mySig ? 'Change or remove signature' : 'Add a signature'}</a></section>
     <section class="card"><h3>Document fonts</h3><p class="m">New documents start with these fonts. You can still change fonts inside any document.</p>
       ${row('body', 'Default text', 'The main text of the form', '<option value="">Arial (standard)</option>')}${row('date', 'Date blocks', 'Dates beside a signature', '<option value="">Same as default text</option>')}${row('sig', 'Signature blocks', 'Signatures and typed names', '<option value="">Same as default text</option>')}
+      <div class="st-r"><div class="st-t"><b>Case number and judge</b><small class="fd-hint">Starts as the document's own font. Handwriting or cursive is fine here; the size always matches the document.</small></div>${fontSel('case', '<option value="">Same as document text</option>')}<div class="st-p" id="st-case-p"></div></div>
       <div class="fd-warn" id="st-warn" role="note" hidden>${esc(FONT_WARNING)}</div>
       <div class="fd-top" style="margin-top:14px"><button class="btn" type="button" id="st-save">Save settings</button><button class="btn outline" type="button" id="st-reset">Use standard fonts</button><span class="m" id="st-msg" role="status"></span></div></section>
     <section class="card"><h3>Favorite fonts</h3><div id="st-fav"></div></section>`;
-  const paintPrev = () => ['body', 'date', 'sig'].forEach(k => { const f = $(`st-${k}-f`).value, p = $(`st-${k}-p`); p.innerHTML = f ? `<span style="${fontCss(f)}">${esc(k === 'date' ? '10/05/2026' : 'Jane Q. Public')}</span>` : ''; });
+  const paintPrev = () => ['body', 'date', 'sig', 'case'].forEach(k => { const f = $(`st-${k}-f`).value, p = $(`st-${k}-p`); p.innerHTML = f ? `<span style="${fontCss(f)}">${esc(k === 'date' ? '10/05/2026' : k === 'case' ? '2026-000123-FH' : 'Jane Q. Public')}</span>` : ''; });
   const warn = () => { const f = $('st-body-f').value; $('st-warn').hidden = !f || FONT_TYPES.find(t => t.fonts.includes(f))?.id === 'default'; };
   const favs = () => { $('st-fav').innerHTML = favCache.length ? favCache.map(f => `<span class="st-chip" style="${fontCss(f)}">${esc(f)}<button type="button" data-unfav="${esc(f)}" aria-label="Remove ${esc(f)} from favorites">\u00d7</button></span>`).join('') : '<p class="m">No favorites yet. Use the star in the font list inside a document.</p>'; };
   paintPrev(); warn(); favs();
-  root.onchange = e => { if (/^st-(body|date|sig)-f$/.test(e.target.id)) { paintPrev(); if (e.target.id === 'st-body-f') { const was = !$('st-warn').hidden; warn(); if (!$('st-warn').hidden && !was) ask({ title: 'Keep your text readable', message: FONT_WARNING, ok: 'I understand', info: true }); } } };
+  root.onchange = e => { if (/^st-(body|date|sig|case)-f$/.test(e.target.id)) { paintPrev(); if (e.target.id === 'st-body-f') { const was = !$('st-warn').hidden; warn(); if (!$('st-warn').hidden && !was) ask({ title: 'Keep your text readable', message: FONT_WARNING, ok: 'I understand', info: true }); } } };
   root.onclick = async e => {
     const u = e.target.closest('[data-unfav]'); if (u) { favCache = favCache.filter(f => f !== u.dataset.unfav); try { localStorage.setItem('fd-font-favs', JSON.stringify(favCache)); } catch { } be.setFavs(uid, favCache).catch(er => console.warn(er)); favs(); return; }
-    if (e.target.id === 'st-reset') { ['body', 'date', 'sig'].forEach(k => { $(`st-${k}-f`).value = ''; $(`st-${k}-s`).value = ''; }); paintPrev(); warn(); return; }
+    if (e.target.id === 'st-reset') { ['body', 'date', 'sig', 'case'].forEach(k => { $(`st-${k}-f`).value = ''; const z = $(`st-${k}-s`); if (z) z.value = ''; }); paintPrev(); warn(); return; }
     if (e.target.id !== 'st-save') return;
-    const v = { fonts: Object.fromEntries(['body', 'date', 'sig'].map(k => [k, { f: $(`st-${k}-f`).value, s: +$(`st-${k}-s`).value || 0 }])) };
+    const v = { fonts: { ...Object.fromEntries(['body', 'date', 'sig'].map(k => [k, { f: $(`st-${k}-f`).value, s: +$(`st-${k}-s`).value || 0 }])), case: { f: $('st-case-f').value, s: 0 } } };
     $('st-msg').textContent = 'Saving\u2026';
     try { await be.setSettings(uid, v); settings = v; try { localStorage.setItem(SET_KEY, JSON.stringify(v)); } catch { } $('st-msg').textContent = 'Saved.'; }
     catch (er) { console.error(er); settings = v; try { localStorage.setItem(SET_KEY, JSON.stringify(v)); } catch { } $('st-msg').textContent = 'Saved on this device only. We could not reach your account.'; }

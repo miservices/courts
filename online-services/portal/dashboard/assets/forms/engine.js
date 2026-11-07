@@ -22,6 +22,8 @@ const H2P = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.
 const norm = t => String(t || '').toLowerCase().replace(/\s+/g, ' ').trim();
 export const keyOf = s => String(s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
 
+/* Public-record copies: an engraved notice across the page and a strip at the foot of every page (also carried into print and PDF). */
+const UNOFF_W = `<div style="position:absolute;left:0;right:0;top:0;bottom:0;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:0"><div style="font:bold 66px/1.12 Georgia,'Times New Roman',serif;letter-spacing:.14em;text-align:center;color:#e4e7ee;text-shadow:1px 1px 0 #fff,-1px -1px 1px rgba(0,0,0,.30),0 0 8px rgba(0,0,0,.05);-webkit-user-select:none;user-select:none">NOT AN<br>OFFICIAL<br>RECORD</div></div>`, UNOFF_F = `<div style="position:absolute;left:0;right:0;bottom:0;z-index:6;background:#eef1f6;border-top:2px solid #10264a;font:9px/13px Arial,Helvetica,sans-serif;color:#10264a;padding:4px 12px 5px;text-align:center;pointer-events:none">This copy was viewed from the public case record and is not an official or certified document. Contact the Clerk for a certified copy.</div>`;
 const BASE_CSS = `#preview.ro [data-f],#preview.ro [data-chk],#preview.ro [data-sel] .cb{background:none!important;outline:none!important;cursor:default!important}#preview.ro [data-f]:empty::before{content:none!important}
 @page{size:letter;margin:0}*{box-sizing:border-box}
 html{overflow-y:scroll}
@@ -85,7 +87,7 @@ export function formOf(text) {   // which form a saved .md belongs to, or null
 /* Reads a saved .md into plain data (no page needed). */
 export function parseMd(def, txt) {
   const lines = txt.replace(/\r/g, '').split('\n');
-  if (keyOf(formOf(txt)) !== keyOf(def.number)) throw new Error(`This file is not a ${def.number} form (no "form: ${def.number}" found).`);
+  if ((k => k === 'mc200a' ? 'mc200' : k)(keyOf(formOf(txt))) !== keyOf(def.number)) throw new Error(`This file is not a ${def.number} form (no "form: ${def.number}" found).`);
   const single = {}, multi = {}, styles = {}, found = new Map(), records = { signed: {}, pending: {}, lc: {} }; let curGroup = null, curItem = null, i = 0, mode = '';
   const sl = {}, ml = {}, groups = []; def.md.sections.forEach(s => { (s.fields || []).forEach(([id, l]) => sl[norm(l)] = id); (s.multi || []).forEach(([id, l]) => ml[norm(l)] = id); (s.groups || []).forEach(g => groups.push(g)); });
   Object.entries(def.md.malias || {}).forEach(([l, id]) => ml[norm(l)] = id);
@@ -177,7 +179,7 @@ const FP_CSS = `.fp{position:fixed;z-index:2147483000;width:320px;max-width:calc
 .fp-f svg{fill:none}.fp-f:hover{background:#e8eef8;color:#10264a}.fp-f[aria-pressed=true]{color:#c58a00}.fp-f[aria-pressed=true] svg{fill:currentColor}`;
 const today = () => { const d = new Date(); return String(d.getMonth() + 1).padStart(2, '0') + '/' + String(d.getDate()).padStart(2, '0') + '/' + d.getFullYear(); };
 
-export async function mountForm(def, host, { account, role, md, onDirty, onEdit, readOnly = false, actions = [], onAction, favs: favList, onFavs, onFontNotice, onNote, fileLabel = 'File', signature = '', sigPref = 'image', uid: myUidOpt = '', signKeys = null, onSaveSig, onRemoveSig, onSavePref, onCaseLink, onSigInfo, settingsUrl = '' } = {}) {
+export async function mountForm(def, host, { account, role, md, onDirty, onEdit, readOnly = false, actions = [], onAction, favs: favList, onFavs, onFontNotice, onNote, fileLabel = 'File', signature = '', sigPref = 'image', sysFont = '', unofficial = false, uid: myUidOpt = '', signKeys = null, onSaveSig, onRemoveSig, onSavePref, onCaseLink, onSigInfo, settingsUrl = '' } = {}) {
   const allow = (f, key) => def.fontOpen || fontAllowed(f, role, key ? kindOf(key) : undefined) && (!key || fontFits(def, f, kindOf(key)));
   let mySig = okImg(signature); let myPref = sigPref; const isCourt = STAFF_RE.test(role || ''), courtLock = k => !!def.courtKeys?.includes(k) && !isCourt, sigKeys = new Set(), signed = {}, pending = {}, myUid = myUidOpt || account?.uid || '', signOnly = Array.isArray(signKeys) ? signKeys : null, sgEl = {}; let linked = null, linkFill = {};
   const typesFor = key => { const l = def.fontPolicy && key ? (def.fontPolicy[kindOf(key)] || def.fontPolicy.sig || []) : null; return (l ? TYPES.filter(t => l.includes(t.id)) : TYPES).filter(t => t.id !== 'sigimg' && (!key || t.fonts.some(f => allow(f, key)))); };
@@ -240,7 +242,7 @@ export async function mountForm(def, host, { account, role, md, onDirty, onEdit,
   const syncBar = bar => {
     warnSync();
     const key = bar.dataset.for, v = sty[key] || blankSt(), e = effOf(key), nm = e.f || def.font || 'Arial', n = bar.querySelector('.fd-fpn');
-    n.textContent = key[0] === '~' || v.f ? nm : (key === 'caseno' || key === 'judge') ? 'Stamp · Special Elite' : 'Document default · ' + nm; n.style.fontFamily = famOf(e.f);
+    n.textContent = key[0] === '~' || v.f ? nm : (key === 'caseno' || key === 'judge') ? 'Document default · ' + (sty['~body']?.f || def.font || 'Arial') : 'Document default · ' + nm; n.style.fontFamily = famOf(e.f);
     const z = bar.querySelector('.fd-fs'); z.disabled = !e.f; z.value = e.f && v.s ? String(v.s) : '';
     bar.querySelector('.fd-fb').setAttribute('aria-pressed', e.b); bar.querySelector('.fd-fi').setAttribute('aria-pressed', e.i);
   };
@@ -261,7 +263,7 @@ export async function mountForm(def, host, { account, role, md, onDirty, onEdit,
        blank  what prints when the field is empty (the form's own blank line, e.g. "___")
        style  extra inline style (e.g. text-transform) */
     ed(key, o = {}) {
-      const e = src(key), raw0 = o.text !== undefined ? o.text : (e ? String(e.value || '').replace(/\r/g, '') : ''), sys = key === 'caseno' || key === 'judge', hm = key === 'judge' ? /^\s*Hon(?:\.|orable)?\s+(.*)$/i.exec(raw0) : null, raw = hm ? hm[1] : raw0, hon = '', blank = !raw && o.blank, isSig = !sys && !!o.pre && /\/s\//.test(o.pre), lk = !sys && courtLock(key), simg = isSig && effOf(key).f === SIGFONT ? (sty[key]?.g || '') : '', fsig = isSig && !simg && ['font', 'stamp'].includes(signed[key]?.mode) && !!sty[key]?.f, st = (sys ? (linked && sty[key]?.f ? ownCss(key) : fontCss('Special Elite') + ';') : isSig ? (simg ? 'display:inline-block;position:relative;min-width:170px;height:46px;vertical-align:bottom;color:transparent;' : fsig ? styleOf(key) : '') : styleOf(key)) + (o.style || '');
+      const e = src(key), raw0 = o.text !== undefined ? o.text : (e ? String(e.value || '').replace(/\r/g, '') : ''), sys = key === 'caseno' || key === 'judge', hm = key === 'judge' ? /^\s*Hon(?:\.|orable)?\s+(.*)$/i.exec(raw0) : null, raw = hm ? hm[1] : raw0, hon = '', blank = !raw && o.blank, isSig = !sys && !!o.pre && /\/s\//.test(o.pre), lk = !sys && courtLock(key), simg = isSig && effOf(key).f === SIGFONT ? (sty[key]?.g || '') : '', fsig = isSig && !simg && ['font', 'stamp'].includes(signed[key]?.mode) && !!sty[key]?.f, st = (sys ? (linked && sty[key]?.f ? ownCss(key) : sysFont && sysFont !== 'Arial' ? fontCss(sysFont) + ';' : sty['~body']?.f ? fontCss(sty['~body'].f) + ';' : '') : isSig ? (simg ? 'display:inline-block;position:relative;min-width:170px;height:46px;vertical-align:bottom;color:transparent;' : fsig ? styleOf(key) : '') : styleOf(key)) + (o.style || '');
       if (isSig) sigKeys.add(key);   // case number and judge are stamped by the system
       if (isSig && !signed[key] && pending[key] && !raw) return `<span data-f="${esc(key)}" data-sig="1" style="color:#7a5b00;font-style:italic;font-size:${P(10)}">[Awaiting signature of ${esc(pending[key].name)}]</span>`;
       const body = `<span data-f="${esc(key)}" data-ph="${esc(o.ph || (e ? labelOf(e) : key))}"${o.off !== undefined ? ` data-off="${o.off}" data-len="${raw.length}"` : ''}${o.multi ? ' data-multi="1"' : ''}${blank ? ' data-blank="1"' : ''}${sys ? ' data-sys="1"' : ''}${isSig ? ' data-sig="1"' : ''}${lk ? ' data-lock="1"' : ''}${st ? ` style="${esc(st)}"` : ''} ${readOnly || sys || isSig || lk ? '' : ` contenteditable="${PLAIN}"`} spellcheck="false">${simg ? `<img src="${esc(simg)}" alt="" contenteditable="false" style="position:absolute;left:0;top:0;height:46px;max-width:100%;pointer-events:none;-webkit-user-select:none;user-select:none">` : ''}${esc(blank ? o.blank : raw)}${o.multi && raw.endsWith('\n') ? '\n' : ''}</span>`;
@@ -423,8 +425,9 @@ export async function mountForm(def, host, { account, role, md, onDirty, onEdit,
   const mineSg = sg => !!sg && (sg.uid ? sg.uid === myUid : String(sg.name || '').trim().toLowerCase() === who.name.toLowerCase());
   const lineLabel = k => (labelOf(src(k) || { previousElementSibling: null, parentElement: null }) || k).replace(/\s*\((typed|type or print)\)\s*$/i, '');
   const eligible = k => !signed[k] && !!who.name && !(signOnly && !signOnly.includes(k)) && !courtLock(k);   // anyone who may edit the line can sign it, with any name
+  const canRe = k => !!signed[k] && mineSg(signed[k]) && !(signOnly && !signOnly.includes(k)) && !courtLock(k);   // your own signature can be changed
   function signLine(k, r) {
-    const el = src(k); if (!el || !eligible(k)) return; if (typeof r === 'string') r = { mode: r, text: who.name };
+    const el = src(k); if (!el || !(eligible(k) || canRe(k))) return; if (typeof r === 'string') r = { mode: r, text: who.name };
     const text = String(r.text || who.name).trim(); if (!text) return; let mode = r.mode;
     if (mode === 'image' && !mySig) { api.note('Add a signature picture first.', true); return; }
     if ((mode === 'font' || mode === 'stamp') && !(r.font && allow(r.font, k))) mode = 'slash';
@@ -438,8 +441,13 @@ export async function mountForm(def, host, { account, role, md, onDirty, onEdit,
     (keys || []).forEach(k => { const sg = st.n?.signed?.[k], el = src(k); if (!sg || !el || signed[k] || !sigKeys.has(k)) return; el.value = st.f?.[k] ?? sg.name; signed[k] = { ...sg }; sty[k] = normSt(st.s?.[k]); delete pending[k]; n++; });
     if (n) { bars.forEach(syncBar); render(); mark(); commit(false); } return n;
   }
+  /* choosing a sub-option checks its main box; clearing the main box clears the sub-option */
+  function autoChk(id) {
+    const m = def.autoCheck?.[id], i = $(id); if (m && i && String(i.value) !== '0' && i.value !== '') { const c = $(m); if (c && !c.checked) c.checked = true; return; }
+    Object.entries(def.autoCheck || {}).forEach(([sub, main]) => { if (main === id) { const c = $(id); if (c && !c.checked && $(sub)) $(sub).selectedIndex = 0; } });
+  }
   async function askSign(k) {
-    if (!eligible(k)) return; const { openSignDialog } = await import(new URL('./sigdlg.js?v=2', import.meta.url).href);
+    if (!eligible(k) && !canRe(k)) return; const { openSignDialog } = await import(new URL('./sigdlg.js?v=2', import.meta.url).href);
     const fl = TYPES.filter(t => t.id !== 'default' && t.id !== 'sigimg').flatMap(t => shown(t, k).map(f => ({ f, css: fontCss(f), stamp: t.id === 'stamp' })));
     const r = await openSignDialog({ memoryOnly: /^guest$/i.test(role || ''), label: lineLabel(k), name: String(src(k)?.value || '').trim() || who.name, image: mySig, fonts: fl,
       saveImage: onSaveSig ? async png => { await onSaveSig(png); mySig = okImg(png); } : null, removeImage: onRemoveSig ? async () => { await onRemoveSig(); mySig = ''; } : null,
@@ -487,7 +495,7 @@ export async function mountForm(def, host, { account, role, md, onDirty, onEdit,
       if (!sgEl[k]) { const bar = bars.find(b => b.dataset.for === k); if (bar) { bars.splice(bars.indexOf(bar), 1); sgEl[k] = bar; } else { sgEl[k] = fd.createElement('div'); inp.insertAdjacentElement('afterend', sgEl[k]); } sgEl[k].className = 'fd-sg'; sgEl[k].dataset.sgfor = k; }
       const sg = signed[k], pd = pending[k], ok = eligible(k); let h = '';
       inp.disabled = !!sg || (readOnly && !!signOnly) || courtLock(k); inp.readOnly = true;   // a signature is never typed: it is made with the Sign button, by the person it belongs to
-      if (sg) h = `<small class="fd-hint"><b>Signed</b> by ${esc(sg.name)}${sg.at ? ' on ' + esc(fmtAt(sg.at)) : ''}, ${sg.mode === 'image' ? 'with a signature picture' : sg.mode === 'font' ? 'in a typed signature style' : sg.mode === 'stamp' ? 'with a stamped /s/' : 'as /s/'}. This line is locked.</small>${mineSg(sg) ? ` <button type="button" class="btn outline sm" data-sg="unsign:${esc(k)}">Remove my signature</button>` : ''}`;
+      if (sg) h = `<small class="fd-hint"><b>Signed</b> by ${esc(sg.name)}${sg.at ? ' on ' + esc(fmtAt(sg.at)) : ''}, ${sg.mode === 'image' ? 'with a signature picture' : sg.mode === 'font' ? 'in a typed signature style' : sg.mode === 'stamp' ? 'with a stamped /s/' : 'as /s/'}. Click the signature to change it.</small>${mineSg(sg) && canRe(k) ? ` <button type="button" class="btn sm" data-sg="sign:${esc(k)}">Change</button>` : ''}${mineSg(sg) ? ` <button type="button" class="btn outline sm" data-sg="unsign:${esc(k)}">Remove my signature</button>` : ''}`;
       else if (ok) h = `<div class="fd-sgr"><button type="button" class="btn sm" data-sg="sign:${esc(k)}">Sign</button><small class="fd-hint">${pd ? `Waiting for ${esc(pd.name)}. ` : ''}Choose a picture, a styled signature, or /s/.</small></div>`;
       else if (pd) h = `<small class="fd-hint">Waiting for ${esc(pd.name)} to sign this line.</small>`;
       else if (!courtLock(k)) h = '';
@@ -502,7 +510,7 @@ export async function mountForm(def, host, { account, role, md, onDirty, onEdit,
   function render() {
     paintCase(); rendering = true; const keep = fd.documentElement.scrollTop;
     const pages = paginate(def.build(api));
-    preview.innerHTML = pages.map(p => `<div class="page"><div class="pc">${p.join('')}</div><div class="foot">${esc(def.footer || def.number)}</div></div>`).join(''); fit();
+    preview.innerHTML = pages.map(p => `<div class="page">${unofficial ? UNOFF_W : ''}<div class="pc"${unofficial ? ' style="position:relative;z-index:1"' : ''}>${p.join('')}</div><div class="foot">${esc(def.footer || def.number)}</div>${unofficial ? UNOFF_F : ''}</div>`).join(''); fit();
     fd.documentElement.scrollTop = keep; rendering = false; restore(); lockBars();
   }
   function fromPreview(el) {
@@ -550,10 +558,10 @@ export async function mountForm(def, host, { account, role, md, onDirty, onEdit,
     if (e.key === 'Escape') { el.blur(); editing = false; active = null; tb.hidden = true; }
   });
   preview.addEventListener('click', e => {
-    const sgEl2 = e.target.closest?.('[data-sig]'); if (sgEl2) { const k = sgEl2.dataset.f; if (k && eligible(k)) askSign(k); return; }
+    const sgEl2 = e.target.closest?.('[data-sig]'); if (sgEl2) { const k = sgEl2.dataset.f; if (k && (eligible(k) || canRe(k))) askSign(k); return; }
     if (readOnly) return;
-    const c = e.target.closest?.('[data-chk]'); if (c) { if (courtLock(c.dataset.chk)) return; const i = $(c.dataset.chk); if (i) { i.checked = !i.checked; mark(); render(); commit(false); } return; }
-    const o = e.target.closest?.('[data-sel]'); if (o) { const [id, v] = o.dataset.sel.split('='), i = $(id); if (i && !courtLock(id)) { if (i.value === v) i.selectedIndex = 0; else i.value = v; mark(); render(); commit(false); } }
+    const c = e.target.closest?.('[data-chk]'); if (c) { if (courtLock(c.dataset.chk)) return; const i = $(c.dataset.chk); if (i) { i.checked = !i.checked; autoChk(c.dataset.chk); mark(); render(); commit(false); } return; }
+    const o = e.target.closest?.('[data-sel]'); if (o) { const [id, v] = o.dataset.sel.split('='), i = $(id); if (i && !courtLock(id)) { if (i.value === v) i.selectedIndex = 0; else i.value = v; autoChk(id); mark(); render(); commit(false); } }
   });
   fd.addEventListener('mousedown', e => { if (!e.target.closest('[data-f],#tb,.fp')) { editing = false; active = null; tb.hidden = true; } });
   tb.addEventListener('mousedown', e => e.preventDefault());
@@ -649,6 +657,7 @@ export async function mountForm(def, host, { account, role, md, onDirty, onEdit,
   /* Fill in my details as ... */
   const applied = {};
   panel.addEventListener('change', e => {
+    if (e.target.id && (def.autoCheck?.[e.target.id] || Object.values(def.autoCheck || {}).includes(e.target.id))) { autoChk(e.target.id); render(); }
     if (e.target.id && sigKeys.has(e.target.id)) { autoSign([e.target.id]); return; }
     const c = e.target.closest('[data-role]'); if (!c) return; const r = roles.find(x => x.id === c.dataset.role); if (!r) return;
     const lab = c.closest('label'); lab?.parentElement?.querySelectorAll(`.fd-rq[data-rq="${r.id}"]`).forEach(n => n.remove());

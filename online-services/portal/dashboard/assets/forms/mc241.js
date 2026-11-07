@@ -1,7 +1,7 @@
 /* MC 241: Order After Preliminary Examination.
    Completed by the court: the judge or magistrate, or court staff for them. */
-import a200 from './mc200a.js?v=15';
-import { defendants } from './caseinfo.js?v=1';
+import a200 from './mc200a.js?v=16';
+import { defendants, hearingFill, chargeLine } from './caseinfo.js?v=2';
 
 const css = args => a200.css(args) + (({ U, P, B }) => `
 .u{text-align:left;padding-left:${P(4)}}
@@ -14,7 +14,7 @@ const css = args => a200.css(args) + (({ U, P, B }) => `
 .in1{margin-left:${P(24)}}.in2{margin-left:${P(46)}}
 .fi{display:flex;align-items:flex-end;margin-top:${P(11)};line-height:${P(14)}}.fi .u{min-width:${P(120)}}
 .note{font-size:${P(7.5)};font-weight:normal}
-.ct{width:${P(497.5)};margin-top:${P(12)};font-size:${P(9.6)}}
+.ct{width:${P(497.5)};margin-top:${P(12)};font-size:${P(9.6)};font-weight:normal;line-height:${P(14)}}.ct .rr>div:nth-child(1){font-weight:bold}
 .ct .rr{display:flex;align-items:center;border-bottom:${B} solid #000;min-height:${P(42)}}.ct .rr.h{font-weight:bold;font-size:${P(7.8)};min-height:${P(18)}}
 .ct .rr>div:nth-child(1){width:${P(38)};padding-left:${P(6)}}.ct .rr>div:nth-child(2){width:${P(130)};padding-right:${P(6)}}.ct .rr>div:nth-child(3){width:${P(228)};padding-right:${P(6)}}.ct .rr>div:nth-child(4){flex:1}
 .ct .oo{height:${P(18)}}
@@ -22,6 +22,7 @@ const css = args => a200.css(args) + (({ U, P, B }) => `
 .nl{margin:${P(3)} 0 0 ${P(24)};line-height:${P(14)}}.nl>div{display:flex;margin-top:${P(3)}}.nl>div>b{width:${P(18)};flex:none;font-weight:normal}
 `)({ U: args.U, P: args.P, B: args.B });
 
+const MAXC = 12, NS = Array.from({ length: MAXC }, (_, i) => i + 1);
 const sOpt = (...a) => a.map((t, i) => `<option value="${i}">${t}</option>`).join('');
 const chk = (id, t) => `<div class="chk"><input type="checkbox" id="${id}"> ${t}</div>`;
 const area = (id, l, r = 2) => `<label>${l}</label><textarea id="${id}" rows="${r}"></textarea>`;
@@ -42,7 +43,9 @@ const panel = `
  <label>Represented by</label><input type="text" id="rby" placeholder="Attorney name">
 
  <h2>6. Charges considered</h2>
- ${[1, 2, 3].map(n => `<div class="row r3"><div><label>Count ${n} statute</label><input type="text" id="s${n}"></div><div><label>Offense</label><input type="text" id="o${n}"></div><div><label>Disposition</label><select id="d${n}"><option value="0">—</option><option value="1">PC Found</option><option value="2">No PC</option></select></div></div>`).join('')}
+ <input type="hidden" id="cn">
+ ${Array.from({ length: MAXC }, (_, i) => i + 1).map(n => `<div class="row r3 crow" data-n="${n}"><div><label>Count ${n} statute</label><input type="text" id="s${n}"></div><div><label>Offense</label><input type="text" id="o${n}"></div><div><label>Disposition</label><select id="d${n}"><option value="0">—</option><option value="1">PC Found</option><option value="2">No PC</option></select></div></div>`).join('')}
+ <div class="row"><div><button class="btn outline" type="button" id="addc">+ Add count</button></div><div><button class="btn outline" type="button" id="remc">Remove last count</button></div></div>
 
  <h2>Findings</h2>
  <label>7. The prosecution</label>
@@ -74,7 +77,7 @@ const hdr = (P, mid, j, c) => `<div class="hd"><div class="h1"><div class="b" st
 const cb = (on, key) => `<div class="cb"${key ? ` data-chk="${key}" title="Click to check or uncheck"` : ''}>${on ? '✓' : ''}</div>`;
 
 function build(api) {
-  const { $, P } = api, E = api.ed, seq = [], on = id => $(id).checked, sv = id => $(id).value;
+  const { $, P, qa } = api, E = api.ed, seq = [], on = id => $(id).checked, sv = id => $(id).value;
   const caseHd = `<div class="ch">Case Number: <span class="u">${E('caseno')}</span></div>`;
   const matter = `<div class="mt"><b>In the matter of:</b> The People of the State of Michigan v. ${E('defn', { blank: '[Defendant Name]' })}</div>`;
   const sel = (id, n, t, cls = '') => `<div class="ob2 ${cls}" data-sel="${id}=${n}" title="Click to choose this">${cb(sv(id) == n)}<div class="tx">${t}</div></div>`;
@@ -92,9 +95,11 @@ function build(api) {
     ${sel('rp', 2, 'Defendant appeared <i>pro se</i> (self-represented).', 'in1')}` });
 
   /* charges */
+  const cnt = Math.min(MAXC, Math.max(1, parseInt($('cn').value, 10) || 3));
+  qa('.crow').forEach(r => { r.style.display = +r.dataset.n > cnt ? 'none' : ''; }); { const rb = $('remc'); if (rb) rb.disabled = cnt <= 1; const ab = $('addc'); if (ab) ab.disabled = cnt >= MAXC; }
   const row = n => `<div class="rr"><div>${n}</div><div>${E('s' + n)}</div><div>${E('o' + n)}</div><div>${sel('d' + n, 1, 'PC Found')}${sel('d' + n, 2, 'No PC')}</div></div>`;
   seq.push({ pb: 'new', head: caseHd, html: `<div class="sb" style="margin-top:${P(20)}">CHARGES</div><div class="pp t">6. The following charges were considered:</div>
-    <div class="ct"><div class="rr h"><div>Count</div><div>Statute</div><div>Offense</div><div>Disposition</div></div>${row(1)}${row(2)}${row(3)}</div>` });
+    <div class="ct"><div class="rr h"><div>Count</div><div>Statute</div><div>Offense</div><div>Disposition</div></div>${NS.slice(0, cnt).map(row).join('')}</div>` });
   seq.push({ ch: caseHd });
   seq.push({ html: `<div class="sb" style="margin-top:${P(16)}">FINDINGS</div><div class="b" style="margin-top:${P(14)}">THE COURT FINDS:</div>
     <div class="pp t">7. The prosecution:</div>
@@ -123,7 +128,7 @@ function build(api) {
     <div class="gl" style="min-height:${P(26)}">${E('amd', { multi: true, ph: 'Amendments' })}</div>
     <div class="ob2" style="margin-top:${P(10)}">${cb(on('z4'), 'z4')}<div class="tx">4. Bail:</div></div>
     ${sel('bail', 1, 'The previously ordered bail is continued.', 'in1')}${sel('bail', 2, 'Bail is modified by separate order.', 'in1')}${sel('bail', 3, 'Bail is denied by separate order.', 'in1')}${sel('bail', 4, 'Defendant is remanded into custody.', 'in1')}
-    <div class="pp t">5. The prosecuting attorney shall file the Information within the time prescribed by MCR 6.607.</div>
+    <div class="pp t">5. The prosecuting attorney shall file the Information within the time prescribed by court rule, provided the case remains a felony.</div>
     <div class="ob2" style="margin-top:${P(8)}">${cb(on('fo'), 'fo')}<div class="tx"><b>IT IS FURTHER ORDERED:</b> <span class="note">(If this box is not checked, no further orders are entered)</span></div></div>
     <div class="nl"><div><b>6.</b><span style="flex:1;white-space:pre-wrap;min-height:${P(26)}">${E('fot', { multi: true, ph: 'Further orders' })}</span></div></div>
     <div class="b" style="margin-top:${P(12)};line-height:${P(14)}">IT IS SO ORDERED.</div>` });
@@ -132,18 +137,28 @@ function build(api) {
   return seq;
 }
 
-const F = ['judge', 'caseno', 'defn', 'pxd', 'pxt', 'pres', 'app', 'rp', 'rby', 's1', 'o1', 'd1', 's2', 'o2', 'd2', 's3', 'o3', 'd3', 'pf', 'of', 'bind', 'z2', 'prej', 'z3', 'z4', 'bail', 'fo', 'od', 'jname', 'jsig'];
+const F = ['judge', 'caseno', 'defn', 'pxd', 'pxt', 'pres', 'app', 'rp', 'rby', ...NS.flatMap(n => ['s' + n, 'o' + n, 'd' + n]), 'cn', 'pf', 'of', 'bind', 'z2', 'prej', 'z3', 'z4', 'bail', 'fo', 'od', 'jname', 'jsig'];
 const L = { judge: 'Judge', caseno: 'Case No.', defn: 'Defendant name', pxd: 'Preliminary examination date', pxt: 'Preliminary examination time', pres: 'Presiding', app: 'Defendant (0 none, 1 in person, 2 virtually, 3 failed to appear)', rp: 'Representation (0 none, 1 represented, 2 pro se)', rby: 'Represented by',
   s1: 'Count 1 statute', o1: 'Count 1 offense', d1: 'Count 1 disposition (0 none, 1 PC found, 2 no PC)', s2: 'Count 2 statute', o2: 'Count 2 offense', d2: 'Count 2 disposition (0 none, 1 PC found, 2 no PC)', s3: 'Count 3 statute', o3: 'Count 3 offense', d3: 'Count 3 disposition (0 none, 1 PC found, 2 no PC)',
   pf: 'Prosecution (0 none, 1 all, 2 some, 3 failed)', of: 'Offenses (0 none, 1 a, 2 b, 3 c, 4 d)', bind: 'Bound over (0 none, 1 all, 2 only some, 3 none)', z2: 'Charges dismissed', prej: 'Prejudice (0 none, 1 with, 2 without)', z3: 'Complaint amended', z4: 'Bail ordered', bail: 'Bail (0 none, 1 continued, 2 modified, 3 denied, 4 remanded)', fo: 'Further orders entered', od: 'Order date', jname: 'Judge or magistrate name', jsig: 'Signature' };
+NS.forEach(n => { L['s' + n] = `Count ${n} statute`; L['o' + n] = `Count ${n} offense`; L['d' + n] = `Count ${n} disposition (0 none, 1 PC found, 2 no PC)`; }); L.cn = 'Number of counts';
+const $c = api => Math.min(MAXC, Math.max(1, parseInt(api.$('cn').value, 10) || 3));
 const fields = ids => ids.map(id => [id, L[id]]);
 
 export default {
   id: 'mc241', number: 'MC 241', title: 'Order After Preliminary Examination', footer: 'MC 241',
   css, panel, usable: U => 686 * U,
+  autoCheck: { prej: 'z2', bail: 'z4' },
+  init(api) {
+    const bump = d => { const c = $c(api), n = Math.min(MAXC, Math.max(1, c + d)); if (n === c) return; if (d < 0) { ['s', 'o'].forEach(k => { api.$(k + c).value = ''; }); api.$('d' + c).value = '0'; } api.$('cn').value = String(n); api.$('cn').dispatchEvent(new Event('input', { bubbles: true })); api.render(); };
+    api.$('addc').onclick = () => bump(1); api.$('remc').onclick = () => bump(-1);
+  },
   fromCase: c => {
-    const out = { defn: defendants(c).join(', ') };
-    (c.charges || []).slice(0, 3).forEach((ch, i) => { out['s' + (i + 1)] = ch.statute || ''; out['o' + (i + 1)] = ch.chargeName || ch.title || ''; });
+    const out = { defn: defendants(c).join(', ') }, h = hearingFill(c, /prelim/i);
+    if (h) { out.pxd = h.date; out.pxt = h.time; }
+    const l = (c.charges || []).slice(0, MAXC);
+    if (l.length) out.cn = String(l.length);
+    l.forEach((ch, i) => { out['s' + (i + 1)] = ch.statute || ''; out['o' + (i + 1)] = chargeLine(ch); });
     return out;
   },
   contHeader: api => `<div class="ch">Case Number: <span class="u">${api.ed('caseno')}</span></div>`,
@@ -156,7 +171,7 @@ export default {
   md: { title: 'Order After Preliminary Examination', sections: [
     { name: 'Parties and case', fields: fields(['judge', 'caseno', 'defn']) },
     { name: 'Preliminary examination', fields: fields(['pxd', 'pxt', 'pres', 'app', 'rp', 'rby']) },
-    { name: 'Charges', fields: fields(['s1', 'o1', 'd1', 's2', 'o2', 'd2', 's3', 'o3', 'd3']) },
+    { name: 'Charges', fields: fields(['cn', ...NS.flatMap(n => ['s' + n, 'o' + n, 'd' + n])]) },
     { name: 'Findings', fields: fields(['pf', 'of']), multi: [['f8y', 'Probable cause only as to'], ['f8n', 'Failed to establish'], ['addl', 'Additional findings']] },
     { name: 'Order', fields: fields(['bind', 'z2', 'prej', 'z3', 'z4', 'bail', 'fo', 'od', 'jname', 'jsig']), multi: [['bnt', 'Bound over only on'], ['dis', 'Dismissed charges'], ['amd', 'Amendments'], ['fot', 'Further orders']] }
   ] }

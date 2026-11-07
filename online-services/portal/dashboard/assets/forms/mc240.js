@@ -1,7 +1,7 @@
 /* MC 240: Order After Arraignment and Pretrial Release Order (one packet).
    Completed by the court: the judge or magistrate, or court staff for them. */
-import a200 from './mc200a.js?v=15';
-import { defendants } from './caseinfo.js?v=1';
+import a200 from './mc200a.js?v=16';
+import { defendants, hearingFill } from './caseinfo.js?v=2';
 
 const css = args => a200.css(args) + (({ U, P, B }) => `
 .u{text-align:left;padding-left:${P(4)}}
@@ -121,7 +121,7 @@ function build(api, part) {
 
   /* pretrial release order */
   if (Bp) {
-  seq.push({ pb: part === 'b' ? undefined : 'new', html: hdr(P, B, part === 'b' ? `PRETRIAL RELEASE ORDER<div style="display:flex;justify-content:center;align-items:center;gap:${P(6)};margin-top:${P(6)}">${cb(on('amd'), 'amd')}<span>AMENDED</span></div>` : 'PRETRIAL RELEASE ORDER<br>(INITIAL ORDER)', E('judge'), E('caseno')) });
+  seq.push({ pb: part === 'b' ? undefined : 'new', html: hdr(P, B, part === 'b' ? `<div style="text-align:center;line-height:${P(12)}">PRETRIAL RELEASE ORDER</div><div style="display:flex;justify-content:center;align-items:center;margin-top:${P(1)};line-height:${P(12)}">${cb(on('amd'), 'amd')}<span>AMENDED</span></div>` : 'PRETRIAL RELEASE ORDER<br>(INITIAL ORDER)', E('judge'), E('caseno')) });
   seq.push({ ch: caseHd });
   seq.push({ html: `<div class="pt"><div class="c1">THE PEOPLE OF THE<br>STATE OF MICHIGAN</div><div class="c2">v</div><div class="c5"><div class="lb">Defendant’s full name</div><div class="vv">${E('defn')}</div></div></div>${matter}` });
   const row = (n, k, t, d) => `<div class="rr"><div>${n}</div><div>${cb(on(k), k)}</div><div>${t}</div><div>${d}</div></div>`;
@@ -176,9 +176,9 @@ const panelFor = part => {
 };
 
 export const make = part => ({
-  id: part ? 'mc240' + part : 'mc240', number: part ? 'MC 240' + part.toUpperCase() : 'MC 240', title: part === 'a' ? 'Order After Arraignment' : part === 'b' ? 'Pretrial Release Order' : 'Order After Arraignment and Pretrial Release Order', footer: part ? 'MC 240' + part.toUpperCase() : 'MC 240',
+  id: part ? 'mc240' + part : 'mc240', number: part ? 'MC 240' + part.toUpperCase() : 'MC 240', title: part === 'a' ? 'Order After Arraignment' : part === 'b' ? 'Pretrial Release Order' : 'Arraignment Order Packet', footer: part ? 'MC 240' + part.toUpperCase() : 'MC 240',
   css, panel: panelFor(part), usable: U => 686 * U,
-  fromCase: c => ({ defn: defendants(c).join(', ') }),
+  fromCase: c => { const h = hearingFill(c, /arraign/i); return { defn: defendants(c).join(', '), ...(h ? { arrd: h.date, arrt: h.time } : {}) }; },
   init(api) { TD.forEach(k => { const e = api.$('t' + k); if (e) e.checked = true; }); },
   contHeader: api => `<div class="ch">Case Number: <span class="u">${api.ed('caseno')}</span></div>`,
   build: api => build(api, part),
@@ -187,7 +187,7 @@ export const make = part => ({
     { id: 'judge', label: 'Judge or magistrate', for: /judge|magistrate|justice/i, fill: keep((api, w) => ({ pres: w.name, jname: w.name, jsig: w.name, od: w.today, jname2: w.name, jsig2: w.name, od2: w.today }), part) },
     { id: 'chambers', label: 'Court staff completing the order for the judge', hint: 'fills the dates only', for: /law clerk|judicial assistant|deputy clerk|county clerk|court administrator|court reporter/i, fill: keep((api, w) => ({ od: w.today, od2: w.today }), part) }
   ],
-  md: { title: part === 'a' ? 'Order After Arraignment' : part === 'b' ? 'Pretrial Release Order' : 'Order After Arraignment and Pretrial Release Order', sections: SEC.filter(([, p]) => !part || p === part || p === '*').map(([sec]) => part === 'b' && sec.name === 'Release type' ? { ...sec, fields: [['amd', L.amd], ...sec.fields] } : sec) }
+  md: { title: part === 'a' ? 'Order After Arraignment' : part === 'b' ? 'Pretrial Release Order' : 'Arraignment Order Packet', sections: SEC.filter(([, p]) => !part || p === part || p === '*').map(([sec]) => part === 'b' && sec.name === 'Release type' ? { ...sec, fields: [['amd', L.amd], ...sec.fields] } : sec) }
 });
 
 export default make();

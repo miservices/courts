@@ -20,6 +20,19 @@ body{margin:0;background:#e3e9f2;font-family:'Public Sans',system-ui,sans-serif;
 .sg-ok{text-align:center;padding:34px 20px}.sg-ok .tick{width:60px;height:60px;border-radius:50%;background:#e4f3ea;color:#2f7d4f;font-size:32px;line-height:60px;margin:0 auto 12px}
 .sg-bad{border-left:4px solid #b3261e;background:#fdf1f0;color:#7a1b13;border-radius:6px;padding:12px 16px}
 .sg-note{font-size:12.5px;color:#5f6c82;margin-top:10px}
+.sg-top{background:linear-gradient(135deg,#0d2144,#1d4283);padding:16px 24px;box-shadow:0 2px 12px rgba(10,24,50,.25)}
+.sg-top b{letter-spacing:.2px}.sg-top span{margin-left:auto;font-size:11.5px;letter-spacing:.09em;text-transform:uppercase;opacity:.8;border:1px solid rgba(255,255,255,.35);border-radius:999px;padding:4px 12px}
+body{background:radial-gradient(1200px 400px at 50% -80px,#d5e1f5,#e8edf5 60%) fixed,#e8edf5}
+.sg-wrap{padding-top:26px}
+.sg-card{border-radius:16px;border-color:#d5dded;padding:24px 28px;position:relative;overflow:hidden}
+.sg-card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:linear-gradient(#2b5db8,#10264a)}
+.sg-card h1{font-size:25px;line-height:1.2;margin-bottom:8px}.sg-card p{color:#33415c;max-width:70ch}
+.sg-ok::before{background:#2f7d4f}.sg-ok h1{margin-top:4px}
+.sg-chips{gap:8px;margin:14px 0 4px}.sg-chips em{padding:5px 13px;font-size:12.5px;border:1px solid #cdd9ee}.sg-chips em.ok{border-color:#b9dfc8}
+.sg-chips em::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:#2b5db8;margin-right:7px}.sg-chips em.ok::before{background:#2f7d4f}
+.sg-note{display:flex;gap:6px;align-items:center;padding:8px 12px;background:#f3f6fb;border-radius:8px}
+.sg-bar{border-radius:16px;padding:14px 20px;border-color:#cdd9ee}.sg-bar .btn{height:44px;padding:0 26px;border-radius:11px;font-weight:600}
+@media(max-width:640px){.sg-card{padding:18px 18px 18px 22px}.sg-top{padding:14px 16px}.sg-bar .btn{width:100%}}
 @media(max-width:900px){.fd-wrap{flex-direction:column;height:auto!important}.fd-panel{width:100%;max-height:70vh}.fd-view{height:85vh}}
 </style>
 <style>
@@ -100,8 +113,8 @@ dialog{border:0;padding:0;border-radius:10px;width:min(660px,calc(100vw - 24px))
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
 import { getFirestore } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
-import { byId } from '/courts/online-services/portal/dashboard/assets/forms/registry.js?v=7';
-import { mountForm } from '/courts/online-services/portal/dashboard/assets/forms/engine.js?v=23';
+import { byId } from '/courts/online-services/portal/dashboard/assets/forms/registry.js?v=8';
+import { mountForm } from '/courts/online-services/portal/dashboard/assets/forms/engine.js?v=26';
 import { firebaseBackend } from '/courts/online-services/portal/dashboard/assets/forms/backend.js?v=10';
 const app = initializeApp({ apiKey: "AIzaSyA8sUFIq81cs6uQvqduardpGJ4R2DxO8NQ", authDomain: "micourt-dada6.firebaseapp.com", projectId: "micourt-dada6", storageBucket: "micourt-dada6.firebasestorage.app", messagingSenderId: "1013564619997", appId: "1:1013564619997:web:8f259dab457915758f6f34" });
 const be = firebaseBackend({ db: getFirestore(app), app }), root = document.getElementById('root');
@@ -115,7 +128,7 @@ const fail = (t, m) => { root.innerHTML = `<div class="sg-card"><h1>${esc(t)}</h
   if (l.status === 'signed' || l.status === 'applied') return root.innerHTML = '<div class="sg-card sg-ok"><div class="tick" aria-hidden="true">✓</div><h1>Already signed</h1><p>Your signature was received. You do not need to do anything else.</p></div>';
   if (l.expiresAt < Date.now()) return fail('This link has expired', 'Signing links last 14 days. Contact the court for a new one.');
   const form = byId(l.formId); if (!form) return fail('This document type is not available', 'Contact the court.');
-  const def = (await import(`/courts/online-services/portal/dashboard/assets/forms/${form.id}.js?v=20`)).default;
+  const def = (await import(`/courts/online-services/portal/dashboard/assets/forms/${form.id}.js?v=22`)).default;
   let name = String(l.name || '').trim();
   root.innerHTML = `<div class="sg-card"><h1>${esc(l.title)}</h1><p>The court has asked <b>${esc(name)}</b> to sign this document. You do not need an account. Read it, then click each signature line you are asked to sign.</p>
     <div class="sg-chips" id="chips"></div><p class="sg-note">This link is private to you. Do not share it. It expires ${esc(new Date(l.expiresAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }))}.</p></div>
