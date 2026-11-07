@@ -210,7 +210,7 @@ function renderSidebar(account) {
   console.info('Portal dashboard v4 | role:', role);
   $('sidebar-root').innerHTML = `
     <a class="sb-brand" href="${BASE}">
-      <svg viewBox="0 0 52 52" aria-hidden="true"><circle cx="26" cy="26" r="25" fill="#fff"/><g stroke="#10264a" stroke-width="2" stroke-linecap="round" fill="none"><path d="M26 11v26M17 15h18M19 38h14"/><path d="M17 15l-6 12h12zM35 15l-6 12h12z" stroke-width="1.6" stroke-linejoin="round"/></g></svg>
+      <svg viewBox="0 0 100 100" aria-hidden="true"><rect x="1.5" y="1.5" width="97" height="97" rx="13" fill="#10264a" stroke="#5b9be0" stroke-width="3"/><path d="M27 16h32l16 16v52H27z" fill="#fff"/><path d="M59 16v16h16z" fill="#9cc4f5"/><g fill="none" stroke="#10264a" stroke-width="4.5" transform="translate(10.5 8) scale(.9)" stroke-linecap="round" stroke-linejoin="round"><path d="M45 36v38M33 74h24M31 44h28"/><path d="M31 44l-7 15a7 7 0 0 0 14 0zM59 44l-7 15a7 7 0 0 0 14 0z"/></g><rect x="27" y="86" width="48" height="6" fill="#9cc4f5"/></svg>
       <span><b>Online Portal</b><small>Michigan Courts</small></span>
     </a>
     <nav class="sb-nav" aria-label="Portal">
