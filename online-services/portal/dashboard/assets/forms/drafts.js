@@ -99,15 +99,17 @@ export class DraftSession {
         if (r.ok) {
           this.baseRev = r.rev; this.baseMd = md; this.dirtyAt = 0; this.meta = { ...(this.meta || {}), file, rev: r.rev, title: this.title };
           if (r.prevFile && r.prevFile !== file) this.backend.delFile(this.docId, r.prevFile).catch(() => { });
-          this.onStatus('All changes saved', 'ok'); break;
+          this.fails = 0; this.onStatus('All changes saved', 'ok'); break;
         }
         await this.backend.delFile(this.docId, file).catch(() => { });   // somebody saved first: drop ours, merge theirs, go again
         await this._pull(r.meta);
         if (attempt === 4) throw new Error('busy');
       }
     } catch (e) {
-      console.error(e); this.onStatus('Could not save. Trying again…', 'bad');
-      if (!this.closed) { clearTimeout(this.retry); this.retry = setTimeout(() => this.save(), 5000); }
+      console.error(e); const denied = /unauthorized|permission-denied/i.test(String(e?.code || e?.message || ''));
+      this.fails = (this.fails || 0) + 1;   // wait longer after each failure so a broken setup does not hammer the server
+      this.onStatus(denied ? 'Could not save: the server refused the save (permission). Your changes stay on this page. Checking again shortly…' : 'Could not save. Trying again…', 'bad');
+      if (!this.closed) { clearTimeout(this.retry); this.retry = setTimeout(() => this.save(), denied ? 60000 : Math.min(5000 * 2 ** (this.fails - 1), 60000)); }
     } finally {
       this.saving = false;
       if (this.again) { this.again = false; this.touch(); } else this._maybePull();
