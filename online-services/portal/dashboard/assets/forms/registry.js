@@ -9,6 +9,10 @@ export const FORMS = [
     summary: 'The complaint, order page, and affidavit of probable cause as one packet. Add as many counts as you need.' },
   { id: 'mc240', number: 'MC 240', title: 'Order After Arraignment and Pretrial Release Order', group: 'Criminal',
     summary: 'The court’s order after arraignment with the pretrial release order (bond, release conditions, denial of bail). Completed by the judge, magistrate, or court staff.' },
+  { id: 'mc240a', number: 'MC 240A', title: 'Order After Arraignment', group: 'Criminal',
+    summary: 'The court’s order after arraignment on its own: advisements, plea, and the next proceeding. Completed by the judge, magistrate, or court staff.' },
+  { id: 'mc240b', number: 'MC 240B', title: 'Pretrial Release Order', group: 'Criminal',
+    summary: 'The pretrial release order on its own, with an Amended box: release type, bond, terms and conditions, and denial of bail. Completed by the judge, magistrate, or court staff.' },
   { id: 'mc241', number: 'MC 241', title: 'Order After Preliminary Examination', group: 'Criminal',
     summary: 'The court’s findings and order after a preliminary examination: probable cause by charge, bind over, dismissals, amendments, and bail. Completed by the judge, magistrate, or court staff.' }
 ];

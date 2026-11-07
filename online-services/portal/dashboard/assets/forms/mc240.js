@@ -81,7 +81,7 @@ const panel = `
 const hdr = (P, B, mid, j, c) => `<div class="hd"><div class="h1"><div class="b" style="padding-left:${P(33.5)}">STATE OF MICHIGAN</div><div class="r">THE DISTRICT COURT FOR</div><div class="r">GENESEE COUNTY</div></div><div class="h2">${mid}</div><div class="h3"><div><b>JUDGE</b><span class="jv">${j}</span></div><div><b>CASE NO.</b><span class="jv">${c}</span></div></div></div>`;
 const cb = (on, key) => `<div class="cb"${key ? ` data-chk="${key}" title="Click to check or uncheck"` : ''}>${on ? '✓' : ''}</div>`;
 
-function build(api) {
+function build(api, part) {
   const { $, P, B } = api, E = api.ed, seq = [], on = id => $(id).checked, sv = id => $(id).value;
   const caseHd = `<div class="ch">Case Number: <span class="u">${E('caseno')}</span></div>`;
   const matter = `<div class="mt"><b>In the matter of:</b> The People of the State of Michigan v. ${E('defn', { blank: '[Defendant Name]' })}</div>`;
@@ -89,9 +89,10 @@ function build(api) {
    <div class="sr" style="margin-top:${P(g2)}"><div class="sc" style="margin-left:${P(3)};width:${P(98)}"><div class="sv lf"><div class="in">${E(d)}</div></div><div class="sl">Date</div></div><div class="sc" style="margin-left:${P(182)};width:${P(213)}"><div class="sv lf"><div class="in">${E(s, { pre: '/s/ ' })}</div></div><div class="sl">Signature</div></div></div>`;
   const sel = (id, n, t, cls = '') => `<div class="oo ${cls}" data-sel="${id}=${n}" title="Click to choose this">${cb(sv(id) == n)}<div>${t}</div></div>`;
   const u = (k, w) => `<span class="u" style="min-width:${P(w)}">${E(k)}</span>`;
-  const adv = sv('adv'), nxt = sv('nxt');
+  const A = part !== 'b', Bp = part !== 'a', adv = A ? sv('adv') : 0, nxt = A ? sv('nxt') : 0;
 
   seq.push({ ch: caseHd });
+  if (A) {
   seq.push({ html: hdr(P, B, 'ORDER AFTER ARRAIGNMENT', E('judge'), E('caseno')) });
   seq.push({ html: `<div class="pt"><div class="c1">THE PEOPLE OF THE<br>STATE OF MICHIGAN</div><div class="c2">v</div><div class="c5"><div class="lb">Defendant’s full name</div><div class="vv">${E('defn')}</div></div></div>${matter}` });
   seq.push({ html: `<div class="sb">ARRAIGNMENT</div><div class="pp t">The defendant appeared before the court for arraignment pursuant to MCR 6.501(A) on:</div>
@@ -115,10 +116,12 @@ function build(api) {
   seq.push({ html: `<div class="oo" style="margin-top:${P(10)}">${cb(on('fo'), 'fo')}<div><b>IT IS FURTHER ORDERED:</b> <span class="note">(If this box is not checked, no further orders are entered)</span></div></div>
     <div class="nl"><div><b>5.</b><span style="flex:1;white-space:pre-wrap;min-height:${P(34)}">${E('fot', { multi: true, ph: 'Further orders' })}</span></div></div>` });
   seq.push({ html: sig('od', 'jname', 'jsig') });
-  seq.push({ pb: 'blank', html: `<div class="c" style="padding-top:${P(314)}"><div class="b" style="font-size:${P(19.4)};line-height:${P(22)}">THIS PAGE IS INTENTIONALLY LEFT BLANK</div><div style="margin-top:${P(20.5)};font-size:${P(11.8)};line-height:${P(15)}">ORDER AFTER ARRAIGNMENT ON PREVIOUS PAGE(S)<br>PRETRIAL RELEASE ORDER ON NEXT PAGE(S)</div></div>` });
+  }
+  if (part === undefined) seq.push({ pb: 'blank', html: `<div class="c" style="padding-top:${P(314)}"><div class="b" style="font-size:${P(19.4)};line-height:${P(22)}">THIS PAGE IS INTENTIONALLY LEFT BLANK</div><div style="margin-top:${P(20.5)};font-size:${P(11.8)};line-height:${P(15)}">ORDER AFTER ARRAIGNMENT ON PREVIOUS PAGE(S)<br>PRETRIAL RELEASE ORDER ON NEXT PAGE(S)</div></div>` });
 
   /* pretrial release order */
-  seq.push({ pb: 'new', html: hdr(P, B, 'PRETRIAL RELEASE ORDER<br>(INITIAL ORDER)', E('judge'), E('caseno')) });
+  if (Bp) {
+  seq.push({ pb: part === 'b' ? undefined : 'new', html: hdr(P, B, part === 'b' ? `PRETRIAL RELEASE ORDER<div style="display:flex;justify-content:center;align-items:center;gap:${P(6)};margin-top:${P(6)}">${cb(on('amd'), 'amd')}<span>AMENDED</span></div>` : 'PRETRIAL RELEASE ORDER<br>(INITIAL ORDER)', E('judge'), E('caseno')) });
   seq.push({ ch: caseHd });
   seq.push({ html: `<div class="pt"><div class="c1">THE PEOPLE OF THE<br>STATE OF MICHIGAN</div><div class="c2">v</div><div class="c5"><div class="lb">Defendant’s full name</div><div class="vv">${E('defn')}</div></div></div>${matter}` });
   const row = (n, k, t, d) => `<div class="rr"><div>${n}</div><div>${cb(on(k), k)}</div><div>${t}</div><div>${d}</div></div>`;
@@ -146,33 +149,45 @@ function build(api) {
      <div><b>3.</b><span>The defendant, the sheriff, the clerk, and all other persons subject to this order shall comply with its applicable provisions.</span></div></div>
     <div class="b" style="margin-top:${P(6)};line-height:${P(14)}">IT IS SO ORDERED.</div>` });
   seq.push({ html: sig('od2', 'jname2', 'jsig2', 30, 24) });
+  }
   return seq;
 }
 
 const F = ['judge', 'caseno', 'defn', 'arrd', 'arrt', 'pres', 'adv', 'plea', 'nxt', 'nxo', 'n15d', 'n15t', 'n15l', 'fo', 'od', 'jname', 'jsig', 'rt1', 'rt2', 'cash', 'rt3', 'surety', 'rt4', 'bond', ...T.map(([k]) => 't' + k), 'tm2', 'd6', 'd7', 'od2', 'jname2', 'jsig2'];
-const L = { judge: 'Judge', caseno: 'Case No.', defn: 'Defendant name', arrd: 'Arraignment date', arrt: 'Arraignment time', pres: 'Presiding', adv: 'Advisement (0 none, 1 signed 4a, 2 refused 4b, 3 not presented 5)', plea: 'Plea (0 none, 1 not guilty, 2 guilty, 3 no contest, 4 stood mute)', nxt: 'Next proceeding (0 none, 1 PC conference, 2 preliminary exam, 3 sentencing, 4 other)', nxo: 'Next proceeding other', n15d: 'Next proceeding date', n15t: 'Next proceeding time', n15l: 'Next proceeding location', fo: 'Further orders entered', od: 'Order date', jname: 'Order judge or magistrate name', jsig: 'Order signature', rt1: 'Release - personal recognizance', rt2: 'Release - cash bail', cash: 'Cash bail amount', rt3: 'Release - surety bond', surety: 'Surety bond amount', rt4: 'Release - bail denied', bond: 'Bond (0 none, 1 new bond, 2 denied, 3 continued)', tm2: 'Premises - may return once with officer', d6: 'Bail denied finding', d7: 'Sheriff maintains custody', od2: 'Release order date', jname2: 'Release order judge or magistrate name', jsig2: 'Release order signature' };
+const L = { amd: 'Amended pretrial release order', judge: 'Judge', caseno: 'Case No.', defn: 'Defendant name', arrd: 'Arraignment date', arrt: 'Arraignment time', pres: 'Presiding', adv: 'Advisement (0 none, 1 signed 4a, 2 refused 4b, 3 not presented 5)', plea: 'Plea (0 none, 1 not guilty, 2 guilty, 3 no contest, 4 stood mute)', nxt: 'Next proceeding (0 none, 1 PC conference, 2 preliminary exam, 3 sentencing, 4 other)', nxo: 'Next proceeding other', n15d: 'Next proceeding date', n15t: 'Next proceeding time', n15l: 'Next proceeding location', fo: 'Further orders entered', od: 'Order date', jname: 'Order judge or magistrate name', jsig: 'Order signature', rt1: 'Release - personal recognizance', rt2: 'Release - cash bail', cash: 'Cash bail amount', rt3: 'Release - surety bond', surety: 'Surety bond amount', rt4: 'Release - bail denied', bond: 'Bond (0 none, 1 new bond, 2 denied, 3 continued)', tm2: 'Premises - may return once with officer', d6: 'Bail denied finding', d7: 'Sheriff maintains custody', od2: 'Release order date', jname2: 'Release order judge or magistrate name', jsig2: 'Release order signature' };
 T.forEach(([k]) => { L['t' + k] = 'Term ' + k; });
 const fields = ids => ids.map(id => [id, L[id]]);
 
-export default {
-  id: 'mc240', number: 'MC 240', title: 'Order After Arraignment and Pretrial Release Order', footer: 'MC 240',
-  css, panel, usable: U => 686 * U,
-  fromCase: c => ({ defn: defendants(c).join(', ') }),
-  init(api) { TD.forEach(k => { api.$('t' + k).checked = true; }); },
-  contHeader: api => `<div class="ch">Case Number: <span class="u">${api.ed('caseno')}</span></div>`,
-  build,
-  courtKeys: F.filter(id => !['judge', 'caseno'].includes(id)).concat(['tgx', 'tkx', 'tlx', 'tmx', 'fot', 'dfind']), courtNote: 'This order is completed by the judge or magistrate, or by court staff for them.',
-  roles: [
-    { id: 'judge', label: 'Judge or magistrate', for: /judge|magistrate|justice/i, fill: (api, w) => ({ pres: w.name, jname: w.name, jsig: w.name, od: w.today, jname2: w.name, jsig2: w.name, od2: w.today }) },
-    { id: 'chambers', label: 'Court staff completing the order for the judge', hint: 'fills the dates only', for: /law clerk|judicial assistant|deputy clerk|county clerk|court administrator|court reporter/i, fill: (api, w) => ({ od: w.today, od2: w.today }) }
-  ],
-  md: { title: 'Order After Arraignment and Pretrial Release Order', sections: [
-    { name: 'Parties and case', fields: fields(['judge', 'caseno', 'defn']) },
-    { name: 'Arraignment', fields: fields(['arrd', 'arrt', 'pres', 'adv', 'plea', 'nxt', 'nxo', 'n15d', 'n15t', 'n15l']) },
-    { name: 'Order after arraignment', fields: fields(['fo', 'od', 'jname', 'jsig']), multi: [['fot', 'Further orders']] },
-    { name: 'Release type', fields: fields(['rt1', 'rt2', 'cash', 'rt3', 'surety', 'rt4', 'bond']) },
-    { name: 'Terms and conditions', fields: fields([...T.map(([k]) => 't' + k), 'tm2']), multi: [['tgx', 'Term g persons'], ['tkx', 'Term k supervision'], ['tlx', 'Term l GPS or home confinement'], ['tmx', 'Term m premises']] },
-    { name: 'Denial of bail', fields: fields(['d6', 'd7']), multi: [['dfind', 'Findings']] },
-    { name: 'Release order signature', fields: fields(['od2', 'jname2', 'jsig2']) }
-  ] }
+const SEC = [
+  [{ name: 'Parties and case', fields: fields(['judge', 'caseno', 'defn']) }, '*'],
+  [{ name: 'Arraignment', fields: fields(['arrd', 'arrt', 'pres', 'adv', 'plea', 'nxt', 'nxo', 'n15d', 'n15t', 'n15l']) }, 'a'],
+  [{ name: 'Order after arraignment', fields: fields(['fo', 'od', 'jname', 'jsig']), multi: [['fot', 'Further orders']] }, 'a'],
+  [{ name: 'Release type', fields: fields(['rt1', 'rt2', 'cash', 'rt3', 'surety', 'rt4', 'bond']) }, 'b'],
+  [{ name: 'Terms and conditions', fields: fields([...T.map(([k]) => 't' + k), 'tm2']), multi: [['tgx', 'Term g persons'], ['tkx', 'Term k supervision'], ['tlx', 'Term l GPS or home confinement'], ['tmx', 'Term m premises']] }, 'b'],
+  [{ name: 'Denial of bail', fields: fields(['d6', 'd7']), multi: [['dfind', 'Findings']] }, 'b'],
+  [{ name: 'Release order signature', fields: fields(['od2', 'jname2', 'jsig2']) }, 'b']
+];
+const idsFor = part => { const ids = new Set(SEC.filter(([, p]) => !part || p === part || p === '*').flatMap(([s]) => [...s.fields.map(f => f[0]), ...(s.multi || []).map(m => m[0])])); if (part === 'b') ids.add('amd'); return ids; };
+const keep = (fn, part) => (api, w) => Object.fromEntries(Object.entries(fn(api, w)).filter(([k]) => idsFor(part).has(k)));
+const panelFor = part => {
+  const a = panel.indexOf('<h2>Arraignment</h2>'), b = panel.indexOf('<h2>Pretrial release order: release type</h2>');
+  if (!part) return panel;
+  return part === 'a' ? panel.slice(0, b) : panel.slice(0, a) + `<div class="chk"><input type="checkbox" id="amd"> Amended pretrial release order</div>` + panel.slice(b);
 };
+
+export const make = part => ({
+  id: part ? 'mc240' + part : 'mc240', number: part ? 'MC 240' + part.toUpperCase() : 'MC 240', title: part === 'a' ? 'Order After Arraignment' : part === 'b' ? 'Pretrial Release Order' : 'Order After Arraignment and Pretrial Release Order', footer: part ? 'MC 240' + part.toUpperCase() : 'MC 240',
+  css, panel: panelFor(part), usable: U => 686 * U,
+  fromCase: c => ({ defn: defendants(c).join(', ') }),
+  init(api) { TD.forEach(k => { const e = api.$('t' + k); if (e) e.checked = true; }); },
+  contHeader: api => `<div class="ch">Case Number: <span class="u">${api.ed('caseno')}</span></div>`,
+  build: api => build(api, part),
+  courtKeys: [...idsFor(part)].filter(id => !['judge', 'caseno'].includes(id)), courtNote: 'This order is completed by the judge or magistrate, or by court staff for them.',
+  roles: [
+    { id: 'judge', label: 'Judge or magistrate', for: /judge|magistrate|justice/i, fill: keep((api, w) => ({ pres: w.name, jname: w.name, jsig: w.name, od: w.today, jname2: w.name, jsig2: w.name, od2: w.today }), part) },
+    { id: 'chambers', label: 'Court staff completing the order for the judge', hint: 'fills the dates only', for: /law clerk|judicial assistant|deputy clerk|county clerk|court administrator|court reporter/i, fill: keep((api, w) => ({ od: w.today, od2: w.today }), part) }
+  ],
+  md: { title: part === 'a' ? 'Order After Arraignment' : part === 'b' ? 'Pretrial Release Order' : 'Order After Arraignment and Pretrial Release Order', sections: SEC.filter(([, p]) => !part || p === part || p === '*').map(([sec]) => part === 'b' && sec.name === 'Release type' ? { ...sec, fields: [['amd', L.amd], ...sec.fields] } : sec) }
+});
+
+export default make();
