@@ -93,7 +93,7 @@ function build(api) {
 
   /* charges */
   const row = n => `<div class="rr"><div>${n}</div><div>${E('s' + n)}</div><div>${E('o' + n)}</div><div>${sel('d' + n, 1, 'PC Found')}${sel('d' + n, 2, 'No PC')}</div></div>`;
-  seq.push({ pb: 'new', html: caseHd + `<div class="sb" style="margin-top:${P(20)}">CHARGES</div><div class="pp t">6. The following charges were considered:</div>
+  seq.push({ pb: 'new', head: caseHd, html: `<div class="sb" style="margin-top:${P(20)}">CHARGES</div><div class="pp t">6. The following charges were considered:</div>
     <div class="ct"><div class="rr h"><div>Count</div><div>Statute</div><div>Offense</div><div>Disposition</div></div>${row(1)}${row(2)}${row(3)}</div>` });
   seq.push({ ch: caseHd });
   seq.push({ html: `<div class="sb" style="margin-top:${P(16)}">FINDINGS</div><div class="b" style="margin-top:${P(14)}">THE COURT FINDS:</div>
@@ -110,7 +110,7 @@ function build(api) {
   seq.push({ html: `<div class="pp t">9. Additional findings:</div><div class="gl" style="margin-left:0;min-height:${P(50)}">${E('addl', { multi: true, ph: 'Additional findings' })}</div>` });
 
   /* order */
-  seq.push({ pb: 'new', html: caseHd + `<div class="or" style="margin-top:${P(20)};justify-content:center"><div class="ob">ORDER</div></div><div class="b" style="margin-top:${P(14)}">IT IS ORDERED:</div>
+  seq.push({ pb: 'new', head: caseHd, html: `<div class="or" style="margin-top:${P(20)};justify-content:center"><div class="ob">ORDER</div></div><div class="b" style="margin-top:${P(14)}">IT IS ORDERED:</div>
     <div class="pp t">1. The defendant is:</div>
     ${sel('bind', 1, 'Bound over for trial on all charges.', 'in1')}${sel('bind', 2, 'Bound over for trial only on the following charges:', 'in1')}
     <div class="gl" style="min-height:${P(26)}">${E('bnt', { multi: true, ph: 'Charges' })}</div>

@@ -336,14 +336,14 @@ export async function mountForm(def, host, { account, role, md, onDirty, onEdit,
     start('new');
     for (const it of seq) {
       if (it.ch !== undefined) { chOv = it.ch; continue; }
-      if (it.pb) { start(it.pb); if (it.html) { cur.push(it.html); used += meas(it.html); cur.has = true; } continue; }
+      if (it.pb && !(it.pb === 'new' && cur.tail && cur.has)) { start(it.pb); if (it.html) { const hh = (it.head || '') + it.html; cur.push(hh); used += meas(hh); cur.has = true; } continue; }   // a page that carries on from a broken section keeps flowing: the next part does not force a fresh page
       if (it.html !== undefined) {
         let html = it.html;
         for (;;) {
           const h = meas(html);
           if (used + h <= AVN) { cur.push(html); used += h; cur.has = true; break; }
           const sp = splitHtml(html, AVN - used);   // long typed text breaks across the page instead of jumping to a new one
-          if (sp) { cur.push(sp[0]); used += meas(sp[0]); cur.has = true; html = sp[1]; start('cont'); continue; }
+          if (sp) { cur.push(sp[0]); used += meas(sp[0]); cur.has = true; html = sp[1]; start('cont'); cur.tail = true; continue; }
           if (cur.has) { start('cont'); continue; }
           cur.push(html); used += h; cur.has = true; break;
         }
