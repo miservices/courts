@@ -312,6 +312,24 @@ export async function mountForm(def, host, { account, role, md, onDirty, onEdit,
       }
     }
   }
+  /* Splits one block of the form after a word inside a long typed text, so the first part fills the rest of the page and the remainder flows on. Returns [head, tail] or null when nothing can be split. */
+  function splitHtml(html, room) {
+    const parse = h => { const b = fd.createElement('div'); b.innerHTML = h; return b; };
+    const textsOf = b => { const out = []; b.querySelectorAll('[data-multi]').forEach(sp => { const w = fd.createTreeWalker(sp, NodeFilter.SHOW_TEXT); let t; while ((t = w.nextNode())) if (t.length) out.push(t); }); return out; };
+    const base = parse(html), tx = textsOf(base), cands = [];
+    tx.forEach((t, n) => { for (let i = 1; i < t.length; i++) if (/\s/.test(t.data[i - 1]) && !/\s/.test(t.data[i])) cands.push([n, i]); });
+    if (!cands.length) return null;
+    const cutAt = ([n, o]) => {
+      const b = parse(html), node = textsOf(b)[n], sp = node.parentElement.closest('[data-multi]'), r = fd.createRange();
+      r.setStart(node, o); r.setEnd(b, b.childNodes.length); const frag = r.extractContents(), tb = fd.createElement('div'); tb.appendChild(frag);
+      const ts = tb.querySelector('[data-multi]'), off0 = +(sp.dataset.off || 0), hl = sp.textContent.length;
+      sp.dataset.off = off0; sp.dataset.len = hl; if (ts) { ts.dataset.off = off0 + hl; ts.dataset.len = ts.textContent.length; }
+      return [b.innerHTML, tb.innerHTML];
+    };
+    let lo = 0, hi = cands.length;
+    while (lo < hi) { const m = (lo + hi + 1) >> 1; if (meas(cutAt(cands[m - 1])[0]) <= room) lo = m; else hi = m - 1; }
+    return lo ? cutAt(cands[lo - 1]) : null;
+  }
   function paginate(seq) {
     const pages = []; let cur, used, chOv = null;
     const start = mode => { cur = []; pages.push(cur); used = 0; cur.has = false; if (mode === 'cont' && (chOv !== null || def.contHeader)) { const h = chOv !== null ? chOv : def.contHeader(api); cur.push(h); used = meas(h); } };
@@ -319,7 +337,18 @@ export async function mountForm(def, host, { account, role, md, onDirty, onEdit,
     for (const it of seq) {
       if (it.ch !== undefined) { chOv = it.ch; continue; }
       if (it.pb) { start(it.pb); if (it.html) { cur.push(it.html); used += meas(it.html); cur.has = true; } continue; }
-      if (it.html !== undefined) { const h = meas(it.html); if (used + h > AVN && cur.has) start('cont'); cur.push(it.html); used += h; cur.has = true; continue; }
+      if (it.html !== undefined) {
+        let html = it.html;
+        for (;;) {
+          const h = meas(html);
+          if (used + h <= AVN) { cur.push(html); used += h; cur.has = true; break; }
+          const sp = splitHtml(html, AVN - used);   // long typed text breaks across the page instead of jumping to a new one
+          if (sp) { cur.push(sp[0]); used += meas(sp[0]); cur.has = true; html = sp[1]; start('cont'); continue; }
+          if (cur.has) { start('cont'); continue; }
+          cur.push(html); used += h; cur.has = true; break;
+        }
+        continue;
+      }
       if (it.rich !== undefined) { richFlow(it, pages, () => cur, m => start(m), n => { used += n; }, () => used); continue; }
       let rest = it.txt, first = true;
       for (;;) {
