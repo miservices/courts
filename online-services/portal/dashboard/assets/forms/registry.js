@@ -8,7 +8,9 @@ export const FORMS = [
   { id: 'mc200a', number: 'MC 200A', title: 'Criminal Complaint and Affidavit of Probable Cause', group: 'Criminal',
     summary: 'The complaint, order page, and affidavit of probable cause as one packet. Add as many counts as you need.' },
   { id: 'mc240', number: 'MC 240', title: 'Order After Arraignment and Pretrial Release Order', group: 'Criminal',
-    summary: 'The court’s order after arraignment with the pretrial release order (bond, release conditions, denial of bail). Completed by the judge, magistrate, or court staff.' }
+    summary: 'The court’s order after arraignment with the pretrial release order (bond, release conditions, denial of bail). Completed by the judge, magistrate, or court staff.' },
+  { id: 'mc241', number: 'MC 241', title: 'Order After Preliminary Examination', group: 'Criminal',
+    summary: 'The court’s findings and order after a preliminary examination: probable cause by charge, bind over, dismissals, amendments, and bail. Completed by the judge, magistrate, or court staff.' }
 ];
 export const keyOf = s => String(s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
 export const byId = id => FORMS.find(f => f.id === keyOf(id));
