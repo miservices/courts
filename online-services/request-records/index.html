@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Request Records | Michigan Courts</title>
+<link rel="icon" type="image/png" href="/courts/images/favicon.png">
+
+<script src="https://migovt.org/courts/shell.js" data-active="services"></script>
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-ui,'Public Sans',system-ui,sans-serif);background:#e3e9f2;color:#1b2433;line-height:1.65;font-size:16px}
+a{color:#1f5fae}
+a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #5b9be0;outline-offset:2px}
+.wrap{max-width:1180px;margin:0 auto;padding:0 40px}
+h1,h2,h3,h4{font-family:var(--font-head,Georgia,serif);color:#10264a;font-weight:600;line-height:1.25}
+[hidden]{display:none!important}
+.page-header{background:#10264a;padding:34px 0 40px}
+.breadcrumb{display:flex;align-items:center;gap:8px;margin-bottom:14px;font-size:13px;flex-wrap:wrap}
+.breadcrumb a{color:#9cc4f5;text-decoration:none}.breadcrumb a:hover{color:#fff;text-decoration:underline}
+.breadcrumb span{color:#6f87ad}.breadcrumb .here{color:#fff}
+.page-header h1{color:#fff;font-size:36px;letter-spacing:-.01em}
+.page-header p{color:#c5d3e8;margin-top:10px;max-width:740px;line-height:1.6}
+main{padding:36px 0 72px}
+.panel{background:#fff;border:1px solid #d5dde8;border-radius:4px;padding:28px 36px}
+.panel+.panel{margin-top:24px}
+.panel h2{font-size:22px;margin-bottom:12px}
+.btn{display:inline-block;background:#1f5fae;color:#fff;font:inherit;font-weight:700;text-decoration:none;padding:11px 24px;border:2px solid #1f5fae;border-radius:4px;cursor:pointer}
+.btn:hover{background:#10264a;border-color:#10264a}
+.btn.alt{background:#fff;color:#1f5fae}.btn.alt:hover{background:#f4f8fd;color:#10264a}
+.btn.sm{padding:6px 14px;font-size:14px}
+.btn:disabled{opacity:.55;cursor:default}
+.fees{width:100%;border-collapse:collapse;margin-top:6px}
+.fees th,.fees td{text-align:left;padding:10px 12px;border-bottom:1px solid #e3e9f1;vertical-align:top}
+.fees th{font-size:13px;text-transform:uppercase;letter-spacing:.05em;color:#5a667a}
+.fees td.n{white-space:nowrap;font-weight:700;color:#10264a;font-variant-numeric:tabular-nums}
+.note{font-size:14.5px;color:#5a667a;margin-top:12px}
+.big-search{display:flex;gap:12px;flex-wrap:wrap}
+.big-search input,.f input{flex:1;min-width:240px;font:inherit;font-size:17px;color:#1b2433;border:1px solid #8a97ad;border-radius:4px;padding:12px 16px}
+.result{display:block;width:100%;text-align:left;font:inherit;background:#fff;border:1px solid #d5dde8;border-left:4px solid #10264a;border-radius:4px;padding:14px 20px;margin-top:10px;color:inherit;cursor:pointer}
+.result:hover{background:#f4f8fd;border-left-color:#1f5fae}
+.r-no{font-weight:700;color:#1f5fae;margin-right:10px;font-variant-numeric:tabular-nums}
+.r-t{font-weight:700}.r-m{font-size:14.5px;color:#5a667a}
+.tag{display:inline-block;font-size:12.5px;font-weight:600;padding:1px 10px;border-radius:12px;background:#e1ecf8;color:#164a86;margin-left:8px}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin:18px 0 6px}
+.tabs button{font:inherit;font-weight:700;padding:9px 16px;border:1px solid #8a97ad;border-radius:4px;background:#fff;color:#10264a;cursor:pointer}
+.tabs button[aria-pressed=true]{background:#10264a;color:#fff;border-color:#10264a}
+.item{display:flex;gap:14px;align-items:flex-start;padding:12px 4px;border-bottom:1px solid #e3e9f1}
+.item input{margin-top:6px;width:18px;height:18px;flex-shrink:0}
+.item .en{font-weight:700;color:#10264a;min-width:34px}
+.item small{display:block;color:#5a667a;font-size:14px}
+.bar{position:sticky;bottom:0;background:#fff;border-top:2px solid #10264a;margin:18px -36px -28px;padding:14px 36px;display:flex;gap:14px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.quote{width:100%;border-collapse:collapse;margin:10px 0}
+.quote td,.quote th{padding:9px 10px;border-bottom:1px solid #e3e9f1;text-align:left;vertical-align:top}
+.quote td.n,.quote th.n{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+.quote tfoot td{font-weight:700;color:#10264a;border-bottom:0}
+.msg{padding:14px 18px;border-radius:4px;margin-top:14px;background:#f4f8fd;border-left:4px solid #1f5fae}
+.msg.err{background:#fdf4f3;border-left-color:#b3261e;color:#7a1a14}
+.msg.ok{background:#f3faf4;border-left-color:#2e7d32}
+.rcpt{font-family:'Courier New',monospace;font-weight:700;color:#10264a;font-size:18px}
+.crumb{background:none;border:0;font:inherit;font-weight:700;color:#1f5fae;cursor:pointer;text-decoration:underline;padding:0;margin-bottom:12px}
+.spin{width:22px;height:22px;border:3px solid #b8cdee;border-top-color:#10264a;border-radius:50%;animation:s .8s linear infinite;display:inline-block;vertical-align:middle;margin-right:10px}@keyframes s{to{transform:rotate(360deg)}}
+@media(max-width:640px){.wrap{padding:0 16px}.panel{padding:20px 18px}.bar{margin:18px -18px -20px;padding:12px 18px}.page-header h1{font-size:28px}}
+</style>
+</head>
+<body>
+<header class="page-header"><div class="wrap">
+  <nav class="breadcrumb" aria-label="Breadcrumb"><a href="https://migovt.org/courts/">Michigan Courts</a><span>/</span><a href="https://migovt.org/courts/online-services/">Online Services</a><span>/</span><span class="here">Request Records</span></nav>
+  <h1>Request Records</h1>
+  <p>Request a certified copy of a court record, a docket entry, or a court opinion from any court. Records that are sealed are not available. Certified copies are delivered as a PDF.</p>
+</div></header>
+
+<main><div class="wrap">
+  <section class="panel" aria-labelledby="fh">
+    <h2 id="fh">Fees</h2>
+    <table class="fees"><thead><tr><th scope="col">Request</th><th scope="col">Search fee</th><th scope="col">Certified copy</th></tr></thead><tbody>
+      <tr><td>Court record</td><td class="n">$125.00</td><td>$3.50 for each page</td></tr>
+      <tr><td>Docket entry</td><td class="n">$75.00</td><td>$2.50 for each page</td></tr>
+      <tr><td>Court opinion</td><td class="n">$75.00</td><td>$2.50 for each page. A party to the case, or the party's counsel if the party is represented, is entitled to one copy of the opinion without charge.</td></tr>
+    </tbody></table>
+    <p class="note">The fee is assessed to your account when your certified copy is issued and is added to <b>My financials</b>. Your copy can be downloaded for 21 days. Your receipt number lets anyone confirm the copy was issued, even after the download expires.</p>
+  </section>
+
+  <div id="gate"><section class="panel"><span class="spin"></span>Checking your sign-in…</section></div>
+
+  <div id="app" hidden>
+    <section class="panel" id="p-search" aria-labelledby="sh">
+      <h2 id="sh">Find a case</h2>
+      <form class="big-search" id="sf"><label for="q" style="position:absolute;left:-9999px">Case number, party name, or keyword</label><input id="q" type="search" placeholder="Case number (like 26-0108 or MSC 12), party name, or keyword" autocomplete="off"><button class="btn" type="submit">Search</button></form>
+      <p class="note">Searches every court: Genesee Co. District Court and the Michigan Supreme Court.</p>
+      <div id="results"></div>
+    </section>
+
+    <section class="panel" id="p-case" hidden></section>
+    <section class="panel" id="p-quote" hidden></section>
+    <section class="panel" id="p-done" hidden></section>
+
+    <section class="panel" id="p-mine" aria-labelledby="mh">
+      <h2 id="mh">My certified copies</h2>
+      <div id="mine"><span class="spin"></span>Loading…</div>
+    </section>
+  </div>
+
+  <section class="panel" aria-labelledby="vh">
+    <h2 id="vh">Verify a certified copy</h2>
+    <p class="note" style="margin-top:0">Enter the receipt number printed on a certified copy (like 2026-0108-CR-C-0962) to confirm the Court issued it.</p>
+    <form class="big-search f" id="vf" style="margin-top:12px"><label for="vq" style="position:absolute;left:-9999px">Receipt number</label><input id="vq" type="text" placeholder="Receipt number" autocomplete="off"><button class="btn alt" type="submit">Verify</button></form>
+    <div id="vr"></div>
+  </section>
+</div></main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+<script type="module">
+import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
+import { getFirestore, collection, getDocs, doc, getDoc, setDoc, runTransaction, query, where } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+import { getStorage, ref, getBytes, uploadBytes } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-storage.js";
+
+const app = getApps().length ? getApp() : initializeApp({
+  apiKey: "AIzaSyA8sUFIq81cs6uQvqduardpGJ4R2DxO8NQ", authDomain: "micourt-dada6.firebaseapp.com", projectId: "micourt-dada6",
+  storageBucket: "micourt-dada6.firebasestorage.app", messagingSenderId: "1013564619997", appId: "1:1013564619997:web:8f259dab457915758f6f34" });
+const auth = getAuth(app), db = getFirestore(app), storage = getStorage(app);
+const FORMS = '/courts/online-services/portal/dashboard/assets/forms/';
+const PORTAL = 'https://migovt.org/courts/online-services/portal/', FIN = 'https://migovt.org/courts/online-services/portal/dashboard/financials/';
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+const hv = v => v !== undefined && v !== null && String(v).trim() !== '';
+const norm = s => String(s || '').toLowerCase().replace(/\s+/g, ' ').trim();
+const r2 = n => Math.round((Number(n) || 0) * 100) / 100, money = n => r2(n).toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+const p2 = n => String(n).padStart(2, '0'), mdy = d => `${p2(d.getMonth() + 1)}/${p2(d.getDate())}/${d.getFullYear()}`;
+const fmtDate = s => { const d = s ? new Date(/^\d{4}-\d{2}-\d{2}$/.test(s) ? s + 'T12:00' : s) : null; return d && !isNaN(d) ? mdy(d) : ''; };
+const DAY = 864e5, EXPIRES_DAYS = 21;
+
+/* Fee schedule */
+const FEES = {
+  record: { name: 'Court record', search: 125, page: 3.5 },
+  docket: { name: 'Docket entry', search: 75, page: 2.5 },
+  opinion: { name: 'Court opinion', search: 75, page: 2.5 }
+};
+
+let account = null, CASES = [], loading = null;
+const S = { kase: null, kind: 'record', picked: new Set(), prepared: [] };
+
+/* ───── sign-in ───── */
+const vf = $('vf'); // verification works without signing in
+onAuthStateChanged(auth, async user => {
+  if (!user) { $('app').hidden = true; $('gate').innerHTML = `<section class="panel"><h2>Sign in to request records</h2><p>You need an Online Portal account to request records. Sign in, then return to this page.</p><p style="margin-top:16px"><a class="btn" href="${PORTAL}">Sign in to the Online Portal</a></p></section>`; return; }
+  const s = await getDoc(doc(db, 'accounts', user.uid)).catch(() => null);
+  if (!s?.exists()) { $('gate').innerHTML = `<section class="panel"><h2>Sign in to request records</h2><p>We could not find your account. Sign in to the Online Portal and try again.</p><p style="margin-top:16px"><a class="btn" href="${PORTAL}">Sign in to the Online Portal</a></p></section>`; return; }
+  account = { uid: user.uid, ...s.data() }; $('gate').hidden = true; $('app').hidden = false; loadMine();
+});
+
+/* ───── case data ───── */
+function partyList(c) {
+  const p = c.parties; if (Array.isArray(p)) return p.filter(x => x && x.name);
+  const out = []; Object.values(p || {}).forEach(v => Array.isArray(v) ? v.forEach(x => x && out.push(x)) : v && typeof v === 'object' && out.push(v)); return out.filter(x => x.name);
+}
+const counselOf = p => { const a = [...(p.attorneys || [])]; if (p.attorney?.name && !a.some(x => x.name === p.attorney.name)) a.unshift(p.attorney); return a.filter(x => x && x.name); };
+function caption(c) {
+  if (hv(c.caseTitleOverride)) return c.caseTitleOverride;
+  const t = String(c.caseType || '').toLowerCase(), l = partyList(c), find = names => l.find(x => names.includes(String(x.role || '').toLowerCase()))?.name;
+  if (t === 'criminal' || t === 'traffic') return `State of Michigan v. ${find(['defendant']) || 'Unknown'}`;
+  const a = find(['plaintiff', 'petitioner', 'appellant']), b = find(['defendant', 'respondent', 'appellee']);
+  if (a && b) return `${a} v. ${b}`; if (a) return `Ex parte ${a}`; if (b) return `In re ${b}`;
+  return c.administrativeSubtype || c.caseId || 'Case record';
+}
+const caseAlias = id => { const m = /^(\d{2}|\d{4})-(\d+)(?:-([A-Za-z]+))?$/.exec(String(id || '')); if (!m) return ''; const yy = m[1].slice(-2), yyyy = m[1].length === 2 ? '20' + m[1] : m[1], n = m[2], t = m[3] ? '-' + m[3] : ''; return [`${yy}-${n}${t}`, `${yy}-${n}`, `${yyyy}-${n}${t}`, `${yyyy}-${n}`].join(' '); };
+const isSupreme = c => c._col === 'mscCases' || /supreme/i.test(c.court || '');
+const courtName = c => isSupreme(c) ? 'Michigan Supreme Court' : (c.court || 'Genesee Co. District Court');
+const courtLabel = c => isSupreme(c) ? 'MI SUPREME COURT' : '7TH DISTRICT COURT';
+function loadAll() {
+  if (!loading) loading = (async () => {
+    const [a, b] = await Promise.all([getDocs(collection(db, 'cases')), getDocs(collection(db, 'mscCases'))]), rows = [];
+    a.forEach(d => rows.push({ ...d.data(), _id: d.id, _col: 'cases' })); b.forEach(d => rows.push({ ...d.data(), _id: d.id, _col: 'mscCases' }));
+    CASES = rows.filter(c => c.sealed !== true).map(c => ({ c, text: [c.caseId, caseAlias(c.caseId), caption(c), c.docketSummary, c.caseType, ...partyList(c).flatMap(p => [p.name, ...(Array.isArray(p.aliases) ? p.aliases : [])])].filter(hv).join(' ').toLowerCase() }));
+  })().catch(e => { loading = null; throw e; });
+  return loading;
+}
+$('sf').onsubmit = async e => {
+  e.preventDefault(); const q = $('q').value.trim().toLowerCase(), box = $('results'); if (!q) { box.innerHTML = ''; return; }
+  box.innerHTML = '<p class="note"><span class="spin"></span>Searching…</p>';
+  try { await loadAll(); } catch { box.innerHTML = '<div class="msg err">We could not search right now. Try again.</div>'; return; }
+  const terms = q.split(/\s+/), hits = CASES.filter(x => terms.every(t => x.text.includes(t))).slice(0, 30);
+  box.innerHTML = hits.length ? hits.map((x, i) => `<button type="button" class="result" data-i="${i}"><span class="r-no">${esc(x.c.caseId)}</span><span class="r-t">${esc(caption(x.c))}</span><span class="tag">${esc(courtName(x.c))}</span><div class="r-m">${esc([x.c.caseType, x.c.status].filter(hv).join(' · '))}</div></button>`).join('') : '<p class="note">No cases found. Sealed cases are not shown.</p>';
+  box.querySelectorAll('.result').forEach(b => b.onclick = () => openCase(hits[+b.dataset.i].c));
+};
+
+/* ───── record pickers ───── */
+const SAFE = /^(filingUploads|case-orders)\/[^/]+\/[^/]+\.(md|pdf)$/i;
+function pathOf(link) {
+  const m = /^https:\/\/migovt\.org\/courts\/documents\/#\/?(.+)$/.exec(String(link || '')); if (!m) return null;
+  try { const p = m[1].split('/').map(decodeURIComponent).join('/'); return SAFE.test(p) ? p : null; } catch { return null; }
+}
+const isOpinion = e => /opinion|per curiam|dissent|concurr/i.test([e.description, e.comment].filter(hv).join(' '));
+const liveEvents = c => (c.events || []).filter(e => !e.sealed && !e.struck);
+function itemsFor(c, kind) {
+  const ev = liveEvents(c);
+  if (kind === 'docket') return ev.map(e => ({ key: 'E' + e.eventNumber, e, path: null }));
+  return ev.map(e => ({ key: 'E' + e.eventNumber, e, path: pathOf(e.documentLink) })).filter(x => x.path && (kind === 'record' || isOpinion(x.e)));
+}
+function isParty(c) {
+  const me = norm(account.name), bar = String(account.barNumber || '').trim();
+  return partyList(c).some(p => norm(p.name) === me || counselOf(p).some(a => norm(a.name) === me || (bar && String(a.barNumber || '').trim() === bar)));
+}
+function openCase(c) {
+  S.kase = c; S.picked = new Set(); S.kind = 'record'; $('p-search').hidden = true; $('p-quote').hidden = true; $('p-done').hidden = true; $('p-case').hidden = false; drawCase(); scrollTo(0, 0);
+}
+function drawCase() {
+  const c = S.kase, list = itemsFor(c, S.kind), P = FEES[S.kind];
+  const hint = { record: 'Choose the filed documents and orders you need certified.', docket: 'Choose the docket entries you need certified.', opinion: 'Choose the opinions you need certified.' }[S.kind];
+  $('p-case').innerHTML = `<button class="crumb" id="back" type="button">Back to search</button>
+    <h2>${esc(caption(c))}</h2><p class="r-m"><span class="r-no">${esc(c.caseId)}</span>${esc(courtName(c))}</p>
+    <div class="tabs" role="group" aria-label="What are you requesting?">${Object.entries(FEES).map(([k, f]) => `<button type="button" data-k="${k}" aria-pressed="${k === S.kind}">${f.name}</button>`).join('')}</div>
+    <p class="note" style="margin-top:4px">${hint} Search fee ${money(P.search)} per request, then ${money(P.page)} for each page of the certified copy.${S.kind === 'opinion' && isParty(c) ? ' As a party or counsel, your first copy of each opinion has no per-page charge.' : ''}</p>
+    <div id="items">${list.length ? list.map(x => `<label class="item"><input type="checkbox" data-k="${esc(x.key)}" ${S.picked.has(S.kind + x.key) ? 'checked' : ''}><span class="en">${esc(x.e.eventNumber ?? '')}</span><span><b>${esc(x.e.description || x.e.type || 'Entry')}</b><small>${esc(fmtDate(x.e.date))}${hv(x.e.filedBy) ? ' · Filed by ' + esc(x.e.filedBy) : ''}${x.path ? ' · ' + esc(decodeURIComponent(x.path.split('/').pop()).replace(/^\d+-/, '')) : ''}</small></span></label>`).join('') : `<p class="note">${S.kind === 'docket' ? 'This case has no docket entries available.' : S.kind === 'opinion' ? 'No opinions are on file in this case.' : 'No filed documents are available to certify in this case. Sealed documents cannot be requested.'}</p>`}</div>
+    <div class="bar"><span id="count">${S.picked.size ? S.picked.size + ' selected' : 'Nothing selected'}</span><button class="btn" id="prep" type="button" ${S.picked.size ? '' : 'disabled'}>Prepare certified copies</button></div>
+    <div id="perr"></div>`;
+  $('back').onclick = () => { $('p-case').hidden = true; $('p-search').hidden = false; };
+  $('p-case').querySelectorAll('.tabs button').forEach(b => b.onclick = () => { S.kind = b.dataset.k; S.picked = new Set(); drawCase(); });
+  $('items').querySelectorAll('input').forEach(i => i.onchange = () => { const k = S.kind + i.dataset.k; i.checked ? S.picked.add(k) : S.picked.delete(k); $('count').textContent = S.picked.size ? S.picked.size + ' selected' : 'Nothing selected'; $('prep').disabled = !S.picked.size; });
+  $('prep').onclick = prepare;
+}
+
+/* ───── building the certified PDFs ───── */
+const loadMarks = () => import(FORMS + 'marks.js?v=1');
+const loadEngine = () => import(FORMS + 'engine.js?v=30');
+async function mdToPdf(text) {
+  const [{ byNumber }, { formOf, mountForm }] = await Promise.all([import(FORMS + 'registry.js?v=8'), loadEngine()]);
+  const num = formOf(text), form = num && byNumber(num); if (!form) throw new Error('form');
+  const def = (await import(`${FORMS}${form.id}.js?v=22`)).default, host = document.createElement('div');
+  host.style.cssText = 'position:fixed;left:-12000px;top:0;width:1000px;height:900px'; document.body.appendChild(host);
+  try { const eng = await mountForm(def, host, { md: text, readOnly: true }); try { return await eng.pdfBytes(); } finally { eng.destroy(); } } finally { host.remove(); }
+}
+function wrap(font, text, size, max) { const out = []; String(text || '').split(/\r?\n/).forEach(par => { let line = ''; par.split(/\s+/).forEach(w => { const t = line ? line + ' ' + w : w; if (font.widthOfTextAtSize(t, size) > max && line) { out.push(line); line = w; } else line = t; }); out.push(line); }); return out; }
+async function docketPdf(c, e) {
+  const { PDFDocument, StandardFonts, rgb } = PDFLib, d = await PDFDocument.create(), pg = d.addPage([612, 792]), f = await d.embedFont(StandardFonts.TimesRoman), fb = await d.embedFont(StandardFonts.TimesRomanBold), ink = rgb(.1, .1, .12);
+  const ctr = (t, y, s, font = fb) => pg.drawText(t, { x: (612 - font.widthOfTextAtSize(t, s)) / 2, y, size: s, font, color: ink });
+  ctr('STATE OF MICHIGAN', 720, 13); ctr(courtName(c).toUpperCase(), 702, 13); ctr('DOCKET ENTRY', 668, 16);
+  pg.drawLine({ start: { x: 72, y: 654 }, end: { x: 540, y: 654 }, thickness: 1, color: ink });
+  let y = 630; const row = (k, v) => { pg.drawText(k, { x: 72, y, size: 11, font: fb, color: ink }); const ls = wrap(f, v, 12, 360); ls.forEach((l, i) => pg.drawText(l, { x: 172, y: y - i * 15, size: 12, font: f, color: ink })); y -= Math.max(1, ls.length) * 15 + 9; };
+  row('Case:', caption(c)); row('Case number:', c.caseId || ''); row('Court:', courtName(c)); row('Entry number:', String(e.eventNumber ?? '')); row('Date:', fmtDate(e.date)); row('Entry type:', e.type || 'Event');
+  if (hv(e.filedBy)) row('Filed by:', e.filedBy + (e.role ? ' (' + e.role + ')' : '')); if (e.type === 'order' && hv(e.judge)) row('Judge:', e.judge);
+  row('Description:', e.description || ''); if (hv(e.comment)) row('Comment:', e.comment);
+  return new Uint8Array(await d.save());
+}
+const randNo = () => String(Math.floor(Math.random() * 10000)).padStart(4, '0');
+async function newReceipt(caseNo, used) { for (let i = 0; i < 40; i++) { const n = `${caseNo}-C-${randNo()}`; if (used.has(n)) continue; const s = await getDoc(doc(db, 'recordReceipts', n)).catch(() => null); if (!s?.exists()) { used.add(n); return n; } } throw new Error('receipt'); }
+async function stampOf(c, path, e) {
+  let st = null; if (path) { try { const s = await getDoc(doc(db, 'docStamps', path.split('/').join('__'))); st = s.exists() ? s.data() : null; } catch { } }
+  return { x: .7, y: .004, page: 1, rot: -3, ink: .9, scale: 1, date: fmtDate(e.date) || mdy(new Date()), label: courtLabel(c), ...(st || {}), label: st?.label || courtLabel(c) };
+}
+async function prepare() {
+  const c = S.kase, btn = $('prep'), err = $('perr'); btn.disabled = true; err.innerHTML = '<div class="msg"><span class="spin"></span><span id="pst">Preparing your certified copies…</span></div>';
+  const say = t => { const el = $('pst'); if (el) el.textContent = t; };
+  try {
+    const { drawMarks, DEF_CERT, DEF_SEAL } = await loadMarks(), { courtShort } = await loadEngine(), P = FEES[S.kind], used = new Set(), out = [], today = mdy(new Date()), issued = new Date();
+    const mine = await myReceipts(), freed = new Set(mine.filter(r => r.free).map(r => r.itemKey)), party = isParty(c);
+    const chosen = itemsFor(c, S.kind).filter(x => S.picked.has(S.kind + x.key));
+    for (const [n, it] of chosen.entries()) {
+      say(`Preparing ${n + 1} of ${chosen.length}…`);
+      let bytes, rec = null;
+      if (it.path) { const raw = await getBytes(ref(storage, it.path), 25 * 1024 * 1024); bytes = /\.pdf$/i.test(it.path) ? new Uint8Array(raw) : await mdToPdf(new TextDecoder().decode(raw)); rec = await stampOf(c, it.path, it.e); }
+      else { bytes = await docketPdf(c, it.e); rec = await stampOf(c, null, it.e); }
+      const d = await PDFLib.PDFDocument.load(bytes), pages = d.getPageCount(), receipt = await newReceipt(c.caseId, used), docId = rec.docId || (it.path ? it.path.split('/')[1] : `${c.caseId}-E${it.e.eventNumber}`);
+      const itemKey = `${c._col}/${c._id}/${S.kind}/${it.key}`, free = S.kind === 'opinion' && party && !freed.has(itemKey);
+      await drawMarks(PDFLib, d, {
+        stamp: { ...rec }, sticker: { id: docId, date: rec.date, label: rec.label },
+        cert: { ...DEF_CERT, ...(rec.cert || {}), date: today, by: 'E-CERTIFICATION', court: courtShort(rec.label), ghost: false },
+        seal: { ...DEF_SEAL, ...(rec.seal || {}), court: rec.label }
+      });
+      const f = await d.embedFont(PDFLib.StandardFonts.Helvetica), p1 = d.getPages()[0]; p1.drawText(`Certified copy receipt ${receipt}`, { x: 24, y: 10, size: 7, font: f, color: PDFLib.rgb(.25, .25, .28) });
+      const searchFee = P.search, copyFee = free ? 0 : r2(pages * P.page);
+      out.push({ it, receipt, pages, bytes: new Uint8Array(await d.save()), docId, itemKey, free, searchFee, copyFee, total: r2(searchFee + copyFee), desc: it.e.description || it.e.type || 'Entry', issued: issued.getTime() });
+    }
+    S.prepared = out; drawQuote();
+  } catch (e) { console.error(e); err.innerHTML = '<div class="msg err">We could not prepare one of the records. Try again, or choose a different record.</div>'; btn.disabled = false; }
+}
+
+/* ───── quote, issue, financials ───── */
+function drawQuote() {
+  const c = S.kase, P = FEES[S.kind], total = r2(S.prepared.reduce((t, x) => t + x.total, 0));
+  $('p-case').hidden = true; $('p-quote').hidden = false; scrollTo(0, 0);
+  $('p-quote').innerHTML = `<h2>Your certified copies are ready</h2><p class="r-m"><span class="r-no">${esc(c.caseId)}</span>${esc(caption(c))}</p>
+    <table class="quote"><thead><tr><th>Record</th><th class="n">Pages</th><th class="n">Search</th><th class="n">Copy</th><th class="n">Total</th></tr></thead><tbody>
+    ${S.prepared.map(x => `<tr><td><b>${esc(P.name)}:</b> ${esc(x.desc)}<small style="display:block;color:#5a667a">Receipt ${esc(x.receipt)}</small></td><td class="n">${x.pages}</td><td class="n">${money(x.searchFee)}</td><td class="n">${x.free ? 'No charge' : money(x.copyFee)}</td><td class="n">${money(x.total)}</td></tr>`).join('')}
+    </tbody><tfoot><tr><td colspan="4">Total to be assessed to your account</td><td class="n">${money(total)}</td></tr></tfoot></table>
+    <p class="note">When you download, the fee is assessed to your account and added to My financials. The copy stays available for ${EXPIRES_DAYS} days.</p>
+    <div class="bar" style="position:static;margin:18px 0 0;padding:14px 0 0"><button class="btn alt" id="qback" type="button">Change my selection</button><button class="btn" id="issue" type="button">Download certified copies</button></div><div id="ierr"></div>`;
+  $('qback').onclick = () => { $('p-quote').hidden = true; $('p-case').hidden = false; $('prep').disabled = false; $('perr').innerHTML = ''; };
+  $('issue').onclick = issue;
+}
+const save = (bytes, name) => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([bytes], { type: 'application/pdf' })); a.download = name; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500); };
+async function issue() {
+  const c = S.kase, P = FEES[S.kind], btn = $('issue'); btn.disabled = true; $('ierr').innerHTML = '<div class="msg"><span class="spin"></span>Issuing your certified copies…</div>';
+  const done = [];
+  try {
+    for (const x of S.prepared) {
+      const exp = x.issued + EXPIRES_DAYS * DAY, kind = FEES[S.kind].name;
+      await uploadBytes(ref(storage, `certifiedCopies/${account.uid}/${x.receipt}`), x.bytes, { contentType: 'application/pdf' });
+      await setDoc(doc(db, 'recordReceipts', x.receipt), { receipt: x.receipt, requesterUid: account.uid, requesterName: account.name || '', caseId: c.caseId, caseDocId: c._id, caseCollection: c._col, court: courtName(c), kind: S.kind, kindName: kind, itemKey: x.itemKey, docId: x.docId, eventNumber: x.it.e.eventNumber ?? null, description: x.desc, pages: x.pages, searchFee: x.searchFee, copyFee: x.copyFee, total: x.total, free: x.free, issuedAt: x.issued, expiresAt: exp });
+      await runTransaction(db, async tx => {   // the fee is assessed to the requester and shows in My financials
+        const r = doc(db, c._col, c._id), s = await tx.get(r), d = s.data() || {}, list = [...(d.financialOrders || [])], at = new Date().toISOString();
+        list.push({ id: 'REC-' + x.receipt, type: 'Court Fee', description: `Certified copy of ${kind.toLowerCase()}: ${x.desc} (${x.pages} page${x.pages === 1 ? '' : 's'}${x.free ? ', first copy of opinion at no charge' : ''})`, payor: account.name || 'Requester', payorUid: account.uid, amount: x.total, originalAmount: x.total, dueDate: new Date(Date.now() + 14 * DAY).toISOString().slice(0, 10), assessmentDate: at, assessedBy: 'System', recordReceipt: x.receipt, payments: [], adjustments: [], garnishments: [] });
+        tx.update(r, { financialOrders: list, 'dates.lastUpdated': at });
+      });
+      save(x.bytes, `Certified ${x.receipt}.pdf`); done.push(x);
+    }
+    showDone(done);
+  } catch (e) { console.error(e); $('ierr').innerHTML = `<div class="msg err">${done.length ? 'Some copies were issued (' + done.map(d => esc(d.receipt)).join(', ') + '). ' : ''}We could not finish issuing your certified copies. Try again.</div>`; btn.disabled = false; }
+}
+function showDone(done) {
+  $('p-quote').hidden = true; $('p-done').hidden = false; scrollTo(0, 0); const total = r2(done.reduce((t, x) => t + x.total, 0)), exp = new Date(done[0].issued + EXPIRES_DAYS * DAY);
+  $('p-done').innerHTML = `<h2>Your certified ${done.length === 1 ? 'copy has' : 'copies have'} been issued</h2>
+    <div class="msg ok">${done.map(x => `<div>Receipt number <span class="rcpt">${esc(x.receipt)}</span> &nbsp; ${esc(x.desc)} (${x.pages} page${x.pages === 1 ? '' : 's'})</div>`).join('')}</div>
+    <p style="margin-top:14px"><b>Your download expires on ${mdy(exp)}</b> (${EXPIRES_DAYS} days). Keep your receipt number: it can be used to confirm the copy was issued, even after the download expires.</p>
+    <p class="note">${money(total)} has been assessed to your account. <a href="${FIN}">View My financials</a></p>
+    <p style="margin-top:16px"><button class="btn" id="again" type="button">Request another record</button></p>`;
+  $('again').onclick = () => { $('p-done').hidden = true; $('p-search').hidden = false; $('results').innerHTML = ''; loadMine(); };
+  loadMine();
+}
+
+/* ───── my certified copies, and verification ───── */
+async function myReceipts() { const s = await getDocs(query(collection(db, 'recordReceipts'), where('requesterUid', '==', account.uid))); return s.docs.map(d => d.data()).sort((a, b) => b.issuedAt - a.issuedAt); }
+async function loadMine() {
+  const box = $('mine'); try {
+    const list = await myReceipts(); if (!list.length) { box.innerHTML = '<p class="note" style="margin-top:0">You have not requested any certified copies yet.</p>'; return; }
+    const now = Date.now();
+    box.innerHTML = `<table class="quote"><thead><tr><th>Receipt</th><th>Record</th><th>Issued</th><th class="n">Fee</th><th></th></tr></thead><tbody>${list.map(r => `<tr><td class="rcpt" style="font-size:15px">${esc(r.receipt)}</td><td>${esc(r.kindName)}: ${esc(r.description)}<small style="display:block;color:#5a667a">${esc(r.caseId)} · ${r.pages} page${r.pages === 1 ? '' : 's'}</small></td><td>${mdy(new Date(r.issuedAt))}</td><td class="n">${money(r.total)}</td><td class="n">${r.expiresAt > now ? `<button class="btn alt sm" data-r="${esc(r.receipt)}" type="button">Download</button><small style="display:block;color:#5a667a">until ${mdy(new Date(r.expiresAt))}</small>` : '<small style="color:#5a667a">Download expired</small>'}</td></tr>`).join('')}</tbody></table>`;
+    box.querySelectorAll('[data-r]').forEach(b => b.onclick = async () => { b.disabled = true; try { save(await getBytes(ref(storage, `certifiedCopies/${account.uid}/${b.dataset.r}`), 40 * 1024 * 1024), `Certified ${b.dataset.r}.pdf`); } catch { b.insertAdjacentHTML('afterend', '<small style="display:block;color:#b3261e">This copy is no longer available.</small>'); } b.disabled = false; });
+  } catch (e) { console.error(e); box.innerHTML = '<p class="note" style="margin-top:0">We could not load your certified copies.</p>'; }
+}
+vf.onsubmit = async e => {
+  e.preventDefault(); const n = $('vq').value.trim().toUpperCase().replace(/\s+/g, ' '), box = $('vr'); if (!n) { box.innerHTML = ''; return; }
+  box.innerHTML = '<p class="note"><span class="spin"></span>Checking…</p>';
+  try {
+    const s = await getDoc(doc(db, 'recordReceipts', n));
+    if (!s.exists()) { box.innerHTML = '<div class="msg err"><b>No certified copy found</b> for that receipt number. Check the number printed on the copy.</div>'; return; }
+    const r = s.data(); box.innerHTML = `<div class="msg ok"><b>Verified.</b> The Court issued a certified copy under receipt <span class="rcpt" style="font-size:15px">${esc(r.receipt)}</span>.<br>${esc(r.kindName)}: ${esc(r.description)}<br>Case ${esc(r.caseId)} · ${esc(r.court)} · ${r.pages} page${r.pages === 1 ? '' : 's'}<br>Issued ${mdy(new Date(r.issuedAt))}${r.expiresAt > Date.now() ? '; the download is available until ' + mdy(new Date(r.expiresAt)) : '; the download has expired'}.</div>`;
+  } catch { box.innerHTML = '<div class="msg err">We could not check that receipt right now. Try again.</div>'; }
+};
+</script>
+</body>
+</html>
