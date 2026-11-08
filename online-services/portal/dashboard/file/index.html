@@ -378,7 +378,7 @@ async function submit() {
       const dt = new Date(), ds = `${String(dt.getMonth() + 1).padStart(2, '0')}/${String(dt.getDate()).padStart(2, '0')}/${dt.getFullYear()}`, label = court === SUPREME_COURT ? 'MI SUPREME COURT' : '7TH DISTRICT COURT';
       const used = new Set(); const nextNo = () => { let n; do n = String(Math.floor(Math.random() * 10000)).padStart(4, '0'); while (used.has(n)); used.add(n); return n; };   // random 4 digits, never repeated inside one filing
       documents.filter(x => x.storagePath).forEach(x => { x.docNumber = nextNo(); x.docId = `${conf}-${x.docNumber}`; });
-      await Promise.all(documents.filter(x => x.storagePath).map(x => setDoc(doc(db, 'docStamps', x.storagePath.split('/').join('__')), { path: x.storagePath, docId: x.docId, label, date: ds, x: 0.7, y: 0.004, page: 1, filedByUid: account.uid, confirmationNumber: conf, filedAt: Date.now() })));
+      await Promise.all(documents.filter(x => x.storagePath).map(x => setDoc(doc(db, 'docStamps', x.storagePath.split('/').join('__')), { path: x.storagePath, docId: x.docId, label, date: ds, x: 0.7, y: 0.004, page: 1, filedByUid: account.uid, confirmationNumber: conf, filedAt: Date.now(), filed: false })));
     } catch (e) { console.warn('Could not save the court stamp', e); }
     S.links.forEach(l => documents.push({ type: 'gdrive', name: 'Google Drive Document', link: l.url.trim(), documentType: l.type, fee: fee(l.type, court) }));
 

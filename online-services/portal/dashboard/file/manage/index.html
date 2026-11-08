@@ -109,7 +109,11 @@ if (!has(STAFF, role)) {
       return { ...o, amount: Math.round((o.amount - bal) * 100) / 100, adjustments: [...(o.adjustments || []), { id: 'ADJ-W' + feeId(f), kind: 'waiver', amount: -bal, date: at, reason: 'Fee waiver granted (MC 20).', by: 'System', auto: true }] }; });
   }
   const log = (f, text) => [...(f.activityLog || []), { text, by: account.name, at: now() }];
-  async function persist(f, patch) { await updateDoc(doc(db, 'pendingFilings', f._id), patch); Object.assign(f, patch); }
+  async function persist(f, patch) {
+    await updateDoc(doc(db, 'pendingFilings', f._id), patch); Object.assign(f, patch);
+    // once a filing is accepted its stamps are no longer the filer's to move (best effort; court staff keep control until they finalize them)
+    if (patch.status === 'Accepted') (f.documents || []).filter(x => x?.storagePath).forEach(x => updateDoc(doc(db, 'docStamps', x.storagePath.split('/').join('__')), { filed: true }).catch(() => { }));
+  }
 
   /* ── Case-management record (staff-only caseManagement/{caseId}): tasks, notices, audit log ── */
   const MOTION_KEYWORDS = ['motion', 'petition', 'application', 'objection', 'stipulation for'];

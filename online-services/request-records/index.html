@@ -223,14 +223,14 @@ function drawCase() {
 }
 
 /* ───── building the certified PDFs ───── */
-const loadMarks = () => import(FORMS + 'marks.js?v=1');
-const loadEngine = () => import(FORMS + 'engine.js?v=30');
-async function mdToPdf(text) {
+const loadMarks = () => import(FORMS + 'marks.js?v=2');
+const loadEngine = () => import(FORMS + 'engine.js?v=31');
+async function mdToPdf(text, cs, ss) {
   const [{ byNumber }, { formOf, mountForm }] = await Promise.all([import(FORMS + 'registry.js?v=8'), loadEngine()]);
   const num = formOf(text), form = num && byNumber(num); if (!form) throw new Error('form');
   const def = (await import(`${FORMS}${form.id}.js?v=22`)).default, host = document.createElement('div');
   host.style.cssText = 'position:fixed;left:-12000px;top:0;width:1000px;height:900px'; document.body.appendChild(host);
-  try { const eng = await mountForm(def, host, { md: text, readOnly: true }); try { return await eng.pdfBytes(); } finally { eng.destroy(); } } finally { host.remove(); }
+  try { const eng = await mountForm(def, host, { md: text, readOnly: true }); try { const bytes = await eng.pdfBytes(); return { bytes, defaults: eng.markDefaults(cs, ss) }; } finally { eng.destroy(); } } finally { host.remove(); }
 }
 function wrap(font, text, size, max) { const out = []; String(text || '').split(/\r?\n/).forEach(par => { let line = ''; par.split(/\s+/).forEach(w => { const t = line ? line + ' ' + w : w; if (font.widthOfTextAtSize(t, size) > max && line) { out.push(line); line = w; } else line = t; }); out.push(line); }); return out; }
 async function docketPdf(c, e) {
@@ -259,15 +259,17 @@ async function prepare() {
     const chosen = itemsFor(c, S.kind).filter(x => S.picked.has(S.kind + x.key));
     for (const [n, it] of chosen.entries()) {
       say(`Preparing ${n + 1} of ${chosen.length}…`);
-      let bytes, rec = null;
-      if (it.path) { const raw = await getBytes(ref(storage, it.path), 25 * 1024 * 1024); bytes = /\.pdf$/i.test(it.path) ? new Uint8Array(raw) : await mdToPdf(new TextDecoder().decode(raw)); rec = await stampOf(c, it.path, it.e); }
+      let bytes, rec = null, defaults = null;
+      if (it.path) { const raw = await getBytes(ref(storage, it.path), 25 * 1024 * 1024); rec = await stampOf(c, it.path, it.e); if (/\.pdf$/i.test(it.path)) bytes = new Uint8Array(raw); else { const r = await mdToPdf(new TextDecoder().decode(raw), rec.cert?.scale ?? DEF_CERT.scale, rec.seal?.scale ?? DEF_SEAL.scale); bytes = r.bytes; defaults = r.defaults; } }
       else { bytes = await docketPdf(c, it.e); rec = await stampOf(c, null, it.e); }
+      /* the clerk's saved placement if there is one; otherwise by the signature block on a court form, otherwise the bottom of the last page */
+      const place = (k, D) => rec[k]?.x !== undefined ? {} : defaults?.[k] ? { x: defaults[k].x, y: defaults[k].y, page: defaults.page, scale: defaults[k].scale } : {};
       const d = await PDFLib.PDFDocument.load(bytes), pages = d.getPageCount(), receipt = await newReceipt(c.caseId, used), docId = rec.docId || (it.path ? it.path.split('/')[1] : `${c.caseId}-E${it.e.eventNumber}`);
       const itemKey = `${c._col}/${c._id}/${S.kind}/${it.key}`, free = S.kind === 'opinion' && party && !freed.has(itemKey);
       await drawMarks(PDFLib, d, {
-        stamp: { ...rec }, sticker: { id: docId, date: rec.date, label: rec.label },
-        cert: { ...DEF_CERT, ...(rec.cert || {}), date: today, by: 'E-CERTIFICATION', court: courtShort(rec.label), ghost: false },
-        seal: { ...DEF_SEAL, ...(rec.seal || {}), court: rec.label }
+        stamp: { ...rec }, front: { ...rec, title: 'A CERTIFIED COPY', date: today, page: 1, x: rec.x > .4 ? .06 : .7 }, sticker: { id: docId, date: rec.date, label: rec.label },
+        cert: { ...DEF_CERT, ...(rec.cert || {}), ...place('cert'), date: today, by: 'E-CERTIFICATION', court: courtShort(rec.label), ghost: false },
+        seal: { ...DEF_SEAL, ...(rec.seal || {}), ...place('seal'), court: rec.label }
       });
       const f = await d.embedFont(PDFLib.StandardFonts.Helvetica), p1 = d.getPages()[0]; p1.drawText(`Certified copy receipt ${receipt}`, { x: 24, y: 10, size: 7, font: f, color: PDFLib.rgb(.25, .25, .28) });
       const searchFee = P.search, copyFee = free ? 0 : r2(pages * P.page);
