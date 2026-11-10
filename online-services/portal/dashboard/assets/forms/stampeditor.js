@@ -26,8 +26,8 @@ export function openStampEditor({ pdf = null, md = null, label = '7TH DISTRICT C
     let M = init(); const placed = { seal: marks.seal?.x !== undefined, cert: marks.cert?.x !== undefined }; let prev = false, eng = null;
     const root = document.createElement('div'); root.className = 'se'; root.setAttribute('role', 'dialog'); root.setAttribute('aria-modal', 'true'); root.setAttribute('aria-label', 'Stamp editor'); root.tabIndex = -1;
     const grp = (k, t) => `<span class="se-g" data-k="${k}"><b>${t}</b><label>Ink <input type="range" data-f="ink" min="${k === 'seal' ? 25 : 0}" max="${k === 'seal' ? 100 : 150}"></label><label>Tilt <input type="range" data-f="rot" min="-20" max="20"></label><label>Size <input type="range" data-f="scale" min="50" max="200"></label></span>`;
-    root.innerHTML = `<div class="se-bar"><b>Stamp editor</b>${grp('stamp', 'True copy stamp')}${grp('seal', 'Seal')}${grp('cert', 'Certification')}<label><input type="checkbox" id="se-prev"> Show the stamp as on a certified copy</label><span class="se-sp"></span><button type="button" id="se-reset">Reset</button><button type="button" id="se-cancel">Cancel</button><button type="button" class="p" id="se-save">Save placement</button></div>
-      <div class="se-note">Drag the stamp, seal and certification where you want them. The seal and certification appear only on certified copies; the stamp reads "A CERTIFIED COPY" there, in the same spot.</div><div class="se-body"><div class="se-pages" id="se-pages"></div></div>`;
+    root.innerHTML = `<div class="se-bar"><b>Stamp editor</b><span class="se-g" data-k="stamp" style="border:0"><label>Stamp darkness <input type="range" data-f="ink" min="0" max="150"></label></span><span class="se-sp"></span><button type="button" id="se-cancel">Cancel</button><button type="button" class="p" id="se-save">Save</button></div>
+      <div class="se-note">Drag the stamp, seal and certification where you want them. Everything else is automatic: a certified copy gets the seal and certification and the stamp reads "A CERTIFIED COPY" in the same spot.</div><div class="se-body"><div class="se-pages" id="se-pages"></div></div>`;
     document.body.appendChild(root); root.focus(); const $ = s => root.querySelector(s), box = $('#se-pages');
     const finish = v => { document.removeEventListener('keydown', esc, true); try { eng?.destroy(); } catch { } root.remove(); resolve(v); };
     const esc = e => { if (e.key === 'Escape') { e.stopPropagation(); finish(null); } }; document.addEventListener('keydown', esc, true);
@@ -37,8 +37,6 @@ export function openStampEditor({ pdf = null, md = null, label = '7TH DISTRICT C
     const sealView = () => ({ ...M.seal, auto: !placed.seal, ghost: true, court: label });
     const ink = e => { const k = e.target.closest('.se-g').dataset.k, f = e.target.dataset.f, v = f === 'rot' ? +e.target.value : +e.target.value / 100; M[k] = { ...M[k], [f]: v }; if (k !== 'stamp') placed[k] = placed[k] || false; redraw(); };
     root.querySelectorAll('.se-g input').forEach(i => i.oninput = ink);
-    $('#se-prev').onchange = e => { prev = e.target.checked; redraw(); };
-    $('#se-reset').onclick = () => { M = init(); placed.seal = marks.seal?.x !== undefined; placed.cert = marks.cert?.x !== undefined; sync(); redraw(); };
     $('#se-cancel').onclick = () => finish(null);
     $('#se-save').onclick = () => {
       const out = {}, r = n => +Number(n).toFixed(4);
