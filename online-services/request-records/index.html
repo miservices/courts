@@ -223,9 +223,12 @@ function drawCase() {
 }
 
 /* ───── building the certified PDFs ───── */
-const loadMarks = () => import(FORMS + 'marks.js?v=2');
-const loadEngine = () => import(FORMS + 'engine.js?v=31');
+const loadMarks = () => import(FORMS + 'marks.js?v=3');
+const placementOf = t => { try { return window.__pl ? window.__pl(t) : {}; } catch { return {}; } };
+const loadMc = () => import(FORMS + 'mc500.js?v=1');
+const loadEngine = () => import(FORMS + 'engine.js?v=33');
 async function mdToPdf(text, cs, ss) {
+  window.__pl = (await loadEngine()).placementOf;
   const [{ byNumber }, { formOf, mountForm }] = await Promise.all([import(FORMS + 'registry.js?v=8'), loadEngine()]);
   const num = formOf(text), form = num && byNumber(num); if (!form) throw new Error('form');
   const def = (await import(`${FORMS}${form.id}.js?v=22`)).default, host = document.createElement('div');
@@ -248,7 +251,7 @@ const randNo = () => String(Math.floor(Math.random() * 10000)).padStart(4, '0');
 async function newReceipt(caseNo, used) { for (let i = 0; i < 40; i++) { const n = `${caseNo}-C-${randNo()}`; if (used.has(n)) continue; const s = await getDoc(doc(db, 'recordReceipts', n)).catch(() => null); if (!s?.exists()) { used.add(n); return n; } } throw new Error('receipt'); }
 async function stampOf(c, path, e) {
   let st = null; if (path) { try { const s = await getDoc(doc(db, 'docStamps', path.split('/').join('__'))); st = s.exists() ? s.data() : null; } catch { } }
-  return { x: .7, y: .004, page: 1, rot: -3, ink: .9, scale: 1, date: fmtDate(e.date) || mdy(new Date()), label: courtLabel(c), ...(st || {}), label: st?.label || courtLabel(c) };
+  return { x: .7, y: .004, page: 1, rot: -3, ink: .9, scale: 1, date: fmtDate(e.date) || mdy(new Date()), label: courtLabel(c), ...(st || {}), label: st?.label || courtLabel(c), saved: !!st };
 }
 async function prepare() {
   const c = S.kase, btn = $('prep'), err = $('perr'); btn.disabled = true; err.innerHTML = '<div class="msg"><span class="spin"></span><span id="pst">Preparing your certified copies…</span></div>';
@@ -260,14 +263,14 @@ async function prepare() {
     for (const [n, it] of chosen.entries()) {
       say(`Preparing ${n + 1} of ${chosen.length}…`);
       let bytes, rec = null, defaults = null;
-      if (it.path) { const raw = await getBytes(ref(storage, it.path), 25 * 1024 * 1024); rec = await stampOf(c, it.path, it.e); if (/\.pdf$/i.test(it.path)) bytes = new Uint8Array(raw); else { const r = await mdToPdf(new TextDecoder().decode(raw), rec.cert?.scale ?? DEF_CERT.scale, rec.seal?.scale ?? DEF_SEAL.scale); bytes = r.bytes; defaults = r.defaults; } }
+      if (it.path) { const raw = await getBytes(ref(storage, it.path), 25 * 1024 * 1024); rec = await stampOf(c, it.path, it.e); if (/\.pdf$/i.test(it.path)) bytes = new Uint8Array(raw); else { window.__pl = (await loadEngine()).placementOf; const mt = new TextDecoder().decode(raw), pl = placementOf(mt); if (pl.stamp && !rec.saved) rec = { ...rec, ...pl.stamp }; if (pl.seal && rec.seal?.x === undefined) rec = { ...rec, seal: { ...(rec.seal || {}), ...pl.seal } }; if (pl.certification && rec.cert?.x === undefined) rec = { ...rec, cert: { ...(rec.cert || {}), ...pl.certification } }; const r = await mdToPdf(mt, rec.cert?.scale ?? DEF_CERT.scale, rec.seal?.scale ?? DEF_SEAL.scale); bytes = r.bytes; defaults = r.defaults; } }
       else { bytes = await docketPdf(c, it.e); rec = await stampOf(c, null, it.e); }
       /* the clerk's saved placement if there is one; otherwise by the signature block on a court form, otherwise the bottom of the last page */
       const place = (k, D) => rec[k]?.x !== undefined ? {} : defaults?.[k] ? { x: defaults[k].x, y: defaults[k].y, page: defaults.page, scale: defaults[k].scale } : {};
       const d = await PDFLib.PDFDocument.load(bytes), pages = d.getPageCount(), receipt = await newReceipt(c.caseId, used), docId = rec.docId || (it.path ? it.path.split('/')[1] : `${c.caseId}-E${it.e.eventNumber}`);
       const itemKey = `${c._col}/${c._id}/${S.kind}/${it.key}`, free = S.kind === 'opinion' && party && !freed.has(itemKey);
       await drawMarks(PDFLib, d, {
-        stamp: { ...rec }, front: { ...rec, title: 'A CERTIFIED COPY', date: today, page: 1, x: rec.x > .4 ? .06 : .7 }, sticker: { id: docId, date: rec.date, label: rec.label },
+        stamp: { ...rec, title: 'A CERTIFIED COPY', date: today }, sticker: { id: docId, date: rec.date, label: rec.label },
         cert: { ...DEF_CERT, ...(rec.cert || {}), ...place('cert'), date: today, by: 'E-CERTIFICATION', court: courtShort(rec.label), ghost: false },
         seal: { ...DEF_SEAL, ...(rec.seal || {}), ...place('seal'), court: rec.label }
       });
@@ -300,16 +303,26 @@ async function issue() {
     for (const x of S.prepared) {
       const exp = x.issued + EXPIRES_DAYS * DAY, kind = FEES[S.kind].name;
       await uploadBytes(ref(storage, `certifiedCopies/${account.uid}/${x.receipt}`), x.bytes, { contentType: 'application/pdf' });
-      await setDoc(doc(db, 'recordReceipts', x.receipt), { receipt: x.receipt, requesterUid: account.uid, requesterName: account.name || '', caseId: c.caseId, caseDocId: c._id, caseCollection: c._col, court: courtName(c), kind: S.kind, kindName: kind, itemKey: x.itemKey, docId: x.docId, eventNumber: x.it.e.eventNumber ?? null, description: x.desc, pages: x.pages, searchFee: x.searchFee, copyFee: x.copyFee, total: x.total, free: x.free, issuedAt: x.issued, expiresAt: exp });
+      const rcpt = { receipt: x.receipt, requesterUid: account.uid, requesterName: account.name || '', caseId: c.caseId, caseDocId: c._id, caseCollection: c._col, court: courtName(c), kind: S.kind, kindName: kind, itemKey: x.itemKey, docId: x.docId, eventNumber: x.it.e.eventNumber ?? null, description: x.desc, matter: caption(c), recordDate: fmtDate(x.it.e.date) || '', delivery: 'Electronic', pages: x.pages, searchFee: x.searchFee, copyFee: x.copyFee, total: x.total, free: x.free, issuedAt: x.issued, expiresAt: exp };
+      await setDoc(doc(db, 'recordReceipts', x.receipt), rcpt);
       await runTransaction(db, async tx => {   // the fee is assessed to the requester and shows in My financials
         const r = doc(db, c._col, c._id), s = await tx.get(r), d = s.data() || {}, list = [...(d.financialOrders || [])], at = new Date().toISOString();
         list.push({ id: 'REC-' + x.receipt, type: 'Court Fee', description: `Certified copy of ${kind.toLowerCase()}: ${x.desc} (${x.pages} page${x.pages === 1 ? '' : 's'}${x.free ? ', first copy of opinion at no charge' : ''})`, payor: account.name || 'Requester', payorUid: account.uid, amount: x.total, originalAmount: x.total, dueDate: new Date(Date.now() + 14 * DAY).toISOString().slice(0, 10), assessmentDate: at, assessedBy: 'System', recordReceipt: x.receipt, payments: [], adjustments: [], garnishments: [] });
         tx.update(r, { financialOrders: list, 'dates.lastUpdated': at });
       });
-      save(x.bytes, `Certified ${x.receipt}.pdf`); done.push(x);
+      save(x.bytes, `Certified ${x.receipt}.pdf`); x.rcpt = rcpt; done.push(x);
     }
     showDone(done);
   } catch (e) { console.error(e); $('ierr').innerHTML = `<div class="msg err">${done.length ? 'Some copies were issued (' + done.map(d => esc(d.receipt)).join(', ') + '). ' : ''}We could not finish issuing your certified copies. Try again.</div>`; btn.disabled = false; }
+}
+/* The Request for Certified Court Records Copies (MC 500) for a receipt, drawn on the page with a PDF download. */
+async function showMc500(host, r) {
+  host.innerHTML = '<p class="note"><span class="spin"></span>Preparing the form…</p>';
+  try {
+    const M = await loadMc(), d = M.mc500Data(r);
+    host.innerHTML = `<div style="margin:12px 0"><button class="btn alt sm" type="button" data-mc="pdf">Download MC 500 (PDF)</button></div><div style="overflow-x:auto;background:#e9edf3;padding:14px 0;border-radius:8px">${await M.mc500Html(PDFLib, d)}</div>`;
+    host.querySelector('[data-mc]').onclick = async () => save(await M.mc500Pdf(PDFLib, d), `MC 500 ${r.receipt}.pdf`);
+  } catch (e) { console.error(e); host.innerHTML = '<div class="msg err">We could not display the form right now. Try again.</div>'; }
 }
 function showDone(done) {
   $('p-quote').hidden = true; $('p-done').hidden = false; scrollTo(0, 0); const total = r2(done.reduce((t, x) => t + x.total, 0)), exp = new Date(done[0].issued + EXPIRES_DAYS * DAY);
@@ -317,7 +330,9 @@ function showDone(done) {
     <div class="msg ok">${done.map(x => `<div>Receipt number <span class="rcpt">${esc(x.receipt)}</span> &nbsp; ${esc(x.desc)} (${x.pages} page${x.pages === 1 ? '' : 's'})</div>`).join('')}</div>
     <p style="margin-top:14px"><b>Your download expires on ${mdy(exp)}</b> (${EXPIRES_DAYS} days). Keep your receipt number: it can be used to confirm the copy was issued, even after the download expires.</p>
     <p class="note">${money(total)} has been assessed to your account. <a href="${FIN}">View My financials</a></p>
+    <h3 style="margin:18px 0 0">Request for Certified Court Records Copies (MC 500)</h3>${done.map(x => `<div data-mc500="${esc(x.receipt)}"></div>`).join('')}
     <p style="margin-top:16px"><button class="btn" id="again" type="button">Request another record</button></p>`;
+  $('p-done').querySelectorAll('[data-mc500]').forEach((h, i) => showMc500(h, done[i].rcpt));
   $('again').onclick = () => { $('p-done').hidden = true; $('p-search').hidden = false; $('results').innerHTML = ''; loadMine(); };
   loadMine();
 }
@@ -328,7 +343,8 @@ async function loadMine() {
   const box = $('mine'); try {
     const list = await myReceipts(); if (!list.length) { box.innerHTML = '<p class="note" style="margin-top:0">You have not requested any certified copies yet.</p>'; return; }
     const now = Date.now();
-    box.innerHTML = `<table class="quote"><thead><tr><th>Receipt</th><th>Record</th><th>Issued</th><th class="n">Fee</th><th></th></tr></thead><tbody>${list.map(r => `<tr><td class="rcpt" style="font-size:15px">${esc(r.receipt)}</td><td>${esc(r.kindName)}: ${esc(r.description)}<small style="display:block;color:#5a667a">${esc(r.caseId)} · ${r.pages} page${r.pages === 1 ? '' : 's'}</small></td><td>${mdy(new Date(r.issuedAt))}</td><td class="n">${money(r.total)}</td><td class="n">${r.expiresAt > now ? `<button class="btn alt sm" data-r="${esc(r.receipt)}" type="button">Download</button><small style="display:block;color:#5a667a">until ${mdy(new Date(r.expiresAt))}</small>` : '<small style="color:#5a667a">Download expired</small>'}</td></tr>`).join('')}</tbody></table>`;
+    box.innerHTML = `<table class="quote"><thead><tr><th>Receipt</th><th>Record</th><th>Issued</th><th class="n">Fee</th><th></th></tr></thead><tbody>${list.map(r => `<tr><td class="rcpt" style="font-size:15px">${esc(r.receipt)}</td><td>${esc(r.kindName)}: ${esc(r.description)}<small style="display:block;color:#5a667a">${esc(r.caseId)} · ${r.pages} page${r.pages === 1 ? '' : 's'}</small></td><td>${mdy(new Date(r.issuedAt))}</td><td class="n">${money(r.total)}</td><td class="n"><button class="btn alt sm" data-f="${esc(r.receipt)}" type="button">View MC 500</button>${r.expiresAt > now ? `<button class="btn alt sm" data-r="${esc(r.receipt)}" type="button">Download</button><small style="display:block;color:#5a667a">until ${mdy(new Date(r.expiresAt))}</small>` : '<small style="color:#5a667a">Download expired</small>'}</td></tr>`).join('')}</tbody></table>`;
+    box.querySelectorAll('[data-f]').forEach(b => b.onclick = () => { const r = list.find(q => q.receipt === b.dataset.f); let h = b.closest('tr').nextElementSibling; if (h && h.dataset.mcrow) { h.remove(); return; } const tr = document.createElement('tr'); tr.dataset.mcrow = '1'; tr.innerHTML = '<td colspan="5"></td>'; b.closest('tr').after(tr); showMc500(tr.firstChild, r); });
     box.querySelectorAll('[data-r]').forEach(b => b.onclick = async () => { b.disabled = true; try { save(await getBytes(ref(storage, `certifiedCopies/${account.uid}/${b.dataset.r}`), 40 * 1024 * 1024), `Certified ${b.dataset.r}.pdf`); } catch { b.insertAdjacentHTML('afterend', '<small style="display:block;color:#b3261e">This copy is no longer available.</small>'); } b.disabled = false; });
   } catch (e) { console.error(e); box.innerHTML = '<p class="note" style="margin-top:0">We could not load your certified copies.</p>'; }
 }
@@ -338,7 +354,7 @@ vf.onsubmit = async e => {
   try {
     const s = await getDoc(doc(db, 'recordReceipts', n));
     if (!s.exists()) { box.innerHTML = '<div class="msg err"><b>No certified copy found</b> for that receipt number. Check the number printed on the copy.</div>'; return; }
-    const r = s.data(); box.innerHTML = `<div class="msg ok"><b>Verified.</b> The Court issued a certified copy under receipt <span class="rcpt" style="font-size:15px">${esc(r.receipt)}</span>.<br>${esc(r.kindName)}: ${esc(r.description)}<br>Case ${esc(r.caseId)} · ${esc(r.court)} · ${r.pages} page${r.pages === 1 ? '' : 's'}<br>Issued ${mdy(new Date(r.issuedAt))}${r.expiresAt > Date.now() ? '; the download is available until ' + mdy(new Date(r.expiresAt)) : '; the download has expired'}.</div>`;
+    const r = s.data(); box.innerHTML = `<div class="msg ok"><b>Verified.</b> The Court issued a certified copy under receipt <span class="rcpt" style="font-size:15px">${esc(r.receipt)}</span>.<br>${esc(r.kindName)}: ${esc(r.description)}<br>Case ${esc(r.caseId)} · ${esc(r.court)} · ${r.pages} page${r.pages === 1 ? '' : 's'}<br>Issued ${mdy(new Date(r.issuedAt))}${r.expiresAt > Date.now() ? '; the download is available until ' + mdy(new Date(r.expiresAt)) : '; the download has expired'}.</div><h3 style="margin:18px 0 0">Request for Certified Court Records Copies (MC 500)</h3><div id="vmc"></div>`; showMc500($('vmc'), r);
   } catch { box.innerHTML = '<div class="msg err">We could not check that receipt right now. Try again.</div>'; }
 };
 </script>

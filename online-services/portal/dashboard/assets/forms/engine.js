@@ -37,17 +37,17 @@ export const stickerSvg = ({ id, date = '', label = '' }, scale = 1) => {
 /* ink: 0..1.5. Up to 1 the ink thickens; above 1 a second, solid pass fills the gaps so the stamp goes fully black. */
 const inkOp = k => Math.min(1, 0.3 + 0.7 * k), inkExtra = k => k > 1 ? Math.min(1, (k - 1) * 2) : 0;
 export const stampSvg = st => { const k = st.ink ?? 0.9, title = st.title || 'A TRUE COPY', body = `<rect x="3" y="3" width="214" height="89" fill="none" stroke="#23262d" stroke-width="3.2"/><g font-family="Arial,sans-serif" font-weight="bold" text-anchor="middle"><text x="110" y="35" font-size="${title.length > 12 ? 16.4 : 22}" letter-spacing="${title.length > 12 ? 1 : 1.6}">${esc(title)}</text><rect x="16" y="43" width="188" height="1.8"/><text x="110" y="62" font-size="17" font-family="'Courier New',monospace">${esc(st.date)}</text><text x="110" y="82" font-size="${st.label.length > 17 ? 12 : 13.5}" letter-spacing="1">${esc(st.label)}</text></g>`;
-  return `<svg data-stamp="1" viewBox="0 0 220 95" width="${(176 * (st.scale || 1)).toFixed(1)}" height="${(76 * (st.scale || 1)).toFixed(1)}" aria-label="Stamp: ${esc(title.toLowerCase())}, ${esc(st.date)}, ${esc(st.label)}" style="position:absolute;left:${(st.x * 100).toFixed(3)}%;top:${(st.y * 100).toFixed(3)}%;z-index:7;transform:rotate(${st.rot ?? -3}deg);mix-blend-mode:multiply;${st.move ? 'cursor:grab;touch-action:none;' : 'pointer-events:none;'}-webkit-user-select:none;user-select:none"><defs><filter id="rubS" x="-5%" y="-5%" width="110%" height="110%" color-interpolation-filters="sRGB"><feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="2" seed="19" result="warp"/><feDisplacementMap in="SourceGraphic" in2="warp" scale="2.4" result="d1"/><feGaussianBlur in="d1" stdDeviation="0.4" result="bleed"/><feTurbulence type="fractalNoise" baseFrequency="0.7" numOctaves="3" seed="5" result="spk"/><feColorMatrix in="spk" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  8 0 0 0 -2.7" result="speck"/><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="31" result="press"/><feColorMatrix in="press" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  1.2 0 0 0 0.55" result="uneven"/><feComposite in="bleed" in2="speck" operator="in" result="gaps"/><feComposite in="gaps" in2="uneven" operator="in"/></filter><filter id="rubS2" x="-5%" y="-5%" width="110%" height="110%" color-interpolation-filters="sRGB"><feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="2" seed="19" result="warp"/><feDisplacementMap in="SourceGraphic" in2="warp" scale="2.4" result="d1"/><feGaussianBlur in="d1" stdDeviation="0.5"/></filter></defs><g style="filter:url(#rubS)" fill="#23262d" opacity="${inkOp(k).toFixed(2)}">${body}</g>${inkExtra(k) ? `<g style="filter:url(#rubS2)" fill="#23262d" opacity="${inkExtra(k).toFixed(2)}">${body}</g>` : ''}</svg>`; };
+  return `<svg data-stamp="1" viewBox="0 0 220 95" width="${(176 * (st.scale || 1)).toFixed(1)}" height="${(76 * (st.scale || 1)).toFixed(1)}" aria-label="Stamp: ${esc(title.toLowerCase())}, ${esc(st.date)}, ${esc(st.label)}" style="position:absolute;left:${(st.x * 100).toFixed(3)}%;top:${(st.y * 100).toFixed(3)}%;z-index:7;transform:rotate(${st.rot ?? -3}deg);mix-blend-mode:multiply;${st.move ? 'cursor:grab;touch-action:none;' : 'pointer-events:none;'}-webkit-user-select:none;user-select:none${st.ghost ? ';opacity:.75;outline:2px dashed #1f5fae' : ''}"${st.ghost ? ' data-guide="1"' : ''}><defs><filter id="rubS" x="-5%" y="-5%" width="110%" height="110%" color-interpolation-filters="sRGB"><feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="2" seed="19" result="warp"/><feDisplacementMap in="SourceGraphic" in2="warp" scale="2.4" result="d1"/><feGaussianBlur in="d1" stdDeviation="0.4" result="bleed"/><feTurbulence type="fractalNoise" baseFrequency="0.7" numOctaves="3" seed="5" result="spk"/><feColorMatrix in="spk" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  8 0 0 0 -2.7" result="speck"/><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="31" result="press"/><feColorMatrix in="press" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  1.2 0 0 0 0.55" result="uneven"/><feComposite in="bleed" in2="speck" operator="in" result="gaps"/><feComposite in="gaps" in2="uneven" operator="in"/></filter><filter id="rubS2" x="-5%" y="-5%" width="110%" height="110%" color-interpolation-filters="sRGB"><feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="2" seed="19" result="warp"/><feDisplacementMap in="SourceGraphic" in2="warp" scale="2.4" result="d1"/><feGaussianBlur in="d1" stdDeviation="0.5"/></filter></defs><g style="filter:url(#rubS)" fill="#23262d" opacity="${inkOp(k).toFixed(2)}">${body}</g>${inkExtra(k) ? `<g style="filter:url(#rubS2)" fill="#23262d" opacity="${inkExtra(k).toFixed(2)}">${body}</g>` : ''}</svg>`; };
 /* Short court names for the certified-copy stamp: "7TH DISTRICT COURT" -> "7TH DIST. CT.", "MI SUPREME COURT" -> "MI SUP. CT.". */
 export const courtShort = label => /supreme/i.test(label || '') ? 'MI SUP. CT.' : '7TH DIST. CT.';
-const markStyle = (m, w, h) => `position:absolute;left:${(m.x * 100).toFixed(3)}%;top:${(m.y * 100).toFixed(3)}%;z-index:7;width:${w.toFixed(1)}px;height:${h.toFixed(1)}px;transform:rotate(${m.rot ?? 0}deg);mix-blend-mode:multiply;${m.move ? 'cursor:grab;touch-action:none;' : 'pointer-events:none;'}-webkit-user-select:none;user-select:none${m.ghost ? ';opacity:.6' : ''}`;
+const markStyle = (m, w, h) => `position:absolute;left:${(m.x * 100).toFixed(3)}%;top:${(m.y * 100).toFixed(3)}%;z-index:7;width:${w.toFixed(1)}px;height:${h.toFixed(1)}px;transform:rotate(${m.rot ?? 0}deg);mix-blend-mode:multiply;${m.move ? 'cursor:grab;touch-action:none;' : 'pointer-events:none;'}-webkit-user-select:none;user-select:none${m.ghost ? ';opacity:.7;outline:2px dashed #1f5fae' : ''}`;
 /* "CERTIFIED COPY" attestation stamp (black ink). BY: is the person who certified it, or E-CERTIFICATION for a copy the system issues. */
 export const certSvg = m => { const sc = m.scale || 1, by = String(m.by || '').toUpperCase(), k = m.ink ?? 1, inner = `<rect x="3" y="3" width="264" height="144" rx="3" fill="none" stroke="#23262d" stroke-width="3.2"/><g font-family="Arial,sans-serif" font-weight="bold"><text x="135" y="28" font-size="19" text-anchor="middle" letter-spacing="2.2">CERTIFIED COPY</text><rect x="14" y="35" width="242" height="2"/><text x="16" y="53" font-size="9.8" letter-spacing=".3">CERTIFIED AS AN AUTHENTIC COPY OF THE</text><text x="16" y="66" font-size="9.8" letter-spacing=".3">OFFICIAL RECORDS OF THIS COURT.</text><text x="16" y="91" font-size="11">DATE:</text><text x="60" y="91" font-size="14" font-family="'Courier New',monospace">${esc(m.date)}</text><rect x="56" y="94" width="198" height="1.4"/><text x="16" y="118" font-size="11">BY:</text><text x="42" y="117" font-size="${by.length > 20 ? 11 : 13.5}" font-family="'Courier New',monospace">${esc(by)}</text><rect x="40" y="121" width="214" height="1.4"/><text x="254" y="140" font-size="9" text-anchor="end" letter-spacing="1">${esc(m.court || '7TH DIST. CT.')}</text></g>`;
-  return `<svg data-mark="cert" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 270 150" width="${(216 * sc).toFixed(1)}" height="${(120 * sc).toFixed(1)}" aria-label="Certified copy, ${esc(m.date)}" style="${markStyle(m, 216 * sc, 120 * sc)}"><defs><filter id="rubC" x="-5%" y="-5%" width="110%" height="110%" color-interpolation-filters="sRGB"><feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="2" seed="23" result="warp"/><feDisplacementMap in="SourceGraphic" in2="warp" scale="1" result="d1"/><feGaussianBlur in="d1" stdDeviation="0.3" result="bleed"/><feTurbulence type="fractalNoise" baseFrequency="0.7" numOctaves="3" seed="9" result="spk"/><feColorMatrix in="spk" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  8 0 0 0 -1.9" result="speck"/><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="13" result="press"/><feColorMatrix in="press" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  1.2 0 0 0 0.55" result="uneven"/><feComposite in="bleed" in2="speck" operator="in" result="gaps"/><feComposite in="gaps" in2="uneven" operator="in"/></filter><filter id="rubC2" x="-5%" y="-5%" width="110%" height="110%" color-interpolation-filters="sRGB"><feGaussianBlur stdDeviation="0.35"/></filter></defs><g style="filter:url(#rubC)" fill="#23262d" opacity="${inkOp(k).toFixed(2)}">${inner}</g>${inkExtra(k) ? `<g style="filter:url(#rubC2)" fill="#23262d" opacity="${inkExtra(k).toFixed(2)}">${inner}</g>` : ''}${m.ghost ? '<rect x="1" y="1" width="268" height="148" fill="none" stroke="#1f5fae" stroke-width="2" stroke-dasharray="7 5"/>' : ''}</svg>`; };
+  return `<svg data-mark="cert"${m.ghost ? ' data-guide="1"' : ''} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 270 150" width="${(216 * sc).toFixed(1)}" height="${(120 * sc).toFixed(1)}" aria-label="Certified copy, ${esc(m.date)}" style="${markStyle(m, 216 * sc, 120 * sc)}"><defs><filter id="rubC" x="-5%" y="-5%" width="110%" height="110%" color-interpolation-filters="sRGB"><feTurbulence type="fractalNoise" baseFrequency="0.05" numOctaves="2" seed="23" result="warp"/><feDisplacementMap in="SourceGraphic" in2="warp" scale="1" result="d1"/><feGaussianBlur in="d1" stdDeviation="0.3" result="bleed"/><feTurbulence type="fractalNoise" baseFrequency="0.7" numOctaves="3" seed="9" result="spk"/><feColorMatrix in="spk" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  8 0 0 0 -1.9" result="speck"/><feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" seed="13" result="press"/><feColorMatrix in="press" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  1.2 0 0 0 0.55" result="uneven"/><feComposite in="bleed" in2="speck" operator="in" result="gaps"/><feComposite in="gaps" in2="uneven" operator="in"/></filter><filter id="rubC2" x="-5%" y="-5%" width="110%" height="110%" color-interpolation-filters="sRGB"><feGaussianBlur stdDeviation="0.35"/></filter></defs><g style="filter:url(#rubC)" fill="#23262d" opacity="${inkOp(k).toFixed(2)}">${inner}</g>${inkExtra(k) ? `<g style="filter:url(#rubC2)" fill="#23262d" opacity="${inkExtra(k).toFixed(2)}">${inner}</g>` : ''}${m.ghost ? '<rect x="1" y="1" width="268" height="148" fill="none" stroke="#1f5fae" stroke-width="2" stroke-dasharray="7 5"/>' : ''}</svg>`; };
 /* The court seal: the court's own seal image, hosted with the site. */
 export const sealUrl = court => /supreme/i.test(court || '') ? 'https://migovt.org/courts/images/msc-stamp.png' : 'https://migovt.org/courts/images/7dc-stamp.png';
-export const sealSvg = m => { const sc = m.scale || 1, w = 96 * sc; return `<img data-mark="seal" src="${sealUrl(m.court)}" alt="Seal of the court" draggable="false" width="${w.toFixed(1)}" style="${markStyle(m, w, w)};height:auto;opacity:${((m.ghost ? .6 : 1) * Math.min(1, Math.max(.25, m.ink ?? 1))).toFixed(2)}${m.ghost ? ';outline:2px dashed #1f5fae' : ''}">`; };
-const BASE_CSS = `#preview.ro [data-f],#preview.ro [data-chk],#preview.ro [data-sel] .cb{background:none!important;outline:none!important;cursor:default!important}#preview.ro [data-f]:empty::before{content:none!important}
+export const sealSvg = m => { const sc = m.scale || 1, w = 96 * sc; return `<img data-mark="seal"${m.ghost ? ' data-guide="1"' : ''} src="${sealUrl(m.court)}" alt="Seal of the court" draggable="false" width="${w.toFixed(1)}" style="${markStyle(m, w, w)};height:auto;opacity:${((m.ghost ? .6 : 1) * Math.min(1, Math.max(.25, m.ink ?? 1))).toFixed(2)}${m.ghost ? ';outline:2px dashed #1f5fae' : ''}">`; };
+const BASE_CSS = `@media print{[data-guide]{display:none!important}}#preview.ro [data-f],#preview.ro [data-chk],#preview.ro [data-sel] .cb{background:none!important;outline:none!important;cursor:default!important}#preview.ro [data-f]:empty::before{content:none!important}
 @page{size:letter;margin:0}*{box-sizing:border-box}
 html{overflow-y:scroll}
 body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#e9ebee;color:#222}
@@ -93,6 +93,7 @@ export function toMarkdown(def, api) {
   const dfl = all.filter(([id]) => id[0] === '~'), st = all.filter(([id]) => id[0] !== '~');
   if (dfl.length) { o.push('## Default fonts', ''); dfl.forEach(([id, v]) => o.push('- ' + dn[id] + ': ' + tok(v))); o.push(''); }
   if (st.length) { o.push('## Field styles', ''); st.forEach(([id, v]) => o.push('- ' + id + ': ' + tok(v))); o.push(''); }
+  const pl = api.placement?.(); if (pl && Object.keys(pl).length) { o.push('## Stamp placement', ''); Object.entries(pl).forEach(([k, v]) => o.push(`- ${k}: ${[v.x, v.y, v.page ?? 0, v.rot ?? 0, v.ink ?? '', v.scale ?? 1].join(' | ')}`)); o.push(''); }
   const rc = api.records?.();
   if (rc) { const cl = x => String(x || '').replace(/[|\r\n]+/g, ' ').trim(), L = [];
     Object.entries(rc.signed).forEach(([k, v]) => L.push(`- ${k}: signed | ${cl(v.name)} | ${['image', 'font', 'stamp'].includes(v.mode) ? v.mode : 'slash'} | ${cl(v.uid)} | ${cl(v.at)}`));
@@ -107,11 +108,20 @@ export function formOf(text) {   // which form a saved .md belongs to, or null
   const m = /^form:\s*(.+?)\s*$/mi.exec(lines) || /^#\s+(.+?)\s*$/m.exec(lines);
   return m ? m[1] : null;
 }
+/* The stamp, seal and certification positions saved in a .md (the "Stamp placement" section), or {} when it has none.
+   { stamp, seal, certification } each { x, y, page, rot, ink, scale }; x and y are fractions of the page from its top left. */
+export function placementOf(text) {
+  const out = {}; let on = false;
+  String(text || '').replace(/\r/g, '').split('\n').forEach(ln => { let m;
+    if ((m = /^##\s+(.+?)\s*$/.exec(ln))) { on = /^stamp placement$/i.test(m[1]); return; }
+    if (on && (m = /^[-*]\s+(stamp|seal|certification):\s*(.*)$/i.exec(ln))) { const q = m[2].split('|').map(x => parseFloat(x)); if (Number.isFinite(q[0]) && Number.isFinite(q[1])) out[m[1].toLowerCase()] = { x: q[0], y: q[1], page: q[2] || 0, rot: Number.isFinite(q[3]) ? q[3] : 0, ink: Number.isFinite(q[4]) ? q[4] : undefined, scale: Number.isFinite(q[5]) ? q[5] : 1 }; } });
+  return out;
+}
 /* Reads a saved .md into plain data (no page needed). */
 export function parseMd(def, txt) {
   const lines = txt.replace(/\r/g, '').split('\n');
   if ((k => k === 'mc200a' ? 'mc200' : k)(keyOf(formOf(txt))) !== keyOf(def.number)) throw new Error(`This file is not a ${def.number} form (no "form: ${def.number}" found).`);
-  const single = {}, multi = {}, styles = {}, found = new Map(), records = { signed: {}, pending: {}, lc: {} }; let curGroup = null, curItem = null, i = 0, mode = '';
+  const single = {}, multi = {}, styles = {}, found = new Map(), records = { signed: {}, pending: {}, lc: {}, placement: {} }; let curGroup = null, curItem = null, i = 0, mode = '';
   const sl = {}, ml = {}, groups = []; def.md.sections.forEach(s => { (s.fields || []).forEach(([id, l]) => sl[norm(l)] = id); (s.multi || []).forEach(([id, l]) => ml[norm(l)] = id); (s.groups || []).forEach(g => groups.push(g)); });
   Object.entries(def.md.malias || {}).forEach(([l, id]) => ml[norm(l)] = id);
   while (i < lines.length) {
@@ -127,10 +137,11 @@ export function parseMd(def, txt) {
         multi[ml[t]] = buf.join('\n').trim();
       }
     } else if ((m = ln.match(/^##\s+(.+?)\s*$/))) {
-      curGroup = groups.find(g => norm(g.heading) === norm(m[1])) || null; curItem = null; mode = norm(m[1]) === 'linked case' ? 'lnk' : norm(m[1]) === 'signature record' ? 'rec' : norm(m[1]) === 'signature images' ? 'img' : norm(m[1]) === 'field styles' ? 'sty' : norm(m[1]) === 'default fonts' ? 'dfl' : 'sec'; if (curGroup && !found.has(curGroup)) found.set(curGroup, []);
+      curGroup = groups.find(g => norm(g.heading) === norm(m[1])) || null; curItem = null; mode = norm(m[1]) === 'linked case' ? 'lnk' : norm(m[1]) === 'signature record' ? 'rec' : norm(m[1]) === 'stamp placement' ? 'plc' : norm(m[1]) === 'signature images' ? 'img' : norm(m[1]) === 'field styles' ? 'sty' : norm(m[1]) === 'default fonts' ? 'dfl' : 'sec'; if (curGroup && !found.has(curGroup)) found.set(curGroup, []);
     } else if ((m = ln.match(/^[-*]\s+(.+?):\s?(.*)$/))) {
       const k = norm(m[1]);
-      if (mode === 'lnk') { const kk = m[1].toLowerCase().replace(/[^a-z]/g, ''), mp = { caseid: 'id', collection: 'col', casenumber: 'caseno', caption: 'title' }[kk]; if (mp) records.lc[mp] = m[2].trim(); }
+      if (mode === 'plc') { const q = m[2].split('|').map(x => parseFloat(x)); const k0 = m[1].trim().toLowerCase(); if (['stamp', 'seal', 'certification'].includes(k0) && Number.isFinite(q[0]) && Number.isFinite(q[1])) records.placement[k0] = { x: q[0], y: q[1], page: q[2] || 0, rot: Number.isFinite(q[3]) ? q[3] : 0, ink: Number.isFinite(q[4]) ? q[4] : undefined, scale: Number.isFinite(q[5]) ? q[5] : 1 }; }
+      else if (mode === 'lnk') { const kk = m[1].toLowerCase().replace(/[^a-z]/g, ''), mp = { caseid: 'id', collection: 'col', casenumber: 'caseno', caption: 'title' }[kk]; if (mp) records.lc[mp] = m[2].trim(); }
       else if (mode === 'rec') { const q = m[2].split('|').map(x => x.trim()), k0 = m[1].trim().toLowerCase(); if (q[0] === 'signed') records.signed[k0] = { name: q[1] || '', mode: ['image', 'font', 'stamp'].includes(q[2]) ? q[2] : 'slash', uid: q[3] || '', at: q[4] || '' }; else if (q[0] === 'awaiting') records.pending[k0] = { name: q[1] || '', uid: q[2] || '' }; }
       else if (mode === 'img') { const id = m[1].trim().toLowerCase(); if (styles[id]) styles[id].g = m[2].trim(); }
       else if (mode === 'sty' || mode === 'dfl') {
@@ -150,7 +161,7 @@ export function fromMarkdown(def, api, txt) {
   Object.entries(single).forEach(([id, v]) => { const e = api.$(id); if (!e) return; if (e.type === 'checkbox') e.checked = /^(yes|true|x|1)$/i.test(v); else e.value = v; });
   Object.entries(multi).forEach(([id, v]) => { const e = api.$(id); if (e) e.value = v; });
   groups.forEach(g => g.set(api, found.get(g) || []));
-  api.setStyles(styles); api.setRecords?.(records);
+  api.setStyles(styles); api.setRecords?.(records); api.setPlacement?.(records.placement);
 }
 
 
@@ -202,10 +213,23 @@ const FP_CSS = `.fp{position:fixed;z-index:2147483000;width:320px;max-width:calc
 .fp-f svg{fill:none}.fp-f:hover{background:#e8eef8;color:#10264a}.fp-f[aria-pressed=true]{color:#c58a00}.fp-f[aria-pressed=true] svg{fill:currentColor}`;
 const today = () => { const d = new Date(); return String(d.getMonth() + 1).padStart(2, '0') + '/' + String(d.getDate()).padStart(2, '0') + '/' + d.getFullYear(); };
 
-export async function mountForm(def, host, { account, role, md, onDirty, onEdit, readOnly = false, actions = [], onAction, favs: favList, onFavs, onFontNotice, onNote, fileLabel = 'File', signature = '', sigPref = 'image', sysFont = '', unofficial = false, sticker = null, stamp = null, onStampMove = null, marks = null, onMarkMove = null, uid: myUidOpt = '', signKeys = null, onSaveSig, onRemoveSig, onSavePref, onCaseLink, onSigInfo, settingsUrl = '' } = {}) {
+export async function mountForm(def, host, { account, role, md, onDirty, onEdit, readOnly = false, actions = [], onAction, favs: favList, onFavs, onFontNotice, onNote, fileLabel = 'File', signature = '', sigPref = 'image', sysFont = '', unofficial = false, sticker = null, stamp = null, onStampMove = null, marks = null, onMarkMove = null, guides = null, uid: myUidOpt = '', signKeys = null, onSaveSig, onRemoveSig, onSavePref, onCaseLink, onSigInfo, settingsUrl = '' } = {}) {
   const allow = (f, key) => def.fontOpen || fontAllowed(f, role, key ? kindOf(key) : undefined) && (!key || fontFits(def, f, kindOf(key)));
   let stampSt = stamp ? { x: 0.7, y: 0.004, page: 1, ...stamp } : null;
   let markSt = { cert: null, seal: null, ...(marks || {}) };   // certified-copy certification and seal: { on|ghost, x, y, page (0 = last), ... }
+
+  /* Court staff in the document builder see the stamp, seal and certification as dashed guides on the page, and can drag them into place.
+     Their positions are saved in the .md ("Stamp placement") and carry through when the document is filed. They never print or export. */
+  let plState = null; const PLK = { cert: 'certification', seal: 'seal' };
+  const setPlacement = pl => { if (!pl || !Object.keys(pl).length) return; plState = { ...pl };
+    if (guides) { if (pl.stamp) stampSt = { ...stampSt, ...pl.stamp }; if (pl.certification) markSt.cert = { ...markSt.cert, ...pl.certification, auto: false }; if (pl.seal) markSt.seal = { ...markSt.seal, ...pl.seal, auto: false }; render(); } };
+  if (guides) {
+    const day = (() => { const t = new Date(), q = n => String(n).padStart(2, '0'); return `${q(t.getMonth() + 1)}/${q(t.getDate())}/${t.getFullYear()}`; })();
+    stampSt = { x: 0.7, y: 0.004, page: 1, rot: -3, ink: 0.9, scale: 1, label: guides.label, date: guides.date || day, ghost: true };
+    markSt = { cert: { x: 0.233, y: 0.86, page: 0, rot: 0, ink: 1, scale: 1.1, auto: true, ghost: true, date: guides.date || day, by: 'E-CERTIFICATION', court: courtShort(guides.label) }, seal: { x: 0.09, y: 0.855, page: 0, rot: 0, ink: 1, scale: 1, auto: true, ghost: true, court: guides.label } };
+    onStampMove = p => { plState = { ...(plState || {}), stamp: { x: p.x, y: p.y, page: p.page, rot: stampSt.rot ?? -3, ink: stampSt.ink, scale: stampSt.scale || 1 } }; mark(); };
+    onMarkMove = (k, p) => { const m = markSt[k]; plState = { ...(plState || {}), [PLK[k]]: { x: p.x, y: p.y, page: p.page, rot: m.rot ?? 0, ink: m.ink, scale: m.scale || 1 } }; mark(); };
+  }
   let mySig = okImg(signature); let myPref = sigPref; const isCourt = STAFF_RE.test(role || ''), courtLock = k => !!def.courtKeys?.includes(k) && !isCourt, sigKeys = new Set(), signed = {}, pending = {}, myUid = myUidOpt || account?.uid || '', signOnly = Array.isArray(signKeys) ? signKeys : null, sgEl = {}; let linked = null, linkFill = {};
   const typesFor = key => { const l = def.fontPolicy && key ? (def.fontPolicy[kindOf(key)] || def.fontPolicy.sig || []) : null; return (l ? TYPES.filter(t => l.includes(t.id)) : TYPES).filter(t => t.id !== 'sigimg' && (!key || t.fonts.some(f => allow(f, key)))); };
   const shown = (t, key) => t.fonts.filter(f => !(f === 'Times New Roman' && def.font !== 'Times New Roman') && (!key || allow(f, key)));   // fonts this person cannot use are not listed
@@ -300,6 +324,7 @@ export async function mountForm(def, host, { account, role, md, onDirty, onEdit,
     seg: 0,
     styles: () => sty,
     records: () => ({ signed, pending, lc: linked || {} }),
+    placement: () => plState, setPlacement,
     setRecords: r => setRecords(r),
     setStyles(m) { Object.keys(sty).forEach(id => sty[id] = normSt(m?.[id])); bars.forEach(syncBar); },
     render: () => { render(); commit(false); }, note: (t, bad) => { onNote?.(t, bad); const m = $('fd-msg'); m.textContent = t; m.style.color = bad ? '#b33' : '#287a3e'; }
@@ -645,13 +670,13 @@ export async function mountForm(def, host, { account, role, md, onDirty, onEdit,
       (sec.groups || []).forEach(x => g.push((p.found.get(x) || []).map(it => Object.fromEntries(x.fields.map(([k]) => [k, it[k] || '']))))); });
     Object.keys(p.single).forEach(id => { if (!(id in f) && !(id in m) && $(id)) f[id] = isCb(id) ? /^(yes|true|x|1)$/i.test(p.single[id]) : p.single[id]; });
     Object.keys(sty).forEach(id => { s[id] = normSt(p.styles[id]); });
-    return { f, m, g, s, n: { signed: p.records.signed, pending: p.records.pending, lc: p.records.lc } };
+    return { f, m, g, s, n: { signed: p.records.signed, pending: p.records.pending, lc: p.records.lc }, pl: p.records.placement };
   }
   function applyState(st) {   // only touches what differs, so nobody loses their place while typing
     const put = (id, v) => { const e = $(id); if (!e || v === undefined) return; if (e.type === 'checkbox') { if (e.checked !== !!v) e.checked = !!v; } else if (e.value.trim() !== String(v).trim()) e.value = v; };
     Object.entries(st.f || {}).forEach(([id, v]) => put(id, v)); Object.entries(st.m || {}).forEach(([id, v]) => put(id, v));
     let gi = 0; def.md.sections.forEach(sec => (sec.groups || []).forEach(x => { const items = st.g?.[gi++]; if (!items) return; const cur = x.get(api).map(it => Object.fromEntries(x.fields.map(([k]) => [k, it[k] || '']))); if (JSON.stringify(cur) !== JSON.stringify(items)) x.set(api, items); }));
-    if (st.n) setRecords(st.n);
+    if (st.n) setRecords(st.n); if (st.pl) setPlacement(st.pl);
     const want = {}; Object.keys(sty).forEach(id => { want[id] = normSt(st.s?.[id]); }); if (JSON.stringify(want) !== JSON.stringify(sty)) api.setStyles(want);
     render(); hist = [snap()]; hi = 0; lastTyping = false; updUndo();
   }
@@ -788,7 +813,7 @@ export async function mountForm(def, host, { account, role, md, onDirty, onEdit,
       if (!fw.html2pdf) await new Promise((res, rej) => { const s = fd.createElement('script'); s.src = H2P; s.onload = res; s.onerror = () => rej(new Error('load')); fd.head.appendChild(s); });
       try { const used = [...new Set(Object.values(sty).map(v => v.f).filter(Boolean))]; await Promise.all(used.map(f => fd.fonts.load(`16px "${f}"`))); await fd.fonts.ready; } catch (e) { /* fall back to system fonts */ }
       const holder = fd.createElement('div'); holder.style.cssText = 'position:absolute;left:-10000px;top:0;width:816px';
-      const el = preview.cloneNode(true); el.style.transform = 'none'; el.id = 'pdfsrc';
+      const el = preview.cloneNode(true); el.querySelectorAll('[data-guide]').forEach(n => n.remove()); el.style.transform = 'none'; el.id = 'pdfsrc';
       el.querySelectorAll('[contenteditable]').forEach(n => { n.removeAttribute('contenteditable'); n.removeAttribute('data-ph'); n.removeAttribute('data-f'); });
       el.querySelectorAll('.page').forEach(p => { p.style.margin = '0'; p.style.boxShadow = 'none'; p.style.height = '1055px'; });
       holder.appendChild(el); fd.body.appendChild(holder);
@@ -804,11 +829,11 @@ export async function mountForm(def, host, { account, role, md, onDirty, onEdit,
     if (!sigs.length) return null; const j = sigs.filter(e => /judge|magistrate|clerk/i.test(e.dataset.f || '')), el = (j.length ? j : sigs).slice(-1)[0], pg = el.closest('.page'), pr = pg.getBoundingClientRect(), r = el.getBoundingClientRect(), k = pr.width / 816;
     if (!pr.width) return null; let cs = cs0 ?? (markSt.cert?.scale || 1), ss = ss0 ?? (markSt.seal?.scale || 1);
     const line = r.bottom - pr.top - 30 * k;                      // stamp bottom: just above the date line
-    let floor = 0.02 * pr.height; const x0 = 72 * k, x1 = (72 + 216 * cs + 22) * k;   // keep clear of text above, in the stamp's column
+    let floor = 0.02 * pr.height; const x0 = 72 * k, x1 = (72 + 96 * ss + 22 + 216 * cs) * k;   // keep clear of text above, in the stamp's column
     pg.querySelectorAll('.pc *').forEach(n => { if (n.children.length || !n.textContent.trim() || n.closest('[data-sig],[data-lock],[data-mark]')) return; const q = n.getBoundingClientRect(); const b = q.bottom - pr.top; if (b < line - 8 * k && q.right - pr.left > x0 && q.left - pr.left < x1) floor = Math.max(floor, b + 6 * k); });
     const room = line - floor; if (room < 120 * cs * k) { const f = Math.max(0.6, room / (120 * cs * k)); cs *= f; ss *= f; }
     const ch = 120 * cs * k, sh = 96 * ss * k, cy = Math.max(floor, line - ch);
-    return { page: [...preview.querySelectorAll('.page')].indexOf(pg) + 1, cert: { x: 72 / 816, y: cy / pr.height, scale: +cs.toFixed(3) }, seal: { x: (72 + 216 * cs + 22) / 816, y: (cy + (ch - sh) / 2) / pr.height, scale: +ss.toFixed(3) } };
+    return { page: [...preview.querySelectorAll('.page')].indexOf(pg) + 1, cert: { x: (72 + 96 * ss + 22) / 816, y: cy / pr.height, scale: +cs.toFixed(3) }, seal: { x: 72 / 816, y: (cy + (ch - sh) / 2) / pr.height, scale: +ss.toFixed(3) } };
   }
   function placeAuto() {
     if (!(markSt.cert?.auto || markSt.seal?.auto)) return; const a = autoPos(); if (!a) return; const all = [...preview.querySelectorAll('.page')];
@@ -820,7 +845,7 @@ export async function mountForm(def, host, { account, role, md, onDirty, onEdit,
     if (!fw.html2pdf) await new Promise((res, rej) => { const s = fd.createElement('script'); s.src = H2P; s.onload = res; s.onerror = () => rej(new Error('load')); fd.head.appendChild(s); });
     try { const used = [...new Set(Object.values(sty).map(v => v.f).filter(Boolean))]; await Promise.all(used.map(f => fd.fonts.load(`16px "${f}"`))); await fd.fonts.ready; } catch (e) { /* system fonts */ }
     const holder = fd.createElement('div'); holder.style.cssText = 'position:absolute;left:-10000px;top:0;width:816px';
-    const el = preview.cloneNode(true); el.style.transform = 'none'; el.id = 'pdfsrc';
+    const el = preview.cloneNode(true); el.querySelectorAll('[data-guide]').forEach(n => n.remove()); el.style.transform = 'none'; el.id = 'pdfsrc';
     el.querySelectorAll('[contenteditable]').forEach(n => { n.removeAttribute('contenteditable'); n.removeAttribute('data-ph'); n.removeAttribute('data-f'); });
     el.querySelectorAll('.page').forEach(p => { p.style.margin = '0'; p.style.boxShadow = 'none'; p.style.height = '1055px'; });
     holder.appendChild(el); fd.body.appendChild(holder);

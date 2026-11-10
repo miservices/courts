@@ -1,7 +1,7 @@
 /* Draws the court marks onto the pages of a PDF (pdf-lib): the "A TRUE COPY" stamp, the "CERTIFIED COPY" certification, the court seal and the
    document sticker. Used for downloads from the document viewer and for certified copies issued through Request Records.
    marks = { stamp, front (second stamp, e.g. A CERTIFIED COPY), cert, seal, sticker }  -  each placed by fraction of the page (x, y from the top left); page 0 / empty = last page. */
-import { stampSvg, stickerSvg, certSvg, sealSvg, sealUrl } from './engine.js?v=31';
+import { stampSvg, stickerSvg, certSvg, sealSvg, sealUrl } from './engine.js?v=33';
 const K = 4;
 const toPngBytes = async (svg, w, h) => {
   const img = new Image(); await new Promise((res, rej) => { img.onload = res; img.onerror = rej; img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg); });
@@ -30,6 +30,6 @@ export async function drawMarks(PDFLib, d, { stamp, front, cert, seal, sticker }
   return d;
 }
 /* Default places, used until a clerk moves them. */
-export const DEF_CERT = { x: 0.09, y: 0.86, page: 0, rot: 0, ink: 1, scale: 1.1 };
-export const DEF_SEAL = { x: 0.42, y: 0.855, page: 0, scale: 1, ink: 1 };
+export const DEF_CERT = { x: 0.233, y: 0.86, page: 0, rot: 0, ink: 1, scale: 1.1 };
+export const DEF_SEAL = { x: 0.09, y: 0.855, page: 0, scale: 1, ink: 1 };
 export const todayStr = () => { const t = new Date(), p = n => String(n).padStart(2, '0'); return `${p(t.getMonth() + 1)}/${p(t.getDate())}/${t.getFullYear()}`; };

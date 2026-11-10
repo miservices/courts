@@ -31,6 +31,8 @@
 const caseAlias = id => { const m = /^(\d{2}|\d{4})-(\d+)(?:-([A-Za-z]+))?$/.exec(String(id || '')); if (!m) return ''; const yy = m[1].slice(-2), yyyy = m[1].length === 2 ? '20' + m[1] : m[1], n = m[2], t = m[3] ? '-' + m[3] : ''; return [`${yy}-${n}${t}`, `${yy}-${n}`, `${yyyy}-${n}${t}`, `${yyyy}-${n}`].join(' '); };
 import { boot, db, app, $, esc, has, ATTY, STAFF, CASE_CODES, DISTRICT_COURT, SUPREME_COURT, reserveCaseNumber, reserveFilingNumber, colFor } from '/courts/online-services/portal/dashboard/assets/js/portal-shell.js?v=7';
 import { byNumber as formByNumber } from '/courts/online-services/portal/dashboard/assets/forms/registry.js?v=8';
+import { openStampEditor } from '/courts/online-services/portal/dashboard/assets/forms/stampeditor.js?v=1';
+import { placementOf } from '/courts/online-services/portal/dashboard/assets/forms/engine.js?v=33';
 import { firebaseBackend } from '/courts/online-services/portal/dashboard/assets/forms/backend.js?v=4';
 import { collection, getDocs, addDoc, query, where, doc, getDoc, updateDoc, setDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 
@@ -263,9 +265,17 @@ function stepDocs() {
   return (S.kase ? `<div class="sub"><b>Filing in:</b> ${esc(caption(S.kase))} · ${esc(S.kase.caseId)}</div>` : '') + `<section class="card"><header><h3>Documents${o ? ' <small style="display:inline;font-weight:400">optional</small>' : ''}</h3></header>
     <p style="margin:0 0 14px;color:var(--muted)">${o ? 'Your appearance is recorded when you submit. You may also attach a signed Appearance (MC 02).' : 'Upload PDFs of 5 MB or less (MCR 2.119). Documents with photographs or scanned images go in through Google Drive instead.'}</p>
     <div class="drop" id="dz"><input class="vh" type="file" id="fi" accept="application/pdf,.pdf,.md,text/markdown" multiple><label for="fi" class="btn">Choose files</label><p class="big">or drag and drop them here</p><p>PDF files (up to 5 MB) or court forms saved as .md from Document Drafting</p></div>
-    ${S.files.map((f, i) => `<div class="sub"><header><span>${esc(f.file.name)} <small style="display:inline">· ${f.md ? 'Court form ' + esc(f.md.number) : (f.file.size / 1048576).toFixed(2) + ' MB'}</small></span><button class="btn outline sm" type="button" data-a="rmfile:${i}">Remove</button></header>${cb(`files.${i}.type`, f.type)}</div>`).join('')}
+    ${S.files.map((f, i) => `<div class="sub"><header><span>${esc(f.file.name)} <small style="display:inline">· ${f.md ? 'Court form ' + esc(f.md.number) : (f.file.size / 1048576).toFixed(2) + ' MB'}</small></span><span>${role !== 'Public User' ? `<button class="btn outline sm" type="button" data-a="stamps:${i}">Position stamps${f.marks ? ' (set)' : ''}</button> ` : ''}<button class="btn outline sm" type="button" data-a="rmfile:${i}">Remove</button></span></header>${cb(`files.${i}.type`, f.type)}</div>`).join('')}
     ${S.links.map((l, i) => `<div class="sub"><header><span>Google Drive document ${i + 1}</span><button class="btn outline sm" type="button" data-a="rmlink:${i}">Remove</button></header><div class="cols">${cb(`links.${i}.type`, l.type)}${F('Share link', inp(`links.${i}.url`, l.url, 'https://drive.google.com/…', 'url'), 'Set sharing to “Anyone with the link can view”.')}</div></div>`).join('')}
     <button class="btn outline" type="button" data-a="addlink">Add a Google Drive link</button></section>`;
+}
+/* Filers other than the public can place the "A TRUE COPY" stamp on their own filing before it is filed; the clerk can still change it afterwards. */
+async function posStamps(i) {
+  const f = S.files[i]; if (!f) return;
+  const dt = new Date(), ds = `${String(dt.getMonth() + 1).padStart(2, '0')}/${String(dt.getDate()).padStart(2, '0')}/${dt.getFullYear()}`, label = courtOf() === SUPREME_COURT ? 'MI SUPREME COURT' : '7TH DISTRICT COURT';
+  const o = f.md ? { md: f.md.text } : { pdf: new Uint8Array(await f.file.arrayBuffer()) };
+  const out = await openStampEditor({ ...o, label, date: ds, marks: f.marks || (f.md ? (pl => ({ stamp: pl.stamp, seal: pl.seal, cert: pl.certification }))(placementOf(f.md.text)) : {}) });
+  if (out) { f.marks = out; render(); }
 }
 const docs = () => [...S.files.map(f => ({ name: f.file.name, type: f.type })), ...S.links.map(l => ({ name: 'Google Drive document', type: l.type }))];
 const notice = () => `<div class="sub"><b>${S.type === 'new' ? 'A case number is reserved when you submit.' : S.type === 'appearance' ? 'You are added as counsel of record immediately.' : 'No clerk review is needed.'}</b><small style="color:var(--text);margin-top:4px">${S.type === 'new'
@@ -360,25 +370,25 @@ async function submit() {
     else if (ap) { counsel = true; repNames = S.repIds.map(i => S.kase.parties[i].name).join(', '); filerRole = 'Attorney for ' + repNames; }
     else { const st = standing(S.kase); counsel = st.counsel; repNames = st.reps; filerRole = st.text; }
 
-    const documents = []; let st = null;
+    const documents = [], MARKS = {}; let st = null;
     if (S.files.length) st = await import('https://www.gstatic.com/firebasejs/11.0.0/firebase-storage.js');
     for (const f of S.files) {
       if (f.md) {   // the court form is stored as the .md itself. Case number and judge always come from the court record, never from what was typed.
         let t = mdSet(f.md.text, 'Case No.', caseNo); t = mdSet(t, 'Judge', isNew ? '' : honor(judgeOf(S.kase)));
         const nm = f.file.name.replace(/[^A-Za-z0-9._-]+/g, '_'), path = `filingUploads/${conf}/${Date.now()}-${nm}`, r = st.ref(st.getStorage(app), path), blob = new Blob([t], { type: 'text/markdown' });
         await st.uploadBytes(r, blob, { contentType: 'text/markdown' });
-        documents.push({ type: 'md', name: f.file.name, size: blob.size, documentType: f.type, fee: fee(f.type, court), form: f.md.number, fileUrl: viewerUrl(path), storagePath: path }); continue;
+        documents.push({ type: 'md', name: f.file.name, size: blob.size, documentType: f.type, fee: fee(f.type, court), form: f.md.number, fileUrl: viewerUrl(path), storagePath: path }); MARKS[path] = f.marks; continue;
       }
       const d = { type: 'pdf', name: f.file.name, size: f.file.size, documentType: f.type, fee: fee(f.type, court), fileUrl: null };
       const path = `filingUploads/${conf}/${Date.now()}-${f.file.name}`, r = st.ref(st.getStorage(app), path);
-      await st.uploadBytes(r, f.file, { contentType: 'application/pdf' }); d.downloadUrl = await st.getDownloadURL(r); d.fileUrl = viewerUrl(path); d.storagePath = path; documents.push(d);   // opened in the court viewer so the "A TRUE COPY" stamp shows
+      await st.uploadBytes(r, f.file, { contentType: 'application/pdf' }); d.downloadUrl = await st.getDownloadURL(r); d.fileUrl = viewerUrl(path); d.storagePath = path; MARKS[path] = f.marks; documents.push(d);   // opened in the court viewer so the "A TRUE COPY" stamp shows
     }
     /* Every filed document (court form or PDF) gets a court stamp record: "A TRUE COPY", the filing date and the court. It starts in the top right; the clerk can move it later. Best effort. */
     try {
       const dt = new Date(), ds = `${String(dt.getMonth() + 1).padStart(2, '0')}/${String(dt.getDate()).padStart(2, '0')}/${dt.getFullYear()}`, label = court === SUPREME_COURT ? 'MI SUPREME COURT' : '7TH DISTRICT COURT';
       const used = new Set(); const nextNo = () => { let n; do n = String(Math.floor(Math.random() * 10000)).padStart(4, '0'); while (used.has(n)); used.add(n); return n; };   // random 4 digits, never repeated inside one filing
       documents.filter(x => x.storagePath).forEach(x => { x.docNumber = nextNo(); x.docId = `${conf}-${x.docNumber}`; });
-      await Promise.all(documents.filter(x => x.storagePath).map(x => setDoc(doc(db, 'docStamps', x.storagePath.split('/').join('__')), { path: x.storagePath, docId: x.docId, label, date: ds, x: 0.7, y: 0.004, page: 1, filedByUid: account.uid, confirmationNumber: conf, filedAt: Date.now(), filed: false })));
+      await Promise.all(documents.filter(x => x.storagePath).map(x => setDoc(doc(db, 'docStamps', x.storagePath.split('/').join('__')), { path: x.storagePath, docId: x.docId, label, date: ds, x: 0.7, y: 0.004, page: 1, ...(MARKS[x.storagePath]?.stamp ? Object.fromEntries(Object.entries(MARKS[x.storagePath].stamp).filter(([k]) => ['x', 'y', 'page', 'rot', 'ink', 'scale'].includes(k))) : {}), ...(MARKS[x.storagePath]?.seal ? { seal: MARKS[x.storagePath].seal } : {}), ...(MARKS[x.storagePath]?.cert ? { cert: MARKS[x.storagePath].cert } : {}), filedByUid: account.uid, confirmationNumber: conf, filedAt: Date.now(), filed: false })));
     } catch (e) { console.warn('Could not save the court stamp', e); }
     S.links.forEach(l => documents.push({ type: 'gdrive', name: 'Google Drive Document', link: l.url.trim(), documentType: l.type, fee: fee(l.type, court) }));
 
@@ -482,6 +492,7 @@ const act = a => {
   else if (n === 'clearlower') { S.lower = null; S.lq = ''; }
   else if (n === 'addparty') { S.touched = true; S.parties.push(mkParty(ROLES[S.ctype][1], 2)); }
   else if (n === 'rmparty') { S.touched = true; S.parties.splice(+v, 1); }
+  else if (n === 'stamps') { posStamps(+v); return; }
   else if (n === 'rmfile') S.files.splice(+v, 1);
   else if (n === 'rmlink') S.links.splice(+v, 1);
   else if (n === 'addlink') S.links.push({ url: '', type: '' });

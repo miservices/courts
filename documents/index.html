@@ -52,10 +52,10 @@ main{flex:1;display:flex;flex-direction:column;padding:14px 16px 18px;min-height
     <button class="btn" id="pdf" type="button">Download PDF</button>
     <button class="btn o" id="prt" type="button">Print</button>
     <button class="btn o" id="md" type="button">Download .md</button>
+    <button class="btn o" id="edst" type="button" hidden>Edit stamps</button>
+    <button class="btn o" id="fin" type="button" hidden>Finalize stamps</button>
   </div>
   <div id="note" role="status" aria-live="polite"></div>
-  <div class="sc" id="sc" hidden><b>Stamp</b><label>Ink <input id="c-ink" type="range" min="0" max="150" step="1" aria-label="Stamp ink: lighter to darker"></label><label>Tilt <input id="c-rot" type="range" min="-20" max="20" step="1" aria-label="Stamp tilt in degrees"></label><label>Size <input id="c-size" type="range" min="60" max="160" step="5" aria-label="Stamp size"></label><button class="btn o" id="c-reset" type="button">Reset</button></div>
-  <div class="sc" id="mk" hidden></div>
 </header>
 <main><div id="host"><div class="ld"><div class="spin"></div>Opening the document…</div></div></main>
 
@@ -64,8 +64,9 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebas
 import { getAuth } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
 import { getStorage, ref, getBytes, getMetadata } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-storage.js";
 import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
-import { drawMarks, DEF_CERT, DEF_SEAL, todayStr } from '/courts/online-services/portal/dashboard/assets/forms/marks.js?v=2';
-import { courtShort } from '/courts/online-services/portal/dashboard/assets/forms/engine.js?v=31';
+import { drawMarks } from '/courts/online-services/portal/dashboard/assets/forms/marks.js?v=3';
+import { placementOf } from '/courts/online-services/portal/dashboard/assets/forms/engine.js?v=33';
+import { openStampEditor } from '/courts/online-services/portal/dashboard/assets/forms/stampeditor.js?v=1';
 
 const app = initializeApp({
   apiKey: "AIzaSyA8sUFIq81cs6uQvqduardpGJ4R2DxO8NQ", authDomain: "micourt-dada6.firebaseapp.com", projectId: "micourt-dada6",
@@ -76,7 +77,7 @@ const FORMS = '/courts/online-services/portal/dashboard/assets/forms/';
 const PORTAL = 'https://migovt.org/courts/online-services/portal/';
 const $ = id => document.getElementById(id);
 const STAFF_ROLES = ['Court Reporter', 'Law Clerk', 'Judicial Assistant', 'Deputy Clerk', 'County Clerk', 'Court Administrator', 'Magistrate', 'Judge', 'Chief Judge', 'Deputy Clerk of the Supreme Court', 'Clerk of the Supreme Court', 'Reporter of Decisions', 'State Court Administrator', 'Justice', 'Chief Justice'];
-let isStaff = false, nonPublic = false, myName = '', posing = { cert: false, seal: false }, engine = null, token = 0, shown = false, pdfBytes = null, pdfStamp = null, pdfSticker = null;
+let isStaff = false, myName = '', mdText = null, engine = null, token = 0, shown = false, pdfBytes = null, pdfStamp = null, pdfSticker = null;
 const loadScript = src => new Promise((res, rej) => { const s = document.createElement('script'); s.src = src; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
 
 const card = (title, text, link) => { $('host').innerHTML = `<div class="msg" role="alert"><h1></h1><p></p>${link ? `<a class="btn" href="${link[1]}">${link[0]}</a>` : ''}</div>`; $('host').querySelector('h1').textContent = title; $('host').querySelector('p').textContent = text; $('t').textContent = title; $('s').textContent = ''; $('acts').hidden = true; };
@@ -98,7 +99,7 @@ async function loadStamp(path) {
     const p2 = n => String(n).padStart(2, '0'), cn = path.split('/')[1] || '';
     st = { synth: true, path, date: `${p2(dt.getMonth() + 1)}/${p2(dt.getDate())}/${dt.getFullYear()}`, label: /^MSC/i.test(cn) ? 'MI SUPREME COURT' : '7TH DISTRICT COURT', x: 0.7, y: 0.004, page: 1 };
   }
-  if (auth.currentUser) try { const a = await getDoc(doc(db, 'accounts', auth.currentUser.uid)); const r = a.exists() ? a.data().role : ''; myName = a.exists() ? String(a.data().name || '').trim() : ''; nonPublic = !!r && r !== 'Public User'; isStaff = STAFF_ROLES.includes(r); canMove = !st.locked && (isStaff || (nonPublic && st.filedByUid === auth.currentUser.uid && st.filed === false)); } catch { canMove = false; }
+  if (auth.currentUser) try { const a = await getDoc(doc(db, 'accounts', auth.currentUser.uid)); const r = a.exists() ? a.data().role : ''; myName = a.exists() ? String(a.data().name || '').trim() : ''; isStaff = STAFF_ROLES.includes(r); canMove = isStaff && !st.locked; } catch { canMove = false; }
   stampRec = st;
 }
 /* Save a change to the stamp (position, ink, tilt, size). A stamp built on the fly is saved in full the first time. */
@@ -108,41 +109,21 @@ async function saveStamp(p) {
     await setDoc(stampRef, { ...base, ...p, movedBy: auth.currentUser.uid, movedAt: Date.now() }, { merge: true }); stampRec = { ...stampRec, ...p, synth: false }; good('Stamp saved.'); }
   catch (e) { console.error(e); bad('We could not save the stamp change.'); }
 }
-/* Certified-copy certification and court seal. Each has "on" (shown on this document) and a saved position that is used when a certified copy is requested. */
-const markView = (k, ghostOk = true) => { const m = stampRec?.[k] || {}; if (!(m.on || (ghostOk && canMove && posing[k]))) return null; const full = { ...(k === 'cert' ? DEF_CERT : DEF_SEAL), ...m, auto: m.x === undefined };
-  return k === 'cert' ? { ...full, date: m.date || todayStr(), by: m.by || '', court: courtShort(stampRec.label), ghost: !m.on } : { ...full, court: stampRec.label, ghost: !m.on }; };
-async function saveMark(k, patch) { const next = { ...(stampRec[k] || {}), ...patch }; stampRec = { ...stampRec, [k]: next }; await saveStamp({ [k]: next }); }
-let refreshMarks = () => {};
-function showMarkControls() {
-  const bar = $('mk');
-  if (stampRec?.locked && nonPublic) { bar.hidden = false; bar.innerHTML = '<b>Certification</b><small>The court has finalized the stamps and seal on this document. They can no longer be changed.</small>'; return; }
-  if (!canMove) { bar.hidden = true; return; } bar.hidden = false;
-  const sl = (k, f, label, min, max, v) => `<label>${label} <input type="range" data-k="${k}" data-f="${f}" min="${min}" max="${max}" value="${v}" aria-label="${k === 'cert' ? 'Certified copy' : 'Seal'} ${label.toLowerCase()}"></label>`;
-  const row = (k, title, lab, inkMin, inkMax) => { const m = stampRec[k] || {}, on = !!m.on, adj = on || posing[k], full = { ...(k === 'cert' ? DEF_CERT : DEF_SEAL), ...m };
-    return `<span class="mrow"><b>${title}</b><label>${lab} <select data-s="${k}"><option value="off">Not on this document</option><option value="on"${on ? ' selected' : ''}>On this document</option></select></label>${on ? '' : `<button class="btn o" type="button" data-p="${k}" aria-pressed="${posing[k]}">Position for requests</button>`}${adj ? sl(k, 'ink', 'Ink', inkMin, inkMax, Math.round((full.ink ?? 1) * 100)) + sl(k, 'rot', 'Tilt', -20, 20, full.rot ?? 0) + sl(k, 'scale', 'Size', 50, 200, Math.round((full.scale ?? 1) * 100)) : ''}</span>`; };
-  bar.innerHTML = row('cert', 'Certification', 'Certified copy', 0, 150) + row('seal', 'Seal', 'Court seal', 25, 100) +
-    (isStaff ? '<span class="mrow"><button class="btn o" type="button" id="m-lock">Finalize stamps and seal</button><small id="m-lock-n">Once finalized, nobody can change them.</small></span>' : '') +
-    '<small>Drag a mark to move it. Saved positions are used when someone requests a certified copy.</small>';
-  bar.querySelectorAll('select[data-s]').forEach(sel => sel.onchange = async () => { const k = sel.dataset.s, on = sel.value === 'on'; posing[k] = false; await saveMark(k, on ? { on: true, ...(k === 'cert' ? { date: todayStr(), by: (myName || 'CLERK').toUpperCase() } : {}) } : { on: false }); showMarkControls(); refreshMarks(); });
-  bar.querySelectorAll('button[data-p]').forEach(b => b.onclick = () => { const k = b.dataset.p; posing[k] = !posing[k]; showMarkControls(); refreshMarks(); });
-  bar.querySelectorAll('input[type=range]').forEach(r => {
-    const apply = () => { const k = r.dataset.k, f = r.dataset.f, v = f === 'rot' ? +r.value : +r.value / 100; stampRec = { ...stampRec, [k]: { ...(stampRec[k] || {}), [f]: v } }; refreshMarks(); return { k, f, v }; };
-    r.oninput = apply; r.onchange = () => { const { k, f, v } = apply(); saveMark(k, { [f]: v }); };
-  });
-  const lk = $('m-lock'); if (lk) { let armed = 0; lk.onclick = async () => { if (!armed) { armed = 1; lk.textContent = 'Click again to finalize for good'; lk.setAttribute('aria-pressed', 'true'); setTimeout(() => { armed = 0; lk.textContent = 'Finalize stamps and seal'; lk.removeAttribute('aria-pressed'); }, 6000); return; }
-      lk.disabled = true; await saveStamp({ locked: true, lockedBy: auth.currentUser.uid, lockedAt: Date.now() }); location.reload(); }; }
-}
-/* Ink, tilt and size controls, for anyone who may edit the stamp. */
-function showControls(apply) {
-  const bar = $('sc'); if (!canMove) { bar.hidden = true; return; } bar.hidden = false;
-  const set = (id, v) => { $(id).value = v; }; set('c-ink', Math.round((stampRec.ink ?? 0.9) * 100)); set('c-rot', stampRec.rot ?? -3); set('c-size', Math.round((stampRec.scale ?? 1) * 100));
-  const read = () => ({ ink: +$('c-ink').value / 100, rot: +$('c-rot').value, scale: +$('c-size').value / 100 });
-  bar.oninput = () => { const v = read(); stampRec = { ...stampRec, ...v }; apply(v); };
-  bar.onchange = () => saveStamp(read());
-  $('c-reset').onclick = () => { set('c-ink', 90); set('c-rot', -3); set('c-size', 100); const v = read(); stampRec = { ...stampRec, ...v }; apply(v); saveStamp(v); };
+/* Court staff open the stamp editor to move the stamp, seal and certification. Nothing is added or removed there; the seal and certification
+   appear only on certified copies. Once the court finalizes them, nobody can change them. */
+function staffTools() {
+  const ed = $('edst'), fin = $('fin'); ed.hidden = fin.hidden = !canMove;
+  ed.onclick = async () => {
+    ed.disabled = true; const pick = o => o && o.x !== undefined ? { x: o.x, y: o.y, page: o.page, rot: o.rot, ink: o.ink, scale: o.scale } : undefined;
+    const out = await openStampEditor({ pdf: pdfBytes, md: mdText, label: stampRec.label, date: stampRec.date, marks: { stamp: pick(stampRec), seal: stampRec.seal, cert: stampRec.cert } });
+    ed.disabled = false; if (!out) return;
+    await saveStamp({ ...out.stamp, seal: out.seal, cert: out.cert }); location.reload();
+  };
+  let armed = 0; fin.onclick = async () => { if (!armed) { armed = 1; fin.textContent = 'Click again to finalize for good'; setTimeout(() => { armed = 0; fin.textContent = 'Finalize stamps'; }, 6000); return; }
+    fin.disabled = true; await saveStamp({ locked: true, lockedBy: auth.currentUser.uid, lockedAt: Date.now() }); location.reload(); };
 }
 async function open() {
-  const my = ++token; shown = false; pdfBytes = null; pdfStamp = null; $('md').hidden = false; $('sc').hidden = true; $('mk').hidden = true; posing = { cert: false, seal: false }; engine?.destroy(); engine = null; $('acts').hidden = true; $('note').textContent = '';
+  const my = ++token; shown = false; pdfBytes = null; pdfStamp = null; $('md').hidden = false; $('edst').hidden = $('fin').hidden = true; mdText = null; engine?.destroy(); engine = null; $('acts').hidden = true; $('note').textContent = '';
   const path = pathOf();
   if (!path || !/^(filingUploads|case-orders)\/[^/]+\/[^/]+\.(md|pdf)$/i.test(path)) return card('No document selected', 'This page opens court documents from a link on a docket or filing. Return to the page you came from and choose the document again.', ['Open the Online Portal', PORTAL]);
   $('host').innerHTML = '<div class="ld"><div class="spin"></div>Opening the document…</div>';
@@ -153,16 +134,17 @@ async function open() {
   try { text = new TextDecoder().decode(await getBytes(ref(storage, path), 4 * 1024 * 1024)); }
   catch (e) { console.error(e); if (my !== token) return; return card(e?.code === SC ? 'Document not found' : e?.code === 'storage/unauthorized' ? 'You do not have access' : 'We could not open this document', e?.code === SC ? 'This document may have been removed.' : e?.code === 'storage/unauthorized' ? (auth.currentUser ? 'Your account is not allowed to view this document.' : 'This document is not open to the public. Sign in to the Online Portal and open it again.') : 'Check your connection and try again.'); }
   if (my !== token) return;
+  mdText = text; { const pl = placementOf(text); if (stampRec.synth && pl.stamp) stampRec = { ...stampRec, ...pl.stamp }; if (!stampRec.seal && pl.seal) stampRec = { ...stampRec, seal: pl.seal }; if (!stampRec.cert && pl.certification) stampRec = { ...stampRec, cert: pl.certification }; }
   try {
-    const [{ byNumber }, { formOf, mountForm }] = await Promise.all([import(FORMS + 'registry.js?v=8'), import(FORMS + 'engine.js?v=31')]);
+    const [{ byNumber }, { formOf, mountForm }] = await Promise.all([import(FORMS + 'registry.js?v=8'), import(FORMS + 'engine.js?v=33')]);
     const num = formOf(text), form = num && byNumber(num);
     if (!form) return card('This document cannot be shown', num ? `It was prepared on form "${num}", which this viewer does not support yet.` : 'We could not tell which form this file is for.');
     const def = (await import(`${FORMS}${form.id}.js?v=22`)).default; if (my !== token) return;
     $('host').innerHTML = '';
-    engine = await mountForm(def, $('host'), { md: text, readOnly: true, stamp: { ...stampRec }, onStampMove: canMove ? p => saveStamp(p) : null, marks: { cert: markView('cert'), seal: markView('seal') }, onMarkMove: canMove ? (k, pos) => saveMark(k, pos) : null, onNote: (t, b) => { if (!shown && !b) return; $('note').textContent = t; $('note').style.color = b ? '#ffb4ab' : '#c6d3ea'; } });
+    engine = await mountForm(def, $('host'), { md: text, readOnly: true, stamp: { ...stampRec }, onNote: (t, b) => { if (!shown && !b) return; $('note').textContent = t; $('note').style.color = b ? '#ffb4ab' : '#c6d3ea'; } });
     if (my !== token) { engine.destroy(); return; }
-    showControls(v => engine.setStamp(v)); refreshMarks = () => { engine.setMark('cert', markView('cert')); engine.setMark('seal', markView('seal')); }; showMarkControls();
-    shown = true; if (canMove) good('You can drag the stamp to move it.'); const c = engine.getCase(), title = `${def.number} · ${def.title}`;
+    staffTools();
+    shown = true; const c = engine.getCase(), title = `${def.number} · ${def.title}`;
     $('t').textContent = title; $('s').textContent = [c.caseno && 'Case ' + c.caseno, c.judge].filter(Boolean).join(' · '); document.title = title + ' | Michigan Courts'; $('acts').hidden = false;
   } catch (e) { console.error(e); if (my === token) card('We could not display this document', 'Refresh the page and try again.'); }
 }
@@ -174,7 +156,7 @@ async function openPdf(my, path) {
   try {
     if (!window.pdfjsLib) await loadScript('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js');
     pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-    const { stampSvg, stickerSvg, certSvg, sealSvg } = await import(FORMS + 'engine.js?v=31');
+    const { stampSvg } = await import(FORMS + 'engine.js?v=33');
     pdfBytes = bytes; pdfSticker = stickerOf(path, stampRec);
     const pdf = await pdfjsLib.getDocument({ data: bytes.slice(0) }).promise; if (my !== token) return;
     $('host').innerHTML = '<div id="pdfv"></div>'; const view = $('pdfv'), W = Math.min(816, Math.max(320, view.clientWidth - 24));
@@ -185,30 +167,9 @@ async function openPdf(my, path) {
     }
     const pages = [...view.querySelectorAll('.pgw')]; pdfStamp = stampRec;
     /* The stamp: placed by fraction of the page, drawn at the same size as on court forms (176 px on an 816 px page). */
-    const place = () => {
-      view.querySelectorAll('[data-stamp]').forEach(n => n.remove());
-      const host = document.createElement('div'); host.innerHTML = stampSvg({ ...stampRec, move: canMove }); const sv = host.firstElementChild; sv.style.width = (176 * (stampRec.scale || 1) / 816 * 100) + '%'; sv.style.height = 'auto'; sv.removeAttribute('height'); sv.removeAttribute('width');
-      pages[Math.min(pages.length, Math.max(1, stampRec.page || 1)) - 1].appendChild(sv);
-      if (canMove) sv.addEventListener('pointerdown', e => { e.preventDefault(); const r0 = sv.getBoundingClientRect(), gx = e.clientX - r0.left, gy = e.clientY - r0.top; sv.setPointerCapture(e.pointerId); sv.style.cursor = 'grabbing'; let pos = null;
-        const mv = ev => { const g = pages.find(q => { const b = q.getBoundingClientRect(); return ev.clientX >= b.left && ev.clientX <= b.right && ev.clientY >= b.top && ev.clientY <= b.bottom; }) || sv.parentElement, b = g.getBoundingClientRect(), x = Math.min(1 - r0.width / b.width, Math.max(0, (ev.clientX - gx - b.left) / b.width)), y = Math.min(1 - r0.height / b.height, Math.max(0, (ev.clientY - gy - b.top) / b.height));
-          if (g !== sv.parentElement) g.appendChild(sv); sv.style.left = (x * 100).toFixed(3) + '%'; sv.style.top = (y * 100).toFixed(3) + '%'; pos = { x: +x.toFixed(4), y: +y.toFixed(4), page: pages.indexOf(g) + 1 }; };
-        const up = () => { sv.removeEventListener('pointermove', mv); sv.removeEventListener('pointerup', up); sv.style.cursor = 'grab'; if (pos) { stampRec = { ...stampRec, ...pos }; pdfStamp = stampRec; saveStamp(pos); } };
-        sv.addEventListener('pointermove', mv); sv.addEventListener('pointerup', up); });
-    };
-    const dragMark = (el, done) => { el.addEventListener('pointerdown', e => { e.preventDefault(); const r0 = el.getBoundingClientRect(), gx = e.clientX - r0.left, gy = e.clientY - r0.top; el.setPointerCapture(e.pointerId); el.style.cursor = 'grabbing'; let pos = null;
-      const mv = ev => { const g = pages.find(q => { const b = q.getBoundingClientRect(); return ev.clientX >= b.left && ev.clientX <= b.right && ev.clientY >= b.top && ev.clientY <= b.bottom; }) || el.parentElement, b = g.getBoundingClientRect(), x = Math.min(1 - r0.width / b.width, Math.max(0, (ev.clientX - gx - b.left) / b.width)), y = Math.min(1 - r0.height / b.height, Math.max(0, (ev.clientY - gy - b.top) / b.height));
-        if (g !== el.parentElement) g.appendChild(el); el.style.left = (x * 100).toFixed(3) + '%'; el.style.top = (y * 100).toFixed(3) + '%'; pos = { x: +x.toFixed(4), y: +y.toFixed(4), page: pages.indexOf(g) + 1 }; };
-      const up = () => { el.removeEventListener('pointermove', mv); el.removeEventListener('pointerup', up); el.style.cursor = 'grab'; if (pos) done(pos); };
-      el.addEventListener('pointermove', mv); el.addEventListener('pointerup', up); }); };
-    const placeMarks = () => {
-      view.querySelectorAll('[data-mark]').forEach(n => n.remove());
-      for (const k of ['cert', 'seal']) { const m = markView(k); if (!m) continue; const host = document.createElement('div'); host.innerHTML = (k === 'cert' ? certSvg : sealSvg)({ ...m, move: canMove }); const el = host.firstElementChild;
-        el.style.width = ((k === 'cert' ? 216 : 96) * (m.scale || 1) / 816 * 100) + '%'; el.style.height = 'auto'; el.removeAttribute('width'); el.removeAttribute('height');
-        pages[(m.page ? Math.min(pages.length, m.page) : pages.length) - 1].appendChild(el);
-        if (canMove) dragMark(el, pos => saveMark(k, pos)); }
-    };
-    refreshMarks = placeMarks; placeMarks(); showMarkControls();
-    place(); showControls(() => { pdfStamp = stampRec; place(); }); if (canMove) good('You can drag the stamp to move it.');
+    { const host = document.createElement('div'); host.innerHTML = stampSvg({ ...stampRec, move: false }); const sv = host.firstElementChild; sv.style.width = (176 * (stampRec.scale || 1) / 816 * 100) + '%'; sv.style.height = 'auto'; sv.removeAttribute('height'); sv.removeAttribute('width');
+      pages[Math.min(pages.length, Math.max(1, stampRec.page || 1)) - 1].appendChild(sv); }
+    staffTools();
     shown = true; document.title = 'Court document | Michigan Courts'; $('t').textContent = decodeURIComponent(path.split('/').pop()); $('s').textContent = `${stampRec.label} · ${stampRec.date}`; $('acts').hidden = false; $('md').hidden = true; $('pdf').textContent = 'Download PDF';
   } catch (e) { console.error(e); if (my === token) card('We could not display this document', 'Refresh the page and try again.'); }
 }
@@ -216,7 +177,7 @@ async function openPdf(my, path) {
 async function stampedPdf() {
   if (!window.PDFLib) await loadScript('https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js');
   const d = await PDFLib.PDFDocument.load(pdfBytes.slice(0));
-  await drawMarks(PDFLib, d, { stamp: pdfStamp, cert: markView('cert', false), seal: markView('seal', false) });
+  await drawMarks(PDFLib, d, { stamp: pdfStamp });
   return d.save();
 }
 $('pdf').onclick = async () => {
