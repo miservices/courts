@@ -15,9 +15,9 @@ const css = args => a02.css(args) + (({ U, P, B }) => `
 .cbx .cb{margin-top:${P(2.4)}}
 .rcpt{width:${P(497.5)};text-align:right;font-weight:bold;margin-top:${P(2)};line-height:${P(14)}}
 .rcpt .cu{display:inline-block;min-width:${P(110)};border-bottom:${B} solid #000;font-weight:normal;text-align:left;padding-left:${P(4)}}
-.cr2{display:flex;align-items:center;margin-top:${P(16)}}
-.cr2 .sb{border:${B} solid #000;padding:${P(5)} ${P(13)};font-weight:bold;margin-left:${P(79)};line-height:${P(12)}}
-.cr2 .sm{font-size:${P(7.1)}}
+.cr2{position:relative;display:flex;align-items:center;justify-content:center;width:${P(497.5)};margin-top:${P(16)};height:${P(26)}}
+.cr2 .sb{border:${B} solid #000;padding:${P(6)} ${P(14)};font-weight:bold;line-height:${P(12)};text-align:center}
+.cr2 .sm{position:absolute;left:0;top:50%;transform:translateY(-50%);font-size:${P(7.1)}}
 .tb{width:${P(497.5)};margin-top:${P(9)};border-top:${B} solid #000;font-size:${P(9)}}
 .tb .r2{display:flex;align-items:stretch;border-bottom:${B} solid #000;min-height:${P(32)}}
 .tb .r2.h{min-height:${P(21)};font-size:${P(7)};font-weight:bold;align-items:center}
@@ -59,8 +59,9 @@ const cb = on => `<div class="cb">${on ? '✓' : ''}</div>`;
 
 function build(api) {
   const { $, P, B } = api, E = api.ed, seq = [], v = id => $(id).value.trim();
-  const sup = /supreme/i.test(v('court')), dl = v('deliv'), resp = v('resp');
-  const head = sup ? '<div class="r">MICHIGAN SUPREME COURT</div>' : '<div class="r">THE DISTRICT COURT FOR</div><div class="r">' + esc(((/^(.*?)\s+(co\.|county)/i.exec(v('court')) || [])[1] || 'GENESEE').toUpperCase()) + ' COUNTY</div>';
+  const sup = /supreme/i.test(v('court')) || !!globalThis.__mcSup;
+  const head = sup ? '<div class="r">IN THE SUPREME COURT</div>' : '<div class="r">THE 7TH DISTRICT COURT FOR</div><div class="r">GENESEE COUNTY</div>';
+  const dl = v('deliv'), resp = v('resp');
   seq.push({ html: `<div class="hd"><div class="h1"><div class="b" style="padding-left:${P(33.5)}">STATE OF MICHIGAN</div>${head}</div><div class="h2">REQUEST FOR CERTIFIED<br>COURT RECORDS COPIES</div><div class="h3"><div><b>JUDGE</b><span class="jv">${E('judge')}</span></div><div><b>CASE NO.</b><span class="jv">${E('caseno')}</span></div></div></div>` });
   seq.push({ html: `<div class="rq">I, <span class="u" style="min-width:${P(183)}">${E('rname', { ph: 'Name' })}</span>, request certified copies of court record(s) as follows:<span class="sm">Print or type your name</span></div>` });
   seq.push({ html: `<div class="sec">1. I request records from the following case:</div>

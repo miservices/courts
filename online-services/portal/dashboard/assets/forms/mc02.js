@@ -65,7 +65,7 @@ const panel = `
  <div class="row"><div><label>Date</label><input type="text" id="d1" data-font="date"></div><div><label>Signature (typed)</label><input type="text" id="sig1" data-font="sig"></div></div>
 `;
 
-const hdr = (P, B, mid, j, c) => `<div class="hd"><div class="h1"><div class="b" style="padding-left:${P(33.5)}">STATE OF MICHIGAN</div><div class="r">THE DISTRICT COURT FOR</div><div class="r">GENESEE COUNTY</div></div><div class="h2">${mid}</div><div class="h3"><div><b>JUDGE</b><span class="jv">${j}</span></div><div><b>CASE NO.</b><span class="jv">${c}</span></div></div></div>`;
+const hdr = (P, B, mid, j, c) => `<div class="hd"><div class="h1"><div class="b" style="padding-left:${P(33.5)}">STATE OF MICHIGAN</div>${globalThis.__mcSup ? '<div class="r">IN THE SUPREME COURT</div>' : '<div class="r">THE 7TH DISTRICT COURT FOR</div><div class="r">GENESEE COUNTY</div>'}</div><div class="h2">${mid}</div><div class="h3"><div><b>JUDGE</b><span class="jv">${j}</span></div><div><b>CASE NO.</b><span class="jv">${c}</span></div></div></div>`;
 const cell = (l, v) => `<div class="lb">${l}</div><div class="vv">${v}</div>`;
 const cb = on => `<div class="cb">${on ? '✓' : ''}</div>`;
 

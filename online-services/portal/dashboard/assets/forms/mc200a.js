@@ -99,7 +99,7 @@ const panel = `
  <div class="row"><div><label>Date</label><input type="text" id="d3" data-font="none"></div><div><label>Affiant signature (/s/)</label><input type="text" id="esig" data-font="none"></div></div>
 `;
 
-const hdr=(P,B,mid,j,c)=>`<div class="hd"><div class="h1"><div class="b" style="padding-left:${P(33.5)}">STATE OF MICHIGAN</div><div class="r">THE DISTRICT COURT FOR</div><div class="r">GENESEE COUNTY</div></div><div class="h2">${mid}</div><div class="h3"><div><b>JUDGE</b><span class="jv">${j}</span></div><div><b>CASE NO.</b><span class="jv">${c}</span></div></div></div>`;
+const hdr=(P,B,mid,j,c)=>`<div class="hd"><div class="h1"><div class="b" style="padding-left:${P(33.5)}">STATE OF MICHIGAN</div>${globalThis.__mcSup ? '<div class="r">IN THE SUPREME COURT</div>' : '<div class="r">THE 7TH DISTRICT COURT FOR</div><div class="r">GENESEE COUNTY</div>'}</div><div class="h2">${mid}</div><div class="h3"><div><b>JUDGE</b><span class="jv">${j}</span></div><div><b>CASE NO.</b><span class="jv">${c}</span></div></div></div>`;
 const cell=(l,v)=>`<div class="lb">${l}</div><div class="vv">${v}</div>`;
 const blank=(v,b)=>v||b;
 const cb=(on,key)=>`<div class="cb"${key?` data-chk="${key}" title="Click to check or uncheck"`:''}>${on?'✓':''}</div>`;

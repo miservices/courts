@@ -559,6 +559,7 @@ export async function mountForm(def, host, { account, role, md, onDirty, onEdit,
   }
   function render() {
     paintCase(); rendering = true; const keep = fd.documentElement.scrollTop;
+    globalThis.__mcSup = linked?.col === 'mscCases' || /^\s*MSC\b/i.test(src('caseno')?.value || linked?.caseno || '');   // filed in the Supreme Court: the form heads read "IN THE SUPREME COURT"
     const pages = paginate(def.build(api));
     preview.innerHTML = pages.map((p, pi) => `<div class="page">${unofficial && !stampSt ? UNOFF_W : ''}<div class="pc"${unofficial || stampSt ? ' style="position:relative;z-index:1"' : ''}>${p.join('')}</div><div class="foot">${esc(def.footer || def.number)}</div>${unofficial && !stampSt ? UNOFF_F : ''}${sticker && pi === 0 ? `<div style="position:absolute;right:16px;bottom:5px;z-index:7;pointer-events:none">${stickerSvg(sticker, .6)}</div>` : ''}${stampSt && pi === Math.min(pages.length, Math.max(1, stampSt.page || 1)) - 1 ? stampSvg({ ...stampSt, move: !!onStampMove }) : ''}${['cert', 'seal'].map(k => { const m = markSt[k]; return m && (m.on || m.ghost) && pi === (m.page ? Math.min(pages.length, m.page) : pages.length) - 1 ? (k === 'cert' ? certSvg : sealSvg)({ ...m, move: !!onMarkMove }) : ''; }).join('')}</div>`).join(''); fit();
     fd.documentElement.scrollTop = keep; rendering = false; restore(); lockBars();
