@@ -13,17 +13,25 @@
 *{box-sizing:border-box}
 html,body{height:100%}
 body{margin:0;font-family:'Public Sans',system-ui,sans-serif;color:var(--ink);background:var(--bg);display:flex;flex-direction:column;min-height:100vh}
-header.top{background:var(--navy);color:#fff;padding:10px 20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
-header.top .brand{font-family:'Source Serif 4',Georgia,serif;font-weight:700;font-size:17px;letter-spacing:.01em}
-header.top .brand small{display:block;font:500 11px 'Public Sans',sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#aebfdc}
-header.top .meta{flex:1;min-width:180px}
-header.top .meta b{display:block;font-size:15px}header.top .meta span{font-size:12.5px;color:#c6d3ea}
-.acts{display:flex;gap:8px;flex-wrap:wrap}
-.btn{font:600 13.5px 'Public Sans',sans-serif;border-radius:6px;padding:8px 14px;border:1.5px solid #fff;background:#fff;color:var(--navy);cursor:pointer;text-decoration:none;display:inline-flex;align-items:center}
-.btn.o{background:transparent;color:#fff;border-color:#7f95bd}.btn:hover{filter:brightness(.95)}.btn.o:hover{background:rgba(255,255,255,.1)}
+header.top{background:#fff;color:var(--ink);border-bottom:1px solid var(--line);padding:12px 22px;display:flex;align-items:center;gap:18px;flex-wrap:wrap;position:sticky;top:0;z-index:20}
+header.top .brand{font-family:'Source Serif 4',Georgia,serif;font-weight:700;font-size:17px;color:var(--navy);padding-right:18px;border-right:1px solid var(--line)}
+header.top .brand small{display:block;font:600 10.5px 'Public Sans',sans-serif;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+header.top .meta{flex:1;min-width:200px}
+header.top .meta b{display:block;font-size:15.5px;color:var(--navy);overflow-wrap:anywhere}header.top .meta span{font-size:12.5px;color:var(--muted)}
+.acts{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.btn{font:600 13.5px 'Public Sans',sans-serif;border-radius:7px;padding:8px 15px;border:1.5px solid var(--navy);background:var(--navy);color:#fff;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;transition:background .12s}
+.btn:hover{background:var(--navy2)}.btn.o{background:#fff;color:var(--navy);border-color:#c5cedd}.btn.o:hover{background:#f1f4f9}
+.btn.w{background:#fff;color:#8a2a00;border-color:#e3b99f}.btn.w:hover{background:#fff4ec}
 .btn:disabled{opacity:.5;cursor:default}
-.btn:focus-visible{outline:3px solid #ffd666;outline-offset:2px}
-main{flex:1;display:flex;flex-direction:column;padding:14px 16px 18px;min-height:0}
+.btn:focus-visible,.chip:focus-visible{outline:3px solid #1f5fae;outline-offset:2px}
+.chip{display:inline-flex;align-items:center;gap:7px;font:600 12px 'Public Sans',sans-serif;border-radius:999px;padding:4px 11px;background:#eef2f9;color:#3a4558}
+.chip i{width:8px;height:8px;border-radius:50%;background:#8a97ad}.chip.ok{background:#e4f3e8;color:#14532d}.chip.ok i{background:#1e8a45}.chip.op{background:#fff3d6;color:#7a5200}.chip.op i{background:#e0a100}
+#staff{background:#fff8e6;border-bottom:1px solid #f0d99a;color:#5c4300;font-size:13px;padding:8px 22px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}#staff[hidden]{display:none}
+#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);opacity:0;pointer-events:none;background:#10264a;color:#fff;padding:11px 18px;border-radius:9px;font-size:13.5px;box-shadow:0 8px 28px rgba(0,0,0,.3);transition:.2s;z-index:50;max-width:92vw}
+#toast.on{opacity:1;transform:translateX(-50%)}#toast.e{background:#8f1d17}
+.mbk{position:fixed;inset:0;background:rgba(16,38,74,.5);display:flex;align-items:center;justify-content:center;z-index:60;padding:16px}
+.mdl{background:#fff;border-radius:13px;padding:24px 26px;width:min(460px,100%);box-shadow:0 16px 48px rgba(0,0,0,.35)}.mdl h3{margin:0 0 8px;font:700 19px 'Source Serif 4',Georgia,serif;color:var(--navy)}.mdl p{margin:0 0 20px;color:var(--muted);line-height:1.55;font-size:14px}.mdl div{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap}
+main{flex:1;display:flex;flex-direction:column;padding:18px 16px 24px;min-height:0}
 #host{flex:1;min-height:0}
 .fd-wrap{display:block;min-height:480px}.fd-panel{display:none!important}.fd-view{height:100%}
 .fd-frame{width:100%;height:100%;border:1px solid var(--line);border-radius:8px;background:#e9ebee;display:block}
@@ -33,30 +41,26 @@ main{flex:1;display:flex;flex-direction:column;padding:14px 16px 18px;min-height
 .msg a.btn{background:var(--navy);color:#fff;border-color:var(--navy)}
 .spin{width:22px;height:22px;border:3px solid #b8cdee;border-top-color:var(--navy);border-radius:50%;animation:s .8s linear infinite;margin:0 auto 10px}@keyframes s{to{transform:rotate(360deg)}}
 .ld{text-align:center;margin:12vh auto;color:var(--muted)}
-#sc{width:100%;display:flex;align-items:center;gap:18px;flex-wrap:wrap;font-size:12.5px;color:#dbe5f7;border-top:1px solid rgba(255,255,255,.18);padding-top:8px}#sc[hidden],#mk[hidden]{display:none}
-#mk{width:100%;display:flex;align-items:center;gap:16px;flex-wrap:wrap;font-size:12.5px;color:#dbe5f7;border-top:1px solid rgba(255,255,255,.18);padding-top:8px}#mk select{font:inherit;font-size:12.5px;padding:3px 6px;border-radius:5px}#mk .btn{padding:4px 10px;font-size:12px}#mk .btn[aria-pressed=true]{background:#ffd666;color:#10264a;border-color:#ffd666}#mk small{color:#aebfdc}#mk .mrow{display:flex;align-items:center;gap:14px;flex-wrap:wrap;width:100%}#mk input[type=range]{width:90px;vertical-align:middle}
-#sc label{display:flex;align-items:center;gap:8px}#sc input[type=range]{width:130px;accent-color:#ffd666}#sc .btn{padding:4px 10px;font-size:12px}
-#note{font-size:12.5px;color:#c6d3ea;min-height:16px;width:100%}
 #pdfv{overflow:auto;height:100%;background:#cfd6e3;border:1px solid var(--line);border-radius:8px;padding:14px 0}
 .pgw{position:relative;margin:0 auto 14px;background:#fff;box-shadow:0 1px 6px rgba(0,0,0,.25)}.pgw canvas{display:block;width:100%;height:auto}
 .unof{position:absolute;left:0;right:0;bottom:0;background:#eef1f6;border-top:2px solid var(--navy);font:11px/15px Arial,sans-serif;color:var(--navy);padding:5px 12px;text-align:center}
-@media print{#pdfv{overflow:visible;background:#fff;border:0;padding:0}.pgw{box-shadow:none;margin:0;break-after:page}header.top{display:none}}
-@media print{header.top{display:none}body{background:#fff}}
+@media print{#pdfv{overflow:visible;background:#fff;border:0;padding:0}.pgw{box-shadow:none;margin:0;break-after:page}header.top,#staff{display:none!important}}
+@media print{header.top,#staff,#toast{display:none!important}body{background:#fff}}
 </style>
 </head>
 <body>
 <header class="top">
   <div class="brand">Michigan Courts<small>Court document</small></div>
   <div class="meta"><b id="t">Loading document…</b><span id="s"></span></div>
+  <span class="chip" id="lk" hidden><i></i><span></span></span>
   <div class="acts" id="acts" hidden>
-    <button class="btn" id="pdf" type="button">Download PDF</button>
-    <button class="btn o" id="prt" type="button">Print</button>
     <button class="btn o" id="md" type="button">Download .md</button>
-    <button class="btn o" id="edst" type="button" hidden>Edit stamps</button>
-    <button class="btn o" id="fin" type="button" hidden>Finalize stamps</button>
+    <button class="btn o" id="prt" type="button">Print</button>
+    <button class="btn" id="pdf" type="button">Download PDF</button>
   </div>
-  <div id="note" role="status" aria-live="polite"></div>
 </header>
+<div id="staff" hidden><b>Court staff</b><span id="stxt"></span><span style="flex:1"></span><button class="btn o" id="edst" type="button">Edit stamps</button><button class="btn w" id="fin" type="button">Finalize stamps</button></div>
+<div id="toast" role="status" aria-live="polite"></div>
 <main><div id="host"><div class="ld"><div class="spin"></div>Opening the document…</div></div></main>
 
 <script type="module">
@@ -66,7 +70,7 @@ import { getStorage, ref, getBytes, getMetadata } from "https://www.gstatic.com/
 import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 import { drawMarks } from '/courts/online-services/portal/dashboard/assets/forms/marks.js?v=3';
 import { placementOf } from '/courts/online-services/portal/dashboard/assets/forms/engine.js?v=33';
-import { openStampEditor } from '/courts/online-services/portal/dashboard/assets/forms/stampeditor.js?v=1';
+import { openStampEditor } from '/courts/online-services/portal/dashboard/assets/forms/stampeditor.js?v=2';
 
 const app = initializeApp({
   apiKey: "AIzaSyA8sUFIq81cs6uQvqduardpGJ4R2DxO8NQ", authDomain: "micourt-dada6.firebaseapp.com", projectId: "micourt-dada6",
@@ -80,14 +84,21 @@ const STAFF_ROLES = ['Court Reporter', 'Law Clerk', 'Judicial Assistant', 'Deput
 let isStaff = false, myName = '', mdText = null, engine = null, token = 0, shown = false, pdfBytes = null, pdfStamp = null, pdfSticker = null;
 const loadScript = src => new Promise((res, rej) => { const s = document.createElement('script'); s.src = src; s.onload = res; s.onerror = () => rej(new Error('load ' + src)); document.head.appendChild(s); });
 
-const card = (title, text, link) => { $('host').innerHTML = `<div class="msg" role="alert"><h1></h1><p></p>${link ? `<a class="btn" href="${link[1]}">${link[0]}</a>` : ''}</div>`; $('host').querySelector('h1').textContent = title; $('host').querySelector('p').textContent = text; $('t').textContent = title; $('s').textContent = ''; $('acts').hidden = true; };
+const card = (title, text, link) => { $('host').innerHTML = `<div class="msg" role="alert"><h1></h1><p></p>${link ? `<a class="btn" href="${link[1]}">${link[0]}</a>` : ''}</div>`; $('host').querySelector('h1').textContent = title; $('host').querySelector('p').textContent = text; $('t').textContent = title; $('s').textContent = ''; $('acts').hidden = true; $('lk').hidden = $('staff').hidden = true; };
 /* #/filingUploads/<confirmation>/<file>.md  (each part percent-encoded) */
 const pathOf = () => { const h = location.hash.replace(/^#\/?/, ''); if (!h) return null; try { return h.split('/').map(decodeURIComponent).join('/'); } catch { return null; } };
 
 /* The folder sticker: the document ID (the filing number, plus the document's number when it has one), the filing date and the court. */
 const stickerOf = (path, st) => ({ id: (st && st.docId) || path.split('/')[1] || 'DOCUMENT', date: st?.date || '', label: st?.label || '' });
 const SC = 'storage/object-not-found';
-const bad = (t) => { $('note').textContent = t; $('note').style.color = '#ffb4ab'; }, good = t => { $('note').textContent = t; $('note').style.color = '#c6d3ea'; };
+let tt = 0;
+const toast = (t, e) => { const el = $('toast'); el.textContent = t; el.className = 'on' + (e ? ' e' : ''); clearTimeout(tt); tt = setTimeout(() => el.className = '', 4200); };
+const bad = t => toast(t, true), good = t => toast(t);
+const fmtD = ms => ms ? new Date(ms).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : '';
+function chips() { const lk = $('lk'); lk.hidden = !stampRec; if (!stampRec) return; const l = !!stampRec.locked; lk.className = 'chip ' + (l ? 'ok' : 'op'); lk.lastChild.textContent = l ? 'Stamps finalized' : 'Stamps not finalized'; lk.title = l ? `Finalized${stampRec.lockedByName ? ' by ' + stampRec.lockedByName : ''}${stampRec.lockedAt ? ' on ' + fmtD(stampRec.lockedAt) : ''}` : 'Court staff may still adjust the stamps.';
+  const sb = $('staff'); sb.hidden = !isStaff || l; $('stxt').textContent = 'The stamps on this document can still be moved. Finalizing locks them for everyone.'; $('edst').hidden = $('fin').hidden = !canMove; }
+const ask = (title, text, yes, no = 'Cancel') => new Promise(res => { const b = document.createElement('div'); b.className = 'mbk'; b.innerHTML = '<div class="mdl" role="alertdialog" aria-modal="true"><h3></h3><p></p><div><button class="btn o" type="button"></button><button class="btn" type="button"></button></div></div>'; b.querySelector('h3').textContent = title; b.querySelector('p').textContent = text; const [n, y] = b.querySelectorAll('button'); n.textContent = no; y.textContent = yes; document.body.appendChild(b); n.focus();
+  const done = v => { b.remove(); res(v); }; n.onclick = () => done(false); y.onclick = () => done(true); b.onclick = e => { if (e.target === b) done(false); }; b.onkeydown = e => { if (e.key === 'Escape') done(false); }; });
 let stampRec = null, stampRef = null, canMove = false;
 
 /* Every document carries the court stamp. One that has no record yet (filed before stamps existed) gets one built from the file's upload date. */
@@ -102,28 +113,36 @@ async function loadStamp(path) {
   if (auth.currentUser) try { const a = await getDoc(doc(db, 'accounts', auth.currentUser.uid)); const r = a.exists() ? a.data().role : ''; myName = a.exists() ? String(a.data().name || '').trim() : ''; isStaff = STAFF_ROLES.includes(r); canMove = isStaff && !st.locked; } catch { canMove = false; }
   stampRec = st;
 }
-/* Save a change to the stamp (position, ink, tilt, size). A stamp built on the fly is saved in full the first time. */
+/* Save a change to the stamp (position, ink, tilt, size, lock). A stamp built on the fly is created first (unlocked, as the rules require), then updated.
+   Returns true only when the saved record reads back with the change. */
 async function saveStamp(p) {
-  if (!auth.currentUser) return;
-  try { const base = stampRec.synth ? { path: stampRec.path, label: stampRec.label, date: stampRec.date, filedByUid: auth.currentUser.uid, x: stampRec.x, y: stampRec.y, page: stampRec.page } : {};
-    await setDoc(stampRef, { ...base, ...p, movedBy: auth.currentUser.uid, movedAt: Date.now() }, { merge: true }); stampRec = { ...stampRec, ...p, synth: false }; good('Stamp saved.'); }
-  catch (e) { console.error(e); bad('We could not save the stamp change.'); }
+  if (!auth.currentUser) { bad('Sign in to change stamps.'); return false; }
+  try {
+    if (stampRec.synth) { await setDoc(stampRef, { path: stampRec.path, label: stampRec.label, date: stampRec.date, filedByUid: auth.currentUser.uid, x: stampRec.x, y: stampRec.y, page: stampRec.page, locked: false }); stampRec = { ...stampRec, synth: false, locked: false }; }
+    await setDoc(stampRef, { ...p, movedBy: auth.currentUser.uid, movedAt: Date.now() }, { merge: true });
+    const back = (await getDoc(stampRef)).data() || {};
+    for (const k of Object.keys(p)) if (typeof p[k] !== 'object' && back[k] !== p[k]) throw new Error('not saved: ' + k);
+    stampRec = { ...stampRec, ...back, synth: false }; return true;
+  } catch (e) { console.error(e); bad('The court could not save this change. Nothing was changed.'); return false; }
 }
 /* Court staff open the stamp editor to move the stamp, seal and certification. Nothing is added or removed there; the seal and certification
    appear only on certified copies. Once the court finalizes them, nobody can change them. */
 function staffTools() {
-  const ed = $('edst'), fin = $('fin'); ed.hidden = fin.hidden = !canMove;
+  const ed = $('edst'), fin = $('fin'); chips();
   ed.onclick = async () => {
-    ed.disabled = true; const pick = o => o && o.x !== undefined ? { x: o.x, y: o.y, page: o.page, rot: o.rot, ink: o.ink, scale: o.scale } : undefined;
-    const out = await openStampEditor({ pdf: pdfBytes, md: mdText, label: stampRec.label, date: stampRec.date, marks: { stamp: pick(stampRec), seal: stampRec.seal, cert: stampRec.cert } });
-    ed.disabled = false; if (!out) return;
-    await saveStamp({ ...out.stamp, seal: out.seal, cert: out.cert }); location.reload();
+    ed.disabled = fin.disabled = true; const pick = o => o && o.x !== undefined ? { x: o.x, y: o.y, page: o.page, rot: o.rot, ink: o.ink, scale: o.scale } : undefined;
+    const out = await openStampEditor({ pdf: pdfBytes, md: mdText, label: stampRec.label, date: stampRec.date, title: $('t').textContent, marks: { stamp: pick(stampRec), seal: stampRec.seal, cert: stampRec.cert } });
+    if (!out) { ed.disabled = fin.disabled = false; return; }
+    if (await saveStamp({ ...out.stamp, seal: out.seal, cert: out.cert })) { sessionStorage.setItem('flash', 'Stamp positions saved.'); location.reload(); } else ed.disabled = fin.disabled = false;
   };
-  let armed = 0; fin.onclick = async () => { if (!armed) { armed = 1; fin.textContent = 'Click again to finalize for good'; setTimeout(() => { armed = 0; fin.textContent = 'Finalize stamps'; }, 6000); return; }
-    fin.disabled = true; await saveStamp({ locked: true, lockedBy: auth.currentUser.uid, lockedAt: Date.now() }); location.reload(); };
+  fin.onclick = async () => {
+    if (!await ask('Finalize the stamps?', 'This locks the stamp, seal and certification on this document for everyone, including court staff. It cannot be undone.', 'Finalize stamps')) return;
+    ed.disabled = fin.disabled = true;
+    if (await saveStamp({ locked: true, lockedBy: auth.currentUser.uid, lockedByName: myName || 'Court staff', lockedAt: Date.now() })) { sessionStorage.setItem('flash', 'Stamps finalized. They can no longer be changed.'); location.reload(); } else ed.disabled = fin.disabled = false;
+  };
 }
 async function open() {
-  const my = ++token; shown = false; pdfBytes = null; pdfStamp = null; $('md').hidden = false; $('edst').hidden = $('fin').hidden = true; mdText = null; engine?.destroy(); engine = null; $('acts').hidden = true; $('note').textContent = '';
+  const my = ++token; shown = false; pdfBytes = null; pdfStamp = null; $('md').hidden = false; $('edst').hidden = $('fin').hidden = true; mdText = null; engine?.destroy(); engine = null; $('acts').hidden = true; $('lk').hidden = $('staff').hidden = true; 
   const path = pathOf();
   if (!path || !/^(filingUploads|case-orders)\/[^/]+\/[^/]+\.(md|pdf)$/i.test(path)) return card('No document selected', 'This page opens court documents from a link on a docket or filing. Return to the page you came from and choose the document again.', ['Open the Online Portal', PORTAL]);
   $('host').innerHTML = '<div class="ld"><div class="spin"></div>Opening the document…</div>';
@@ -141,11 +160,11 @@ async function open() {
     if (!form) return card('This document cannot be shown', num ? `It was prepared on form "${num}", which this viewer does not support yet.` : 'We could not tell which form this file is for.');
     const def = (await import(`${FORMS}${form.id}.js?v=22`)).default; if (my !== token) return;
     $('host').innerHTML = '';
-    engine = await mountForm(def, $('host'), { md: text, readOnly: true, stamp: { ...stampRec }, onNote: (t, b) => { if (!shown && !b) return; $('note').textContent = t; $('note').style.color = b ? '#ffb4ab' : '#c6d3ea'; } });
+    engine = await mountForm(def, $('host'), { md: text, readOnly: true, stamp: { ...stampRec }, onNote: (t, b) => { if (shown && b) bad(t); } });
     if (my !== token) { engine.destroy(); return; }
     staffTools();
     shown = true; const c = engine.getCase(), title = `${def.number} · ${def.title}`;
-    $('t').textContent = title; $('s').textContent = [c.caseno && 'Case ' + c.caseno, c.judge].filter(Boolean).join(' · '); document.title = title + ' | Michigan Courts'; $('acts').hidden = false;
+    $('t').textContent = title; $('s').textContent = [c.caseno && 'Case ' + c.caseno, c.judge].filter(Boolean).join(' · '); document.title = title + ' | Michigan Courts'; $('acts').hidden = false; chips();
   } catch (e) { console.error(e); if (my === token) card('We could not display this document', 'Refresh the page and try again.'); }
 }
 async function openPdf(my, path) {
@@ -170,7 +189,7 @@ async function openPdf(my, path) {
     { const host = document.createElement('div'); host.innerHTML = stampSvg({ ...stampRec, move: false }); const sv = host.firstElementChild; sv.style.width = (176 * (stampRec.scale || 1) / 816 * 100) + '%'; sv.style.height = 'auto'; sv.removeAttribute('height'); sv.removeAttribute('width');
       pages[Math.min(pages.length, Math.max(1, stampRec.page || 1)) - 1].appendChild(sv); }
     staffTools();
-    shown = true; document.title = 'Court document | Michigan Courts'; $('t').textContent = decodeURIComponent(path.split('/').pop()); $('s').textContent = `${stampRec.label} · ${stampRec.date}`; $('acts').hidden = false; $('md').hidden = true; $('pdf').textContent = 'Download PDF';
+    shown = true; document.title = 'Court document | Michigan Courts'; $('t').textContent = decodeURIComponent(path.split('/').pop()); $('s').textContent = `${stampRec.label} · ${stampRec.date}`; $('acts').hidden = false; chips(); $('md').hidden = true; $('pdf').textContent = 'Download PDF';
   } catch (e) { console.error(e); if (my === token) card('We could not display this document', 'Refresh the page and try again.'); }
 }
 /* A downloaded copy carries the sticker and the stamp, drawn onto the original pages. */
@@ -181,10 +200,11 @@ async function stampedPdf() {
   return d.save();
 }
 $('pdf').onclick = async () => {
-  if (pdfBytes) { $('pdf').disabled = true; try { const out = await stampedPdf(), a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([out], { type: 'application/pdf' })); a.download = ($('t').textContent || 'document.pdf').replace(/[^\w.\- ]+/g, '_'); document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 100); } catch (e) { console.error(e); $('note').textContent = 'We could not make the PDF. Use Print instead.'; $('note').style.color = '#ffb4ab'; } finally { $('pdf').disabled = false; } return; }
+  if (pdfBytes) { $('pdf').disabled = true; try { const out = await stampedPdf(), a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([out], { type: 'application/pdf' })); a.download = ($('t').textContent || 'document.pdf').replace(/[^\w.\- ]+/g, '_'); document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 100); } catch (e) { console.error(e); bad('We could not make the PDF. Use Print instead.'); } finally { $('pdf').disabled = false; } return; }
  $('pdf').disabled = true; try { await engine?.exportPdf(); } finally { $('pdf').disabled = false; } };
 $('prt').onclick = () => pdfBytes ? window.print() : engine?.print();
 $('md').onclick = () => engine?.exportMd();
+try { const f = sessionStorage.getItem('flash'); if (f) { sessionStorage.removeItem('flash'); setTimeout(() => good(f), 600); } } catch { }
 addEventListener('hashchange', open);
 open();
 </script>
