@@ -191,8 +191,11 @@ $('sf').onsubmit = async e => {
 /* ───── record pickers ───── */
 const SAFE = /^(filingUploads|case-orders)\/[^/]+\/[^/]+\.(md|pdf)$/i;
 function pathOf(link) {
-  const m = /^(?:https?:\/\/(?:www\.)?migovt\.org)?\/(?:courts\/)?(?:supreme-court\/)?documents\/?#\/?(.+)$/i.exec(String(link || '').trim()); if (!m) return null;
-  try { const p = m[1].split('/').map(decodeURIComponent).join('/'); return SAFE.test(p) ? p : null; } catch { return null; }
+  const l = String(link || '').trim();
+  /* documents opened in the court's viewer, or a Firebase Storage download link (case management uploads PDFs that way) */
+  const m = /^(?:https?:\/\/(?:www\.)?migovt\.org)?\/(?:courts\/)?(?:supreme-court\/)?documents\/?#\/?(.+)$/i.exec(l) || /^https:\/\/firebasestorage\.googleapis\.com\/v0\/b\/[^/]+\/o\/([^?#]+)/i.exec(l) || /^https:\/\/storage\.googleapis\.com\/[^/]+\/([^?#]+)/i.exec(l);
+  if (!m) return null;
+  try { const p = (/firebasestorage|storage\.googleapis/i.test(l) ? decodeURIComponent(m[1]) : m[1].split('/').map(decodeURIComponent).join('/')); return SAFE.test(p) ? p : null; } catch { return null; }
 }
 const isOpinion = e => /opinion|per curiam|dissent|concurr/i.test([e.description, e.comment].filter(hv).join(' '));
 const liveEvents = c => (c.events || []).filter(e => !e.sealed && !e.struck);
