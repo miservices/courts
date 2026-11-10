@@ -305,7 +305,7 @@ async function issue() {
     for (const x of S.prepared) {
       const exp = x.issued + EXPIRES_DAYS * DAY, kind = FEES[S.kind].name;
       await uploadBytes(ref(storage, `certifiedCopies/${account.uid}/${x.receipt}`), x.bytes, { contentType: 'application/pdf' });
-      const clerk = await findClerk(isSupreme(c)), rcpt = { ...(clerk ? { clerk } : {}), receipt: x.receipt, requesterUid: account.uid, requesterName: account.name || '', caseId: c.caseId, caseDocId: c._id, caseCollection: c._col, court: courtName(c), kind: S.kind, kindName: kind, itemKey: x.itemKey, docId: x.docId, eventNumber: x.it.e.eventNumber ?? null, description: x.desc, matter: caption(c), recordDate: fmtDate(x.it.e.date) || '', delivery: 'Electronic', pages: x.pages, searchFee: x.searchFee, copyFee: x.copyFee, total: x.total, free: x.free, issuedAt: x.issued, expiresAt: exp };
+      const clerk = await findClerk(isSupreme(c)); if (clerk) delete clerk.denied; const rcpt = { ...(clerk ? { clerk } : {}), receipt: x.receipt, requesterUid: account.uid, requesterName: account.name || '', caseId: c.caseId, caseDocId: c._id, caseCollection: c._col, court: courtName(c), kind: S.kind, kindName: kind, itemKey: x.itemKey, docId: x.docId, eventNumber: x.it.e.eventNumber ?? null, description: x.desc, matter: caption(c), recordDate: fmtDate(x.it.e.date) || '', delivery: 'Electronic', pages: x.pages, searchFee: x.searchFee, copyFee: x.copyFee, total: x.total, free: x.free, issuedAt: x.issued, expiresAt: exp };
       await setDoc(doc(db, 'recordReceipts', x.receipt), rcpt);
       await runTransaction(db, async tx => {   // the fee is assessed to the requester and shows in My financials
         const r = doc(db, c._col, c._id), s = await tx.get(r), d = s.data() || {}, list = [...(d.financialOrders || [])], at = new Date().toISOString();
@@ -319,15 +319,17 @@ async function issue() {
 }
 /* The Request for Certified Court Records Copies (MC 500) for a receipt, drawn on the page with a PDF download. */
 /* The clerk of the court's signature for the MC 500: the Clerk (County Clerk, or Clerk of the Supreme Court) if one exists in the data, otherwise the Chief Judge (or Chief Justice). */
+const vary = r => [...new Set([r, r.toLowerCase(), r.toUpperCase(), r.replace(/ /g, '_'), r.toLowerCase().replace(/ /g, '_'), r.toLowerCase().replace(/ /g, '-')])];
 async function findClerk(supreme) {
+  let denied = false;
   for (const role of supreme ? ['Clerk of the Supreme Court', 'Chief Justice'] : ['County Clerk', 'Chief Judge']) {
     try {
-      const rows = (await getDocs(query(collection(db, 'accounts'), where('role', '==', role)))).docs.map(d => ({ uid: d.id, ...d.data() })).filter(a => a.name);
+      const rows = (await getDocs(query(collection(db, 'accounts'), where('role', 'in', vary(role))))).docs.map(d => ({ uid: d.id, ...d.data() })).filter(a => a.name);
       let pick = null, png = '';
-      for (const a of rows) { try { const sg = await getDoc(doc(db, 'userSignatures', a.uid)), d = sg.exists() ? sg.data() : {}; if (d.png && d.pref !== 'slash') { pick = a; png = d.png; break; } } catch {} }
+      for (const a of rows) { try { const sg = await getDoc(doc(db, 'userSignatures', a.uid)), d = sg.exists() ? sg.data() : {}; if (d.png && d.pref !== 'slash') { pick = a; png = d.png; break; } } catch (e) { if (e?.code === 'permission-denied') denied = true; console.warn('signature', a.uid, e?.code); } }
       if (!pick && rows[0]) pick = rows[0];
-      if (pick) return { uid: pick.uid, name: pick.name, role, png };
-    } catch (e) { console.warn(e); }
+      if (pick) return { uid: pick.uid, name: pick.name, role, png, ...(denied && !png ? { denied: true } : {}) };
+    } catch (e) { console.warn('clerk lookup', e?.code || e); }
   }
   return null;
 }
@@ -340,7 +342,7 @@ async function showMc500(host, r) {
     if (!r.clerk) r = { ...r, clerk: await findClerk(/supreme/i.test(r.court || '')) };
     Object.entries(M.mc500Fill(r)).forEach(([k, v]) => { const el = eng.api.$(k); if (el) el.value = v; });
     if (r.clerk?.name) { const c = r.clerk; eng.api.setRecords({ signed: { clerk: { name: c.name, mode: c.png ? 'image' : 'slash', uid: c.uid || '', at: new Date(r.issuedAt || Date.now()).toISOString() } } }); if (c.png) eng.api.setStyles({ clerk: { f: 'Signature image', g: c.png } }); }
-    eng.api.render();
+    eng.api.render(); if (r.clerk?.denied) host.insertAdjacentHTML('beforeend', '<p class="note">The clerk\'s signature picture could not be read, so the typed signature is shown. Publish the updated Firestore rules.</p>');
     host.querySelector('[data-mc]').onclick = async e => { e.target.disabled = true; try { save(await eng.pdfBytes(), `MC 500 ${r.receipt}.pdf`); } catch (x) { console.error(x); } e.target.disabled = false; };
   } catch (e) { console.error(e); host.innerHTML = '<div class="msg err">We could not display the form right now. Try again.</div>'; }
 }
