@@ -70,7 +70,7 @@ import { getStorage, ref, getBytes, getMetadata } from "https://www.gstatic.com/
 import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 import { drawMarks } from '/courts/online-services/portal/dashboard/assets/forms/marks.js?v=3';
 import { placementOf } from '/courts/online-services/portal/dashboard/assets/forms/engine.js?v=33';
-import { openStampEditor } from '/courts/online-services/portal/dashboard/assets/forms/stampeditor.js?v=2';
+import { openStampEditor } from '/courts/online-services/portal/dashboard/assets/forms/stampeditor.js?v=3';
 
 const app = initializeApp({
   apiKey: "AIzaSyA8sUFIq81cs6uQvqduardpGJ4R2DxO8NQ", authDomain: "micourt-dada6.firebaseapp.com", projectId: "micourt-dada6",
@@ -133,7 +133,13 @@ function staffTools() {
     ed.disabled = fin.disabled = true; const pick = o => o && o.x !== undefined ? { x: o.x, y: o.y, page: o.page, rot: o.rot, ink: o.ink, scale: o.scale } : undefined;
     const out = await openStampEditor({ pdf: pdfBytes, md: mdText, label: stampRec.label, date: stampRec.date, title: $('t').textContent, marks: { stamp: pick(stampRec), seal: stampRec.seal, cert: stampRec.cert } });
     if (!out) { ed.disabled = fin.disabled = false; return; }
-    if (await saveStamp({ ...out.stamp, seal: out.seal, cert: out.cert })) { sessionStorage.setItem('flash', 'Stamp positions saved.'); location.reload(); } else ed.disabled = fin.disabled = false;
+    if (!await saveStamp({ ...out.stamp, seal: out.seal, cert: out.cert })) { ed.disabled = fin.disabled = false; return; }
+    let msg = 'Stamp positions saved.';
+    if (await ask('Finalize the stamps now?', 'Your changes are saved. Finalizing locks the stamp, seal and certification for everyone, including court staff, and cannot be undone.', 'Finalize stamps', 'Not yet')) {
+      if (await saveStamp({ locked: true, lockedBy: auth.currentUser.uid, lockedByName: myName || 'Court staff', lockedAt: Date.now() })) msg = 'Stamps finalized. They can no longer be changed.';
+      else msg = 'Positions saved, but the stamps could not be finalized.';
+    }
+    sessionStorage.setItem('flash', msg); location.reload();
   };
   fin.onclick = async () => {
     if (!await ask('Finalize the stamps?', 'This locks the stamp, seal and certification on this document for everyone, including court staff. It cannot be undone.', 'Finalize stamps')) return;

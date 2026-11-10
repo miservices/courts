@@ -80,9 +80,9 @@ export function openStampEditor({ pdf = null, md = null, label = '7TH DISTRICT C
       root.querySelectorAll('.se-card').forEach(c => { const k = c.dataset.k, m = M[k]; c.setAttribute('aria-current', k === sel);
         c.querySelectorAll('.se-row').forEach(r => { const i = r.querySelector('input'), f = i.dataset.f, v = f === 'rot' ? (m.rot ?? 0) : f === 'ink' ? Math.round((m.ink ?? 1) * 100) : Math.round((m.scale ?? 1) * 100); i.value = v; r.querySelector('output').textContent = f === 'rot' ? v + '°' : v + '%'; }); });
       const d = dirty(), st = $('#se-st'); st.className = 'se-st' + (d ? ' d' : ''); st.lastChild.textContent = d ? 'Unsaved changes' : 'No changes'; $('#se-save').disabled = !d; };
-    const stampView = () => ({ ...M.stamp, ghost: true, label, date: date || today });
-    const certView = () => ({ ...M.cert, auto: !placed.cert, ghost: true, date: today, by: 'E-CERTIFICATION', court });
-    const sealView = () => ({ ...M.seal, auto: !placed.seal, ghost: true, court: label });
+    const stampView = () => ({ ...M.stamp, label, date: date || today });
+    const certView = () => ({ ...M.cert, auto: !placed.cert, date: today, by: 'E-CERTIFICATION', court });
+    const sealView = () => ({ ...M.seal, auto: !placed.seal, court: label });
     const select = k => { sel = k; sync(); redraw(); root.querySelector('.se-pages [data-mark="' + k + '"], .se-pages [style*="dashed"]')?.scrollIntoView({ block: 'center', behavior: 'smooth' }); };
     const seed = k => { if (k === 'stamp' || placed[k] || !eng) return; const d = eng.markDefaults(M.cert.scale, M.seal.scale); if (d?.[k]) M[k] = { ...M[k], x: d[k].x, y: d[k].y, page: d.page, scale: d[k].scale ?? M[k].scale }; };
     const nudge = (dx, dy) => { seed(sel); const m = M[sel]; M[sel] = { ...m, x: Math.min(.98, Math.max(0, +(m.x + dx).toFixed(4))), y: Math.min(.98, Math.max(0, +(m.y + dy).toFixed(4))) }; if (sel !== 'stamp') placed[sel] = true; sync(); redraw(); };
@@ -126,7 +126,7 @@ export function openStampEditor({ pdf = null, md = null, label = '7TH DISTRICT C
           pages.forEach(p => p.querySelectorAll('[data-mark],[data-stamp]').forEach(n => n.remove()));
           const add = (html, k, wpx, scale, pg) => { const h = document.createElement('div'); h.innerHTML = html; const el = h.firstElementChild; el.style.width = (wpx * (scale || 1) / 816 * 100) + '%'; el.style.height = 'auto'; el.removeAttribute('width'); el.removeAttribute('height'); el.style.cursor = 'grab';
             if (k === sel) { el.style.outline = '2px dashed #1f5fae'; el.style.outlineOffset = '3px'; } pages[pg].appendChild(el); drag(el, k); };
-          add(stampSvg({ ...stampView(), move: true, ghost: true }), 'stamp', 176, M.stamp.scale, pageIdx(M.stamp, 0));
+          add(stampSvg({ ...stampView(), move: true }), 'stamp', 176, M.stamp.scale, pageIdx(M.stamp, 0));
           add(sealSvg({ ...sealView(), move: true }), 'seal', 96, M.seal.scale, pageIdx(M.seal, pages.length));
           add(certSvg({ ...certView(), move: true }), 'cert', 216, M.cert.scale, pageIdx(M.cert, pages.length));
         };
