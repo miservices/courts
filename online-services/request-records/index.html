@@ -305,7 +305,7 @@ async function issue() {
     for (const x of S.prepared) {
       const exp = x.issued + EXPIRES_DAYS * DAY, kind = FEES[S.kind].name;
       await uploadBytes(ref(storage, `certifiedCopies/${account.uid}/${x.receipt}`), x.bytes, { contentType: 'application/pdf' });
-      const rcpt = { receipt: x.receipt, requesterUid: account.uid, requesterName: account.name || '', caseId: c.caseId, caseDocId: c._id, caseCollection: c._col, court: courtName(c), kind: S.kind, kindName: kind, itemKey: x.itemKey, docId: x.docId, eventNumber: x.it.e.eventNumber ?? null, description: x.desc, matter: caption(c), recordDate: fmtDate(x.it.e.date) || '', delivery: 'Electronic', pages: x.pages, searchFee: x.searchFee, copyFee: x.copyFee, total: x.total, free: x.free, issuedAt: x.issued, expiresAt: exp };
+      const clerk = await findClerk(isSupreme(c)), rcpt = { ...(clerk ? { clerk } : {}), receipt: x.receipt, requesterUid: account.uid, requesterName: account.name || '', caseId: c.caseId, caseDocId: c._id, caseCollection: c._col, court: courtName(c), kind: S.kind, kindName: kind, itemKey: x.itemKey, docId: x.docId, eventNumber: x.it.e.eventNumber ?? null, description: x.desc, matter: caption(c), recordDate: fmtDate(x.it.e.date) || '', delivery: 'Electronic', pages: x.pages, searchFee: x.searchFee, copyFee: x.copyFee, total: x.total, free: x.free, issuedAt: x.issued, expiresAt: exp };
       await setDoc(doc(db, 'recordReceipts', x.receipt), rcpt);
       await runTransaction(db, async tx => {   // the fee is assessed to the requester and shows in My financials
         const r = doc(db, c._col, c._id), s = await tx.get(r), d = s.data() || {}, list = [...(d.financialOrders || [])], at = new Date().toISOString();
@@ -318,13 +318,29 @@ async function issue() {
   } catch (e) { console.error(e); $('ierr').innerHTML = `<div class="msg err">${done.length ? 'Some copies were issued (' + done.map(d => esc(d.receipt)).join(', ') + '). ' : ''}We could not finish issuing your certified copies. Try again.</div>`; btn.disabled = false; }
 }
 /* The Request for Certified Court Records Copies (MC 500) for a receipt, drawn on the page with a PDF download. */
+/* The clerk of the court's signature for the MC 500: the Clerk (County Clerk, or Clerk of the Supreme Court) if one exists in the data, otherwise the Chief Judge (or Chief Justice). */
+async function findClerk(supreme) {
+  for (const role of supreme ? ['Clerk of the Supreme Court', 'Chief Justice'] : ['County Clerk', 'Chief Judge']) {
+    try {
+      const rows = (await getDocs(query(collection(db, 'accounts'), where('role', '==', role)))).docs.map(d => ({ uid: d.id, ...d.data() })).filter(a => a.name);
+      let pick = null, png = '';
+      for (const a of rows) { try { const sg = await getDoc(doc(db, 'userSignatures', a.uid)), d = sg.exists() ? sg.data() : {}; if (d.png && d.pref !== 'slash') { pick = a; png = d.png; break; } } catch {} }
+      if (!pick && rows[0]) pick = rows[0];
+      if (pick) return { uid: pick.uid, name: pick.name, role, png };
+    } catch (e) { console.warn(e); }
+  }
+  return null;
+}
 async function showMc500(host, r) {
   host.innerHTML = '<p class="note"><span class="spin"></span>Preparing the form…</p>';
   try {
     const [E, M] = await Promise.all([loadEngine(), loadMc()]), box = document.createElement('div'); box.className = 'mc500box';
     host.innerHTML = '<div style="margin:12px 0"><button class="btn alt sm" type="button" data-mc="pdf">Download MC 500 (PDF)</button></div>'; host.appendChild(box);
     const eng = await E.mountForm(M.default, box, { readOnly: true, fileLabel: 'File' });
-    Object.entries(M.mc500Fill(r)).forEach(([k, v]) => { const el = eng.api.$(k); if (el) el.value = v; }); eng.api.render();
+    if (!r.clerk) r = { ...r, clerk: await findClerk(/supreme/i.test(r.court || '')) };
+    Object.entries(M.mc500Fill(r)).forEach(([k, v]) => { const el = eng.api.$(k); if (el) el.value = v; });
+    if (r.clerk?.name) { const c = r.clerk; eng.api.setRecords({ signed: { clerk: { name: c.name, mode: c.png ? 'image' : 'slash', uid: c.uid || '', at: new Date(r.issuedAt || Date.now()).toISOString() } } }); if (c.png) eng.api.setStyles({ clerk: { f: 'Signature image', g: c.png } }); }
+    eng.api.render();
     host.querySelector('[data-mc]').onclick = async e => { e.target.disabled = true; try { save(await eng.pdfBytes(), `MC 500 ${r.receipt}.pdf`); } catch (x) { console.error(x); } e.target.disabled = false; };
   } catch (e) { console.error(e); host.innerHTML = '<div class="msg err">We could not display the form right now. Try again.</div>'; }
 }

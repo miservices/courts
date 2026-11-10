@@ -117,5 +117,5 @@ export function mc500Fill(r) {
   return { rname: r.requesterName || '', caseno: r.caseId || '', judge: '', court: r.court || '', matter: r.matter || '',
     docs: kind === 'record' ? line : '', dockets: kind === 'docket' ? line : '', opinions: kind === 'opinion' ? line : '',
     deliv: '1', dated: mdy(r.issuedAt || Date.now()), receipt: r.receipt || '', resp: '1', denial: '',
-    rdesc: r.description || '', rdate: r.recordDate || '', rpages: String(r.pages || ''), fsearch: money(r.searchFee), fcopy: money(r.copyFee), ftotal: money(r.total), issued: mdy(r.issuedAt || Date.now()), clerk: '' };
+    rdesc: r.description || '', rdate: r.recordDate || '', rpages: String(r.pages || ''), fsearch: money(r.searchFee), fcopy: money(r.copyFee), ftotal: money(r.total), issued: mdy(r.issuedAt || Date.now()), clerk: r.clerk?.name || '' };
 }
