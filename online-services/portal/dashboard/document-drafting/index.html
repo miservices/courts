@@ -220,7 +220,9 @@ dialog.cdlg{width:min(440px,calc(100vw - 24px))}
 
 <script type="module">
 import { boot, db, app, $, esc, has, STAFF } from '/courts/online-services/portal/dashboard/assets/js/portal-shell.js?v=7';
-import { FORMS, byId, byNumber } from '/courts/online-services/portal/dashboard/assets/forms/registry.js?v=8';
+import { FORMS as ALL_FORMS, byId as byId0, byNumber as byNumber0 } from '/courts/online-services/portal/dashboard/assets/forms/registry.js?v=8';
+/* MC 500 is issued only through Request Records, never drafted by hand. */
+const NOT_DRAFTED = ['mc500'], FORMS = ALL_FORMS.filter(f => !NOT_DRAFTED.includes(f.id)), byId = id => { const f = byId0(id); return f && !NOT_DRAFTED.includes(f.id) ? f : undefined; }, byNumber = n => { const f = byNumber0(n); return f && !NOT_DRAFTED.includes(f.id) ? f : undefined; };
 import { mountForm, formOf, fontAllowed, fontFits, fontLock, fontCss, GFONTS, FONT_TYPES, FONT_WARNING } from '/courts/online-services/portal/dashboard/assets/forms/engine.js?v=33';
 import { canLink, caption as capOf, judgeName, judgeLine, fmtCaseNo } from '/courts/online-services/portal/dashboard/assets/forms/caseinfo.js?v=3';
 import { DraftSession, accessOf, roleIn } from '/courts/online-services/portal/dashboard/assets/forms/drafts.js?v=3';
