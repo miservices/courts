@@ -39,12 +39,13 @@ async function layout(PDFLib, d) {
   T(P1, 65, 196, 'c. In the matter of:'); U(P1, 150, 541, 196, d.matter);
   T(P1, 50, 219, '2. I request certified copies of the following records maintained by the court in the case identified in item 1:');
   let y = 237;
-  [['a. Documents:', 'record'], ['b. Docket entries:', 'docket'], ['c. Court opinions:', 'opinion']].forEach(([lab, key]) => {
+  [['a. Documents:', 'record'], ['b. Docket entries:', 'docket'], ['c. Court opinions:', 'opinion']].forEach(([lab, key], i) => {
     C(P1, 60, y, k === key); T(P1, 75, y, lab); y += 26;
-    if (k === key) wrap('- ' + d.rec.desc + (d.rec.date ? ` (${d.rec.date})` : ''), 9.5, 460).forEach(l => { T(P1, 75, y, l); y += 13; }); else T(P1, 75, y, 'NONE');
-    y += 27 - (k === key ? 0 : 0);
+    if (k === key) { const ls = wrap('- ' + d.rec.desc + (d.rec.date ? ` (${d.rec.date})` : ''), 9.5, 460); ls.forEach((l, j) => T(P1, 75, y + j * 13, l)); y += (ls.length - 1) * 13; } else T(P1, 75, y, 'NONE');
+    y += i < 2 ? (k === key ? 27 : 25 + 3) : 26;
   });
-  y += 4; T(P1, 50, y, '3. My preferred delivery method is:'); y += 16;
+  y -= 26 - 26;
+  T(P1, 50, y, '3. My preferred delivery method is:'); y += 16;
   ['Electronic', 'Mail', 'In-Person Pickup'].forEach((m, i) => { C(P1, 60, y, d.delivery === m); T(P1, 75, y, 'abc'[i] + '. ' + m); y += 14.5; });
   y += 18; T(P1, 50, y, 'I certify that the information provided in this request is true and complete to the best of my knowledge. I understand'); T(P1, 50, y + 15, 'that the issuance of certified copies may be subject to applicable fees.');
   y += 52; T(P1, 50, y, 'DATED:', { bold: true }); U(P1, 88, 135, y, d.dated);
@@ -61,7 +62,7 @@ async function layout(PDFLib, d) {
     let yy = top; L(P2, 50, yy, 545, yy, 1.2);
     rows.forEach((row, ri) => {
       const lines = Math.max(...row.map((cell, ci) => cell.lines.length)), h = ri === 0 ? 22 : Math.max(32, lines * 12 + 14);
-      row.forEach((cell, ci) => cell.lines.forEach((ln, li) => T(P2, cols[ci].align === 'right' ? cols[ci].x + cols[ci].w - 6 : cols[ci].x + 5, yy + (ri === 0 ? 11 : 15) + li * 12, ln, { size: ri === 0 ? 6.4 : 9, bold: ri === 0, align: cols[ci].align || 'left' })));
+      row.forEach((cell, ci) => cell.lines.forEach((ln, li) => T(P2, cols[ci].align === 'right' ? cols[ci].x + cols[ci].w - 6 : cols[ci].align === 'center' ? cols[ci].x + cols[ci].w / 2 : cols[ci].x + 5, yy + (ri === 0 ? 11 : 15) + li * 12, ln, { size: ri === 0 ? 6.4 : 9, bold: ri === 0, align: cols[ci].align || 'left' })));
       yy += h; L(P2, 50, yy, 545, yy, ri === 0 ? .9 : .9);
       if (ri > 0) cols.slice(1).forEach(c => L(P2, c.x, yy - h, c.x, yy, .9));
     }); return yy;
