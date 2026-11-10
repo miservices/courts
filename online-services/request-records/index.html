@@ -261,7 +261,7 @@ async function prepare() {
   const say = t => { const el = $('pst'); if (el) el.textContent = t; };
   try {
     const { drawMarks, DEF_CERT, DEF_SEAL } = await loadMarks(), { courtShort } = await loadEngine(), P = FEES[S.kind], used = new Set(), out = [], today = mdy(new Date()), issued = new Date();
-    const mine = await myReceipts(), freed = new Set(mine.filter(r => r.free).map(r => r.itemKey)), party = isParty(c);
+    const mine = await myReceipts(), freed = new Set(mine.flatMap(r => r.freeKeys || (r.free ? [r.itemKey] : []))), party = isParty(c), receipt = await newReceipt(c.caseId, used);   // one receipt number for the whole request
     const chosen = itemsFor(c, S.kind).filter(x => S.picked.has(S.kind + x.key));
     for (const [n, it] of chosen.entries()) {
       say(`Preparing ${n + 1} of ${chosen.length}…`);
@@ -270,7 +270,7 @@ async function prepare() {
       else { bytes = await docketPdf(c, it.e); rec = await stampOf(c, null, it.e); }
       /* the clerk's saved placement if there is one; otherwise by the signature block on a court form, otherwise the bottom of the last page */
       const place = (k, D) => rec[k]?.x !== undefined ? {} : defaults?.[k] ? { x: defaults[k].x, y: defaults[k].y, page: defaults.page, scale: defaults[k].scale } : {};
-      const d = await PDFLib.PDFDocument.load(bytes), pages = d.getPageCount(), receipt = await newReceipt(c.caseId, used), docId = rec.docId || (it.path ? it.path.split('/')[1] : `${c.caseId}-E${it.e.eventNumber}`);
+      const d = await PDFLib.PDFDocument.load(bytes), pages = d.getPageCount(), docId = rec.docId || (it.path ? it.path.split('/')[1] : `${c.caseId}-E${it.e.eventNumber}`);
       const itemKey = `${c._col}/${c._id}/${S.kind}/${it.key}`, free = S.kind === 'opinion' && party && !freed.has(itemKey);
       await drawMarks(PDFLib, d, {
         stamp: { ...rec, title: 'A CERTIFIED COPY', date: today }, sticker: { id: docId, date: rec.date, label: rec.label },
@@ -291,33 +291,39 @@ function drawQuote() {
   $('p-case').hidden = true; $('p-quote').hidden = false; scrollTo(0, 0);
   $('p-quote').innerHTML = `<h2>Your certified copies are ready</h2><p class="r-m"><span class="r-no">${esc(c.caseId)}</span>${esc(caption(c))}</p>
     <table class="quote"><thead><tr><th>Record</th><th class="n">Pages</th><th class="n">Search</th><th class="n">Copy</th><th class="n">Total</th></tr></thead><tbody>
-    ${S.prepared.map(x => `<tr><td><b>${esc(P.name)}:</b> ${esc(x.desc)}<small style="display:block;color:#5a667a">Receipt ${esc(x.receipt)}</small></td><td class="n">${x.pages}</td><td class="n">${money(x.searchFee)}</td><td class="n">${x.free ? 'No charge' : money(x.copyFee)}</td><td class="n">${money(x.total)}</td></tr>`).join('')}
+    ${S.prepared.map(x => `<tr><td><b>${esc(P.name)}:</b> ${esc(x.desc)}</td><td class="n">${x.pages}</td><td class="n">${money(x.searchFee)}</td><td class="n">${x.free ? 'No charge' : money(x.copyFee)}</td><td class="n">${money(x.total)}</td></tr>`).join('')}
     </tbody><tfoot><tr><td colspan="4">Total to be assessed to your account</td><td class="n">${money(total)}</td></tr></tfoot></table>
-    <p class="note">When you download, the fee is assessed to your account and added to My financials. The copy stays available for ${EXPIRES_DAYS} days.</p>
+    <p class="note"><b>Receipt number ${esc(S.prepared[0].receipt)}</b> covers all of these records, in one PDF.</p><p class="note">When you download, the fee is assessed to your account and added to My financials. The copy stays available for ${EXPIRES_DAYS} days.</p>
     <div class="bar" style="position:static;margin:18px 0 0;padding:14px 0 0"><button class="btn alt" id="qback" type="button">Change my selection</button><button class="btn" id="issue" type="button">Download certified copies</button></div><div id="ierr"></div>`;
   $('qback').onclick = () => { $('p-quote').hidden = true; $('p-case').hidden = false; $('prep').disabled = false; $('perr').innerHTML = ''; };
   $('issue').onclick = issue;
 }
 const save = (bytes, name) => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([bytes], { type: 'application/pdf' })); a.download = name; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 500); };
 async function issue() {
-  const c = S.kase, P = FEES[S.kind], btn = $('issue'); btn.disabled = true; $('ierr').innerHTML = '<div class="msg"><span class="spin"></span>Issuing your certified copies…</div>';
-  const done = [];
+  const c = S.kase, btn = $('issue'); btn.disabled = true; $('ierr').innerHTML = '<div class="msg"><span class="spin"></span>Issuing your certified copies…</div>';
   try {
-    const group = S.prepared.map(y => ({ receipt: y.receipt, description: y.desc, recordDate: fmtDate(y.it.e.date) || '', pages: y.pages, searchFee: y.searchFee, copyFee: y.copyFee, total: y.total, kind: S.kind }));
-    for (const x of S.prepared) {
-      const exp = x.issued + EXPIRES_DAYS * DAY, kind = FEES[S.kind].name;
-      await uploadBytes(ref(storage, `certifiedCopies/${account.uid}/${x.receipt}`), x.bytes, { contentType: 'application/pdf' });
-      const clerk = await findClerk(isSupreme(c)); if (clerk) delete clerk.denied; const rcpt = { ...(clerk ? { clerk } : {}), requestReceipt: S.prepared[0].receipt, group, receipt: x.receipt, requesterUid: account.uid, requesterName: account.name || '', caseId: c.caseId, caseDocId: c._id, caseCollection: c._col, court: courtName(c), kind: S.kind, kindName: kind, itemKey: x.itemKey, docId: x.docId, eventNumber: x.it.e.eventNumber ?? null, description: x.desc, matter: caption(c), recordDate: fmtDate(x.it.e.date) || '', delivery: 'Electronic', pages: x.pages, searchFee: x.searchFee, copyFee: x.copyFee, total: x.total, free: x.free, issuedAt: x.issued, expiresAt: exp };
-      await setDoc(doc(db, 'recordReceipts', x.receipt), rcpt);
-      await runTransaction(db, async tx => {   // the fee is assessed to the requester and shows in My financials
-        const r = doc(db, c._col, c._id), s = await tx.get(r), d = s.data() || {}, list = [...(d.financialOrders || [])], at = new Date().toISOString();
-        list.push({ id: 'REC-' + x.receipt, type: 'Court Fee', description: `Certified copy of ${kind.toLowerCase()}: ${x.desc} (${x.pages} page${x.pages === 1 ? '' : 's'}${x.free ? ', first copy of opinion at no charge' : ''})`, payor: account.name || 'Requester', payorUid: account.uid, amount: x.total, originalAmount: x.total, dueDate: new Date(Date.now() + 14 * DAY).toISOString().slice(0, 10), assessmentDate: at, assessedBy: 'System', recordReceipt: x.receipt, payments: [], adjustments: [], garnishments: [] });
-        tx.update(r, { financialOrders: list, 'dates.lastUpdated': at });
-      });
-      save(x.bytes, `Certified ${x.receipt}.pdf`); x.rcpt = rcpt; done.push(x);
-    }
-    showDone(done);
-  } catch (e) { console.error(e); $('ierr').innerHTML = `<div class="msg err">${done.length ? 'Some copies were issued (' + done.map(d => esc(d.receipt)).join(', ') + '). ' : ''}We could not finish issuing your certified copies. Try again.</div>`; btn.disabled = false; }
+    const items = S.prepared, receipt = items[0].receipt, issuedAt = items[0].issued, exp = issuedAt + EXPIRES_DAYS * DAY, kind = FEES[S.kind].name;
+    const sum = k => r2(items.reduce((t, x) => t + x[k], 0)), pages = items.reduce((t, x) => t + x.pages, 0), total = sum('total');
+    const group = items.map(y => ({ receipt, description: y.desc, recordDate: fmtDate(y.it.e.date) || '', pages: y.pages, searchFee: y.searchFee, copyFee: y.copyFee, total: y.total, kind: S.kind }));
+    const summary = items[0].desc + (items.length > 1 ? ` and ${items.length - 1} more` : '');
+    /* one PDF and one receipt for the whole request */
+    const merged = await PDFLib.PDFDocument.create();
+    for (const x of items) { const src = await PDFLib.PDFDocument.load(x.bytes); (await merged.copyPages(src, src.getPageIndices())).forEach(pg => merged.addPage(pg)); }
+    const bytes = new Uint8Array(await merged.save());
+    await uploadBytes(ref(storage, `certifiedCopies/${account.uid}/${receipt}`), bytes, { contentType: 'application/pdf' });
+    const clerk = await findClerk(isSupreme(c)); if (clerk) delete clerk.denied;
+    const rcpt = { ...(clerk ? { clerk } : {}), receipt, requestReceipt: receipt, group, requesterUid: account.uid, requesterName: account.name || '', caseId: c.caseId, caseDocId: c._id, caseCollection: c._col, court: courtName(c), kind: S.kind, kindName: kind,
+      itemKey: items[0].itemKey, itemKeys: items.map(x => x.itemKey), freeKeys: items.filter(x => x.free).map(x => x.itemKey), docId: items[0].docId, description: summary, matter: caption(c), recordDate: group[0].recordDate, delivery: 'Electronic',
+      pages, searchFee: sum('searchFee'), copyFee: sum('copyFee'), total, free: items.some(x => x.free), issuedAt, expiresAt: exp };
+    await setDoc(doc(db, 'recordReceipts', receipt), rcpt);
+    await runTransaction(db, async tx => {   // the fee is assessed to the requester and shows in My financials
+      const r = doc(db, c._col, c._id), s2 = await tx.get(r), d = s2.data() || {}, list = [...(d.financialOrders || [])], at = new Date().toISOString();
+      list.push({ id: 'REC-' + receipt, type: 'Court Fee', description: `Certified ${items.length === 1 ? 'copy' : 'copies'} of ${kind.toLowerCase()}: ${items.map(x => x.desc).join('; ')} (${pages} page${pages === 1 ? '' : 's'}${rcpt.free ? ', first copy of opinion at no charge' : ''})`, payor: account.name || 'Requester', payorUid: account.uid, amount: total, originalAmount: total, dueDate: new Date(Date.now() + 14 * DAY).toISOString().slice(0, 10), assessmentDate: at, assessedBy: 'System', recordReceipt: receipt, payments: [], adjustments: [], garnishments: [] });
+      tx.update(r, { financialOrders: list, 'dates.lastUpdated': at });
+    });
+    save(bytes, `Certified ${receipt}.pdf`);
+    showDone(rcpt);
+  } catch (e) { console.error(e); $('ierr').innerHTML = '<div class="msg err">We could not finish issuing your certified copies. Try again.</div>'; btn.disabled = false; }
 }
 /* The Request for Certified Court Records Copies (MC 500) for a receipt, drawn on the page with a PDF download. */
 /* The clerk of the court's signature for the MC 500: the Clerk (County Clerk, or Clerk of the Supreme Court) if one exists in the data, otherwise the Chief Judge (or Chief Justice). */
@@ -348,15 +354,15 @@ async function showMc500(host, r) {
     host.querySelector('[data-mc]').onclick = async e => { e.target.disabled = true; try { save(await eng.pdfBytes(), `MC 500 ${r.receipt}.pdf`); } catch (x) { console.error(x); } e.target.disabled = false; };
   } catch (e) { console.error(e); host.innerHTML = '<div class="msg err">We could not display the form right now. Try again.</div>'; }
 }
-function showDone(done) {
-  $('p-quote').hidden = true; $('p-done').hidden = false; scrollTo(0, 0); const total = r2(done.reduce((t, x) => t + x.total, 0)), exp = new Date(done[0].issued + EXPIRES_DAYS * DAY);
-  $('p-done').innerHTML = `<h2>Your certified ${done.length === 1 ? 'copy has' : 'copies have'} been issued</h2>
-    <div class="msg ok">${done.map(x => `<div>Receipt number <span class="rcpt">${esc(x.receipt)}</span> &nbsp; ${esc(x.desc)} (${x.pages} page${x.pages === 1 ? '' : 's'})</div>`).join('')}</div>
+function showDone(rc) {
+  $('p-quote').hidden = true; $('p-done').hidden = false; scrollTo(0, 0); const exp = new Date(rc.expiresAt);
+  $('p-done').innerHTML = `<h2>Your certified ${rc.group.length === 1 ? 'copy has' : 'copies have'} been issued</h2>
+    <div class="msg ok"><div>Receipt number <span class="rcpt">${esc(rc.receipt)}</span></div>${rc.group.map(x => `<div>${esc(x.description)} (${x.pages} page${x.pages === 1 ? '' : 's'})</div>`).join('')}</div>
     <p style="margin-top:14px"><b>Your download expires on ${mdy(exp)}</b> (${EXPIRES_DAYS} days). Keep your receipt number: it can be used to confirm the copy was issued, even after the download expires.</p>
-    <p class="note">${money(total)} has been assessed to your account. <a href="${FIN}">View My financials</a></p>
+    <p class="note">${money(rc.total)} has been assessed to your account. <a href="${FIN}">View My financials</a></p>
     <h3 style="margin:18px 0 0">Request for Certified Court Records Copies (MC 500)</h3><div data-mc500="1"></div>
     <p style="margin-top:16px"><button class="btn" id="again" type="button">Request another record</button></p>`;
-  showMc500($('p-done').querySelector('[data-mc500]'), done[0].rcpt);
+  showMc500($('p-done').querySelector('[data-mc500]'), rc);
   $('again').onclick = () => { $('p-done').hidden = true; $('p-search').hidden = false; $('results').innerHTML = ''; loadMine(); };
   loadMine();
 }

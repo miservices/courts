@@ -117,6 +117,6 @@ export function mc500Fill(r) {
   const sum = items.reduce((t, i) => t + (+i.total || 0), 0);
   return { rname: r.requesterName || '', caseno: r.caseId || '', judge: '', court: r.court || '', matter: r.matter || '',
     docs: kind === 'record' ? lines : '', dockets: kind === 'docket' ? lines : '', opinions: kind === 'opinion' ? lines : '',
-    deliv: '1', dated: mdy(r.issuedAt || Date.now()), receipt: r.requestReceipt || items[0].receipt || r.receipt || '', rlist: items.map(i => i.receipt).filter(Boolean).join(', '), resp: '1', denial: '',
+    deliv: '1', dated: mdy(r.issuedAt || Date.now()), receipt: r.requestReceipt || items[0].receipt || r.receipt || '', rlist: [...new Set(items.map(i => i.receipt).filter(Boolean))].join(', '), resp: '1', denial: '',
     recs: items.map(i => [i.description || '', i.recordDate || '', i.pages || '', money(i.searchFee), money(i.copyFee), money(i.total)].join(' | ')).join('\n'), ftotal: money(sum), issued: mdy(r.issuedAt || Date.now()), clerk: r.clerk?.name || '' };
 }
