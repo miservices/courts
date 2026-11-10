@@ -14,7 +14,9 @@ export const FORMS = [
   { id: 'mc240b', number: 'MC 240B', title: 'Pretrial Release Order', group: 'Criminal',
     summary: 'The pretrial release order on its own, with an Amended box: release type, bond, terms and conditions, and denial of bail. Completed by the judge, magistrate, or court staff.' },
   { id: 'mc241', number: 'MC 241', title: 'Order After Preliminary Examination', group: 'Criminal',
-    summary: 'The court’s findings and order after a preliminary examination: probable cause by charge, bind over, dismissals, amendments, and bail. Completed by the judge, magistrate, or court staff.' }
+    summary: 'The court’s findings and order after a preliminary examination: probable cause by charge, bind over, dismissals, amendments, and bail. Completed by the judge, magistrate, or court staff.' },
+  { id: 'mc500', number: 'MC 500', title: 'Request for Certified Court Records Copies', group: 'General',
+    summary: 'A request for certified copies of documents, docket entries, or opinions, with the court’s response, fees, and receipt number. Records Requests fills it in automatically.' }
 ];
 export const keyOf = s => String(s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
 export const byId = id => FORMS.find(f => f.id === keyOf(id));
