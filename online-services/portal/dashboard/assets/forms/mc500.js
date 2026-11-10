@@ -23,7 +23,7 @@ const css = args => a02.css(args) + (({ U, P, B }) => `
 .tb .r2.h{min-height:${P(21)};font-size:${P(7)};font-weight:bold;align-items:center}
 .tb .r2>div{padding:${P(8)} ${P(5)};line-height:${P(12)}}.tb .r2.h>div{padding:0 ${P(5)}}
 .tb.t1 .r2>div:nth-child(1){flex:1;min-width:0}.tb.t1 .r2>div:nth-child(2){width:${P(66)};border-left:${B} solid #000}.tb.t1 .r2>div:nth-child(3){width:${P(49)};border-left:${B} solid #000;text-align:center}
-.tb.t1 .r2.h>div{border-left:0}
+.tb.t1 .r2.h>div{border-left:0}.tb.nt{border-top:0;margin-top:0}
 .tb.t2 .r2>div:nth-child(1){flex:1;min-width:0}.tb.t2 .r2>div:nth-child(2){width:${P(47)};border-left:${B} solid #000;text-align:center}.tb.t2 .r2>div:nth-child(3){width:${P(58)};border-left:${B} solid #000}.tb.t2 .r2>div:nth-child(4){width:${P(52)};border-left:${B} solid #000}.tb.t2 .r2>div:nth-child(5){width:${P(85)};border-left:${B} solid #000;text-align:right}
 .tb.t2 .r2.h>div{border-left:0}
 .tot{width:${P(137)};margin-left:${P(360.5)};border:${B} solid #000;border-top:0;padding:${P(5)} ${P(5)};text-align:right;font-weight:bold;line-height:${P(12)}}
@@ -48,10 +48,9 @@ const panel = `
  <label>Determination</label>
  <select id="resp"><option value="0">— leave unchecked —</option><option value="1">a. The requested records are available and will be issued as certified copies.</option><option value="2">b. Certain requested records will be issued as certified copies.</option><option value="3">c. The request is denied</option></select>
  <label>Reason(s) for denial</label><textarea id="denial" rows="2"></textarea>
- <label>Record description</label><input type="text" id="rdesc">
- <div class="row"><div><label>Date of record</label><input type="text" id="rdate"></div><div><label>Pages</label><input type="text" id="rpages"></div></div>
- <div class="row"><div><label>Search fee</label><input type="text" id="fsearch"></div><div><label>Copy fee</label><input type="text" id="fcopy"></div></div>
+ <label>Records approved (one per line: description | date of record | pages | search fee | copy fee | total)</label><textarea id="recs" rows="4"></textarea>
  <label>Total</label><input type="text" id="ftotal">
+ <label>Receipt number(s) assigned (item 4)</label><input type="text" id="rlist">
  <div class="row"><div><label>Date issued</label><input type="text" id="issued" data-font="date"></div><div><label>Clerk signature (typed)</label><input type="text" id="clerk" data-font="sig"></div></div>
 `;
 
@@ -83,17 +82,17 @@ function build(api) {
   seq.push({ html: `<div class="sec" style="margin-top:${P(14)}">1. The court has reviewed the request for certified copies identified above and makes the following determination:</div>
     <div style="margin-top:${P(4)}">${ro(1, 'a. The requested records are available and will be issued as certified copies.')}${ro(2, 'b. Certain requested records will be issued as certified copies.')}${ro(3, 'c. The request is denied for the following reason(s):')}</div>
     <div class="lst" style="min-height:${P(58)}">${E('denial', { multi: true })}</div>` });
-  seq.push({ html: `<div class="sec" style="margin-top:${P(18)}">2. The following records have been approved for certification and issued pursuant to this request:</div>
-    <div class="tb t1"><div class="r2 h"><div>Record description</div><div>Date of record</div><div>Pages</div></div>
-    <div class="r2"><div>${E('rdesc')}</div><div>${E('rdate')}</div><div>${E('rpages')}</div></div></div>` });
-  seq.push({ html: `<div class="cbx" style="margin-top:${P(40)}">${cb(true)}<div class="tx">3. The following fees have been assessed in connection with this request:</div></div>
-    <div class="tb t2" style="margin-top:${P(22)}"><div class="r2 h"><div>Record name</div><div>Pages</div><div>Search fee</div><div>Copy fee</div><div>Total</div></div>
-    <div class="r2"><div>${E('rdesc')}</div><div>${E('rpages')}</div><div>${E('fsearch')}</div><div>${E('fcopy')}</div><div>${E('ftotal')}</div></div></div>
-    <div class="tot">TOTAL: ${E('ftotal')}</div>` });
-  seq.push({ html: `<div style="margin-top:${P(28)}">4. This certification has been assigned the following receipt number: ${E('receipt', { ph: '' })}.</div>
+  const rows = v('recs').split('\n').map(l => l.split('|').map(x => x.trim())).filter(r => r[0]);
+  const chunks = (arr, n) => { const o = []; for (let i = 0; i < arr.length; i += n) o.push(arr.slice(i, i + n)); return o.length ? o : [[]]; };
+  chunks(rows, 6).forEach((ch, ci) => seq.push({ html: `${ci === 0 ? `<div class="sec" style="margin-top:${P(18)}">2. The following records have been approved for certification and issued pursuant to this request:</div>` : ''}
+    <div class="tb t1${ci ? ' nt' : ''}">${ci === 0 ? '<div class="r2 h"><div>Record description</div><div>Date of record</div><div>Pages</div></div>' : ''}${ch.map(r => `<div class="r2"><div>${esc(r[0])}</div><div>${esc(r[1] || '')}</div><div>${esc(r[2] || '')}</div></div>`).join('')}</div>` }));
+  chunks(rows, 6).forEach((ch, ci) => seq.push({ html: `${ci === 0 ? `<div class="cbx" style="margin-top:${P(40)}">${cb(true)}<div class="tx">3. The following fees have been assessed in connection with this request:</div></div>` : ''}
+    <div class="tb t2${ci ? ' nt' : ''}" style="margin-top:${P(ci ? 0 : 22)}">${ci === 0 ? '<div class="r2 h"><div>Record name</div><div>Pages</div><div>Search fee</div><div>Copy fee</div><div>Total</div></div>' : ''}${ch.map(r => `<div class="r2"><div>${esc(r[0])}</div><div>${esc(r[2] || '')}</div><div>${esc(r[3] || '')}</div><div>${esc(r[4] || '')}</div><div>${esc(r[5] || '')}</div></div>`).join('')}</div>` }));
+  seq.push({ html: `<div class="tot">TOTAL: ${E('ftotal')}</div>` });
+  seq.push({ html: `<div style="margin-top:${P(28)}">4. This certification has been assigned the following receipt number${/,/.test(v('rlist') || '') ? 's' : ''}: ${E('rlist', { ph: '' })}.</div>
     <div style="margin-top:${P(36)}">I certify that the records issued pursuant to this request are true and accurate copies of the records maintained by this court. Each certified record bears the certification of the clerk of the court and the official seal of the court.</div>
     <div class="sg"><div class="sc" style="width:${P(100)}"><div class="sv lf"><div class="in">${E('issued')}</div></div><div class="sl">Date issued</div></div>
-    <div class="sc" style="margin-left:${P(182)};width:${P(213)}"><div class="sv lf"><div class="in">${E('clerk', { pre: '/s/ ' })}</div></div><div class="sl">Clerk of the court signature</div></div></div>` });
+    <div class="sc" style="margin-left:${P(182)};width:${P(213)}"><div class="sv lf"><div class="in">${E('clerk', { pre: '/s/ ' })}</div></div><div class="sl">Signature</div></div></div>` });
   return seq;
 }
 
@@ -104,7 +103,7 @@ export default {
   md: { title: 'Request for Certified Court Records Copies',
     sections: [
       { name: 'Request', fields: [['rname', 'Requested by'], ['caseno', 'Case No.'], ['judge', 'Judge'], ['court', 'Court'], ['matter', 'In the matter of'], ['deliv', 'Delivery (1 electronic, 2 mail, 3 in-person pickup)'], ['dated', 'Date of request']], multi: [['docs', 'Documents requested'], ['dockets', 'Docket entries requested'], ['opinions', 'Court opinions requested']] },
-      { name: 'Court response', fields: [['receipt', 'Receipt number'], ['resp', 'Determination (1 available, 2 certain records, 3 denied, 0 none)'], ['rdesc', 'Record description'], ['rdate', 'Date of record'], ['rpages', 'Pages'], ['fsearch', 'Search fee'], ['fcopy', 'Copy fee'], ['ftotal', 'Total'], ['issued', 'Date issued'], ['clerk', 'Clerk signature']], multi: [['denial', 'Reason(s) for denial']] }
+      { name: 'Court response', fields: [['receipt', 'Receipt number'], ['resp', 'Determination (1 available, 2 certain records, 3 denied, 0 none)'], ['ftotal', 'Total'], ['rlist', 'Receipt number(s)'], ['issued', 'Date issued'], ['clerk', 'Clerk signature']], multi: [['denial', 'Reason(s) for denial'], ['recs', 'Records approved (description | date | pages | search | copy | total)']] }
     ] }
 };
 
@@ -113,9 +112,11 @@ const money = n => '$' + Number(n || 0).toFixed(2);
 
 /* The field values for a Records Request receipt (a recordReceipts document; older receipts work too). */
 export function mc500Fill(r) {
-  const line = '- ' + (r.description || '') + (r.recordDate ? ` (${r.recordDate})` : ''), kind = r.kind || 'record';
+  const items = Array.isArray(r.group) && r.group.length ? r.group : [{ receipt: r.receipt, description: r.description, recordDate: r.recordDate, pages: r.pages, searchFee: r.searchFee, copyFee: r.copyFee, total: r.total, kind: r.kind }];
+  const kind = r.kind || items[0].kind || 'record', lines = items.map(i => '- ' + (i.description || '') + (i.recordDate ? ` (${i.recordDate})` : '')).join('\n');
+  const sum = items.reduce((t, i) => t + (+i.total || 0), 0);
   return { rname: r.requesterName || '', caseno: r.caseId || '', judge: '', court: r.court || '', matter: r.matter || '',
-    docs: kind === 'record' ? line : '', dockets: kind === 'docket' ? line : '', opinions: kind === 'opinion' ? line : '',
-    deliv: '1', dated: mdy(r.issuedAt || Date.now()), receipt: r.receipt || '', resp: '1', denial: '',
-    rdesc: r.description || '', rdate: r.recordDate || '', rpages: String(r.pages || ''), fsearch: money(r.searchFee), fcopy: money(r.copyFee), ftotal: money(r.total), issued: mdy(r.issuedAt || Date.now()), clerk: r.clerk?.name || '' };
+    docs: kind === 'record' ? lines : '', dockets: kind === 'docket' ? lines : '', opinions: kind === 'opinion' ? lines : '',
+    deliv: '1', dated: mdy(r.issuedAt || Date.now()), receipt: r.requestReceipt || items[0].receipt || r.receipt || '', rlist: items.map(i => i.receipt).filter(Boolean).join(', '), resp: '1', denial: '',
+    recs: items.map(i => [i.description || '', i.recordDate || '', i.pages || '', money(i.searchFee), money(i.copyFee), money(i.total)].join(' | ')).join('\n'), ftotal: money(sum), issued: mdy(r.issuedAt || Date.now()), clerk: r.clerk?.name || '' };
 }

@@ -191,15 +191,16 @@ $('sf').onsubmit = async e => {
 /* ───── record pickers ───── */
 const SAFE = /^(filingUploads|case-orders)\/[^/]+\/[^/]+\.(md|pdf)$/i;
 function pathOf(link) {
-  const m = /^https:\/\/migovt\.org\/courts\/documents\/#\/?(.+)$/.exec(String(link || '')); if (!m) return null;
+  const m = /^(?:https?:\/\/(?:www\.)?migovt\.org)?\/(?:courts\/)?(?:supreme-court\/)?documents\/?#\/?(.+)$/i.exec(String(link || '').trim()); if (!m) return null;
   try { const p = m[1].split('/').map(decodeURIComponent).join('/'); return SAFE.test(p) ? p : null; } catch { return null; }
 }
 const isOpinion = e => /opinion|per curiam|dissent|concurr/i.test([e.description, e.comment].filter(hv).join(' '));
 const liveEvents = c => (c.events || []).filter(e => !e.sealed && !e.struck);
 function itemsFor(c, kind) {
   const ev = liveEvents(c);
-  if (kind === 'docket') return ev.map(e => ({ key: 'E' + e.eventNumber, e, path: null }));
-  return ev.map(e => ({ key: 'E' + e.eventNumber, e, path: pathOf(e.documentLink) })).filter(x => x.path && (kind === 'record' || isOpinion(x.e)));
+  const ek = (e, i) => 'E' + (e.eventNumber ?? 'i' + i);   // some entries (Supreme Court dockets) have no event number
+  if (kind === 'docket') return ev.map((e, i) => ({ key: ek(e, i), e, path: null }));
+  return ev.map((e, i) => ({ key: ek(e, i), e, path: pathOf(e.documentLink) })).filter(x => x.path && (kind === 'record' || isOpinion(x.e)));
 }
 function isParty(c) {
   const me = norm(account.name), bar = String(account.barNumber || '').trim();
@@ -227,7 +228,7 @@ function drawCase() {
 /* ───── building the certified PDFs ───── */
 const loadMarks = () => import(FORMS + 'marks.js?v=3');
 const placementOf = t => { try { return window.__pl ? window.__pl(t) : {}; } catch { return {}; } };
-const loadMc = () => import(FORMS + 'mc500.js?v=2');
+const loadMc = () => import(FORMS + 'mc500.js?v=3');
 const loadEngine = () => import(FORMS + 'engine.js?v=33');
 async function mdToPdf(text, cs, ss) {
   window.__pl = (await loadEngine()).placementOf;
@@ -302,10 +303,11 @@ async function issue() {
   const c = S.kase, P = FEES[S.kind], btn = $('issue'); btn.disabled = true; $('ierr').innerHTML = '<div class="msg"><span class="spin"></span>Issuing your certified copies…</div>';
   const done = [];
   try {
+    const group = S.prepared.map(y => ({ receipt: y.receipt, description: y.desc, recordDate: fmtDate(y.it.e.date) || '', pages: y.pages, searchFee: y.searchFee, copyFee: y.copyFee, total: y.total, kind: S.kind }));
     for (const x of S.prepared) {
       const exp = x.issued + EXPIRES_DAYS * DAY, kind = FEES[S.kind].name;
       await uploadBytes(ref(storage, `certifiedCopies/${account.uid}/${x.receipt}`), x.bytes, { contentType: 'application/pdf' });
-      const clerk = await findClerk(isSupreme(c)); if (clerk) delete clerk.denied; const rcpt = { ...(clerk ? { clerk } : {}), receipt: x.receipt, requesterUid: account.uid, requesterName: account.name || '', caseId: c.caseId, caseDocId: c._id, caseCollection: c._col, court: courtName(c), kind: S.kind, kindName: kind, itemKey: x.itemKey, docId: x.docId, eventNumber: x.it.e.eventNumber ?? null, description: x.desc, matter: caption(c), recordDate: fmtDate(x.it.e.date) || '', delivery: 'Electronic', pages: x.pages, searchFee: x.searchFee, copyFee: x.copyFee, total: x.total, free: x.free, issuedAt: x.issued, expiresAt: exp };
+      const clerk = await findClerk(isSupreme(c)); if (clerk) delete clerk.denied; const rcpt = { ...(clerk ? { clerk } : {}), requestReceipt: S.prepared[0].receipt, group, receipt: x.receipt, requesterUid: account.uid, requesterName: account.name || '', caseId: c.caseId, caseDocId: c._id, caseCollection: c._col, court: courtName(c), kind: S.kind, kindName: kind, itemKey: x.itemKey, docId: x.docId, eventNumber: x.it.e.eventNumber ?? null, description: x.desc, matter: caption(c), recordDate: fmtDate(x.it.e.date) || '', delivery: 'Electronic', pages: x.pages, searchFee: x.searchFee, copyFee: x.copyFee, total: x.total, free: x.free, issuedAt: x.issued, expiresAt: exp };
       await setDoc(doc(db, 'recordReceipts', x.receipt), rcpt);
       await runTransaction(db, async tx => {   // the fee is assessed to the requester and shows in My financials
         const r = doc(db, c._col, c._id), s = await tx.get(r), d = s.data() || {}, list = [...(d.financialOrders || [])], at = new Date().toISOString();
@@ -352,9 +354,9 @@ function showDone(done) {
     <div class="msg ok">${done.map(x => `<div>Receipt number <span class="rcpt">${esc(x.receipt)}</span> &nbsp; ${esc(x.desc)} (${x.pages} page${x.pages === 1 ? '' : 's'})</div>`).join('')}</div>
     <p style="margin-top:14px"><b>Your download expires on ${mdy(exp)}</b> (${EXPIRES_DAYS} days). Keep your receipt number: it can be used to confirm the copy was issued, even after the download expires.</p>
     <p class="note">${money(total)} has been assessed to your account. <a href="${FIN}">View My financials</a></p>
-    <h3 style="margin:18px 0 0">Request for Certified Court Records Copies (MC 500)</h3>${done.map(x => `<div data-mc500="${esc(x.receipt)}"></div>`).join('')}
+    <h3 style="margin:18px 0 0">Request for Certified Court Records Copies (MC 500)</h3><div data-mc500="1"></div>
     <p style="margin-top:16px"><button class="btn" id="again" type="button">Request another record</button></p>`;
-  $('p-done').querySelectorAll('[data-mc500]').forEach((h, i) => showMc500(h, done[i].rcpt));
+  showMc500($('p-done').querySelector('[data-mc500]'), done[0].rcpt);
   $('again').onclick = () => { $('p-done').hidden = true; $('p-search').hidden = false; $('results').innerHTML = ''; loadMine(); };
   loadMine();
 }
