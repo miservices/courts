@@ -30,9 +30,13 @@ dialog>header{display:flex;justify-content:space-between;align-items:flex-start;
 #dlg-b{padding:20px 22px 6px;overflow:auto}#dlg-e{padding:0 22px 14px}#dlg-e .alert{margin:0}
 dialog>footer{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:10px;padding:14px 22px;border-top:1px solid var(--line);background:#f4f7fb}
 @media print{body>*:not(dialog){display:none!important}dialog{position:static!important;box-shadow:none!important;width:auto!important;max-height:none!important}dialog>footer,.x{display:none!important}}
-.cbl{position:fixed;z-index:2000;background:#fff;border:1px solid var(--line);border-radius:8px;box-shadow:0 10px 30px rgba(16,38,74,.22);max-height:260px;overflow:auto;padding:4px;margin:0;list-style:none}
-.cbl li{padding:9px 12px;border-radius:6px;cursor:pointer;font-size:14.5px;line-height:1.35;color:var(--ink,#1b2433)}.cbl li[aria-selected=true]{background:#e6eefb;color:var(--navy)}.cbl li.e{color:var(--muted,#5b6678);cursor:default}
-.cbi{background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16' fill='none' stroke='%235b6678' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='7' cy='7' r='4.5'/%3E%3Cpath d='M10.5 10.5 14 14'/%3E%3C/svg%3E") no-repeat 11px 50%!important;padding-left:34px!important}
+.cbl{position:fixed;z-index:2000;background:#fff;border:1px solid #cdd7e6;border-radius:10px;box-shadow:0 14px 36px rgba(16,38,74,.2),0 2px 6px rgba(16,38,74,.08);max-height:280px;overflow:auto;padding:6px 0;margin:0;list-style:none}
+.cbl li{position:relative;padding:9px 16px 9px 18px;cursor:pointer;display:flex;flex-direction:column;gap:1px;border-bottom:1px solid #eef2f8}.cbl li:last-child{border-bottom:0}
+.cbl li::before{content:"";position:absolute;left:0;top:6px;bottom:6px;width:3px;border-radius:0 3px 3px 0;background:transparent}
+.cbl li[aria-selected=true],.cbl li:hover{background:#f1f5fb}.cbl li[aria-selected=true]::before{background:var(--navy)}
+.cbl .p{font-weight:700;font-size:14.5px;color:var(--navy);line-height:1.3;overflow-wrap:anywhere}.cbl .s{font-size:13px;color:#5b6678;line-height:1.35;overflow-wrap:anywhere}
+.cbl mark{background:#fff0b3;color:inherit;border-radius:2px;padding:0 1px}
+.cbl li.e{color:#5b6678;cursor:default;font-size:14px;padding:14px 18px}.cbl li.h{cursor:default;font-size:11.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#7a869a;padding:4px 18px 6px;border-bottom:1px solid #e3e9f3}
 </style>
 </head>
 <body>
@@ -154,7 +158,11 @@ function combo(root) {
       if (!ul) { ul = document.createElement('ul'); ul.className = 'cbl'; ul.setAttribute('role', 'listbox'); inp.closest('dialog')?.appendChild(ul) || document.body.appendChild(ul); inp.setAttribute('aria-expanded', 'true');
         ul.addEventListener('mousedown', e => { e.preventDefault(); const li = e.target.closest('li[data-i]'); if (li) pick(shown[+li.dataset.i]); }); }
       const r = inp.getBoundingClientRect(); ul.style.left = r.left + 'px'; ul.style.top = (r.bottom + 4) + 'px'; ul.style.width = r.width + 'px'; ul.style.maxHeight = Math.max(120, Math.min(260, innerHeight - r.bottom - 16)) + 'px';
-      ul.innerHTML = shown.length ? shown.map((x, i) => `<li role="option" data-i="${i}"></li>`).join('') : '<li class="e">No matches</li>'; ul.querySelectorAll('li[data-i]').forEach((li, i) => li.textContent = shown[i]); at = -1; };
+      const hl = (el, t) => { const q = inp.value.trim().split(/\s+/).filter(Boolean).map(w => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')); if (!q.length) return void (el.textContent = t); const re = new RegExp('(' + q.join('|') + ')', 'ig'); t.split(re).forEach((p, k) => { if (k % 2) { const m = document.createElement('mark'); m.textContent = p; el.appendChild(m); } else el.append(p); }); };
+      ul.replaceChildren(); if (!shown.length) { const e = document.createElement('li'); e.className = 'e'; e.textContent = 'No matches'; ul.appendChild(e); }
+      else { const h = document.createElement('li'); h.className = 'h'; h.textContent = shown.length >= 60 ? 'Showing the first 60. Keep typing to narrow.' : shown.length + (shown.length === 1 ? ' match' : ' matches'); ul.appendChild(h);
+        shown.forEach((x, i) => { const li = document.createElement('li'), k = x.indexOf(' — '), p = document.createElement('span'), s2 = document.createElement('span'); li.setAttribute('role', 'option'); li.dataset.i = i; p.className = 'p'; s2.className = 's'; hl(p, k > 0 ? x.slice(0, k) : x); li.appendChild(p); if (k > 0) { hl(s2, x.slice(k + 3)); li.appendChild(s2); } ul.appendChild(li); }); }
+      at = -1; };
     inp.addEventListener('focus', draw); inp.addEventListener('input', draw); inp.addEventListener('blur', close);
     inp.addEventListener('keydown', e => { if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { if (!ul) draw(); e.preventDefault(); if (shown.length) { at = (at + (e.key === 'ArrowDown' ? 1 : -1) + shown.length) % shown.length; mark(); } }
       else if (e.key === 'Enter' && ul && at >= 0) { e.preventDefault(); pick(shown[at]); } else if (e.key === 'Escape' && ul) { e.preventDefault(); e.stopPropagation(); close(); } });
