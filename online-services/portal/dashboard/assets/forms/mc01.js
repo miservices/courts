@@ -4,7 +4,7 @@
 import { plaintiffs, defendants } from './caseinfo.js?v=3';
 
 const css = ({ U, P, B }) => `
-.page{width:816px;height:1056px;position:relative;overflow:hidden;background:#fff;margin:0 auto 16px;box-shadow:0 1px 6px rgba(0,0,0,.25);padding:${P(35)} ${P(49)} 0;font-family:Arial,Helvetica,sans-serif;color:#000;font-size:${P(9.9)};line-height:${P(13.4)}}
+.page{width:816px;height:1056px;position:relative;overflow:hidden;background:#fff;margin:0 auto 16px;box-shadow:0 1px 6px rgba(0,0,0,.25);padding:${P(35)} ${P(49)} 0;font-family:Arial,Helvetica,sans-serif;color:#000;font-size:${P(9.7)};line-height:${P(13)}}
 .page *{box-sizing:border-box}
 .pc{width:${P(512)}}
 .foot{position:absolute;left:0;right:0;top:${P(722)};text-align:center;font-weight:bold;font-size:${P(7.5)};line-height:${P(11)}}
@@ -14,7 +14,7 @@ const css = ({ U, P, B }) => `
 .h2{width:${P(170)};display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;font-weight:bold;line-height:${P(13)};padding:0 ${P(6)}}
 .h3{flex:1;padding:${P(11)} 0 0 ${P(6.5)};line-height:${P(11.5)}}.jv{margin-left:${P(6)};font-weight:normal}
 .hd>div+div{border-left:${B} solid #000}
-.pt{display:flex;width:${P(512)};border-bottom:${B} solid #000;margin-top:${P(16)};height:${P(75)}}
+.pt{display:flex;width:${P(512)};border-bottom:${B} solid #000;margin-top:${P(12)};height:${P(72)}}
 .pt>.pa{flex:1;min-width:0;border-top:${B} solid #000;padding-left:${P(5)}}.pt>.pa.l{border-right:${B} solid #000}.pt>.pa.rr{border-left:${B} solid #000}
 .pt>.pv{width:${P(31)};flex:none;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:${P(7.7)};border-top:${B} solid transparent}
 .lb{font-size:${P(7.7)};line-height:${P(9)};padding-top:${P(5.5)}}
@@ -25,18 +25,18 @@ const css = ({ U, P, B }) => `
 .in1{margin-left:${P(18)}}
 .u{display:inline-block;border-bottom:${B} solid #000;min-height:${P(12)};vertical-align:bottom;padding:0 ${P(3)};text-align:left;line-height:${P(12)}}
 .gl{border-bottom:${B} solid #000;min-height:${P(25)};margin:${P(3)} 0 0 ${P(7)};padding-top:${P(9)};line-height:${P(15)};white-space:pre-wrap;word-wrap:break-word}
-.sx{position:relative;display:flex;justify-content:center;align-items:center;height:${P(30)};margin-top:${P(14)}}.sx.g{margin-top:${P(20)}}
+.sx{position:relative;display:flex;justify-content:center;align-items:center;height:${P(28)};margin-top:${P(11)}}.sx.g{margin-top:${P(14)}}
 .sx .sl2{position:absolute;left:${P(5.6)};top:50%;transform:translateY(-35%);font-size:${P(7.7)};line-height:${P(9)}}
 .sx .bx{border:${B} solid #222;box-shadow:1px 1px 0 #222;background:#f4f4f4;padding:${P(5)} ${P(21)};font-weight:bold;text-align:center;line-height:${P(12)};min-width:${P(86)}}
 .np{margin:${P(3)} 0 0}.np>div{display:flex;margin-top:${P(2)}}.np>div>span:first-child{width:${P(18)};flex:none;padding-left:${P(5)}}.np>div>span:last-child{flex:1;min-width:0}
-.tb{display:flex;width:${P(512)};border:${B} solid #000;height:${P(36)};margin-top:${P(14)}}.tb>div{padding:0 ${P(5)};min-width:0;overflow:hidden}.tb>div+div{border-left:${B} solid #000}
+.tb{display:flex;width:${P(512)};border:${B} solid #000;height:${P(34)};margin-top:${P(10)}}.tb>div{padding:0 ${P(5)};min-width:0;overflow:hidden}.tb>div+div{border-left:${B} solid #000}
 .ch{width:${P(512)};text-align:right;font-weight:bold;line-height:${P(12)};height:${P(12)};margin-top:${P(2)}}
 .cu{display:inline-block;min-width:${P(85)};border-bottom:${B} solid #000;text-align:center;font-weight:normal;line-height:${P(11)}}
 .sg{display:flex;align-items:flex-end}.sg>.sc{display:flex;flex-direction:column}
 .sv{display:flex;align-items:flex-end;min-height:${P(16)};line-height:${P(14)};border-bottom:${B} solid #000;overflow:visible;white-space:nowrap}
 .sv .in{flex:1;min-width:0;position:relative;z-index:1}
 .sl{font-size:${P(7.7)};line-height:${P(9)};padding:${P(5)} 0 0 ${P(5)}}
-.pos .tx{line-height:${P(18.6)}}.pos .tx.s{line-height:${P(13.6)}}.pos:not(.s) .cb{margin-top:${P(4.2)}}
+.pos .tx{line-height:${P(17.6)}}.pos .tx.s{line-height:${P(13.6)}}.pos:not(.s) .cb{margin-top:${P(4.2)}}
 `;
 
 const mid = { a: 'SUMMONS', b: 'SUMMONS TO ENTITY', c: 'SUMMONS TO<br>GOVERNMENTAL ENTITY', d: 'CERTIFICATE OF NON-SERVICE' };
@@ -110,9 +110,9 @@ function build(api, k) {
   const chk = (id, inner, cls = '') => `<div class="oo ${cls}">${cbx(on(id), id)}<div class="tx${cls.includes('s') ? ' s' : ''}">${inner}</div></div>`;
   const box = (note, title, g = '') => `<div class="sx ${g}"><div class="sl2">${note}</div><div class="bx">${title}</div></div>`;
   const dtz = (s, lead) => `${lead} ${u(s + 'd', 82)} <i>(date)</i> at ${u(s + 't', 82)} <i>(time)</i> ${u(s + 'z', 120)} <i>(timezone)</i>`;
-  const sig = () => `<div class="sg" style="margin-top:${P(14)};align-items:flex-start"><div class="sc" style="margin-left:${P(22)};width:${P(88)}"><div class="sv" style="margin-top:${P(14)}"><div class="in">$ ${E('fee', { ph: '0.00' })}</div></div><div class="sl" style="padding-left:0">Service fee assessed</div></div>
+  const sig = () => `<div class="sg" style="margin-top:${P(8)};align-items:flex-start"><div class="sc" style="margin-left:${P(22)};width:${P(88)}"><div class="sv" style="margin-top:${P(14)}"><div class="in">$ ${E('fee', { ph: '0.00' })}</div></div><div class="sl" style="padding-left:0">Service fee assessed</div></div>
     <div class="sc" style="margin-left:${P(176)};width:${P(219)}"><div class="sv" style="margin-top:${P(14)}"><div class="in">${E('pname', { ph: 'Name and title' })}</div></div><div class="sl" style="padding-left:${P(5)}">Name and title (type or print)</div>
-    <div class="sv" style="margin-top:${P(28)}"><div class="in">${E('psig', { pre: '/s/ ' })}</div></div><div class="sl" style="padding-left:${P(5)}">Signature (hand signature or /s/)</div>${k === 'c' ? `<div class="oo s" style="margin-top:${P(10)}">${cbx(on('msp'), 'msp')}<div class="tx" style="font-size:${P(7.7)};line-height:${P(10.5)}">Service was conducted by the Michigan State Police pursuant to MCR 2.302(D)(3).</div></div>` : ''}</div></div>`;
+    <div class="sv" style="margin-top:${P(24)}"><div class="in">${E('psig', { pre: '/s/ ' })}</div></div><div class="sl" style="padding-left:${P(5)}">Signature (hand signature or /s/)</div>${k === 'c' ? `<div class="oo s" style="margin-top:${P(10)}">${cbx(on('msp'), 'msp')}<div class="tx" style="font-size:${P(7.7)};line-height:${P(10.5)}">Service was conducted by the Michigan State Police pursuant to MCR 2.302(D)(3).</div></div>` : ''}</div></div>`;
   const parties = `<div class="pt"><div class="pa l">${cell('Plaintiff/Petitioner’s name and address', `<div>${E('pln')}</div><div>${E('pla', { multi: true })}</div>`)}</div><div class="pv">v</div><div class="pa rr">${cell(dflabel[k], `<div>${E('dfn')}</div><div>${E('dfa', { multi: true })}</div>`)}</div></div>`;
   seq.push({ html: hdr(P, mid[k], E('judge'), E('caseno')) + parties });
 
@@ -141,7 +141,7 @@ function build(api, k) {
     return seq;
   }
   /* summons forms */
-  const civ = `<div class="b" style="margin-top:${P(15)}">Civil Case</div>${chk('cv1', 'There is no other pending or resolved civil action arising out of the same transaction or occurrence as alleged in the complaint.')}
+  const civ = `<div class="b" style="margin-top:${P(12)}">Civil Case</div>${chk('cv1', 'There is no other pending or resolved civil action arising out of the same transaction or occurrence as alleged in the complaint.')}
     <div class="oo" style="margin-top:${P(2)}">${cbx(on('cv2'), 'cv2')}<div class="tx">A civil action between these parties or other parties arising out of the transaction or occurrence alleged in the complaint has been previously filed in ${u('pcty', 80)} County District Court where it was given case number ${u('pcno', 80)} and assigned to Judge ${u('pjdg', 112)}. The action:</div></div>
     <div class="oo in1" style="margin-left:${P(36)};margin-top:${P(1)}" data-sel="pst=1" title="Click to choose this">${cbx(sv('pst') === '1')}<div class="tx">remains pending.</div></div><div class="oo" style="margin-left:${P(36)}" data-sel="pst=2" title="Click to choose this">${cbx(sv('pst') === '2')}<div class="tx">is no longer pending.</div></div>
     ${k === 'c' ? `<div class="oo" style="margin-top:${P(5)}">${cbx(on('shf'), 'shf')}<div class="tx">This civil action is being commenced against a county sheriff's office and service must be made by the Michigan State Police pursuant to MCR 2.302(D)(3).</div></div>` : ''}`;
@@ -177,7 +177,7 @@ function build(api, k) {
 export const make = k => {
   return {
     id: 'mc01' + k, number: 'MC 01' + k.toUpperCase(), title: TITLE[k], footer: 'MC 01' + k.toUpperCase(),
-    css, panel: panelFor(k), usable: U => 690 * U, build: api => build(api, k),
+    css, panel: panelFor(k), usable: U => 684 * U, build: api => build(api, k),
     fromCase: c => ({ pln: plaintiffs(c).join(', '), dfn: defendants(c).join(', ') }),
     contHeader: api => `<div class="ch">Case Number: <span class="cu">${api.ed('caseno')}</span></div>`,
     courtKeys: k === 'd' ? ['rcv', 'rclk', 'oacc', 'orej', 'orn1', 'orn2', 'ofd', 'oday', 'oalias', 'oalt', 'oalt1', 'oalt2', 'odis', 'onfa', 'ooth', 'ooth1', 'ooth2', 'ooth3', 'ooth4', 'odate', 'ojname', 'ojsig'] : ['iss', 'exp', 'clk'],
