@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Service of Process | Michigan Courts</title>
+<link rel="icon" type="image/png" href="/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=Source+Serif+4:wght@600;700&display=swap" rel="stylesheet">
+<style>
+:root{--navy:#10264a;--navy2:#1b3a6b;--ink:#1b2433;--muted:#5b6678;--line:#d3dae6;--bg:#eef1f6}
+*{box-sizing:border-box}
+body{margin:0;font-family:'Public Sans',system-ui,sans-serif;color:var(--ink);background:var(--bg);min-height:100vh}
+header.top{background:#fff;border-bottom:1px solid var(--line);padding:12px 22px;display:flex;align-items:center;gap:18px;flex-wrap:wrap;position:sticky;top:0;z-index:20}
+.brand{font-family:'Source Serif 4',Georgia,serif;font-weight:700;font-size:17px;color:var(--navy);padding-right:18px;border-right:1px solid var(--line)}
+.brand small{display:block;font:600 10.5px 'Public Sans',sans-serif;letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
+.meta{flex:1;min-width:200px}.meta b{display:block;font-size:15.5px;color:var(--navy);overflow-wrap:anywhere}.meta span{font-size:12.5px;color:var(--muted)}
+.chip{display:inline-flex;align-items:center;gap:7px;font:600 12px 'Public Sans',sans-serif;border-radius:999px;padding:4px 11px;background:#eef2f9;color:#3a4558}.chip i{width:8px;height:8px;border-radius:50%;background:#8a97ad}
+.chip.ok{background:#e4f3e8;color:#14532d}.chip.ok i{background:#1e8a45}.chip.op{background:#fff3d6;color:#7a5200}.chip.op i{background:#e0a100}.chip.bad{background:#fde8e6;color:#8f1d17}.chip.bad i{background:#c0392b}
+.btn{font:600 14px 'Public Sans',sans-serif;border-radius:7px;padding:10px 18px;border:1.5px solid var(--navy);background:var(--navy);color:#fff;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center}.btn:hover{background:var(--navy2)}
+.btn.o{background:#fff;color:var(--navy);border-color:#c5cedd}.btn.o:hover{background:#f1f4f9}.btn:disabled{opacity:.5;cursor:default}.btn:focus-visible{outline:3px solid #1f5fae;outline-offset:2px}
+main{max-width:1180px;margin:0 auto;padding:20px 16px 60px;display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:20px;align-items:start}
+@media(max-width:960px){main{grid-template-columns:1fr}}
+.card{background:#fff;border:1px solid var(--line);border-radius:10px;padding:18px 20px;margin-bottom:16px}
+.card h2{margin:0 0 4px;font:700 17px 'Source Serif 4',Georgia,serif;color:var(--navy)}.card p{margin:6px 0 12px;color:var(--muted);line-height:1.55;font-size:14px}
+.note{border-left:4px solid var(--navy);background:#eef3f9;border-radius:4px;padding:10px 14px;margin-bottom:16px;color:var(--navy);font-size:14px;line-height:1.5}
+.docs a{display:block;padding:10px 12px;border:1px solid var(--line);border-radius:8px;margin-top:8px;color:var(--navy);font-weight:600;text-decoration:none}.docs a:hover{background:#f1f4f9}
+.f{display:grid;gap:4px;font-size:13px;color:var(--muted);margin:0 0 12px}.f input{font:inherit;font-size:15px;padding:9px 11px;border:1px solid #c5cedd;border-radius:6px;color:var(--ink)}
+.msg{max-width:560px;margin:10vh auto;background:#fff;border:1px solid var(--line);border-top:4px solid var(--navy);border-radius:10px;padding:28px 30px}.msg h1{font:700 22px 'Source Serif 4',Georgia,serif;margin:0 0 8px;color:var(--navy)}.msg p{margin:0 0 16px;line-height:1.55;color:var(--muted)}
+.spin{width:22px;height:22px;border:3px solid #b8cdee;border-top-color:var(--navy);border-radius:50%;animation:s .8s linear infinite;margin:0 auto 10px}@keyframes s{to{transform:rotate(360deg)}}.ld{text-align:center;margin:12vh auto;color:var(--muted)}
+#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);opacity:0;pointer-events:none;background:#10264a;color:#fff;padding:11px 18px;border-radius:9px;font-size:13.5px;box-shadow:0 8px 28px rgba(0,0,0,.3);transition:.2s;z-index:50;max-width:92vw}#toast.on{opacity:1;transform:translateX(-50%)}#toast.e{background:#8f1d17}
+.mbk{position:fixed;inset:0;background:rgba(16,38,74,.5);display:flex;align-items:center;justify-content:center;z-index:60;padding:16px}.mdl{background:#fff;border-radius:13px;padding:24px 26px;width:min(460px,100%);box-shadow:0 16px 48px rgba(0,0,0,.35)}.mdl h3{margin:0 0 8px;font:700 19px 'Source Serif 4',Georgia,serif;color:var(--navy)}.mdl p{margin:0 0 20px;color:var(--muted);line-height:1.55;font-size:14px}.mdl div{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap}
+@media print{header.top,#side,#toast{display:none!important}main{display:block;padding:0}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="brand">Michigan Courts<small>Service of process</small></div>
+  <div class="meta"><b id="t">Loading…</b><span id="s"></span></div>
+  <span class="chip" id="st" hidden><i></i><span></span></span>
+</header>
+<div id="root"><div class="ld"><div class="spin"></div>Opening the service link…</div></div>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
+import { getAuth } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
+import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+import { getRequest, acknowledge, fileProof, canFile } from '/courts/online-services/portal/dashboard/assets/forms/servicedb.js?v=1';
+import { mountPreview, proofPanel } from '/courts/online-services/portal/dashboard/assets/forms/serviceui.js?v=1';
+import { FORM_NUM } from '/courts/online-services/portal/dashboard/assets/forms/service.js?v=1';
+
+const app = initializeApp({ apiKey: "AIzaSyA8sUFIq81cs6uQvqduardpGJ4R2DxO8NQ", authDomain: "micourt-dada6.firebaseapp.com", projectId: "micourt-dada6", storageBucket: "micourt-dada6.firebasestorage.app", messagingSenderId: "1013564619997", appId: "1:1013564619997:web:8f259dab457915758f6f34" });
+const auth = getAuth(app), db = getFirestore(app), $ = id => document.getElementById(id);
+const PORTAL = 'https://migovt.org/courts/online-services/portal/';
+const esc = s => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+const fmt = ms => ms ? new Date(ms).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : '';
+let tt = 0; const toast = (t, e) => { const el = $('toast'); el.textContent = t; el.className = 'on' + (e ? ' e' : ''); clearTimeout(tt); tt = setTimeout(() => el.className = '', 4500); };
+const ask = (title, text, yes) => new Promise(res => { const b = document.createElement('div'); b.className = 'mbk'; b.innerHTML = '<div class="mdl" role="alertdialog" aria-modal="true"><h3></h3><p></p><div><button class="btn o" type="button">Cancel</button><button class="btn" type="button"></button></div></div>'; b.querySelector('h3').textContent = title; b.querySelector('p').textContent = text; const [n, y] = b.querySelectorAll('button'); y.textContent = yes; document.body.appendChild(b); n.focus(); const done = v => { b.remove(); res(v); }; n.onclick = () => done(false); y.onclick = () => done(true); b.onclick = e => { if (e.target === b) done(false); }; });
+const card = (t, p) => { $('root').innerHTML = `<div class="msg" role="alert"><h1></h1><p></p></div>`; $('root').querySelector('h1').textContent = t; $('root').querySelector('p').textContent = p; $('t').textContent = t; $('s').textContent = ''; };
+const idOf = () => { try { return decodeURIComponent(location.hash.replace(/^#\/?/, '')).trim(); } catch { return ''; } };
+const chip = sr => { const c = $('st'); c.hidden = false; const f = sr.proof?.filedAt, ok = f && sr.proof.result === 'Served', bad = f && !ok; c.className = 'chip ' + (ok ? 'ok' : bad ? 'bad' : 'op'); c.lastChild.textContent = sr.status; };
+
+async function main() {
+  const id = idOf(); if (!/^[a-z0-9]{8,40}$/i.test(id)) return card('No service link', 'This page opens a summons from a service link. Use the link you were sent.');
+  await auth.authStateReady();
+  let sr; try { sr = await getRequest(db, id); } catch (e) { console.error(e); return card('We could not open this link', 'Check your connection and try again.'); }
+  if (!sr) return card('Service link not found', 'This link may be wrong or the summons may have been withdrawn.');
+  let account = null, role = '';
+  if (auth.currentUser) try { const a = await getDoc(doc(db, 'accounts', auth.currentUser.uid)); if (a.exists()) { account = { uid: auth.currentUser.uid, name: String(a.data().name || '').trim() || auth.currentUser.email, ...a.data() }; role = a.data().role || ''; } } catch { }
+  const num = FORM_NUM[sr.formId] || 'Summons', server = canFile(sr, account, role), filed = !!sr.proof?.filedAt;
+  document.title = `${num} Summons | Michigan Courts`; $('t').textContent = `${num} · Summons to ${sr.party.name}`; $('s').textContent = `Case ${sr.values?.caseno || sr.caseId}`; chip(sr);
+  const notFiled = !filed;
+  $('root').innerHTML = `<main><section id="prev" aria-label="Summons"><div class="ld"><div class="spin"></div>Opening the summons…</div></section>
+    <aside id="side">
+      ${sr.status === 'Summons issued' ? '<div class="note">This summons has been issued but service has not been requested yet.</div>' : ''}
+      <div class="card"><h2>Summons and complaint</h2><p>You are being served with the summons at the left and the complaint filed in case ${esc(sr.values?.caseno || sr.caseId)}.</p><div class="docs" id="docs">${(sr.complaint || []).length ? sr.complaint.map(d => `<a href="${esc(d.link)}" target="_blank" rel="noopener">${esc(d.name || 'Complaint')}</a>`).join('') : '<p>The complaint is part of the case file.</p>'}</div>
+        <div style="margin-top:12px"><button class="btn o" type="button" id="prt">Print the summons</button></div></div>
+      <div class="card" id="ack"></div>
+      <div class="card" id="proof"></div>
+    </aside></main>`;
+  const prev = mountPreview($('prev'), sr); prev.draw(sr.values).catch(e => { console.error(e); $('prev').innerHTML = '<div class="msg"><h1>We could not show the summons</h1><p>Refresh and try again.</p></div>'; });
+  $('prt').onclick = () => window.print();
+  drawAck(sr, account, prev); drawProof(sr, account, role, prev);
+}
+function drawAck(sr, account, prev) {
+  const box = $('ack'), ent = sr.formId !== 'mc01a', a = sr.ack;
+  if (a) { box.innerHTML = `<h2>Acknowledgment of service</h2><p>Signed by <b>${esc(a.name)}</b>${a.title ? ', ' + esc(a.title) : ''} on ${esc(fmt(a.at))}. An acknowledgment gives the defendant 7 additional days to respond.</p>`; return; }
+  if (sr.proof?.filedAt) { box.innerHTML = '<h2>Acknowledgment of service</h2><p>Service has been completed and proof of service is on file.</p>'; return; }
+  if (!account) { box.innerHTML = `<h2>Acknowledgment of service</h2><p>Signing the acknowledgment is optional. It confirms that you received this summons and complaint and gives you 7 additional days to respond. You must be signed in to sign it.</p><a class="btn" href="${PORTAL}">Sign in to the Online Portal</a>`; return; }
+  box.innerHTML = `<h2>Acknowledgment of service</h2><p>Signing is optional. It confirms you received this summons and complaint and gives you 7 additional days to respond. It is not an admission or denial of anything in the complaint. You are signed in as <b>${esc(account.name)}</b>.</p>${ent ? '<label class="f">Your title<input id="ack-t" type="text" placeholder="e.g. Registered agent"></label>' : ''}<button class="btn" type="button" id="ack-go">Sign the acknowledgment of service</button>`;
+  $('ack-go').onclick = async () => {
+    if (ent && !$('ack-t').value.trim()) return toast('Enter your title first.', true);
+    if (!await ask('Sign the acknowledgment?', `This signs the acknowledgment of service as ${account.name}.`, 'Sign')) return;
+    $('ack-go').disabled = true;
+    try { await acknowledge(db, sr, account, { title: ent ? $('ack-t').value.trim() : '' }); toast('Acknowledgment signed.'); drawAck(sr, account, prev); prev.draw(sr.values); }
+    catch (e) { console.error(e); toast('We could not save your signature. Try again.', true); $('ack-go').disabled = false; }
+  };
+}
+function drawProof(sr, account, role, prev) {
+  const box = $('proof'), f = sr.proof;
+  if (f?.filedAt) { box.innerHTML = `<h2>Proof of service</h2><p>${f.result === 'Served' ? `Served by ${esc(f.method.toLowerCase())}` : 'Service was not completed'}${f.date ? ' on ' + esc(new Date(f.date + 'T12:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })) : ''}. Filed by ${esc(f.filedBy)} on ${esc(fmt(f.filedAt))}.</p>`; return; }
+  if (!canFile(sr, account, role)) { box.innerHTML = `<h2>Process server</h2><p>${sr.serverName ? 'Service is assigned to ' + esc(sr.serverName) + '.' : sr.status === 'Service requested' ? 'Service has been requested and is waiting for a process server.' : 'Only the process server for this action, or court staff, can file the proof of service.'}</p>`; return; }
+  box.innerHTML = '<h2>Proof of service</h2><p>Fill in how service was made. The summons updates as you type. Filing it records who was served on the case.</p><div id="pp"></div><div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap"><button class="btn" type="button" id="pf-go">File the proof of service</button></div>';
+  let t = 0; const pp = proofPanel($('pp'), sr, true, v => { clearTimeout(t); t = setTimeout(() => prev.draw({ ...sr.values, ...v }).catch(() => { }), 350); });
+  $('pf-go').onclick = async () => {
+    const v = { ...sr.values, ...pp.values() };
+    if (!v.pchk && !v.schk && !v.uchk && !v.nonc) return toast('Choose how service was made, or mark it as not served.', true);
+    if (!v.pname) v.pname = account.name; if (!v.psig) v.psig = account.name;
+    if (!await ask('File the proof of service?', 'This records the result on the case and closes the service request. It cannot be changed afterward.', 'File proof of service')) return;
+    $('pf-go').disabled = true;
+    try { await fileProof(db, sr, v, account, role); toast('Proof of service filed.'); chip(sr); drawProof(sr, account, role, prev); drawAck(sr, account, prev); prev.draw(sr.values); }
+    catch (e) { console.error(e); toast('We could not file the proof of service. Nothing was changed.', true); $('pf-go').disabled = false; }
+  };
+}
+addEventListener('hashchange', () => location.reload());
+main().catch(e => { console.error(e); card('We could not open this link', 'Refresh the page and try again.'); });
+</script>
+</body>
+</html>
