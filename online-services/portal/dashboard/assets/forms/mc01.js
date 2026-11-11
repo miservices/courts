@@ -149,9 +149,6 @@ function build(api, k) {
   seq.push({ html: box('Summons section to be completed by clerk.', 'SUMMONS') + `<div style="margin-top:${P(10)}"><b>NOTICE TO THE DEFENDANT:</b> In the name of the people of the State of Michigan${k === 'a' ? ',' : ''} you are notified:</div>
     <div class="np">${NOTICE[k].map((t, i) => `<div><span>${i + 1}.</span><span>${t}</span></div>`).join('')}</div>` });
   seq.push({ html: `<div class="tb"><div style="width:${P(127)}"><div class="lb">Issue date</div><div class="vv">${E('iss')}</div></div><div style="width:${P(127)}"><div class="lb">Expiration date</div><div class="vv">${E('exp')}</div></div><div style="flex:1"><div class="lb">Court clerk (type or print)</div><div class="vv">${E('clk')}</div></div></div>` });
-  if (k === 'a') seq.push({ html: box('Service section not to be altered.', 'SERVICE') + `<div style="margin-top:${P(10)}"><b>TO DEFENDANT:</b> Signing the acknowledgment of service is optional. If you return a signed acknowledgment of service to the process server within 24 hours after service, service is deemed acknowledged. If you do not, you may file a signed acknowledgment of service with the court within 3 days after service. A timely filed acknowledgement of service extends your time to answer by 7 days.</div><div style="margin-top:${P(11)}">${SERVER.a}</div>` });
-  else if (k === 'b') seq.push({ html: `<div style="margin-top:${P(12)}">${SERVER.b}</div>` });
-
   /* proof of service */
   const intro = `<div style="margin-top:${P(14)}">I certify that I have served the summons and complaint in this action in full compliance with the requirements of MCR 2.302 and 2.303, governing service of process in actions pending before the district and supreme court, and that service was effectuated by one or more of the authorized methods set forth therein, as specified below.</div>`;
   const pers = k === 'a' ? `<b>PERSONAL SERVICE.</b> Service was made by Discord direct message to the account of the defendant on ${u('pd', 82)} <i>(date)</i> at ${u('pt', 82)} <i>(time)</i> ${u('pz', 130)} <i>(timezone)</i>.`
@@ -164,13 +161,15 @@ function build(api, k) {
   const pos = (id, t, cl = '') => `<div class="oo pos${cl ? ' s' : ''}">${cbx(on(id), id)}<div class="tx ${cl}">${t}</div></div>`;
   const posHtml = box('Section to be completed by process server.', 'PROOF OF SERVICE') + intro
     + `<div style="margin-top:${P(5)}">${pos('pchk', pers)}${pos('schk', subs)}${k !== 'c' ? pos('uchk', pub) : ''}${pos('ackc', ack, 's')}${pos('nonc', non, 's')}</div>` + sig();
-  const ackHtml = box('Section to be completed optionally.', 'ACKNOWLEDGMENT OF SERVICE', k === 'a' ? 'g' : '') + (k === 'a'
+  const ackHtml = box('Section to be completed optionally.', 'ACKNOWLEDGMENT OF SERVICE', 'g') + (k === 'a'
     ? `<div style="margin-top:${P(14)}">I acknowledge that I have received service of this summons and a copy of the complaint in this action. I understand that I am being sued and that I am required to file a written answer or otherwise respond with the court within 21 days unless superseded by any applicable rule order of the court. I further understand that failure to timely respond may result in the entry of a default judgment against me for the relief requested in the complaint. I acknowledge that this acknowledgment is voluntary and does not waive any defenses, rights, or objections I may have in this matter, except as provided by law or court rule.</div>`
     : `<div style="margin-top:${P(14)}">I, ${u('akn2', 160)}, <i>(name)</i>, serving as ${u('akt', 160)} <i>(title)</i>, ${ACK[k][1]}</div><div style="margin-top:${P(10)}">${ACK[k][0]}</div>`)
     + `<div class="tb" style="height:${P(40)}"><div style="width:${P(88)}"><div class="lb">Date</div><div class="vv">${E('akd')}</div></div><div style="width:${P(169)}"><div class="lb">Name (type or print)</div><div class="vv">${E('akn')}</div></div><div style="flex:1"><div class="lb">Signature (hand signature or /s/)</div><div class="vv">${E('aks', { pre: '/s/ ' })}</div></div></div>`;
-  if (k === 'a') seq.push({ pb: 'new', head: caseHd, html: posHtml }), seq.push({ html: ackHtml });
-  else if (k === 'b') seq.push({ pb: 'new', head: caseHd, html: posHtml }), seq.push({ pb: 'new', head: caseHd, html: ackHtml });
-  else seq.push({ pb: 'new', head: caseHd, html: box('Service section not to be altered.', 'SERVICE') + `<div style="margin-top:${P(10)}">${SERVER.c}</div>` + posHtml }), seq.push({ pb: 'new', head: caseHd, html: ackHtml });
+  /* page 2: the service notice and the optional acknowledgment; last page: the proof of service */
+  const svcHtml = box('Service section not to be altered.', 'SERVICE') + (k === 'a' ? `<div style="margin-top:${P(10)}"><b>TO DEFENDANT:</b> Signing the acknowledgment of service is optional. If you return a signed acknowledgment of service to the process server within 24 hours after service, service is deemed acknowledged. If you do not, you may file a signed acknowledgment of service with the court within 3 days after service. A timely filed acknowledgement of service extends your time to answer by 7 days.</div><div style="margin-top:${P(11)}">${SERVER.a}</div>` : `<div style="margin-top:${P(10)}">${SERVER[k]}</div>`);
+  seq.push({ pb: 'new', head: caseHd, html: svcHtml });
+  seq.push({ html: ackHtml });
+  seq.push({ pb: 'new', head: caseHd, html: posHtml });
   return seq;
 }
 
