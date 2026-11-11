@@ -67,6 +67,8 @@ import { collection, getDocs, doc, runTransaction, setDoc, updateDoc } from "htt
 import { partiesOf, caption, isDefendantSide, addEvent, iso, fmtD, fmtDT, uid, reviewerUidOf, presidingOf } from '/courts/online-services/portal/dashboard/assets/js/court.js?v=1';
 
 const ENFORCE = ['Justice System User', 'Prosecuting Attorney', 'Legal Services User'];
+import { assignServer, fileProof, canFile, linkOf } from '/courts/online-services/portal/dashboard/assets/forms/servicedb.js?v=1';
+import { SR_STATUS } from '/courts/online-services/portal/dashboard/assets/forms/service.js?v=1';
 const { account, role } = await boot({ id: 'enforce', title: 'Enforcement services', subtitle: 'Warrant requests, service of process, community service, probation and pretrial reporting.' });
 const root = $('page-body');
 if (!has(ENFORCE, role)) root.innerHTML = notAllowedHtml();
@@ -108,11 +110,11 @@ async function editCase(c, fn) {
   Object.assign(c, next); return next;
 }
 
-let cases = [], accts = [], warrants = [], orders = [], logs = [], returns = [], tab = 'warrants', q = '', note = '', noteKind = 'ok';
+let cases = [], accts = [], warrants = [], orders = [], logs = [], returns = [], reqs = [], tab = 'warrants', q = '', note = '', noteKind = 'ok';
 const safe = p => p.catch(() => ({ docs: [] })), rows = s => s.docs.map(d => ({ ...d.data(), _id: d.id }));
 async function load() {
-  const [a, b, w, o, l, r] = await Promise.all(['cases', 'accounts', 'warrants', 'supervisionOrders', 'supervisionLogs', 'serviceReturns'].map(n => safe(getDocs(collection(db, n)))));
-  cases = rows(a); accts = b.docs.map(d => ({ uid: d.id, ...d.data() })); warrants = rows(w); orders = rows(o); logs = rows(l).filter(x => x.uid === account.uid); returns = rows(r).filter(x => x.byUid === account.uid);
+  const [a, b, w, o, l, r, sq] = await Promise.all(['cases', 'accounts', 'warrants', 'supervisionOrders', 'supervisionLogs', 'serviceReturns', 'serviceRequests'].map(n => safe(getDocs(collection(db, n)))));
+  cases = rows(a); accts = b.docs.map(d => ({ uid: d.id, ...d.data() })); warrants = rows(w); orders = rows(o); logs = rows(l).filter(x => x.uid === account.uid); reqs = rows(sq); returns = rows(r).filter(x => x.byUid === account.uid);
   // Rulings and returned reports are now seen: clear the sidebar count next time.
   warrants.filter(x => x.requestedByUid === account.uid && x.decision && !x.seenByRequester).forEach(x => updateDoc(doc(db, 'warrants', x._id), { seenByRequester: true }).catch(() => {}));
   logs.filter(x => x.status === 'Returned' && !x.seen).forEach(x => updateDoc(doc(db, 'supervisionLogs', x._id), { seen: true }).catch(() => {}));
@@ -142,9 +144,25 @@ function warrantsView() {
   <section class="card"><div class="tbar"><h3>Active arrest and bench warrants</h3><input class="in" id="f-q" type="search" placeholder="Search by case or name" aria-label="Search warrants" value="${esc(q)}"></div>${!act1.length ? '<div class="empty"><strong>No active warrants</strong><p>Warrants issued by a judge or magistrate appear here with the case they were issued in.</p></div>' : `<div class="table-scroll"><table><thead><tr><th>Subject</th><th>Warrant</th><th>Case</th><th>Issued</th><th>Issued by</th><th class="num">Bond</th></tr></thead><tbody>${act1.map(w => `<tr data-a="wopen:${esc(w._id)}"><td><b>${esc(w.subject || '—')}</b></td><td>${esc(w.type)}</td><td>${caseCell(w.caseFirestoreId)}</td><td>${esc(fmtD(w.decision?.at))}</td><td>${esc(w.decision?.by || '—')}</td><td class="num">${w.decision?.bond ? '$' + Number(w.decision.bond).toLocaleString('en-US') : '—'}</td></tr>`).join('')}</tbody></table></div>`}</section>
   ${mySearch().length ? `<section class="card"><h3>My issued search warrants</h3><div class="table-scroll"><table><thead><tr><th>Warrant</th><th>Case or reference</th><th>Issued</th><th>Expires</th></tr></thead><tbody>${mySearch().map(w => `<tr data-a="wopen:${esc(w._id)}"><td><b>Search warrant</b></td><td>${w.caseId ? caseCell(w.caseFirestoreId) : esc(w.reference || '—')}</td><td>${esc(fmtD(w.decision?.at))}</td><td>${esc(fmtD(w.expiresAt))}</td></tr>`).join('')}</tbody></table></div></section>` : ''}`;
 }
+const stPill = r => `<span class="pill ${r.proof?.result === 'Served' ? 'live' : 'plain'}">${esc(r.status || '')}</span>`;
+function requestsView() {
+  const open = reqs.filter(r => r.status === SR_STATUS.requested && !r.serverUid), mineR = reqs.filter(r => r.serverUid === account.uid).sort((a, b) => (b.assignedAt || 0) - (a.assignedAt || 0));
+  const row = (r, take) => `<tr data-a="${take ? 'sopen' : 'sopen'}:${esc(r._id)}"><td><b>${esc(r.party?.name || '—')}</b><small>${esc(r.party?.address || '')}</small></td><td>${esc(r.caseId || '—')}</td><td>${stPill(r)}</td><td>${take ? `<button class="btn good sm" type="button" data-a="stake:${esc(r._id)}">Take this service</button>` : (canFile(r, account, role) ? 'File proof of service' : 'View')}</td></tr>`;
+  const tbl = (l, take) => `<div class="table-scroll"><table><thead><tr><th>Defendant</th><th>Case</th><th>Status</th><th></th></tr></thead><tbody>${l.map(r => row(r, take)).join('')}</tbody></table></div>`;
+  return `<section class="card"><h3>Service requests waiting for a process server</h3>${open.length ? tbl(open, true) : '<div class="empty"><strong>No requests waiting</strong><p>When a party asks for service of a summons, it appears here until a process server takes it.</p></div>'}</section>
+  <section class="card"><h3>My assigned service</h3>${mineR.length ? tbl(mineR, false) : '<div class="empty"><strong>Nothing assigned to you</strong><p>Take a request above. You then edit the return of service and file it.</p></div>'}</section>`;
+}
+async function serviceReqModal(r) {
+  const ui = await import('/courts/online-services/portal/dashboard/assets/forms/serviceui.js?v=1'), can = canFile(r, account, role); let pp = null;
+  modal({ title: ui.titleOf(r), sub: `${r.caseId} · ${r.status}`, wide: true, ok: 'File proof of service', okCls: 'good', onOk: can ? async () => { const v = pp.values(); need(v.pchk || v.schk || v.uchk || v.nonc, 'Check how the summons was served, or check that it was not served.'); await fileProof(db, r, v, account, role); closeDlg(); } : null,
+    extra: `<a class="btn outline" href="${esc(linkOf(r))}" target="_blank" rel="noopener">Open service page</a>`,
+    body: `<p class="m" style="margin:0 0 12px">${can ? 'Fill in the return of service below. Filing it updates the case and the docket.' : r.proof?.filedAt ? 'Proof of service has been filed.' : 'Only the assigned process server or court staff can file the proof of service.'}</p><div id="sv-pp"></div>`,
+  });
+  pp = ui.proofPanel($('sv-pp'), r, can);
+}
 function serviceView() {
   const l = [...returns].sort((x, y) => String(y.date).localeCompare(String(x.date)));
-  return `<section class="card"><h3>Service I have logged</h3>${!l.length ? '<div class="empty"><strong>Nothing logged yet</strong><p>Log service of process once for every person served in a case. The case and its docket are updated for you.</p></div>' : `<div class="table-scroll"><table><thead><tr><th>Date</th><th>Case</th><th>Persons</th><th>Documents</th><th>Method</th><th>Result</th></tr></thead><tbody>${l.map(r => `<tr><td>${esc(fmtD(r.date))}</td><td>${caseCell(r.caseFirestoreId)}</td><td>${esc((r.parties || []).join(', '))}</td><td>${esc(r.documents || '—')}</td><td>${esc(r.method)}</td><td><span class="pill ${r.result === 'Served' ? 'done' : 'warn'}">${esc(r.result)}</span></td></tr>`).join('')}</tbody></table></div>`}</section>`;
+  return requestsView() + `<section class="card"><h3>Service I have logged</h3>${!l.length ? '<div class="empty"><strong>Nothing logged yet</strong><p>Log service of process once for every person served in a case. The case and its docket are updated for you.</p></div>' : `<div class="table-scroll"><table><thead><tr><th>Date</th><th>Case</th><th>Persons</th><th>Documents</th><th>Method</th><th>Result</th></tr></thead><tbody>${l.map(r => `<tr><td>${esc(fmtD(r.date))}</td><td>${caseCell(r.caseFirestoreId)}</td><td>${esc((r.parties || []).join(', '))}</td><td>${esc(r.documents || '—')}</td><td>${esc(r.method)}</td><td><span class="pill ${r.result === 'Served' ? 'done' : 'warn'}">${esc(r.result)}</span></td></tr>`).join('')}</tbody></table></div>`}</section>`;
 }
 const progress = o => o.type === 'Community Service' ? `${o.hoursCompleted || 0} of ${o.hours} hours` : o.endDate ? `Until ${fmtD(o.endDate)}` : '—';
 function supervisionView() {
@@ -251,7 +269,7 @@ function logModal(x) {
 /* ── Events ─────────────────────────────────────────────────────────── */
 function act(a) {
   const [n, v] = [a.split(':')[0], a.slice(a.indexOf(':') + 1)];
-  if (n === 'tab') { tab = v; q = ''; note = ''; draw(); } else if (n === 'req') requestModal(); else if (n === 'svc') serviceModal(); else if (n === 'sup') supModal(v);
+  if (n === 'tab') { tab = v; q = ''; note = ''; draw(); } else if (n === 'req') requestModal(); else if (n === 'svc') serviceModal(); else if (n === 'sopen') { const r = reqs.find(x => x._id === v); r && serviceReqModal(r); } else if (n === 'stake') { const r = reqs.find(x => x._id === v); r && assignServer(db, r, { uid: account.uid, name: account.name }).then(() => { note = 'You are assigned to this service. Open it to fill in the return.'; noteKind = 'ok'; draw(); }).catch(e => { console.error(e); note = 'We could not assign this request.'; noteKind = 'bad'; draw(); }); } else if (n === 'sup') supModal(v);
   else if (n === 'wopen') { const w = warrants.find(x => x._id === v); w && warrantModal(w); } else if (n === 'wret') { const w = warrants.find(x => x._id === v); w && returnModal(w); }
   else if (n === 'lopen') { const l = logs.find(x => x._id === v); l && logModal(l); } else if (n === 'ledit') { const l = logs.find(x => x._id === v); l && supModal(l.type, l); }
 }

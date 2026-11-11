@@ -396,8 +396,8 @@ function isTrialCase(c){
   const t = (c.caseType || '').toLowerCase();
   return !/supreme/i.test(c.court || '') && t !== 'appellate' && t !== 'appeal';
 }
-/* A case sealed by court order is withheld entirely from public search and direct lookup. */
-const isPublic = c => c && c.sealed !== true;
+/* A case sealed by court order, or still waiting for the clerk to accept it, is withheld entirely from public search and direct lookup. */
+const isPublic = c => c && c.sealed !== true && c.clerkReview?.status !== 'Pending';   // a new case is not public until the clerk accepts it
 
 function partyList(c){
   const p = c.parties;

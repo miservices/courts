@@ -272,9 +272,14 @@ if (!has(STAFF, role)) {
       let id = f.caseFirestoreId || null, num = f.caseId || null;
       if (f.filingType === 'new') {
         const sc = f.court === SUPREME_COURT, display = sc ? f.caseType : (DISPLAY[f.caseType] || 'Civil'), sf = sc ? null : SUBFIELD[display], caseId = f.reservedCaseId || await reserveCaseNumber(f.court, f.caseType), j = pickJudge(f.court, display, f.caseType);
-        await setDoc(doc(db, colFor(f.court), caseId), { caseId, court: f.court, caseType: display, ...(f.lowerCourt ? { lowerCourt: f.lowerCourt } : {}), ...(sf ? { [sf]: f.caseType } : {}), status: sc ? (/^Appeal/.test(f.caseType) ? 'Pending' : 'Active') : display === 'Appellate' || display === 'Administrative' ? 'Pending' : 'Active',
-          dates: { filed: f.dateFiled || now(), lastUpdated: now() }, parties: f.parties || [], judge: j?.name || null, judges: j ? [j.name] : [], judgeUid: j?.uid || null, courtroomNumber: j ? ({ 'Chief Judge': '1', Judge: '2', Magistrate: '3' }[j.role] || null) : null, ...(j ? { assignmentHistory: [{ at: now(), type: 'Initial assignment', method: 'By lot', from: null, to: j.name, toRole: j.role, reason: null, by: 'System', byRole: null }] } : {}), hearings: [], ...(Array.isArray(f.charges) && f.charges.length ? { charges: f.charges } : {}), financialOrders: feeOrders(f, []),
-          events: eventsFor(f, []), sealed: false, relatedUserIds: f.filedByUid ? [f.filedByUid] : [], docketSummary: null, intakeConfirmationNumber: f.confirmationNumber, filingCounter: 1, ...(f.feeWaiver?.status === 'Denied with prejudice' ? { feeWaiverBarred: true } : {}) });
+        // The filer already has a provisional case (summons, service). Keep its service events and each party's service fields.
+        let prev = {}; try { const ps = await getDoc(doc(db, colFor(f.court), caseId)); prev = ps.exists() ? ps.data() : {}; } catch (e) { console.warn(e); }
+        const svcKeep = ['served', 'serviceDate', 'serviceMethod', 'servedBy', 'serviceAttempts', 'answerDate', 'acknowledged', 'acknowledgmentDate'];
+        const mergedParties = (f.parties || []).map(p => { const o = (prev.parties || []).find(x => x && x.name === p.name); return o ? { ...p, ...Object.fromEntries(svcKeep.filter(k => o[k] !== undefined).map(k => [k, o[k]])) } : p; });
+        const svcEvents = (prev.events || []).filter(e => e.type === 'service');
+        await setDoc(doc(db, colFor(f.court), caseId), { caseId, clerkReview: { status: 'Accepted', filingId: f._id, at: now() }, court: f.court, caseType: display, ...(f.lowerCourt ? { lowerCourt: f.lowerCourt } : {}), ...(sf ? { [sf]: f.caseType } : {}), status: sc ? (/^Appeal/.test(f.caseType) ? 'Pending' : 'Active') : display === 'Appellate' || display === 'Administrative' ? 'Pending' : 'Active',
+          dates: { filed: f.dateFiled || now(), lastUpdated: now() }, parties: mergedParties, judge: j?.name || null, judges: j ? [j.name] : [], judgeUid: j?.uid || null, courtroomNumber: j ? ({ 'Chief Judge': '1', Judge: '2', Magistrate: '3' }[j.role] || null) : null, ...(j ? { assignmentHistory: [{ at: now(), type: 'Initial assignment', method: 'By lot', from: null, to: j.name, toRole: j.role, reason: null, by: 'System', byRole: null }] } : {}), hearings: [], ...(Array.isArray(f.charges) && f.charges.length ? { charges: f.charges } : {}), financialOrders: feeOrders(f, []),
+          events: (() => { const ev = eventsFor(f, []); let n = ev.reduce((m, e) => Math.max(m, e.eventNumber || 0), 0) + 1; svcEvents.forEach(e => ev.push({ ...e, eventNumber: n++ })); return ev; })(), sealed: false, relatedUserIds: f.filedByUid ? [f.filedByUid] : [], docketSummary: null, intakeConfirmationNumber: f.confirmationNumber, filingCounter: 1, ...(f.feeWaiver?.status === 'Denied with prejudice' ? { feeWaiverBarred: true } : {}) });
         id = num = caseId;
         await stampDocs(f, caseId, j?.name || '');
         await auditEntry(caseId, j ? `Case opened and randomly assigned to ${j.name} (${j.role})${({ 'Chief Judge': 1, Judge: 2, Magistrate: 3 })[j.role] ? ', Courtroom ' + ({ 'Chief Judge': 1, Judge: 2, Magistrate: 3 })[j.role] : ''}` : 'Case opened. No judicial officer was available to assign.');
@@ -294,7 +299,8 @@ if (!has(STAFF, role)) {
   async function decide(f, status, field) {
     const r = $('reason-' + f._id)?.value.trim();
     if (!r) { flash(`Enter a reason before you ${status === 'Returned' ? 'return' : 'reject'} this filing.`); return; }
-    try { await persist(f, { status, accepted: false, [field]: r, reviewedBy: account.name, reviewedByUid: account.uid, reviewedByRole: role, reviewedAt: now(), activityLog: log(f, status) }); await logAction(account, role, f.court, 'filing-processed', { caseId: f.caseId || null, ref: `${f._id}:processed` }); go(null); msg = ''; }
+    try { if (f.filingType === 'new' && f.reservedCaseId) { try { await updateDoc(doc(db, colFor(f.court), f.reservedCaseId), { 'clerkReview.status': status, 'clerkReview.reason': r, 'dates.lastUpdated': now() }); } catch (e) { console.warn(e); } }
+      await persist(f, { status, accepted: false, [field]: r, reviewedBy: account.name, reviewedByUid: account.uid, reviewedByRole: role, reviewedAt: now(), activityLog: log(f, status) }); await logAction(account, role, f.court, 'filing-processed', { caseId: f.caseId || null, ref: `${f._id}:processed` }); go(null); msg = ''; }
     catch (e) { console.error(e); msg = 'We could not save that decision. Try again.'; }
     draw();
   }
