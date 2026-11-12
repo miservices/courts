@@ -73,7 +73,7 @@ import { boot, db, $, esc, has, STAFF, DISTRICT, scopeOf, colFor, DISTRICT_COURT
 import { collection, getDocs, doc, runTransaction, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 import { partiesOf, caption, isDefendantSide, addEvent, iso, fmtD, fmtDT, uid, isJudicial, isChief, governs, presidingOf, reviewerUidOf, is } from '/courts/online-services/portal/dashboard/assets/js/court.js?v=1';
 
-import { assignServer, fileProof, canFile, linkOf } from '/courts/online-services/portal/dashboard/assets/forms/servicedb.js?v=2';
+import { assignServer, fileProof, canFile, linkOf } from '/courts/online-services/portal/dashboard/assets/forms/servicedb.js?v=3';
 import { SR_STATUS } from '/courts/online-services/portal/dashboard/assets/forms/service.js?v=2';
 const { account, role } = await boot({ id: 'menforce', title: 'Enforcement administration', subtitle: 'Warrants, supervision orders, and reports from probation, pretrial services and community service sites.' });
 const root = $('page-body');

@@ -70,7 +70,7 @@ const caseAlias = id => { const m = /^(\d{2}|\d{4})-(\d+)(?:-([A-Za-z]+))?$/.exe
 import { boot, db, $, esc, has, SELF, STAFF, colFor, DISTRICT_COURT, SUPREME_COURT } from '/courts/online-services/portal/dashboard/assets/js/portal-shell.js?v=8';
 import { collection, getDocs, getDoc, doc, query, where } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 import { needsSummons, formFor, summonsValues, FORM_NUM } from '/courts/online-services/portal/dashboard/assets/forms/service.js?v=2';
-import { newSummons, requestService, issueProcess, linkOf } from '/courts/online-services/portal/dashboard/assets/forms/servicedb.js?v=2';
+import { newSummons, issueProcess, linkOf } from '/courts/online-services/portal/dashboard/assets/forms/servicedb.js?v=3';
 
 const { account, role } = await boot({ id: 'cases', title: 'My cases', subtitle: 'Cases where you are a party or an attorney of record.' });
 const root = $('page-body'), BASE = 'https://migovt.org/courts/online-services/portal/dashboard/';
@@ -258,15 +258,15 @@ const AUTO_ISSUE = ['Licensed Attorney', 'Prosecuting Attorney'];   // officers 
 function serviceTab() {
   const defs = plist(cur).filter(p => /defendant|respondent/i.test(p.role || '')), self = has(AUTO_ISSUE, role);
   const waiting = r => r.status === 'Summons requested' || r.status === 'Subpoena requested';
-  const rows = svc.map(r => { const st = r.status || '', sub = r.kind === 'subpoena', can = st === 'Summons issued';
-    return `<div class="note"><b>${esc(r.party?.name || 'Defendant')}</b> <span class="pill ${/^served$/i.test(st) ? 'live' : 'plain'}">${esc(st)}</span>
+  const rows = svc.map(r => { const st = r.status || '', sub = r.kind === 'subpoena';
+    return `<div class="note"><b>${esc(r.party?.name || 'Defendant')}</b> <span class="pill ${/^served$/i.test(st) ? 'live' : 'plain'}">${esc(st === 'Service requested' ? 'Awaiting service' : st)}</span>
       <small>${sub ? 'Subpoena' : esc(FORM_NUM[r.formId] || 'Summons')}${r.issued ? ` · Issued ${esc(new Date(r.issued.at).toLocaleDateString('en-US'))} by ${esc(r.issued.by)}` : ''}${r.serverName ? ' · Process server: ' + esc(r.serverName) : ''}${r.proof?.filedAt ? ' · Proof of service filed' : ''}</small>
-      ${waiting(r) ? '<small>Waiting for the clerk to issue it. You will see it here when it is issued.</small>' : ''}
+      ${waiting(r) ? '<small>Waiting for the clerk to issue it. </small>' : ''}
       <div class="ea" style="margin-top:8px">${r.issued && !sub ? `<a class="btn outline sm" href="${esc(linkOf(r))}" target="_blank" rel="noopener">View summons and service page</a>` : ''}
-      ${can ? btn('reqsvc:' + r._id, svcBusy === r._id ? 'Requesting…' : 'Request service', 'sm') : ''}${can ? btn('copy:' + r._id, 'Copy service link') : ''}</div></div>`; }).join('');
+      ${r.issued && !sub ? btn('copy:' + r._id, 'Copy service link') : ''}</div></div>`; }).join('');
   const missing = defs.filter(d => !svc.some(r => r.kind !== 'subpoena' && r.party?.name === d.name));
   return `<section class="card"><header><h3>Summons and service</h3></header>
-    <p class="m" style="margin:0 0 12px">The clerk issues each summons. Once it is issued, request service and a process server will serve the summons and complaint (MCR 2.302). The service page lets the defendant see both and acknowledge service when signed in.</p>
+    <p class="m" style="margin:0 0 12px">The clerk issues each summons. Once it is issued it goes straight to the process servers to be served (MCR 2.302). The service page lets the defendant see both and acknowledge service when signed in.</p>
     ${svcMsg ? `<div class="al low" style="margin-bottom:12px">${svcMsg}</div>` : ''}
     ${rows || empty('No summons or subpoena yet', 'Request a summons for each defendant below.')}
     ${missing.map(d => `<div class="note"><b>${esc(d.name)}</b><small>${d.address ? esc(d.address) : 'No address on file'}</small><div class="ea" style="margin-top:8px">${btn('gensum:' + encodeURIComponent(d.name), svcBusy === 'g' + d.name ? 'Requesting…' : 'Request a summons', 'sm')}</div></div>`).join('')}
@@ -295,12 +295,6 @@ async function subpoena() {
     if (self) await issueProcess(db, sr, account, role);
     svc.push(sr); svcMsg = self ? 'Subpoena issued and recorded on the docket.' : 'Subpoena requested. The clerk will issue it.';
   } catch (e) { console.error(e); svcMsg = 'We could not save the subpoena. Try again.'; }
-  svcBusy = ''; draw();
-}
-async function reqSvc(id) {
-  const r = svc.find(x => x._id === id); if (!r || svcBusy) return;
-  svcBusy = id; draw();
-  try { await requestService(db, r, account); svcMsg = 'Service requested. A process server will be assigned; you can follow progress here and on the docket.'; } catch (e) { console.error(e); svcMsg = 'We could not request service. Try again.'; }
   svcBusy = ''; draw();
 }
 
@@ -390,7 +384,7 @@ function ics(i) {
 }
 
 /* ── Events ─────────────────────────────────────────────────────────── */
-const A = { more: () => { LS.shown += 25; drawResults(); }, tab: t => { tab = t; draw(); }, dfilter: f => { dFilter = f; draw(); }, ics: i => ics(parseInt(i, 10)), gensum: n => genSummons(decodeURIComponent(n)), subp: () => subpoena(), reqsvc: id => reqSvc(id), copy: id => { const r = svc.find(x => x._id === id); if (r) navigator.clipboard?.writeText(linkOf(r)).then(() => { svcMsg = 'Service link copied.'; draw(); }); } };
+const A = { more: () => { LS.shown += 25; drawResults(); }, tab: t => { tab = t; draw(); }, dfilter: f => { dFilter = f; draw(); }, ics: i => ics(parseInt(i, 10)), gensum: n => genSummons(decodeURIComponent(n)), subp: () => subpoena(), copy: id => { const r = svc.find(x => x._id === id); if (r) navigator.clipboard?.writeText(linkOf(r)).then(() => { svcMsg = 'Service link copied.'; draw(); }); } };
 document.addEventListener('click', e => {
   const row = e.target.closest('tr[data-open]'); if (row && !e.target.closest('a,button')) { location.hash = hashFor(row.dataset.open); return; }
   const el = e.target.closest('[data-a]'); if (!el) return; const [n, ...v] = el.dataset.a.split(':'); if (A[n]) A[n](...v);

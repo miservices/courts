@@ -67,7 +67,7 @@ import { collection, getDocs, doc, runTransaction, setDoc, updateDoc } from "htt
 import { partiesOf, caption, isDefendantSide, addEvent, iso, fmtD, fmtDT, uid, reviewerUidOf, presidingOf } from '/courts/online-services/portal/dashboard/assets/js/court.js?v=1';
 
 const ENFORCE = ['Justice System User', 'Prosecuting Attorney', 'Legal Services User'];
-import { assignServer, fileProof, canFile, linkOf } from '/courts/online-services/portal/dashboard/assets/forms/servicedb.js?v=2';
+import { assignServer, fileProof, canFile, linkOf } from '/courts/online-services/portal/dashboard/assets/forms/servicedb.js?v=3';
 import { SR_STATUS } from '/courts/online-services/portal/dashboard/assets/forms/service.js?v=2';
 const { account, role } = await boot({ id: 'enforce', title: 'Enforcement services', subtitle: 'Warrant requests, service of process, community service, probation and pretrial reporting.' });
 const root = $('page-body');

@@ -64,7 +64,7 @@ tbody tr[data-a]{cursor:pointer}tbody tr[data-a]:hover{background:#f6f9fd}
 <script type="module">
 import { boot, db, $, esc, has, STAFF, CLERKS, OFFICERS, ADMINS } from '/courts/online-services/portal/dashboard/assets/js/portal-shell.js?v=8';
 import { collection, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
-import { issueProcess } from '/courts/online-services/portal/dashboard/assets/forms/servicedb.js?v=2';
+import { issueProcess } from '/courts/online-services/portal/dashboard/assets/forms/servicedb.js?v=3';
 import { FORM_NUM } from '/courts/online-services/portal/dashboard/assets/forms/service.js?v=2';
 
 const { account, role } = await boot({ id: 'process', title: 'Process', subtitle: 'Summonses and subpoenas waiting for the court to issue them.' });

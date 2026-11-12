@@ -47,7 +47,7 @@ main{max-width:1180px;margin:0 auto;padding:20px 16px 60px;display:grid;grid-tem
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
 import { getAuth } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
 import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
-import { getRequest, acknowledge, fileProof, canFile } from '/courts/online-services/portal/dashboard/assets/forms/servicedb.js?v=2';
+import { getRequest, acknowledge, fileProof, canFile } from '/courts/online-services/portal/dashboard/assets/forms/servicedb.js?v=3';
 import { mountPreview, proofPanel } from '/courts/online-services/portal/dashboard/assets/forms/serviceui.js?v=4';
 import { FORM_NUM } from '/courts/online-services/portal/dashboard/assets/forms/service.js?v=2';
 
@@ -76,7 +76,6 @@ async function main() {
   const notFiled = !filed;
   $('root').innerHTML = `<main><section id="prev" aria-label="Summons"><div class="ld"><div class="spin"></div>Opening the summons…</div></section>
     <aside id="side">
-      ${sr.status === 'Summons issued' ? '<div class="note">This summons has been issued but service has not been requested yet.</div>' : ''}
       <div class="card"><h2>Summons and complaint</h2><p>You are being served with the summons at the left and the complaint filed in case ${esc(sr.values?.caseno || sr.caseId)}.</p><div class="docs" id="docs">${(sr.complaint || []).length ? sr.complaint.map(d => `<a href="${esc(d.link)}" target="_blank" rel="noopener">${esc(d.name || 'Complaint')}</a>`).join('') : '<p>The complaint is part of the case file.</p>'}</div>
         <div style="margin-top:12px"><button class="btn o" type="button" id="prt">Print the summons</button></div></div>
       <div class="card" id="ack"></div>
