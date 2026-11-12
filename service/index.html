@@ -47,9 +47,9 @@ main{max-width:1180px;margin:0 auto;padding:20px 16px 60px;display:grid;grid-tem
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
 import { getAuth } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
 import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
-import { getRequest, acknowledge, fileProof, canFile } from '/courts/online-services/portal/dashboard/assets/forms/servicedb.js?v=1';
-import { mountPreview, proofPanel } from '/courts/online-services/portal/dashboard/assets/forms/serviceui.js?v=2';
-import { FORM_NUM } from '/courts/online-services/portal/dashboard/assets/forms/service.js?v=1';
+import { getRequest, acknowledge, fileProof, canFile } from '/courts/online-services/portal/dashboard/assets/forms/servicedb.js?v=2';
+import { mountPreview, proofPanel } from '/courts/online-services/portal/dashboard/assets/forms/serviceui.js?v=4';
+import { FORM_NUM } from '/courts/online-services/portal/dashboard/assets/forms/service.js?v=2';
 
 const app = initializeApp({ apiKey: "AIzaSyA8sUFIq81cs6uQvqduardpGJ4R2DxO8NQ", authDomain: "micourt-dada6.firebaseapp.com", projectId: "micourt-dada6", storageBucket: "micourt-dada6.firebasestorage.app", messagingSenderId: "1013564619997", appId: "1:1013564619997:web:8f259dab457915758f6f34" });
 const auth = getAuth(app), db = getFirestore(app), $ = id => document.getElementById(id);
@@ -67,6 +67,8 @@ async function main() {
   await auth.authStateReady();
   let sr; try { sr = await getRequest(db, id); } catch (e) { console.error(e); return card('We could not open this link', 'Check your connection and try again.'); }
   if (!sr) return card('Service link not found', 'This link may be wrong or the summons may have been withdrawn.');
+  if (sr.kind === 'subpoena') return card('Subpoena', 'This link is for a subpoena. Subpoenas are not served through this page.');
+  if (sr.status === 'Summons requested') return card('This summons has not been issued yet', 'The clerk has to issue the summons before it can be served. Check this link again after it is issued.');
   let account = null, role = '';
   if (auth.currentUser) try { const a = await getDoc(doc(db, 'accounts', auth.currentUser.uid)); if (a.exists()) { account = { uid: auth.currentUser.uid, name: String(a.data().name || '').trim() || auth.currentUser.email, ...a.data() }; role = a.data().role || ''; } } catch { }
   const num = FORM_NUM[sr.formId] || 'Summons', server = canFile(sr, account, role), filed = !!sr.proof?.filedAt;
@@ -103,7 +105,7 @@ function drawProof(sr, account, role, prev) {
   if (f?.filedAt) { box.innerHTML = `<h2>Proof of service</h2><p>${f.result === 'Served' ? `Served by ${esc(f.method.toLowerCase())}` : 'Service was not completed'}${f.date ? ' on ' + esc(new Date(f.date + 'T12:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })) : ''}. Filed by ${esc(f.filedBy)} on ${esc(fmt(f.filedAt))}.</p>`; return; }
   if (!canFile(sr, account, role)) { box.innerHTML = `<h2>Process server</h2><p>${sr.serverName ? 'Service is assigned to ' + esc(sr.serverName) + '.' : sr.status === 'Service requested' ? 'Service has been requested and is waiting for a process server.' : 'Only the process server for this action, or court staff, can file the proof of service.'}</p>`; return; }
   box.innerHTML = '<h2>Proof of service</h2><p>Fill in how service was made. The summons updates as you type. Filing it records who was served on the case.</p><div id="pp"></div><div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap"><button class="btn" type="button" id="pf-go">File the proof of service</button></div>';
-  let t = 0; const pp = proofPanel($('pp'), sr, true, v => { clearTimeout(t); t = setTimeout(() => prev.draw({ ...sr.values, ...v }).catch(() => { }), 350); });
+  let t = 0; const pp = proofPanel($('pp'), sr, true, v => { clearTimeout(t); t = setTimeout(() => prev.draw({ ...sr.values, ...v }).catch(() => { }), 350); }, { name: account.name, tz: account.timezone });
   $('pf-go').onclick = async () => {
     const v = { ...sr.values, ...pp.values() };
     if (!v.pchk && !v.schk && !v.uchk && !v.nonc) return toast('Choose how service was made, or mark it as not served.', true);

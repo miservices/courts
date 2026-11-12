@@ -63,7 +63,7 @@ const panelFor = k => {
   const blk = (s, t) => `${chk(s + 'chk', t)}${row(inp(s + 'd', 'Date', '', 'date'), inp(s + 't', 'Time'))}${inp(s + 'z', 'Timezone')}`;
   return hdr + `<h2>Civil case</h2>${chk('cv1', 'There is no other pending or resolved civil action arising out of the same transaction or occurrence')}${chk('cv2', 'A civil action between these parties was previously filed')}${row(inp('pcty', 'County'), inp('pcno', 'Case number'))}${inp('pjdg', 'Judge')}
     <select id="pst"><option value="0">— the action: leave unchecked —</option><option value="1">remains pending</option><option value="2">is no longer pending</option></select>${k === 'c' ? chk('shf', 'This civil action is commenced against a county sheriff’s office; service must be made by the Michigan State Police') : ''}
-    <h2>Summons (clerk)</h2>${row(inp('iss', 'Issue date'), inp('exp', 'Expiration date'))}${inp('clk', 'Court clerk (type or print)')}
+    <h2>Summons (clerk)</h2>${row(inp('iss', 'Issue date'), inp('exp', 'Expiration date'))}${row(inp('clk', 'Court clerk signature (typed)', '', 'sig'), inp('clkn', 'Court clerk (type or print)'))}
     <h2>Proof of service (process server)</h2>
     ${blk('p', 'Personal service')}${k !== 'a' ? inp('pn', k === 'c' ? 'Official served (name)' : 'Authorized person served (name)') : ''}
     ${blk('s', 'Substituted electronic service')}${k !== 'a' ? inp('sn', 'Person mentioned (name)') : ''}
@@ -148,7 +148,7 @@ function build(api, k) {
   seq.push({ html: civ });
   seq.push({ html: box('Summons section to be completed by clerk.', 'SUMMONS') + `<div style="margin-top:${P(10)}"><b>NOTICE TO THE DEFENDANT:</b> In the name of the people of the State of Michigan${k === 'a' ? ',' : ''} you are notified:</div>
     <div class="np">${NOTICE[k].map((t, i) => `<div><span>${i + 1}.</span><span>${t}</span></div>`).join('')}</div>` });
-  seq.push({ html: `<div class="tb"><div style="width:${P(127)}"><div class="lb">Issue date</div><div class="vv">${E('iss')}</div></div><div style="width:${P(127)}"><div class="lb">Expiration date</div><div class="vv">${E('exp')}</div></div><div style="flex:1"><div class="lb">Court clerk (type or print)</div><div class="vv">${E('clk')}</div></div></div>` });
+  seq.push({ html: `<div class="tb" style="height:${P(76)}"><div style="width:${P(127)}"><div class="lb">Issue date</div><div class="vv">${E('iss')}</div></div><div style="width:${P(127)}"><div class="lb">Expiration date</div><div class="vv">${E('exp')}</div></div><div style="flex:1"><div class="lb">Court clerk (signature)</div><div class="vv">${E('clk', { pre: '/s/ ' })}</div><div class="lb" style="margin-top:${P(2)}">${E('clkn')}</div></div></div>` });
   /* proof of service */
   const intro = `<div style="margin-top:${P(14)}">I certify that I have served the summons and complaint in this action in full compliance with the requirements of MCR 2.302 and 2.303, governing service of process in actions pending before the district and supreme court, and that service was effectuated by one or more of the authorized methods set forth therein, as specified below.</div>`;
   const pers = k === 'a' ? `<b>PERSONAL SERVICE.</b> Service was made by Discord direct message to the account of the defendant on ${u('pd', 82)} <i>(date)</i> at ${u('pt', 82)} <i>(time)</i> ${u('pz', 130)} <i>(timezone)</i>.`
@@ -179,14 +179,14 @@ export const make = k => {
     css, panel: panelFor(k), usable: U => 684 * U, build: api => build(api, k),
     fromCase: c => ({ pln: plaintiffs(c).join(', '), dfn: defendants(c).join(', ') }),
     contHeader: api => `<div class="ch">Case Number: <span class="cu">${api.ed('caseno')}</span></div>`,
-    courtKeys: k === 'd' ? ['rcv', 'rclk', 'oacc', 'orej', 'orn1', 'orn2', 'ofd', 'oday', 'oalias', 'oalt', 'oalt1', 'oalt2', 'odis', 'onfa', 'ooth', 'ooth1', 'ooth2', 'ooth3', 'ooth4', 'odate', 'ojname', 'ojsig'] : ['iss', 'exp', 'clk'],
+    courtKeys: k === 'd' ? ['rcv', 'rclk', 'oacc', 'orej', 'orn1', 'orn2', 'ofd', 'oday', 'oalias', 'oalt', 'oalt1', 'oalt2', 'odis', 'onfa', 'ooth', 'ooth1', 'ooth2', 'ooth3', 'ooth4', 'odate', 'ojname', 'ojsig'] : ['iss', 'exp', 'clk', 'clkn'],
     courtNote: k === 'd' ? 'The return and order sections are completed by the clerk and by the judge or magistrate.' : 'The issue date, expiration date and clerk are completed by the court.',
     roles: k === 'd' ? [
       { id: 'server', label: 'Process server', fill: (api, w) => ({ cn: w.name, csig: w.name, cd: w.today }) },
       { id: 'clerk', label: 'Court clerk', for: /clerk/i, fill: (api, w) => ({ rclk: w.name, rcv: w.today }) },
       { id: 'judge', label: 'Judge or magistrate', for: /judge|magistrate|justice/i, fill: (api, w) => ({ ojname: w.name, ojsig: w.name, odate: w.today }) }
     ] : [
-      { id: 'clerk', label: 'Court clerk issuing the summons', for: /clerk/i, fill: (api, w) => ({ clk: w.name, iss: w.today }) },
+      { id: 'clerk', label: 'Court clerk issuing the summons', for: /clerk/i, fill: (api, w) => ({ clk: w.name, clkn: w.name, iss: w.today }) },
       { id: 'server', label: 'Process server', fill: (api, w) => ({ pname: w.name, psig: w.name }) }
     ],
     md: { title: TITLE[k], malias: { 'plaintiff/petitioner name and address': 'pl', 'defendant/respondent name and address': 'df' },
@@ -198,7 +198,7 @@ export const make = k => {
       ] : [
         { name: 'Case', fields: [['judge', 'Judge'], ['caseno', 'Case No.'], ['pln', 'Plaintiff/Petitioner name'], ['dfn', 'Defendant name']], multi: [['pla', 'Plaintiff/Petitioner address'], ['dfa', 'Defendant address']] },
         { name: 'Civil case', fields: [['cv1', 'No other pending or resolved civil action'], ['cv2', 'Civil action previously filed'], ['pcty', 'Previously filed in County'], ['pcno', 'Previous case number'], ['pjdg', 'Previous judge'], ['pst', 'The action (0 none, 1 remains pending, 2 no longer pending)'], ...(k === 'c' ? [['shf', 'Against a county sheriff’s office']] : [])] },
-        { name: 'Summons', fields: [['iss', 'Issue date'], ['exp', 'Expiration date'], ['clk', 'Court clerk']] },
+        { name: 'Summons', fields: [['iss', 'Issue date'], ['exp', 'Expiration date'], ['clk', 'Court clerk signature'], ['clkn', 'Court clerk']] },
         { name: 'Proof of service', fields: [...SERVE[k].flatMap(s => [[s + 'chk', { p: 'Personal service', s: 'Substituted electronic service', u: 'Service by publication' }[s]], [s + 'd', { p: 'Personal service date', s: 'Substituted service date', u: 'Publication date' }[s]], [s + 't', { p: 'Personal service time', s: 'Substituted service time', u: 'Publication time' }[s]], [s + 'z', { p: 'Personal service timezone', s: 'Substituted service timezone', u: 'Publication timezone' }[s]]]), ...(k !== 'a' ? [['pn', 'Person served'], ['sn', 'Person mentioned']] : []), ['ackc', 'Acknowledgment returned'], ['nonc', 'Non-service'], ['fee', 'Service fee assessed'], ['pname', 'Name and title'], ['psig', 'Signature'], ...(k === 'c' ? [['msp', 'Service conducted by Michigan State Police']] : [])] },
         { name: 'Acknowledgment of service', fields: [...(k !== 'a' ? [['akn2', 'Acknowledging name'], ['akt', 'Acknowledging title']] : []), ['akd', 'Date'], ['akn', 'Name'], ['aks', 'Signature']] }
       ] }

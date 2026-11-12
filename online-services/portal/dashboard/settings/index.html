@@ -65,7 +65,7 @@ dialog>footer{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:10px;padd
 <div class="auth-loading-overlay" id="auth-overlay" role="status"><div class="alo-title">Online Portal</div><div class="spin"></div><div>Verifying your session…</div></div>
 
 <script type="module">
-import { boot, db, auth, $, esc, has, STAFF, SELF, ATTY } from '/courts/online-services/portal/dashboard/assets/js/portal-shell.js?v=7';
+import { boot, db, auth, $, esc, has, STAFF, SELF, ATTY } from '/courts/online-services/portal/dashboard/assets/js/portal-shell.js?v=8';
 import { doc, updateDoc, getDoc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 import { EmailAuthProvider, reauthenticateWithCredential, updatePassword, verifyBeforeUpdateEmail } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
 
@@ -79,6 +79,8 @@ const A = account.address && typeof account.address === 'object' ? account.addre
 const P = { filings: true, hearings: true, financial: true, enforcement: true, review: true, ...(account.notificationPrefs || {}) };
 const f = (label, id, v = '', o = {}) => `<label class="f"><span>${label}</span><input id="${id}" type="${o.type || 'text'}" value="${esc(v)}"${o.ac ? ` autocomplete="${o.ac}"` : ''}${o.ro ? ' readonly' : ''}${o.max ? ` maxlength="${o.max}"` : ''}>${o.hint ? `<small class="m">${o.hint}</small>` : ''}</label>`;
 const msg = (id, t, ok = true) => { $(id).innerHTML = t ? `<div class="${ok ? 'note' : 'alert'}" role="${ok ? 'status' : 'alert'}">${esc(t)}</div>` : ''; };
+const TZS = [['', 'Not set'], ['America/Detroit', 'Eastern (Michigan)'], ['America/New_York', 'Eastern'], ['America/Chicago', 'Central'], ['America/Denver', 'Mountain'], ['America/Phoenix', 'Arizona'], ['America/Los_Angeles', 'Pacific'], ['America/Anchorage', 'Alaska'], ['Pacific/Honolulu', 'Hawaii'], ['Europe/London', 'London'], ['UTC', 'UTC']];
+const toggleOn = (id, on, label, hint) => `<label class="opt tgl"><input type="checkbox" id="${id}" ${on ? 'checked' : ''}><div><b>${label}</b><small>${hint}</small></div></label>`;
 const toggle = (id, label, hint) => `<label class="opt tgl"><input type="checkbox" id="${id}" ${P[id.slice(2)] ? 'checked' : ''}><div><b>${label}</b><small>${hint}</small></div></label>`;
 let pinShown = false;
 function draw() {
@@ -114,6 +116,12 @@ function draw() {
     ${enforce || staff ? toggle('p-enforcement', 'Enforcement', staff ? 'Warrant rulings and supervision reports.' : 'Rulings on your warrant requests and reports returned to you.') : ''}${staff ? toggle('p-review', 'Items waiting for my review', 'The counts shown beside Manage Filings and Enforcement administration.') : ''}
     <div class="acts"><button class="btn" type="button" id="save-prefs">Save choices</button></div></section>
 
+<section class="card"><h3>Time zone and filing</h3><p class="m">Used for the times printed on service of process and for your dates in the portal.</p><div id="m-tz"></div>
+    <label class="f"><span>Time zone</span><select id="tz-sel" class="in">${TZS.map(([v, l]) => `<option value="${v}"${v === (account.timezone || '') ? ' selected' : ''}>${l}</option>`).join('')}${account.timezone && !TZS.some(x => x[0] === account.timezone) ? `<option value="${esc(account.timezone)}" selected>${esc(account.timezone)}</option>` : ''}</select></label>
+    ${toggleOn('tz-auto', account.autoTimezone !== false, 'Update my time zone automatically', 'Every time you sign in, the portal checks where you are and changes your time zone if it is different.')}
+    ${toggleOn('auto-summons', account.autoSummons !== false, 'Request a summons automatically', 'When you file a case, a summons is requested for each defendant. You can turn this off for a defendant on the filing page.')}
+    <div class="acts"><button class="btn" type="button" id="save-tz">Save</button></div></section>
+
   <section class="card"><h3>Password</h3><div id="m-pass"></div>
     <div class="cols3">${f('Current password', 'pw-cur', '', { type: 'password', ac: 'current-password' })}${f('New password', 'pw-new', '', { type: 'password', ac: 'new-password', hint: 'At least 8 characters.' })}${f('Confirm new password', 'pw-con', '', { type: 'password', ac: 'new-password' })}</div>
     <div class="acts"><button class="btn" type="button" id="save-pass">Change password</button></div></section>
@@ -122,7 +130,7 @@ function draw() {
     <div class="cols">${f('New email address', 'em-new', '', { type: 'email', ac: 'email' })}${f('Current password', 'em-pw', '', { type: 'password', ac: 'current-password' })}</div>
     <div class="acts"><button class="btn outline" type="button" id="save-mail">Send verification link</button></div></section>`;
   $('pin')?.addEventListener('click', () => { pinShown = !pinShown; draw(); });
-  wireSig(); if (location.hash === '#signature' && !draw.jumped) { draw.jumped = true; setTimeout(() => $('signature')?.scrollIntoView({ block: 'start' }), 60); } $('save-contact').onclick = saveContact; $('save-prefs').onclick = savePrefs; $('save-pass').onclick = savePass; $('save-mail').onclick = saveMail;
+  wireSig(); if (location.hash === '#signature' && !draw.jumped) { draw.jumped = true; setTimeout(() => $('signature')?.scrollIntoView({ block: 'start' }), 60); } $('save-contact').onclick = saveContact; $('save-prefs').onclick = savePrefs; $('save-tz').onclick = saveTz; $('save-pass').onclick = savePass; $('save-mail').onclick = saveMail;
 }
 
 /* ── Signature: one per person, a small transparent PNG ── */
@@ -204,6 +212,18 @@ async function saveContact(e) {
   busy(b, true, 'Saving…');
   try { const p = { phone: phone || null, organization: val('s-org') || null, address: { street: val('s-street'), unit: val('s-unit'), city: val('s-city'), state, zip } }; await updateDoc(doc(db, 'accounts', account.uid), p); Object.assign(account, p); msg('m-contact', 'Contact details saved.'); }
   catch (er) { console.error(er); msg('m-contact', er?.code === 'permission-denied' ? 'Your account could not be updated. The Firestore rules must let people update their own contact fields. (permission-denied)' : 'We could not save that. Check your connection and try again.', false); }
+  busy(b, false);
+}
+async function saveTz(e) {
+  const b = e.currentTarget; busy(b, true, 'Saving…');
+  try {
+    const auto = $('tz-auto').checked; let tz = $('tz-sel').value;
+    if (auto) { try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone || tz; } catch { } }   // automatic means the one you are in now
+    const p = { timezone: tz || null, autoTimezone: auto, autoSummons: $('auto-summons').checked };
+    await updateDoc(doc(db, 'accounts', account.uid), p); Object.assign(account, p);
+    if (auto && tz) { const o = $('tz-sel'); if (![...o.options].some(x => x.value === tz)) o.add(new Option(tz, tz)); o.value = tz; }
+    msg('m-tz', 'Your choices are saved.');
+  } catch (er) { console.error(er); msg('m-tz', er?.code === 'permission-denied' ? 'Your account could not be updated. The Firestore rules must let people update their own settings. (permission-denied)' : 'We could not save your choices. Try again.', false); }
   busy(b, false);
 }
 async function savePrefs(e) {

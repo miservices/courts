@@ -1,6 +1,6 @@
 /* Service of process: showing a summons and filling in its proof of service. Used by the service link page and by Enforcement. */
 import { mountForm } from './engine.js?v=33';
-import { mdFromValues, proofSpec, usDate, usTime, FORM_NUM } from './service.js?v=1';
+import { mdFromValues, proofSpec, usDate, usTime, FORM_NUM } from './service.js?v=2';
 
 const CSS = `.sv-prev{background:#dfe5ef;border:1px solid #d3dae6;border-radius:8px;overflow:auto;padding:12px 0}.sv-prev .fd-panel{display:none!important}.sv-prev .fd-view{height:auto}.sv-prev iframe{width:100%!important}
 .sv-pp{display:grid;gap:10px}.sv-pp .sv-g{border:1px solid #d3dae6;border-radius:8px;padding:12px 14px;background:#fff;display:grid;gap:10px}
@@ -10,11 +10,11 @@ const CSS = `.sv-prev{background:#dfe5ef;border:1px solid #d3dae6;border-radius:
 export function mountPreview(host, sr) {
   injectCss();
   let eng = null, n = 0;
-  const draw = async values => {
-    const my = ++n, def = (await import(`./${sr.formId}.js?v=2`)).default;
+  const draw = async (values, sigs) => {
+    const my = ++n, def = (await import(`./${sr.formId}.js?v=4`)).default;
     host.classList.add('sv-prev'); const box = document.createElement('div'); const show = 'width:860px;max-width:100%;margin:0 auto';
     box.style.cssText = show + ';position:absolute;left:-99999px;top:0;visibility:hidden'; host.style.position = 'relative'; host.appendChild(box);   // the form must be in the page to load
-    let next; try { next = await mountForm(def, box, { md: mdFromValues(def, values), readOnly: true }); } catch (e) { box.remove(); throw e; }
+    let next; try { next = await mountForm(def, box, { md: mdFromValues(def, values, sigs || (sr.sig ? { clk: sr.sig } : {})), readOnly: true }); } catch (e) { box.remove(); throw e; }
     if (my !== n) { next.destroy(); box.remove(); return; }
     eng?.destroy(); eng = next; [...host.children].forEach(c => { if (c !== box) c.remove(); }); box.style.cssText = show; const f = box.querySelector('iframe'); if (f) f.style.minHeight = '1100px';
   };
@@ -61,7 +61,7 @@ export function proofPanel(host, sr, editable, onInput, opts = {}) {
   host.innerHTML = `<div class="sv-pp"><div><h4>How was service made?</h4><div class="sv-opts">${meths.map(opt).join('')}</div></div>
     <div><h4>Acknowledgment</h4><label class="sv-ack ${v.ackc ? 'on' : ''}"><input type="checkbox" data-f="ackc" ${v.ackc ? 'checked' : ''} ${dis}>An acknowledgment of service was returned within 24 hours</label>${by('msp') ? `<label class="sv-ack ${v.msp ? 'on' : ''}" style="margin-top:8px"><input type="checkbox" data-f="msp" ${v.msp ? 'checked' : ''} ${dis}>${by('msp').label}</label>` : ''}</div>
     <div><h4>Fee and signature</h4><div class="sv-sig"><label class="sv-f sv-money">${by('fee').label}<b>$</b><input data-f="fee" type="text" inputmode="decimal" value="${esc2(String(v.fee ?? '').replace(/^\$/, ''))}" placeholder="0.00" ${dis}></label>${inp(by('pname')).replace(' w2', '')}${inp(by('psig')).replace(' w2', '')}</div></div></div>`;
-  const tz = (() => { try { return { 'America/Detroit': 'Eastern', 'America/New_York': 'Eastern', 'America/Chicago': 'Central', 'America/Denver': 'Mountain', 'America/Los_Angeles': 'Pacific' }[Intl.DateTimeFormat().resolvedOptions().timeZone] || ''; } catch { return ''; } })();
+  const tz = (() => { try { const z = opts.tz || Intl.DateTimeFormat().resolvedOptions().timeZone, n = new Intl.DateTimeFormat('en-US', { timeZone: z, timeZoneName: 'long' }).formatToParts(new Date()).find(x => x.type === 'timeZoneName')?.value || ''; return n.replace(/\s+(Standard|Daylight|Summer)?\s*Time$/i, '').replace(/^(.*?)\s*$/, '$1'); } catch { return ''; } })();
   const setIn = (id, val) => { v[id] = val; const el = host.querySelector(`[data-f="${id}"]`); if (el) el.value = toIn(by(id).type, val); };
   host.oninput = host.onchange = e => {
     const i = e.target.closest('[data-f]'); if (!i || !editable) return; const id = i.dataset.f, f = by(id);

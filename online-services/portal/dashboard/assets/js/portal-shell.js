@@ -3,7 +3,7 @@
 import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
 import { getAuth, setPersistence, browserLocalPersistence, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
 import { fillBadges, BADGE_CSS } from "./badges.js?v=1";
-import { getFirestore, doc, getDoc, runTransaction, collection, getDocs } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+import { getFirestore, doc, getDoc, updateDoc, runTransaction, collection, getDocs } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 
 const SIGNIN = '/courts/online-services/portal/', PUBLIC = '/courts/';
 const BASE = 'https://migovt.org/courts/online-services/portal/dashboard/';
@@ -56,7 +56,7 @@ const NAV = [
   ['Workspace', [['cases', 'My cases', 'cases/', SELF], ['hearings', 'My hearings', 'hearings/', SELF], ['drafting', 'Document Drafting', 'document-drafting/', [...SELF, ...STAFF]],
     ['filings', 'My filings', 'file/', SELF], ['financials', 'My financials', 'financials/', SELF], ['enforce', 'Enforcement services', 'enforcement-services/', ENFORCE]]],
   ['Court operations', [['docket', 'Docket', 'docket/', STAFF], ['mhearings', 'Manage Hearings', 'hearings/manage/', STAFF], ['mcases', 'Case Management', 'cases/manage/', STAFF],
-    ['chambers', 'Chambers', 'chambers/', STAFF], ['mfilings', 'Manage Filings', 'file/manage/', STAFF], ['mfinancials', 'Manage Financials', 'financials/manage/', STAFF], ['menforce', 'Enforcement administration', 'enforcement-services/manage/', STAFF], ['reports', 'Court Reports', 'reports/', STAFF]]],
+    ['chambers', 'Chambers', 'chambers/', STAFF], ['mfilings', 'Manage Filings', 'file/manage/', STAFF], ['mfinancials', 'Manage Financials', 'financials/manage/', STAFF], ['menforce', 'Enforcement administration', 'enforcement-services/manage/', STAFF], ['process', 'Process', 'process/', STAFF], ['reports', 'Court Reports', 'reports/', STAFF]]],
   ['Supreme Court', [['opinions', 'Opinions', 'opinions/', SUPREME], ['administration', 'Administration', 'administration/', SUPREME]]]
 ];
 const LINKS = [['Search cases', '/courts/case-search/', 'all'], ['Manual court forms', '/courts/forms-and-filing/forms/', 'all'], ['Filing information', '/courts/forms-and-filing/information/', SELF]];
@@ -66,7 +66,7 @@ const ICON = {
   filings: 'M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8zM14 3v5h5M9 13h6M9 17h6', financials: 'M4 5h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2zM2 10h20M6 15h4',
   enforce: 'M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z', docket: 'M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01', mhearings: 'M5 5h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2zM3 10h18M9 15l2 2 4-4',
   mcases: 'M5 7h14a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2zM9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2M3 13h18', mfilings: 'M8 3h8l4 4v10H8zM4 7v14h12',
-  mfinancials: 'M3 7h16a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2zM3 7l2-3h12v3', menforce: 'M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6zM9 12l2 2 4-4', chambers: 'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1M18 4l2 2-2 2', reports: 'M4 20V10M10 20V4M16 20v-7M22 20H2',
+  mfinancials: 'M3 7h16a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2zM3 7l2-3h12v3', process: 'M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8zM14 3v5h5M9 14l2 2 4-4', menforce: 'M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6zM9 12l2 2 4-4', chambers: 'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1M18 4l2 2-2 2', reports: 'M4 20V10M10 20V4M16 20v-7M22 20H2',
   opinions: 'M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2zM4 19V5M9 8h6', administration: 'M4 21h16M5 21V10l7-5 7 5v11M9 21v-6h6v6', settings: 'M12 4a4 4 0 1 0 0 8 4 4 0 0 0 0-8zM4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1', link: 'M7 17L17 7M9 7h8v8'
 };
 const svg = k => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${ICON[k]}"/></svg>`;
@@ -165,6 +165,8 @@ export function boot({ id, title, subtitle }) {
       const s = await getDoc(doc(db, 'accounts', user.uid)).catch(() => null);
       if (!s?.exists()) { await signOut(auth).catch(() => {}); location.replace(SIGNIN); return; }
       const account = { uid: user.uid, ...s.data() }, role = roleOf(account), here = location.pathname.replace(/index\.html$/, '').replace(/\/?$/, '/');
+      // Keep the saved time zone matching where the person is signing in from (unless they turned that off in Account Settings).
+      try { const tz = Intl.DateTimeFormat().resolvedOptions().timeZone; if (tz && account.autoTimezone !== false && account.timezone !== tz) { account.timezone = tz; updateDoc(doc(db, 'accounts', user.uid), { timezone: tz, ...(account.autoTimezone === undefined ? { autoTimezone: true } : {}) }).catch(() => {}); } } catch { }
       const link = (i, l, p) => { const href = BASE + p, on = new URL(href).pathname === here; return `<a href="${href}" data-nav="${i}" class="${on ? 'active' : ''}" ${on ? 'aria-current="page"' : ''}>${svg(i)}${esc(l)}</a>`; };
       const nav = NAV.map(([t, items]) => { const v = items.filter(i => ok(i[3], role)); return v.length ? (t ? `<div class="sb-label">${esc(t)}</div>` : '') + v.map(i => link(i[0], i[1], i[2])).join('') : ''; }).join('');
       $('sidebar-root').innerHTML = `

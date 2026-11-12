@@ -188,7 +188,7 @@ main{padding:36px 0 72px}
         <button class="btn btn-primary" id="go" type="button">Continue with MiGOVT</button>
         <div class="or">or</div>
         <a class="btn btn-outline" id="mk" href="https://migovt.org/signup/">Create a MiGOVT account</a>
-        <p class="small">You need a MiGOVT account first. It takes a few minutes. Manage your sign-in details any time in <a href="https://migovt.org/account/">My Account</a>. Need help? Visit <a href="https://migovt.org/courts/self-help/">Self Help</a>.</p>
+        <p class="small">You need a MiGOVT account first. It takes a few minutes. Need help? Visit <a href="https://migovt.org/courts/self-help/">Self Help</a>.</p>
       </div>
 
       <!-- Working: signing in or setting up -->
@@ -238,10 +238,10 @@ main{padding:36px 0 72px}
   import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
   import { getAuth, setPersistence, browserLocalPersistence, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut }
     from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
-  import { getFirestore, doc, getDoc, setDoc, updateDoc, query, collection, where, getDocs, limit, serverTimestamp }
+  import { getFirestore, doc, getDoc, setDoc, query, collection, where, getDocs, limit, serverTimestamp }
     from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 
-  const app = getApps().length ? getApp() : initializeApp({
+  const app  = getApps().length ? getApp() : initializeApp({
     apiKey:            "AIzaSyA8sUFIq81cs6uQvqduardpGJ4R2DxO8NQ",
     authDomain:        "micourt-dada6.firebaseapp.com",
     projectId:         "micourt-dada6",
@@ -253,106 +253,71 @@ main{padding:36px 0 72px}
   await setPersistence(auth, browserLocalPersistence).catch(() => {});   // the dashboard shares this session
 
   const DASHBOARD = '/courts/online-services/portal/dashboard/';
+  const THIS_URL  = location.origin + location.pathname;
   const SITE_NAME = 'Michigan Courts Online Portal';
-  const RETURN_TO = location.origin + location.pathname;
-  const query_ = new URLSearchParams({ redirect_uri: RETURN_TO, site_name: SITE_NAME }).toString();
-  const LOGIN_URL = 'https://migovt.org/login/?' + query_, SIGNUP_URL = 'https://migovt.org/signup/?' + query_;
-
+  const q = new URLSearchParams({ redirect_uri: THIS_URL, site_name: SITE_NAME }).toString();
   const $ = id => document.getElementById(id);
   const STATES = ['check', 'start', 'work', 'pass', 'bar', 'err'];
-  /* First + last initial, never the middle name (Lewis Cline Sullivan -> LS) */
-  const initials = n => { const w = String(n || '?').split(/\s+/).filter(Boolean); return ((w[0] || '?')[0] + (w.length > 1 ? w[w.length - 1][0] : '')).toUpperCase(); };
-  const badCred = e => ['auth/wrong-password', 'auth/invalid-credential', 'auth/invalid-login-credentials'].includes(e?.code);
-  const tooMany = e => e?.code === 'auth/too-many-requests';
+  const setState = s => { STATES.forEach(k => { $('st-' + k).hidden = k !== s; }); const h = $('st-' + s).querySelector('h2'); };
+  const initials = n => String(n || '?').split(/\s+/).filter(Boolean).slice(0, 2).map(w => w[0].toUpperCase()).join('');
+  const goMigovt = () => { location.href = 'https://migovt.org/login/?' + q; };
+  $('mk').href = 'https://migovt.org/signup/?' + q;
+  $('go').onclick = goMigovt; $('e-retry').onclick = goMigovt; $('p-back').onclick = async () => { await signOut(auth).catch(() => {}); goMigovt(); };
 
-  /* Show one panel and move focus to its heading so screen-reader and keyboard users land in the right place. */
-  function setState(s) {
-    STATES.forEach(k => { $('st-' + k).hidden = k !== s; });
-    const h = $('st-' + s).querySelector('h2'); if (h && s !== 'check') { h.tabIndex = -1; h.focus({ preventScroll: true }); }
-  }
-  const goLogin = () => { location.href = LOGIN_URL; };
-  $('mk').href = SIGNUP_URL;
-  $('go').onclick = goLogin; $('e-retry').onclick = goLogin;
-  $('p-back').onclick = async () => { await signOut(auth).catch(() => {}); goLogin(); };
+  let ident = null, pending = null;     // ident: who MiGOVT says this is. pending: { email, bar } while asking for a password
 
-  let ident = null;        // who MiGOVT says this is
-  let pending = null;      // { email, bar } while we ask for an existing portal password
-  let busy = false;
-  const guard = async fn => { if (busy) return; busy = true; try { return await fn(); } finally { busy = false; } };
-
-  function work(title, msg, sub) {
+  const work = (title, msg, sub) => {
     setState('work'); $('w-title').textContent = title; $('w-t').textContent = title; $('w-m').textContent = msg;
     $('w-load').hidden = false; $('w-ok').hidden = true;
     if (ident) { $('w-card').hidden = false; $('w-av').textContent = initials(ident.name); $('w-name').textContent = ident.name; $('w-sub').textContent = sub || 'Verified by MiGOVT'; }
-  }
-  function done() {
-    setState('work'); $('w-title').textContent = 'Welcome'; $('w-load').hidden = true; $('w-ok').hidden = false;
-    setTimeout(() => location.replace(DASHBOARD), 500);
-  }
-  function fail(title, msg, err) { if (err) console.error(err); $('e-t').textContent = title; $('e-m').textContent = msg; setState('err'); }
+  };
+  const done = () => { setState('work'); $('w-title').textContent = 'Welcome'; $('w-load').hidden = true; $('w-ok').hidden = false; setTimeout(() => location.replace(DASHBOARD), 500); };
+  const fail = (title, msg, err) => { if (err) console.error(err); $('e-t').textContent = title; $('e-m').textContent = msg; setState('err'); };
+  const badCred = e => ['auth/wrong-password', 'auth/invalid-credential', 'auth/invalid-login-credentials'].includes(e?.code);
   const hasAccount = async uid => { try { return (await getDoc(doc(db, 'accounts', uid))).exists(); } catch { return false; } };
 
   /* ---------- an existing portal account ---------- */
   async function findAccount(pin) {
     try {
       const s = await getDocs(query(collection(db, 'accounts'), where('mipassPin', '==', String(pin)), limit(1)));
-      if (!s.empty) { const d = s.docs[0].data(); return { id: s.docs[0].id, email: d.email, name: d.name, role: d.role }; }
+      if (!s.empty) { const d = s.docs[0].data(); return { email: d.email, name: d.name, role: d.role }; }
     } catch (e) { console.warn('Account lookup failed', e); }
     return null;
   }
-  function showPassword(msg) {
-    setState('pass'); $('p-w').classList.remove('invalid'); $('p-error').hidden = !msg; if (msg) $('p-error-m').textContent = msg; $('p-pw').value = ''; $('p-pw').focus();
-  }
-  async function touch(uid) {      // keep the portal profile in step with MiGOVT; never blocks sign-in
-    try { await updateDoc(doc(db, 'accounts', uid), { lastLogin: serverTimestamp(), robloxUser: ident.roblox || null, discord: ident.discord || null }); } catch {}
-  }
   async function signInExisting(a) {
     work('Signing you in', 'Confirming your account.', a.role ? 'Role: ' + a.role : '');
-    try {
-      const cred = await signInWithEmailAndPassword(auth, a.email, ident.pin);
-      await auth.authStateReady(); await touch(cred.user.uid); done();
-    } catch (e) {
-      if (badCred(e)) {
-        pending = { email: a.email, bar: null };
-        $('p-lead').textContent = 'Welcome back, ' + (a.name || ident.name) + '. You changed your portal password, so enter it to continue.';
-        showPassword();
-      } else if (tooMany(e)) fail('Too many attempts', 'Wait a few minutes, then try again.', e);
+    try { await signInWithEmailAndPassword(auth, a.email, ident.pin); await auth.authStateReady(); done(); }
+    catch (e) {
+      if (badCred(e)) { pending = { email: a.email, bar: null }; $('p-lead').textContent = 'Welcome back, ' + (a.name || ident.name) + '. You changed your portal password, so enter it to continue.'; showPassword(); }
+      else if (e?.code === 'auth/too-many-requests') fail('Too many attempts', 'Wait a few minutes, then try again.', e);
       else fail('We could not sign you in', 'Check your connection and try again.', e);
     }
   }
-  $('p-form').addEventListener('submit', e => {
-    e.preventDefault();
-    const pw = $('p-pw').value;
+  function showPassword(msg) { setState('pass'); $('p-w').classList.remove('invalid'); $('p-error').hidden = !msg; if (msg) $('p-error-m').textContent = msg; $('p-pw').value = ''; $('p-pw').focus(); }
+  $('p-form').addEventListener('submit', async e => {
+    e.preventDefault(); const pw = $('p-pw').value;
     if (!pw) { $('p-w').classList.add('invalid'); return; }
-    guard(async () => {
-      $('p-btn').disabled = true;
-      try {
-        const cred = await signInWithEmailAndPassword(auth, pending.email, pw);
-        if (!(await hasAccount(cred.user.uid))) await writeAccount(cred.user.uid, pending.email, pending.bar); else await touch(cred.user.uid);
-        await auth.authStateReady(); done();
-      } catch (er) {
-        showPassword(badCred(er) ? 'That password is not correct.' : tooMany(er) ? 'Too many attempts. Wait a few minutes and try again.' : 'We could not sign you in. Try again.');
-      }
-      $('p-btn').disabled = false;
-    });
+    $('p-btn').disabled = true;
+    try {
+      const cred = await signInWithEmailAndPassword(auth, pending.email, pw);
+      if (!(await hasAccount(cred.user.uid))) await writeAccount(cred.user.uid, pending.email, pending.bar);
+      await auth.authStateReady(); done();
+    } catch (er) { showPassword(badCred(er) ? 'That password is not correct.' : er?.code === 'auth/too-many-requests' ? 'Too many attempts. Wait a few minutes and try again.' : 'We could not sign you in. Try again.'); }
+    $('p-btn').disabled = false;
   });
 
   /* ---------- a new portal account ---------- */
-  /* Returns the State Bar record, null if there is none, or throws if the registry cannot be searched. */
-  async function findBar(pin) {
+  async function findBar(pin) {   // returns the registry record, null if none, or throws if the registry cannot be searched
     const vals = [String(pin)]; if (/^\d+$/.test(pin)) vals.push(Number(pin));
     const s = await getDocs(query(collection(db, 'sbm'), where('pin', 'in', vals), limit(1)));
-    if (s.empty) return null;
-    const d = s.docs[0].data();
+    if (s.empty) return null; const d = s.docs[0].data();
     return { barNumber: s.docs[0].id, name: d.name || ident.name, role: d.role || 'Bar Member', status: d.status || 'Unknown' };
   }
   async function writeAccount(uid, email, bar) {
     await setDoc(doc(db, 'accounts', uid), {
-      name: bar ? bar.name : ident.name, firstName: ident.first, middleName: ident.middle, lastName: ident.last, email, role: bar ? bar.role : 'Public User',
-      pin: ident.pin, mipassPin: ident.pin, dob: ident.dob || null,
+      name: bar ? bar.name : ident.name, email, role: bar ? bar.role : 'Public User', pin: ident.pin, dob: ident.dob || null,
       barNumber: bar ? bar.barNumber : null, barStatus: bar ? bar.status : null,
-      robloxUser: ident.roblox || null, discord: ident.discord || null,
-      createdAt: serverTimestamp(), lastLogin: serverTimestamp()
+      createdAt: serverTimestamp(), lastLogin: serverTimestamp(), timezone: (() => { try { return Intl.DateTimeFormat().resolvedOptions().timeZone || null; } catch { return null; } })(), autoTimezone: true, autoSummons: true, mipassPin: ident.pin, robloxUser: ident.roblox || null
     });
   }
   async function createNew() {
@@ -364,46 +329,37 @@ main{padding:36px 0 72px}
   }
   async function createAccount(bar) {
     work('Setting up your account', 'Creating your portal account.', bar ? 'Attorney, Bar No. ' + bar.barNumber : 'New to the portal');
-    const email = ident.email || (ident.pin + '@users.migovt.org');   // MiGOVT sends the email on file; this only covers an account without one
+    const email = ident.email || (ident.pin + '@users.migovt.org');   // MiGOVT normally sends the email on file; this only covers an account that has none
     let cred;
     try { cred = await createUserWithEmailAndPassword(auth, email, ident.pin); }
     catch (e) {
       if (e?.code === 'auth/email-already-in-use') {
         try { cred = await signInWithEmailAndPassword(auth, email, ident.pin); }
-        catch (e2) {
-          if (badCred(e2)) { pending = { email, bar }; $('p-lead').textContent = 'An account already exists for ' + email + '. Enter its password to continue.'; return showPassword(); }
-          return fail('We could not sign you in', 'Check your connection and try again.', e2);
-        }
+        catch (e2) { if (badCred(e2)) { pending = { email, bar }; $('p-lead').textContent = 'An account already exists for ' + email + '. Enter its password to continue.'; return showPassword(); } return fail('We could not sign you in', 'Check your connection and try again.', e2); }
       } else return fail('We could not create your account', e?.code === 'auth/weak-password' ? 'Your PIN is too short to use as a sign-in. Contact the clerk’s office.' : 'Check your connection and try again.', e);
     }
-    try {
-      if (!(await hasAccount(cred.user.uid))) await writeAccount(cred.user.uid, email, bar); else await touch(cred.user.uid);
-      await auth.authStateReady(); done();
-    } catch (e) {
-      fail('We could not save your profile', e?.code === 'permission-denied' ? 'The portal could not save your account. Contact the clerk’s office. (permission-denied)' : 'Check your connection and try again.', e);
-    }
+    try { if (!(await hasAccount(cred.user.uid))) await writeAccount(cred.user.uid, email, bar); await auth.authStateReady(); done(); }
+    catch (e) { fail('We could not save your profile', e?.code === 'permission-denied' ? 'The portal could not save your account. Contact the clerk’s office. (permission-denied)' : 'Check your connection and try again.', e); }
   }
-  $('b-public').onclick = () => guard(() => createAccount(null));
-  $('b-verify').onclick = () => guard(async () => {
+  $('b-public').onclick = () => createAccount(null);
+  $('b-verify').onclick = async () => {
     const num = $('b-num').value.trim().toUpperCase(); $('b-error').hidden = true; $('b-w').classList.toggle('invalid', !num); if (!num) return;
     $('b-verify').disabled = true;
     try {
       const s = await getDoc(doc(db, 'sbm', num));
       if (!s.exists()) throw new Error('Bar number "' + num + '" was not found in the State Bar of Michigan member registry.');
-      const d = s.data();
-      if (String(d.pin) !== String(ident.pin)) throw new Error('This bar number is registered to a different identity. Your MiGOVT PIN does not match the record on file.');
-      busy = false; await createAccount({ barNumber: num, name: d.name || ident.name, role: d.role || 'Bar Member', status: d.status || 'Unknown' });
+      const d = s.data(); if (String(d.pin) !== String(ident.pin)) throw new Error('This bar number is registered to a different identity. Your MiGOVT PIN does not match the record on file.');
+      await createAccount({ barNumber: num, name: d.name || ident.name, role: d.role || 'Bar Member', status: d.status || 'Unknown' });
     } catch (e) { $('b-error-m').textContent = e.message || 'Lookup failed.'; $('b-error').hidden = false; }
     $('b-verify').disabled = false;
-  });
+  };
 
   /* ---------- on load ---------- */
   async function start() {
-    const p = new URLSearchParams(location.search), pin = (p.get('mipass_pin') || '').trim(), name = (p.get('mipass_name') || '').trim();
+    const p = new URLSearchParams(location.search), pin = p.get('mipass_pin'), name = p.get('mipass_name');
     if (pin && name) {                                   // coming back from MiGOVT
       history.replaceState({}, '', location.pathname);   // keep the PIN out of the address bar
-      if (!/^\d{4,20}$/.test(pin)) return fail('Sign-in failed', 'MiGOVT sent back an invalid PIN. Please try again.');
-      ident = { pin, name, first: (p.get('mipass_first') || '').trim() || null, middle: (p.get('mipass_middle') || '').trim() || null, last: (p.get('mipass_last') || '').trim() || null, dob: p.get('mipass_dob') || null, roblox: p.get('mipass_user') || null, discord: p.get('mipass_discord') || null, email: (p.get('mipass_email') || '').trim().toLowerCase() };
+      ident = { pin: String(pin).trim(), name: name.trim(), dob: p.get('mipass_dob') || null, roblox: p.get('mipass_user') || null, email: (p.get('mipass_email') || '').trim().toLowerCase() };
       work('Signing you in', 'Looking you up in the portal.');
       const a = await findAccount(ident.pin);
       return a ? signInExisting(a) : createNew();

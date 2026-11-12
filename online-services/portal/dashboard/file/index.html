@@ -29,12 +29,12 @@
 
 <script type="module">
 const caseAlias = id => { const m = /^(\d{2}|\d{4})-(\d+)(?:-([A-Za-z]+))?$/.exec(String(id || '')); if (!m) return ''; const yy = m[1].slice(-2), yyyy = m[1].length === 2 ? '20' + m[1] : m[1], n = m[2], t = m[3] ? '-' + m[3] : ''; return [`${yy}-${n}${t}`, `${yy}-${n}`, `${yyyy}-${n}${t}`, `${yyyy}-${n}`].join(' '); };
-import { boot, db, app, $, esc, has, ATTY, STAFF, CASE_CODES, DISTRICT_COURT, SUPREME_COURT, reserveCaseNumber, reserveFilingNumber, colFor } from '/courts/online-services/portal/dashboard/assets/js/portal-shell.js?v=7';
+import { boot, db, app, $, esc, has, ATTY, STAFF, CASE_CODES, DISTRICT_COURT, SUPREME_COURT, reserveCaseNumber, reserveFilingNumber, colFor } from '/courts/online-services/portal/dashboard/assets/js/portal-shell.js?v=8';
 import { byNumber as formByNumber } from '/courts/online-services/portal/dashboard/assets/forms/registry.js?v=9';
 import { openStampEditor } from '/courts/online-services/portal/dashboard/assets/forms/stampeditor.js?v=3';
 import { placementOf } from '/courts/online-services/portal/dashboard/assets/forms/engine.js?v=33';
-import { needsSummons, formFor, summonsValues } from '/courts/online-services/portal/dashboard/assets/forms/service.js?v=1';
-import { newSummons } from '/courts/online-services/portal/dashboard/assets/forms/servicedb.js?v=1';
+import { needsSummons, formFor, summonsValues } from '/courts/online-services/portal/dashboard/assets/forms/service.js?v=2';
+import { newSummons } from '/courts/online-services/portal/dashboard/assets/forms/servicedb.js?v=2';
 import { firebaseBackend } from '/courts/online-services/portal/dashboard/assets/forms/backend.js?v=4';
 import { collection, getDocs, addDoc, query, where, doc, getDoc, updateDoc, setDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 
@@ -131,7 +131,7 @@ const opposing = p => p.role === ROLES[S.ctype][1] || p.role === 'Cross-Defendan
 
 /* ── Court forms saved as .md ───────────────────────────────────────── */
 // A form from the Document Drafting page is kept as the .md text itself. Anyone who opens it sees it laid out like the printed form.
-const VIEWER = 'https://migovt.org/courts/documents/#/';
+const VIEWER = 'https://migovt.org/documents/#/';
 const viewerUrl = path => VIEWER + path.split('/').map(encodeURIComponent).join('/');
 const mdForm = t => { const h = String(t).replace(/\r/g, '').split('\n').slice(0, 40).join('\n'), m = /^form:\s*(.+?)\s*$/mi.exec(h) || /^#\s+(.+?)\s*$/m.exec(h); return m ? m[1] : null; };
 const mdLine = (t, label) => { const m = new RegExp('^- ' + label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ':[ \\t]*(.*)$', 'mi').exec(String(t)); return m ? m[1].trim() : ''; };
@@ -148,7 +148,7 @@ const courtOf = () => S.type === 'new' ? S.court : S.kase?.court;
 const lockCounsel = () => isPros && S.ctype === 'General Criminal';
 const ymd = v => { const m = String(v || '').match(/^(\d{4}-\d{2}-\d{2})/); if (m) return m[1]; const d = v ? new Date(v) : null; return d && !isNaN(d) ? `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}` : ''; };
 const acctDob = ymd(account.dob || account.dateOfBirth || account.birthDate || account.birthdate);   // comes from the account, so it cannot be changed here
-const mkParty = (r, i) => { const own = i === 0 && !S.counsel; return { role: r, kind: 'Person', name: own ? account.name || '' : '', pin: own ? account.mipassPin || '' : '', dob: own ? acctDob : '', pinUnknown: false, dobUnknown: false, address: '', self: own, mine: false }; };
+const mkParty = (r, i) => { const own = i === 0 && !S.counsel; return { role: r, kind: 'Person', name: own ? account.name || '' : '', pin: own ? account.mipassPin || '' : '', dob: own ? acctDob : '', pinUnknown: false, dobUnknown: false, address: '', autoSummons: account.autoSummons !== false, self: own, mine: false }; };
 
 const casesReady = Promise.all([getDocs(collection(db, 'cases')), getDocs(collection(db, 'mscCases')).catch(() => ({ docs: [] }))]).then(r => { cases = r.flatMap(s => s.docs.map(d => ({ ...d.data(), _id: d.id }))); if (S.step === 1) render(); }).catch(() => {});
 const loadMine = () => getDocs(query(collection(db, 'pendingFilings'), where('filedByUid', '==', account.uid)))
@@ -201,7 +201,7 @@ function prefillFromLower() {
   const side = r => /plaintiff|petitioner|prosecut|appellant|applicant|complainant/i.test(r || '') ? 0 : 1, me = lc(account.name);
   const m = lp.find(p => lc(p.name) === me || lc(p.attorney?.name) === me);
   const first = m ? side(m.role) : /criminal|traffic/i.test(c.caseType || '') ? 1 : side(lp[0].role);
-  const mk = (p, ri) => { const self = !S.counsel && lc(p.name) === me; return { role: roles[ri], kind: kindOf(p.name), name: p.name, pin: p.pin || (self ? account.mipassPin || '' : ''), dob: ymd(p.dob) || (self ? acctDob : ''), pinUnknown: false, dobUnknown: false, address: p.address || '', self, mine: S.counsel && counselOf(p).some(a => lc(a.name) === me) }; };
+  const mk = (p, ri) => { const self = !S.counsel && lc(p.name) === me; return { role: roles[ri], kind: kindOf(p.name), name: p.name, pin: p.pin || (self ? account.mipassPin || '' : ''), dob: ymd(p.dob) || (self ? acctDob : ''), pinUnknown: false, dobUnknown: false, address: p.address || '', autoSummons: account.autoSummons !== false, self, mine: S.counsel && counselOf(p).some(a => lc(a.name) === me) }; };
   const a = lp.filter(p => side(p.role) === first).map(p => mk(p, 0)), b = lp.filter(p => side(p.role) !== first).map(p => mk(p, 1));
   S.parties = [a[0] || mkParty(roles[0], 0), b[0] || mkParty(roles[1], 1), ...a.slice(1), ...b.slice(1)]; S.prefilled = true;
 }
@@ -216,7 +216,7 @@ const addrNeeded = () => needsSummons(S.ctype);
 function addrField(p, i) {
   if (!addrNeeded()) return '';
   const d = isDef(p.role);
-  return `<label class="f"><span>${d ? 'Defendant’s address' : 'Address'}${d ? '' : ' (optional)'}</span><textarea data-k="parties.${i}.address" rows="2" placeholder="Street, city, state, ZIP">${esc(p.address || '')}</textarea><small>${d ? 'Required. It is printed on the summons and used to serve the defendant.' : 'Printed on the summons.'}</small></label>`;
+  return `<label class="f"><span>${d ? 'Defendant’s address' : 'Address'}${d ? '' : ' (optional)'}</span><textarea data-k="parties.${i}.address" rows="2" placeholder="Street, city, state, ZIP">${esc(p.address || '')}</textarea><small>${d ? 'Required. It is printed on the summons and used to serve the defendant.' : 'Printed on the summons.'}</small></label>${d ? `<label class="chk" style="margin:-6px 0 14px"><input type="checkbox" data-k="parties.${i}.autoSummons" ${p.autoSummons !== false ? 'checked' : ''}> Request a summons for this defendant when I file</label>` : ''}`;
 }
 function partyCard(p, i) {
   const pa = S.ctype === 'Civil Infraction' && p.role === 'Prosecuting Authority'; if (pa) p.kind = 'Government';
@@ -320,7 +320,7 @@ function render() {
     root.innerHTML = `<section class="card" style="text-align:center;padding:40px 24px"><h3 style="font-size:24px">${nw ? 'Filing submitted' : ap ? 'Appearance entered' : 'Filing added to your case'}</h3>
       ${nw ? `<p style="color:var(--muted);margin:14px 0 4px">Your reserved case number</p><p style="font-family:var(--font-head);font-size:34px;color:var(--navy)">${esc(d.caseNo)}</p>
         <p style="max-width:560px;margin:10px auto 8px"><b>The clerk has to review and accept your initial filing.</b> Your case is already in the system, so you can open it now. It will show that the clerk is still processing it. We will email ${esc(d.email)} when it is reviewed.</p>
-        ${d.summonses?.length ? `<p style="max-width:560px;margin:0 auto 18px;color:var(--muted)">${d.summonses.length === 1 ? 'A summons was' : d.summonses.length + ' summonses were'} generated. Open the case to request service.</p>` : '<div style="height:10px"></div>'}
+        ${d.summonses?.length ? `<p style="max-width:560px;margin:0 auto 18px;color:var(--muted)">${d.summonses.length === 1 ? 'A summons was' : d.summonses.length + ' summonses were'} requested. The clerk issues ${d.summonses.length === 1 ? 'it' : 'them'}; once issued you can request service from the case.</p>` : '<div style="height:10px"></div>'}
         <div class="acts" style="justify-content:center;margin-bottom:18px"><a class="btn" href="/courts/online-services/portal/dashboard/cases/#${encodeURIComponent(d.caseNo)}">Open the case</a></div>`
       : `<p style="color:var(--muted);margin:14px 0 4px">Case</p><p style="font-family:var(--font-head);font-size:30px;color:var(--navy)">${esc(d.caseNo)}</p>
         <p style="max-width:520px;margin:10px auto 18px">${ap ? '<b>You are now counsel of record.</b> You can file motions and other documents in this case.' : '<b>No clerk review is needed.</b> Your documents were added to the docket automatically.'}</p>`}
@@ -374,7 +374,7 @@ function chargesOf(text) {
 /* A new case goes into the system right away as "Pending clerk review" so the filer can open it and get the summons. The clerk's acceptance (file/manage) keeps everything created here. */
 const DISPLAY_TYPE = { 'Civil Infraction': 'Traffic', 'General Criminal': 'Criminal', 'Administrative Appeal': 'Administrative', 'General Appeal': 'Appellate', 'Extraordinary Writ': 'Appellate' };
 const SUBF = { Civil: 'civilSubtype', Administrative: 'administrativeSubtype', Appellate: 'appellateSubtype' };
-async function openProvisional(obj, pfId, documents, now) {
+async function openProvisional(obj, pfId, documents, now, autoNames = []) {
   const caseId = obj.reservedCaseId, sc = obj.court === SUPREME_COURT, display = sc ? obj.caseType : (DISPLAY_TYPE[obj.caseType] || 'Civil'), sf = sc ? null : SUBF[display];
   const parties = obj.parties.map(p => ({ ...p })), summonses = [];
   try {
@@ -387,14 +387,13 @@ async function openProvisional(obj, pfId, documents, now) {
   if (needsSummons(obj.caseType)) {
     const pls = parties.filter(p => !isDef(p.role) && /plaintiff|petitioner/i.test(p.role)), plNames = pls.map(p => p.name);
     const complaint = documents.map(d => ({ name: d.name, documentType: d.documentType, url: d.fileUrl || d.link || null })).filter(d => d.url);
-    for (const d of parties.filter(p => isDef(p.role))) {
+    for (const d of parties.filter(p => isDef(p.role) && autoNames.includes(p.name))) {
       try {
-        const values = summonsValues({ caseno: caseId, judge: '', plaintiffs: plNames, plaintiffAddress: pls[0]?.address || '', defendant: d.name, defendantAddress: d.address || '', issued: new Date() });
-        const sr = await newSummons(db, { court: obj.court, caseId, caseFirestoreId: caseId, formId: formFor(d.kind), party: { name: d.name, kind: d.kind || 'Person', address: d.address || '' }, values, complaint, by: account, status: 'issued' });
+        const values = summonsValues({ caseno: caseId, judge: '', plaintiffs: plNames, plaintiffAddress: pls[0]?.address || '', defendant: d.name, defendantAddress: d.address || ''});
+        const sr = await newSummons(db, { court: obj.court, caseId, caseFirestoreId: caseId, formId: formFor(d.kind), party: { name: d.name, kind: d.kind || 'Person', address: d.address || '' }, values, complaint, by: account, status: 'sumreq' });
         summonses.push({ id: sr._id, name: d.name });
-      } catch (e) { console.warn('Could not issue a summons', e); }
+      } catch (e) { console.warn('Could not request a summons', e); }
     }
-    if (summonses.length) try { await updateDoc(doc(db, colFor(obj.court), caseId), { events: [...[{ eventNumber: 1, type: 'event', sealed: false, date: now, description: `Case initiated by ${account.name}. Waiting for review and acceptance by the clerk.`, filedBy: account.name, confirmationNumber: obj.confirmationNumber }], { eventNumber: 2, type: 'service', sealed: false, date: now, description: `Summons issued for ${summonses.map(x => x.name).join(', ')}.` }] }); } catch (e) { console.warn(e); }
   }
   return summonses;
 }
@@ -463,7 +462,7 @@ async function submit() {
     }
     const pf = await addDoc(collection(db, 'pendingFilings'), obj);
     let summonses = [];
-    if (isNew) summonses = await openProvisional(obj, pf.id, documents, now);
+    if (isNew) summonses = await openProvisional(obj, pf.id, documents, now, S.parties.filter(p => isDef(p.role) && p.autoSummons !== false).map(p => p.name.trim()));
     // Staff see a Notice of Electronic Filing on the case, and a task for motions and similar documents. Best effort: never blocks the filing.
     if (!isNew && documents.length) try {
       const cref = doc(db, 'caseManagement', S.kase._id), cs = await getDoc(cref), cd = cs.exists() ? cs.data() : { tasks: [], notifications: [], internalNotes: [], auditLog: [] };

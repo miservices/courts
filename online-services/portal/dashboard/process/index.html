@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Process | Online Portal</title>
+<link rel="icon" type="image/png" href="/courts/images/favicon.png">
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=Source+Serif+4:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/courts/online-services/portal/dashboard/assets/css/dashboard.css?v=5">
+<style>
+.m{color:var(--muted);font-weight:400}.mt{margin-top:14px}
+.tools{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px;align-items:center}.tools .in{flex:1;min-width:200px;width:auto}.tools select.in{flex:0 0 auto;min-width:0}
+.chk{display:flex;gap:8px;align-items:center;font-weight:600;color:var(--navy);white-space:nowrap}.chk input{width:18px;height:18px}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}.chips button{font:inherit;font-weight:600;font-size:14px;padding:6px 14px;border-radius:16px;border:1px solid var(--line);background:#fff;color:var(--navy);cursor:pointer}.chips button.on{background:var(--navy);color:#fff;border-color:var(--navy)}.chips i{font-style:normal;opacity:.75;margin-left:6px}
+.tabs i{font-style:normal;font-weight:500;color:var(--muted);margin-left:6px}
+tbody tr[data-a]{cursor:pointer}tbody tr[data-a]:hover{background:#f6f9fd}
+td small,th small{display:block;color:var(--muted);font-weight:400}.num{text-align:right;white-space:nowrap}th.num{text-align:right}.pills{display:flex;gap:6px;flex-wrap:wrap}
+.amts{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px 18px;margin-bottom:14px}.amts div{display:grid;gap:2px}.amts dt{font-size:13px;color:var(--muted)}.amts dd{font-weight:700;font-size:17px;color:var(--navy)}.amts dd.owe{font-size:22px}
+.alert-line{border-left:4px solid #b7791f;background:#fdf6e7;color:#6e4a10;border-radius:4px;padding:10px 14px;margin-bottom:10px}.alert-line.red{border-color:#b3261e;background:#fdf1f0;color:#7a1b13}
+.note{border-left:4px solid var(--navy);background:#eef3f9;border-radius:4px;padding:10px 14px;margin-bottom:12px;color:var(--navy)}
+.acts{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}.sec{margin:18px 0 8px;font-size:16px;color:var(--navy)}
+.kv{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px 22px;margin-bottom:6px;text-align:left}.kv dt{font-size:13px;color:var(--muted)}.kv dd{font-weight:600;overflow-wrap:anywhere}
+.rcpt{text-align:center;padding:6px 0 4px}.rcpt .big{font-family:var(--font-head);font-size:34px;color:var(--navy);font-weight:700;margin:6px 0}.rcpt .tick{width:54px;height:54px;border-radius:50%;background:#e4f3ea;color:#2f7d4f;font-size:30px;line-height:54px;margin:0 auto 6px}
+.quote{background:#f4f7fb;border-radius:4px;padding:10px 14px;margin-bottom:16px;color:var(--navy)}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:16px}@media(max-width:700px){.cols{grid-template-columns:1fr}}
+dialog{border:0;padding:0;border-radius:6px;width:min(660px,calc(100vw - 24px));max-height:calc(100vh - 48px);box-shadow:0 24px 60px rgba(9,22,40,.35);color:var(--text);font:inherit;overflow:hidden;margin:auto}
+dialog[open]{display:flex;flex-direction:column}dialog.wide{width:min(900px,calc(100vw - 24px))}dialog::backdrop{background:rgba(9,22,40,.55)}
+dialog>header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:16px 22px;border-bottom:1px solid var(--line);background:#f4f7fb}dialog>header h3{font-size:19px}dialog>header p{color:var(--muted);margin-top:2px}
+.x{font:inherit;font-size:22px;line-height:1;width:36px;height:36px;border:1px solid var(--line);border-radius:4px;background:#fff;cursor:pointer;color:var(--navy);flex-shrink:0}.x:hover{background:#eef3f9}
+#dlg-b{padding:20px 22px 6px;overflow:auto}#dlg-e{padding:0 22px 14px}#dlg-e .alert{margin:0}
+dialog>footer{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:10px;padding:14px 22px;border-top:1px solid var(--line);background:#f4f7fb}
+@media print{body>*:not(dialog){display:none!important}dialog{position:static!important;box-shadow:none!important;width:auto!important;max-height:none!important}dialog>footer,.x{display:none!important}}
+
+.plist{display:grid;gap:8px;padding:10px 12px;border:1px solid var(--line);border-radius:4px;background:#fafcfe}
+.stats .stat.alert-stat b{color:#b3261e}
+.sec{margin:16px 0 6px;font-size:16px;color:var(--navy)}
+.card h3{margin-bottom:10px}.tbar{display:flex;gap:12px;flex-wrap:wrap;justify-content:space-between;align-items:center;margin-bottom:10px}.tbar .in{max-width:280px}
+tbody tr[data-a]{cursor:pointer}tbody tr[data-a]:hover{background:#f6f9fd}
+.sh-head dd,.sh-head dt,.kv dd,.kv dt{margin:0}
+</style>
+</head>
+<body>
+<aside class="sidebar" id="sidebar-root" aria-label="Portal navigation"></aside>
+<div class="scrim" id="scrim" hidden></div>
+<div class="main">
+  <header class="topbar">
+    <div class="topbar-left">
+      <button class="menu-btn" id="menu-btn" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="sidebar-root"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+      <div><span class="topbar-eyebrow">Online Portal</span><span class="topbar-page-title" id="topbar-title">Process</span></div>
+    </div>
+    <div class="topbar-right"><span class="topbar-date" id="topbar-date"></span><div class="notif-wrap" id="notif-root"></div></div>
+  </header>
+  <main class="page-body">
+    <div class="page-head"><div><h2 id="page-title">Process</h2><p id="page-subtitle"></p></div><div id="page-action"></div></div>
+    <div id="page-body"><div class="loading-inline"><span class="spin-sm"></span>Loading process…</div></div>
+  </main>
+</div>
+<dialog id="dlg" aria-labelledby="dlg-t">
+  <header><div><h3 id="dlg-t"></h3><p id="dlg-w"></p></div><button class="x" type="button" aria-label="Close" data-close>×</button></header>
+  <div id="dlg-b"></div><div id="dlg-e"></div><footer id="dlg-f"></footer>
+</dialog>
+<div class="auth-loading-overlay" id="auth-overlay" role="status"><div class="alo-title">Online Portal</div><div class="spin"></div><div>Verifying your session…</div></div>
+
+<script type="module">
+import { boot, db, $, esc, has, STAFF, CLERKS, OFFICERS, ADMINS } from '/courts/online-services/portal/dashboard/assets/js/portal-shell.js?v=8';
+import { collection, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+import { issueProcess } from '/courts/online-services/portal/dashboard/assets/forms/servicedb.js?v=2';
+import { FORM_NUM } from '/courts/online-services/portal/dashboard/assets/forms/service.js?v=2';
+
+const { account, role } = await boot({ id: 'process', title: 'Process', subtitle: 'Summonses and subpoenas waiting for the court to issue them.' });
+const root = $('page-body'), canIssue = has([...CLERKS, ...OFFICERS, ...ADMINS], role);
+if (!has(STAFF, role)) root.innerHTML = '<section class="card"><div class="empty"><strong>Not available for your account</strong><p>Process is for court staff.</p></div></section>';
+else await main();
+
+async function main() {
+const dlg = $('dlg'); let dlgOk = null;
+const closeDlg = () => { dlg.close(); draw(); };
+dlg.addEventListener('click', e => { if (e.target === dlg || e.target.closest('[data-close]')) closeDlg(); else if (e.target.closest('#dlg-ok')) runOk(); });
+async function runOk() { const b = $('dlg-ok'), label = b.textContent; b.disabled = true; b.textContent = 'Issuing…'; $('dlg-e').innerHTML = '';
+  try { await dlgOk(); } catch (e) { console.error(e); $('dlg-e').innerHTML = `<div class="alert" role="alert">${esc(e?.code === 'permission-denied' ? 'Your account is not allowed to issue this. The Firestore rules must allow court staff to update serviceRequests. (permission-denied)' : 'We could not issue this. Nothing was changed. Try again.')}</div>`; b.disabled = false; b.textContent = label; } }
+let reqs = [], tab = 'wait', q = '', note = '';
+const isWait = r => r.status === 'Summons requested' || r.status === 'Subpoena requested';
+const fmt = ms => ms ? new Date(ms).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' }) : '—';
+async function load() { const s = await getDocs(collection(db, 'serviceRequests')); reqs = s.docs.map(d => ({ ...d.data(), _id: d.id })); }
+const kindOf = r => r.kind === 'subpoena' ? 'Subpoena' : (FORM_NUM[r.formId] || 'Summons');
+function draw() {
+  const wait = reqs.filter(isWait).sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0)), done = reqs.filter(r => r.issued).sort((a, b) => (b.issued.at || 0) - (a.issued.at || 0));
+  const list = (tab === 'wait' ? wait : done).filter(r => !q || [r.caseId, r.party?.name, r.createdBy, r.issued?.by, kindOf(r)].join(' ').toLowerCase().includes(q.toLowerCase()));
+  $('page-action').innerHTML = '';
+  const tabs = [['wait', 'Waiting to be issued', wait.length], ['done', 'Issued log', done.length]];
+  root.innerHTML = `${note ? `<div class="note" role="status">${esc(note)}</div>` : ''}
+    <div class="stats"><div class="stat ${wait.length ? 'alert-stat' : ''}"><span>Waiting to be issued</span><b>${wait.length}</b></div><div class="stat"><span>Summonses waiting</span><b>${wait.filter(r => r.kind !== 'subpoena').length}</b></div><div class="stat"><span>Subpoenas waiting</span><b>${wait.filter(r => r.kind === 'subpoena').length}</b></div></div>
+    <div class="tabs" role="tablist">${tabs.map(([k, l, n]) => `<button type="button" role="tab" aria-selected="${tab === k}" class="${tab === k ? 'on' : ''}" data-a="tab:${k}">${l}<i>${n}</i></button>`).join('')}</div>
+    <section class="card"><div class="tbar"><h3>${tab === 'wait' ? 'Requests' : 'Issued summonses and subpoenas'}</h3><input class="in" id="f-q" type="search" placeholder="Search by case, name or person" aria-label="Search" value="${esc(q)}"></div>
+    ${!list.length ? `<div class="empty"><strong>${tab === 'wait' ? 'Nothing waiting' : 'Nothing issued yet'}</strong><p>${tab === 'wait' ? 'When a case is filed or a party asks for a summons or subpoena, it appears here for you to issue.' : 'Each issued summons or subpoena is logged here with who issued it and when.'}</p></div>` :
+      `<div class="table-scroll"><table><thead><tr><th>${tab === 'wait' ? 'Requested' : 'Issued'}</th><th>Type</th><th>Case</th><th>For</th><th>${tab === 'wait' ? 'Requested by' : 'Issued by'}</th><th></th></tr></thead><tbody>${list.map(r => `<tr data-a="open:${esc(r._id)}"><td>${esc(fmt(tab === 'wait' ? r.createdAt : r.issued.at))}</td><td><b>${esc(kindOf(r))}</b></td><td>${esc(r.caseId || '—')}</td><td><b>${esc(r.party?.name || '—')}</b><small>${esc(r.party?.address || '')}</small></td><td>${esc(tab === 'wait' ? r.createdBy || '—' : r.issued.by)}${tab === 'done' && r.issued.role ? `<small>${esc(r.issued.role)}</small>` : ''}</td><td>${tab === 'wait' ? (canIssue ? 'Review and issue' : 'View') : 'View'}</td></tr>`).join('')}</tbody></table></div>`}</section>`;
+}
+async function openReq(r) {
+  const sub = r.kind === 'subpoena', ui = sub ? null : await import('/courts/online-services/portal/dashboard/assets/forms/serviceui.js?v=4'), svc = await import('/courts/online-services/portal/dashboard/assets/forms/service.js?v=2');
+  let png = '', pref = ''; if (canIssue && isWait(r)) { try { const d = await getDoc(doc(db, 'userSignatures', account.uid)); if (d.exists()) { png = d.data().png || ''; pref = d.data().pref || ''; } } catch (e) { console.warn(e); } }
+  const useImg = !!png && pref !== 'slash', waiting = isWait(r), sigOf = () => ({ name: account.name, uid: account.uid, at: new Date().toISOString(), png: useImg ? png : '' });
+  $('dlg-t').textContent = `${kindOf(r)} · ${r.party?.name || ''}`; $('dlg-w').textContent = `${r.caseId} · ${r.status}`; dlg.classList.add('wide'); dlgOk = null;
+  const facts = `<dl class="kv"><div><dt>Case</dt><dd>${esc(r.caseId)}</dd></div><div><dt>${sub ? 'Person' : 'Defendant'}</dt><dd>${esc(r.party?.name)}</dd></div>${r.party?.address ? `<div><dt>Address</dt><dd>${esc(r.party.address)}</dd></div>` : ''}<div><dt>Requested by</dt><dd>${esc(r.createdBy || '—')}</dd></div><div><dt>Requested</dt><dd>${esc(fmt(r.createdAt))}</dd></div>${r.issued ? `<div><dt>Issued by</dt><dd>${esc(r.issued.by)}${r.issued.role ? ', ' + esc(r.issued.role) : ''}</dd></div><div><dt>Issued</dt><dd>${esc(fmt(r.issued.at))}</dd></div>` : ''}${r.note ? `<div><dt>Note</dt><dd>${esc(r.note)}</dd></div>` : ''}</dl>`;
+  const signBox = waiting && canIssue ? `<div class="note" style="margin-top:14px"><b>You sign as ${esc(account.name)}.</b> ${useImg ? 'Your saved signature is placed on the summons.' : png ? 'Your signature is set to a typed signature.' : 'You have no saved signature, so a typed signature (/s/) is used. Add a picture in Account Settings.'}${useImg ? `<div style="margin-top:8px"><img src="${esc(png)}" alt="Your signature" style="max-height:46px;background:#fff;border:1px solid var(--line);border-radius:4px;padding:4px 10px"></div>` : ''}</div>` : waiting ? '<div class="note" style="margin-top:14px">Only the clerk, a court administrator, or a judge or magistrate can issue this.</div>' : '';
+  $('dlg-b').innerHTML = facts + (sub ? '<p class="m" style="margin-top:12px">The subpoena form is not available yet. Issuing records that the subpoena was issued, by whom and when, on the docket.</p>' : '<div id="pv" style="margin-top:16px"></div>') + signBox;
+  $('dlg-e').innerHTML = ''; $('dlg-f').innerHTML = `<button class="btn outline" type="button" data-close>${waiting && canIssue ? 'Cancel' : 'Close'}</button>${waiting && canIssue ? `<button class="btn good" type="button" id="dlg-ok">Issue ${sub ? 'subpoena' : 'summons'}</button>` : ''}`;
+  if (waiting && canIssue) dlgOk = async () => { await issueProcess(db, r, account, role, { sig: useImg ? png : null }); note = `${sub ? 'Subpoena' : 'Summons'} issued for ${r.party.name}. It is logged on the case docket.`; closeDlg(); };
+  dlg.showModal();
+  if (!sub) { const pv = ui.mountPreview($('pv'), r), vals = waiting ? svc.issueValues(r.values, { name: account.name }) : r.values; pv.draw(vals, waiting ? { clk: sigOf() } : r.sig ? { clk: r.sig } : undefined).catch(e => { console.error(e); $('pv').innerHTML = '<p class="m">We could not show the summons.</p>'; }); }
+}
+root.addEventListener('click', e => { const el = e.target.closest('[data-a]'); if (!el) return; const [n, v] = [el.dataset.a.split(':')[0], el.dataset.a.slice(el.dataset.a.indexOf(':') + 1)]; if (n === 'tab') { tab = v; q = ''; note = ''; draw(); } else if (n === 'open') { const r = reqs.find(x => x._id === v); r && openReq(r); } });
+document.addEventListener('input', e => { if (e.target.id === 'f-q') { q = e.target.value; draw(); const i = $('f-q'); i.focus(); i.setSelectionRange(i.value.length, i.value.length); } });
+try { await load(); } catch (e) { console.error(e); root.innerHTML = '<div class="alert" role="alert"><strong>We could not load this page.</strong><p>Refresh to try again.</p></div>'; throw e; }
+draw();
+}
+</script>
+</body>
+</html>
