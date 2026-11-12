@@ -3,7 +3,7 @@
 import { doc, getDoc, setDoc, updateDoc, runTransaction } from 'https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js';
 import { outcomeOf, usDate, SR_STATUS, issueValues } from './service.js?v=2';
 
-export const SERVICE_BASE = 'https://migovt.org/service/#/';
+export const SERVICE_BASE = 'https://migovt.org/courts/online-services/portal/dashboard/service/#/';
 export const linkOf = sr => SERVICE_BASE + (sr._id || sr.id);
 const STAFF = ['court reporter', 'law clerk', 'judicial assistant', 'deputy clerk', 'county clerk', 'court administrator', 'magistrate', 'judge', 'chief judge', 'deputy clerk of the supreme court', 'clerk of the supreme court', 'reporter of decisions', 'state court administrator', 'justice', 'chief justice'];
 export const isStaffRole = r => STAFF.includes(String(r || '').trim().toLowerCase());

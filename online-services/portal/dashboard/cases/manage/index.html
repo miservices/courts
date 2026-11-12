@@ -907,7 +907,7 @@ async function orderModal(taskIdx, preDraft) {
         t = mdSet(mdSet(t, 'Case No.', cur.caseId || ''), 'Judge', judgeLine(judge, judges.find(x => x.name === judge)?.bar));
         fname = (dr.title || 'Order').replace(/[^A-Za-z0-9._-]+/g, '_') + '.md';
         const path = `case-orders/${cur._id}/${Date.now()}-${fname}`; await uploadBytes(sRef(storage, path), new Blob([t], { type: 'text/markdown' }), { contentType: 'text/markdown' });
-        link = 'https://migovt.org/courts/documents/#/' + path.split('/').map(encodeURIComponent).join('/'); try { sessionStorage.removeItem('fd-order'); } catch { }
+        link = 'https://migovt.org/courts/online-services/portal/dashboard/documents/#/' + path.split('/').map(encodeURIComponent).join('/'); try { sessionStorage.removeItem('fd-order'); } catch { }
       } else link = file ? await upload('case-orders', file) : val('or-link') || null;
       const comment = val('or-comment') || null;
       await change(d => ({ events: withEvent(d, { type: 'order', date: now(), description: title, documentLink: link, comment, judge, sealed, ...visRead(false), enteredBy: account.name, enteredByRole: role }) }),

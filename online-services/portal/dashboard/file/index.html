@@ -131,7 +131,7 @@ const opposing = p => p.role === ROLES[S.ctype][1] || p.role === 'Cross-Defendan
 
 /* ── Court forms saved as .md ───────────────────────────────────────── */
 // A form from the Document Drafting page is kept as the .md text itself. Anyone who opens it sees it laid out like the printed form.
-const VIEWER = 'https://migovt.org/documents/#/';
+const VIEWER = 'https://migovt.org/courts/online-services/portal/dashboard/documents/#/';
 const viewerUrl = path => VIEWER + path.split('/').map(encodeURIComponent).join('/');
 const mdForm = t => { const h = String(t).replace(/\r/g, '').split('\n').slice(0, 40).join('\n'), m = /^form:\s*(.+?)\s*$/mi.exec(h) || /^#\s+(.+?)\s*$/m.exec(h); return m ? m[1] : null; };
 const mdLine = (t, label) => { const m = new RegExp('^- ' + label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + ':[ \\t]*(.*)$', 'mi').exec(String(t)); return m ? m[1].trim() : ''; };
