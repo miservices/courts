@@ -22,7 +22,7 @@ export async function newSummons(db, { court, caseId, caseFirestoreId, formId, p
   const id = rid(), sr = { id, kind, court, caseId, caseFirestoreId: caseFirestoreId || caseId, formId: kind === 'summons' ? formId : null, party, values: values || {}, complaint, status: SR_STATUS[status], createdBy: by.name, createdByUid: by.uid, createdAt: Date.now(), requestedByUid: by.uid, serverUid: null, serverName: null, ...(note ? { note } : {}) };
   const clean = JSON.parse(JSON.stringify(sr));   // Firestore rejects undefined values
   await setDoc(doc(db, 'serviceRequests', id), clean);
-  if (status === 'sumreq' || status === 'subreq') { try { await caseEvent(db, clean, { type: 'service', description: `${by.name} requested ${kind === 'subpoena' ? 'subpoena' : 'summons'} for ${party.name}.`, enteredBy: by.name }); } catch (e) { console.warn(e); } }
+  if (status === 'sumreq' || status === 'subreq') { try { await caseEvent(db, clean, { type: 'event', svc: true, description: `${by.name} requested ${kind === 'subpoena' ? 'subpoena' : 'summons'} for ${party.name}.`, enteredBy: by.name }); } catch (e) { console.warn(e); } }
   return { ...clean, _id: id };
 }
 /* Court staff issue a summons (or subpoena) from the Process page. The clerk signs it; the request then drops off the Process list and is logged with who issued it and when. */
@@ -35,7 +35,7 @@ export async function issueProcess(db, sr, account, role, { sig = null } = {}) {
   await updateDoc(doc(db, 'serviceRequests', id), patch);
   Object.assign(sr, patch);
   // One docket entry, filed with the issued summons.
-  await caseEvent(db, sr, { type: 'filing', description: `${account.name} issued ${sub ? 'subpoena' : 'summons'} for ${sr.party.name}.`, docName: `${sub ? 'Subpoena' : 'Summons'} - ${sr.party.name}`, documentLink: sub ? null : linkOf(sr), filedBy: account.name, role: role || null, enteredBy: account.name, enteredByRole: role || null });
+  await caseEvent(db, sr, { type: 'filing', svc: true, description: `${account.name} issued ${sub ? 'subpoena' : 'summons'} for ${sr.party.name}.`, docName: `${sub ? 'Subpoena' : 'Summons'} - ${sr.party.name}`, documentLink: sub ? null : linkOf(sr), filedBy: account.name, role: role || null, enteredBy: account.name, enteredByRole: role || null });
   return sr;
 }
 export async function assignServer(db, sr, server) {
@@ -61,7 +61,7 @@ export async function fileProof(db, sr, values, account, role) {
   await updateDoc(doc(db, 'serviceRequests', id), { values, proof, status: served ? SR_STATUS.served : SR_STATUS.notserved });
   const rec = { date, method: o.method, by: who, byUid: sr.serverUid || account.uid, address: sr.party.address || null };
   const desc = served ? `${sr.party.name} was served by ${who}. Proof of service filed.` : `${who} could not effectuate service on ${sr.party.name}.`;
-  await caseEvent(db, sr, { type: 'service', description: desc, enteredBy: account.name, enteredByRole: role || null},
+  await caseEvent(db, sr, { type: 'event', svc: true, description: desc, enteredBy: account.name, enteredByRole: role || null},
     p => served ? { ...p, served: true, serviceDate: date, serviceMethod: o.method, servedBy: who, serviceAttempts: [...(p.serviceAttempts || []), { ...rec, result: 'Served' }] } : { ...p, serviceAttempts: [...(p.serviceAttempts || []), { ...rec, result: 'Not served' }] });
   try { await setDoc(doc(db, 'serviceReturns', 'SVC-' + id), { id: 'SVC-' + id, caseId: sr.caseId, caseFirestoreId: sr.caseFirestoreId, court: sr.court, parties: [sr.party.name], documents: 'Summons and complaint', result: o.result, ...rec, serviceRequestId: id }); } catch (e) { console.warn('Could not save the return', e); }
   return Object.assign(sr, { values, proof, status: served ? SR_STATUS.served : SR_STATUS.notserved });
