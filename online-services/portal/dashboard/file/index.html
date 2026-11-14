@@ -30,7 +30,7 @@
 <script type="module">
 const caseAlias = id => { const m = /^(\d{2}|\d{4})-(\d+)(?:-([A-Za-z]+))?$/.exec(String(id || '')); if (!m) return ''; const yy = m[1].slice(-2), yyyy = m[1].length === 2 ? '20' + m[1] : m[1], n = m[2], t = m[3] ? '-' + m[3] : ''; return [`${yy}-${n}${t}`, `${yy}-${n}`, `${yyyy}-${n}${t}`, `${yyyy}-${n}`].join(' '); };
 import { boot, db, app, $, esc, has, ATTY, STAFF, CASE_CODES, DISTRICT_COURT, SUPREME_COURT, reserveCaseNumber, reserveFilingNumber, colFor } from '/courts/online-services/portal/dashboard/assets/js/portal-shell.js?v=8';
-import { byNumber as formByNumber } from '/courts/online-services/portal/dashboard/assets/forms/registry.js?v=10';
+import { byNumber as formByNumber } from '/courts/online-services/portal/dashboard/assets/forms/registry.js?v=11';
 import { openStampEditor } from '/courts/online-services/portal/dashboard/assets/forms/stampeditor.js?v=4';
 import { placementOf } from '/courts/online-services/portal/dashboard/assets/forms/engine.js?v=33';
 import { needsSummons, formFor, summonsValues } from '/courts/online-services/portal/dashboard/assets/forms/service.js?v=4';
