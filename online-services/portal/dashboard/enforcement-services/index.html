@@ -67,8 +67,9 @@ import { collection, getDocs, doc, runTransaction, setDoc, updateDoc } from "htt
 import { partiesOf, caption, isDefendantSide, addEvent, iso, fmtD, fmtDT, uid, reviewerUidOf, presidingOf } from '/courts/online-services/portal/dashboard/assets/js/court.js?v=1';
 
 const ENFORCE = ['Justice System User', 'Prosecuting Attorney', 'Legal Services User'];
-import { assignServer, fileProof, canFile, linkOf } from '/courts/online-services/portal/dashboard/assets/forms/servicedb.js?v=3';
-import { SR_STATUS } from '/courts/online-services/portal/dashboard/assets/forms/service.js?v=2';
+import { proofProblem } from '/courts/online-services/portal/dashboard/assets/forms/service.js?v=4';
+import { assignServer, fileProof, canFile, linkOf } from '/courts/online-services/portal/dashboard/assets/forms/servicedb.js?v=5';
+import { SR_STATUS } from '/courts/online-services/portal/dashboard/assets/forms/service.js?v=4';
 const { account, role } = await boot({ id: 'enforce', title: 'Enforcement services', subtitle: 'Warrant requests, service of process, community service, probation and pretrial reporting.' });
 const root = $('page-body');
 if (!has(ENFORCE, role)) root.innerHTML = notAllowedHtml();
@@ -153,8 +154,8 @@ function requestsView() {
   <section class="card"><h3>My assigned service</h3>${mineR.length ? tbl(mineR, false) : '<div class="empty"><strong>Nothing assigned to you</strong><p>Take a request above. You then edit the return of service and file it.</p></div>'}</section>`;
 }
 async function serviceReqModal(r) {
-  const ui = await import('/courts/online-services/portal/dashboard/assets/forms/serviceui.js?v=4'), can = canFile(r, account, role); let pp = null;
-  modal({ title: ui.titleOf(r), sub: `${r.caseId} · ${r.status}`, wide: true, ok: 'File proof of service', okCls: 'good', onOk: can ? async () => { const v = pp.values(); need(v.pchk || v.schk || v.uchk || v.nonc, 'Check how the summons was served, or check that it was not served.'); await fileProof(db, r, v, account, role); closeDlg(); } : null,
+  const ui = await import('/courts/online-services/portal/dashboard/assets/forms/serviceui.js?v=5'), can = canFile(r, account, role); let pp = null;
+  modal({ title: ui.titleOf(r), sub: `${r.caseId} · ${r.status}`, wide: true, ok: 'File proof of service', okCls: 'good', onOk: can ? async () => { const v = pp.values(); need(!proofProblem(v, r.formId), proofProblem(v, r.formId)); await fileProof(db, r, v, account, role); closeDlg(); } : null,
     extra: `<a class="btn outline" href="${esc(linkOf(r))}" target="_blank" rel="noopener">Open service page</a>`,
     body: `${ui.summaryHtml(r)}<p class="m" style="margin:0 0 14px">${can ? 'Fill in the return of service below. Filing it updates the case and the docket.' : r.proof?.filedAt ? 'Proof of service has been filed.' : 'Only the assigned process server or court staff can file the proof of service.'}</p><div id="sv-pp"></div>`,
   });

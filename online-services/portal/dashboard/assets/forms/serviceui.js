@@ -1,6 +1,6 @@
 /* Service of process: showing a summons and filling in its proof of service. Used by the service link page and by Enforcement. */
 import { mountForm } from './engine.js?v=33';
-import { mdFromValues, proofSpec, usDate, usTime, FORM_NUM } from './service.js?v=2';
+import { mdFromValues, proofSpec, usDate, usTime, FORM_NUM, nonServiceSpec } from './service.js?v=4';
 
 const CSS = `.sv-prev{background:#dfe5ef;border:1px solid #d3dae6;border-radius:8px;overflow:auto;padding:12px 0}.sv-prev .fd-panel{display:none!important}.sv-prev .fd-view{height:auto}.sv-prev iframe{width:100%!important}
 .sv-pp{display:grid;gap:10px}.sv-pp .sv-g{border:1px solid #d3dae6;border-radius:8px;padding:12px 14px;background:#fff;display:grid;gap:10px}
@@ -11,7 +11,7 @@ export function mountPreview(host, sr) {
   injectCss();
   let eng = null, n = 0;
   const draw = async (values, sigs) => {
-    const my = ++n, def = (await import(`./${sr.formId}.js?v=4`)).default;
+    const my = ++n, def = (await import(`./${sr.formId}.js?v=5`)).default;
     host.classList.add('sv-prev'); const box = document.createElement('div'); const show = 'width:860px;max-width:100%;margin:0 auto';
     box.style.cssText = show + ';position:absolute;left:-99999px;top:0;visibility:hidden'; host.style.position = 'relative'; host.appendChild(box);   // the form must be in the page to load
     let next; try { next = await mountForm(def, box, { md: mdFromValues(def, values, sigs || (sr.sig ? { clk: sr.sig } : {})), readOnly: true }); } catch (e) { box.remove(); throw e; }
@@ -34,9 +34,10 @@ const PCSS = `.sv-pp{display:grid;gap:18px;font-size:15px;color:#1b2433}.sv-pp h
 .sv-pp .sv-f input{font:inherit;font-size:15px;height:40px;padding:0 11px;border:1px solid #c5cedd;border-radius:6px;color:#1b2433;background:#fff;box-sizing:border-box;width:100%;min-width:0}
 .sv-pp .sv-f input:focus{outline:3px solid #1f5fae44;border-color:#1f5fae}.sv-pp .sv-f input:disabled{background:#f1f4f9;color:#44506a}
 .sv-pp .sv-ack{display:flex;gap:12px;align-items:center;padding:12px 14px;border:1.5px solid #d3dae6;border-radius:10px;background:#fff;cursor:pointer;font-weight:600;color:#10264a;margin:0}.sv-pp .sv-ack input{width:18px;height:18px;flex:none;margin:0}
-.sv-pp .sv-ack.on{border-color:#1f5fae;background:#f3f7fd}.sv-pp .sv-sig{display:grid;grid-template-columns:140px 1fr 1fr;gap:12px;padding:14px;border:1px solid #d3dae6;border-radius:10px;background:#fafcfe}
+.sv-pp .sv-ack.on{border-color:#1f5fae;background:#f3f7fd}.sv-pp .sv-sig{display:grid;grid-template-columns:160px 1fr;gap:12px;padding:14px;border:1px solid #d3dae6;border-radius:10px;background:#fafcfe}
 .sv-pp .sv-money{position:relative}.sv-pp .sv-money b{position:absolute;left:11px;bottom:0;height:40px;line-height:40px;color:#5b6678;font-weight:500}.sv-pp .sv-money input{padding-left:24px}
 @media(max-width:640px){.sv-pp .sv-r{grid-template-columns:1fr 1fr;padding-left:14px}.sv-pp .sv-f.w2{grid-column:1/-1}.sv-pp .sv-sig{grid-template-columns:1fr}}
+.sv-pp .sv-nc{display:grid;gap:14px;padding:4px 14px 14px;border-top:1px solid #ecc9c5}.sv-pp .sv-nc h5{margin:0 0 6px;font-size:13px;color:#7a2a22}.sv-pp .sv-nc label.sv-k{display:flex;gap:10px;align-items:flex-start;padding:5px 0;font-weight:500;color:#1b2433;cursor:pointer;margin:0}.sv-pp .sv-nc label.sv-k input{width:18px;height:18px;flex:none;margin:1px 0 0}.sv-pp .sv-nc textarea{font:inherit;font-size:15px;padding:9px 11px;border:1px solid #c5cedd;border-radius:6px;width:100%;box-sizing:border-box;min-height:64px;resize:vertical}.sv-pp .sv-nc input[type=text]{font:inherit;font-size:15px;height:40px;padding:0 11px;border:1px solid #c5cedd;border-radius:6px;width:100%;box-sizing:border-box;margin:2px 0 4px}
 .sv-sum{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px 22px;padding:14px 16px;border:1px solid #d3dae6;border-radius:10px;background:#f7f9fc;margin-bottom:18px}.sv-sum div{min-width:0}.sv-sum dt{font-size:12px;color:#5b6678;text-transform:uppercase;letter-spacing:.05em;margin:0 0 2px}.sv-sum dd{margin:0;font-weight:600;color:#10264a;overflow-wrap:anywhere}`;
 const esc2 = x => String(x ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 export function summaryHtml(sr) {
@@ -47,35 +48,41 @@ export function summaryHtml(sr) {
 function injectCss() { if (!document.getElementById('sv-css')) { const st = document.createElement('style'); st.id = 'sv-css'; st.textContent = CSS + PCSS; document.head.appendChild(st); } }
 export function proofPanel(host, sr, editable, onInput, opts = {}) {
   injectCss();
-  const spec = proofSpec(sr.formId), v = { ...sr.values }, METH = ['pchk', 'schk', 'uchk', 'nonc'];
+  const spec = proofSpec(sr.formId), v = { ...sr.values }, METH = ['pchk', 'schk', 'mchk', 'nonc'];
   if (editable && !v.pname && opts.name) v.pname = opts.name;
   const toIn = (type, val) => type === 'date' ? (/^(\d{2})\/(\d{2})\/(\d{4})$/.test(val || '') ? val.replace(/^(\d{2})\/(\d{2})\/(\d{4})$/, '$3-$1-$2') : '') : type === 'time' ? (m => m ? `${String((+m[1] % 12) + (m[3] === 'PM' ? 12 : 0)).padStart(2, '0')}:${m[2]}` : '')(/(\d{1,2}):(\d{2}) (AM|PM)/.exec(val || '')) : (val ?? '');
   const by = id => spec.find(x => x.id === id), kids = id => spec.filter(f => f.on === id);
   const dis = editable ? '' : 'disabled';
   const inp = f => `<label class="sv-f${f.id === 'pn' || f.id === 'sn' ? ' w2' : ''}">${f.label}<input data-f="${f.id}" type="${f.type === 'money' ? 'text' : f.type}" value="${esc2(toIn(f.type, v[f.id]))}" ${f.ph ? `placeholder="${esc2(f.ph)}"` : ''} ${dis}></label>`;
-  const sub = { pchk: 'Sent by direct message to the person', schk: 'The person’s settings did not allow direct messages', uchk: 'The person could not be messaged or mentioned', nonc: 'A certificate of non-service (MC 01D) must then be filed' };
+  const sub = { pchk: 'Sent by direct message to the person', schk: 'Direct messages were unavailable; posted in the county server with a mention', mchk: 'Through the Michigan Bureaucratic Routing and Intergovernmental Data Exchange System', nonc: 'A certificate of non-service (MC 01D) must then be filed' };
   const lab = id => (by(id).label.split(': ')[0]);
   const opt = id => { const f = by(id), on = !!v[id], ks = kids(id), det = f.label.includes(': ') ? f.label.split(': ').slice(1).join(': ') : '';
-    return `<div class="sv-o ${id === 'nonc' ? 'bad' : ''} ${on ? 'on' : ''}" data-o="${id}"><label class="sv-h ${editable ? '' : 'dis'}"><input type="checkbox" data-f="${id}" ${on ? 'checked' : ''} ${dis}><span class="sv-dot"></span><span>${id === 'nonc' ? 'Service could not be completed' : lab(id)}<small>${id === 'nonc' ? sub.nonc : det ? det[0].toUpperCase() + det.slice(1) : sub[id]}</small></span></label>${ks.length ? `<div class="sv-r" data-for="${id}" ${on ? '' : 'hidden'}>${ks.map(inp).join('')}</div>` : ''}</div>`; };
+    return `<div class="sv-o ${id === 'nonc' ? 'bad' : ''} ${on ? 'on' : ''}" data-o="${id}"><label class="sv-h ${editable ? '' : 'dis'}"><input type="checkbox" data-f="${id}" ${on ? 'checked' : ''} ${dis}><span class="sv-dot"></span><span>${id === 'nonc' ? 'Service could not be completed' : lab(id)}<small>${id === 'nonc' ? sub.nonc : det ? det[0].toUpperCase() + det.slice(1) : sub[id]}</small></span></label>${ks.length ? `<div class="sv-r" data-for="${id}" ${on ? '' : 'hidden'}>${ks.map(inp).join('')}</div>` : ''}${id === 'nonc' ? ncBlock(on) : ''}</div>`; };
+  const ns = nonServiceSpec(sr.formId), ck = k => `<label class="sv-k"><input type="checkbox" data-f="${k[0]}" ${v[k[0]] ? 'checked' : ''} ${dis}><span>${k[1]}</span></label>`;
+  const ncBlock = on => `<div class="sv-nc" ${on ? '' : 'hidden'}><div><h5>What did you try?</h5>${ns.tried.map(ck).join('')}<input type="text" data-f="tot1" placeholder="Describe what else you tried" value="${esc2(v.tot1 || '')}" ${v.to ? '' : 'hidden'} ${dis}></div>
+    <div><h5>Why could service not be completed?</h5>${ns.why.map(ck).join('')}<input type="text" data-f="rot1" placeholder="Describe the reason" value="${esc2(v.rot1 || '')}" ${v.ro ? '' : 'hidden'} ${dis}></div>
+    <div><h5>Anything else the court should know (optional)</h5><textarea data-f="adtext" ${dis}>${esc2(v.adtext || '')}</textarea></div><p class="m" style="margin:0">Filing this also files a certificate of non-service (MC 01D) in the case, signed with your name.</p></div>`;
   const meths = METH.filter(id => by(id));
   host.innerHTML = `<div class="sv-pp"><div><h4>How was service made?</h4><div class="sv-opts">${meths.map(opt).join('')}</div></div>
-    <div><h4>Acknowledgment</h4><label class="sv-ack ${v.ackc ? 'on' : ''}"><input type="checkbox" data-f="ackc" ${v.ackc ? 'checked' : ''} ${dis}>An acknowledgment of service was returned within 24 hours</label>${by('msp') ? `<label class="sv-ack ${v.msp ? 'on' : ''}" style="margin-top:8px"><input type="checkbox" data-f="msp" ${v.msp ? 'checked' : ''} ${dis}>${by('msp').label}</label>` : ''}</div>
-    <div><h4>Fee and signature</h4><div class="sv-sig"><label class="sv-f sv-money">${by('fee').label}<b>$</b><input data-f="fee" type="text" inputmode="decimal" value="${esc2(String(v.fee ?? '').replace(/^\$/, ''))}" placeholder="0.00" ${dis}></label>${inp(by('pname')).replace(' w2', '')}${inp(by('psig')).replace(' w2', '')}</div></div></div>`;
+    <div><h4>Acknowledgment</h4><label class="sv-ack ${v.ackc ? 'on' : ''}" data-ackrow ${v.nonc ? 'hidden' : ''}><input type="checkbox" data-f="ackc" ${v.ackc ? 'checked' : ''} ${dis}>An acknowledgment of service was returned within 72 hours</label></div>
+    <div><h4>Fee and name</h4><div class="sv-sig"><label class="sv-f sv-money">${by('fee').label}<b>$</b><input data-f="fee" type="text" inputmode="decimal" value="${esc2(String(v.fee ?? '').replace(/^\$/, ''))}" placeholder="0.00" ${dis}></label>${inp(by('pname')).replace(' w2', '')}</div><p class="m" style="margin:8px 0 0">Your signature is added for you when you file.</p></div></div>`;
   const tz = (() => { try { const z = opts.tz || Intl.DateTimeFormat().resolvedOptions().timeZone, n = new Intl.DateTimeFormat('en-US', { timeZone: z, timeZoneName: 'long' }).formatToParts(new Date()).find(x => x.type === 'timeZoneName')?.value || ''; return n.replace(/\s+(Standard|Daylight|Summer)?\s*Time$/i, '').replace(/^(.*?)\s*$/, '$1'); } catch { return ''; } })();
   const setIn = (id, val) => { v[id] = val; const el = host.querySelector(`[data-f="${id}"]`); if (el) el.value = toIn(by(id).type, val); };
+  const fin = () => ({ ...v, fee: v.fee || '$0.00', psig: v.pname || opts.name || v.psig || '' });   // no fee entered means $0.00; the signature is the filer's own name
   host.oninput = host.onchange = e => {
-    const i = e.target.closest('[data-f]'); if (!i || !editable) return; const id = i.dataset.f, f = by(id);
+    const i = e.target.closest('[data-f]'); if (!i || !editable) return; const id = i.dataset.f, f = by(id) || { type: i.type === 'checkbox' ? 'check' : 'text' };
     if (id === 'fee') v.fee = i.value.trim() ? '$' + i.value.trim().replace(/^\$/, '') : '';
     else v[id] = f.type === 'check' ? i.checked : f.type === 'date' ? usDate(i.value) : f.type === 'time' ? usTime(i.value) : i.value;
     if (METH.includes(id)) {
       if (i.checked) { METH.forEach(m => { if (m !== id && by(m)) v[m] = false; });
         if (id !== 'nonc') { const n = new Date(), z = k => String(k).padStart(2, '0'); if (!v[id[0] + 'd']) setIn(id[0] + 'd', usDate(`${n.getFullYear()}-${z(n.getMonth() + 1)}-${z(n.getDate())}`)); if (!v[id[0] + 't']) setIn(id[0] + 't', usTime(`${z(n.getHours())}:${z(n.getMinutes())}`)); if (!v[id[0] + 'z'] && tz) setIn(id[0] + 'z', tz); } }
       else v[id] = false;
-      host.querySelectorAll('.sv-o').forEach(o => { const k = o.dataset.o, on = !!v[k]; o.classList.toggle('on', on); const inp0 = o.querySelector(`[data-f="${k}"]`); if (inp0) inp0.checked = on; const r = o.querySelector('.sv-r'); if (r) r.hidden = !on; });
+      host.querySelectorAll('.sv-o').forEach(o => { const k = o.dataset.o, on = !!v[k]; o.classList.toggle('on', on); const inp0 = o.querySelector(`[data-f="${k}"]`); if (inp0) inp0.checked = on; const r = o.querySelector('.sv-r'); if (r) r.hidden = !on; const nc = o.querySelector('.sv-nc'); if (nc) nc.hidden = !on; }); const ar = host.querySelector('[data-ackrow]'); if (ar) { ar.hidden = !!v.nonc; if (v.nonc) { v.ackc = false; ar.querySelector('input').checked = false; ar.classList.remove('on'); } }
     }
-    if (id === 'ackc' || id === 'msp') i.closest('.sv-ack').classList.toggle('on', i.checked);
-    onInput?.({ ...v });
+    if (id === 'ackc') i.closest('.sv-ack').classList.toggle('on', i.checked);
+    if (id === 'to' || id === 'ro') { const t = host.querySelector(`[data-f="${id === 'to' ? 'tot1' : 'rot1'}"]`); if (t) t.hidden = !i.checked; }
+    onInput?.(fin());
   };
-  return { values: () => ({ ...v }) };
+  return { values: fin };
 }
 export const titleOf = sr => `${FORM_NUM[sr.formId] || 'Summons'} · ${sr.party?.name || ''}`;

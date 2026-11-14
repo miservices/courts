@@ -275,7 +275,7 @@ if (!has(STAFF, role)) {
         const sc = f.court === SUPREME_COURT, display = sc ? f.caseType : (DISPLAY[f.caseType] || 'Civil'), sf = sc ? null : SUBFIELD[display], caseId = f.reservedCaseId || await reserveCaseNumber(f.court, f.caseType), j = pickJudge(f.court, display, f.caseType);
         // The filer already has a provisional case (summons, service). Keep its service events and each party's service fields.
         let prev = {}; try { const ps = await getDoc(doc(db, colFor(f.court), caseId)); prev = ps.exists() ? ps.data() : {}; } catch (e) { console.warn(e); }
-        const svcKeep = ['served', 'serviceDate', 'serviceMethod', 'servedBy', 'serviceAttempts', 'answerDate', 'acknowledged', 'acknowledgmentDate'];
+        const svcKeep = ['served', 'serviceDate', 'serviceMethod', 'servedBy', 'serviceAttempts', 'answerDate', 'acknowledged', 'acknowledgmentDate', 'responseDue', 'responseDays', 'ackExtended'];
         const mergedParties = (f.parties || []).map(p => { const o = (prev.parties || []).find(x => x && x.name === p.name); return o ? { ...p, ...Object.fromEntries(svcKeep.filter(k => o[k] !== undefined).map(k => [k, o[k]])) } : p; });
         const svcEvents = (prev.events || []).filter(e => e.svc || e.type === 'service');   // summons and service entries made before the clerk accepted
         await setDoc(doc(db, colFor(f.court), caseId), { caseId, clerkReview: { status: 'Accepted', filingId: f._id, at: now() }, court: f.court, caseType: display, ...(f.lowerCourt ? { lowerCourt: f.lowerCourt } : {}), ...(sf ? { [sf]: f.caseType } : {}), status: sc ? (/^Appeal/.test(f.caseType) ? 'Pending' : 'Active') : display === 'Appellate' || display === 'Administrative' ? 'Pending' : 'Active',

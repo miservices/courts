@@ -30,11 +30,11 @@
 <script type="module">
 const caseAlias = id => { const m = /^(\d{2}|\d{4})-(\d+)(?:-([A-Za-z]+))?$/.exec(String(id || '')); if (!m) return ''; const yy = m[1].slice(-2), yyyy = m[1].length === 2 ? '20' + m[1] : m[1], n = m[2], t = m[3] ? '-' + m[3] : ''; return [`${yy}-${n}${t}`, `${yy}-${n}`, `${yyyy}-${n}${t}`, `${yyyy}-${n}`].join(' '); };
 import { boot, db, app, $, esc, has, ATTY, STAFF, CASE_CODES, DISTRICT_COURT, SUPREME_COURT, reserveCaseNumber, reserveFilingNumber, colFor } from '/courts/online-services/portal/dashboard/assets/js/portal-shell.js?v=8';
-import { byNumber as formByNumber } from '/courts/online-services/portal/dashboard/assets/forms/registry.js?v=9';
+import { byNumber as formByNumber } from '/courts/online-services/portal/dashboard/assets/forms/registry.js?v=10';
 import { openStampEditor } from '/courts/online-services/portal/dashboard/assets/forms/stampeditor.js?v=3';
 import { placementOf } from '/courts/online-services/portal/dashboard/assets/forms/engine.js?v=33';
-import { needsSummons, formFor, summonsValues } from '/courts/online-services/portal/dashboard/assets/forms/service.js?v=2';
-import { newSummons } from '/courts/online-services/portal/dashboard/assets/forms/servicedb.js?v=4';
+import { needsSummons, formFor, summonsValues } from '/courts/online-services/portal/dashboard/assets/forms/service.js?v=4';
+import { newSummons } from '/courts/online-services/portal/dashboard/assets/forms/servicedb.js?v=5';
 import { firebaseBackend } from '/courts/online-services/portal/dashboard/assets/forms/backend.js?v=4';
 import { collection, getDocs, addDoc, query, where, doc, getDoc, updateDoc, setDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 
@@ -216,7 +216,7 @@ const addrNeeded = () => needsSummons(S.ctype);
 function addrField(p, i) {
   if (!addrNeeded()) return '';
   const d = isDef(p.role);
-  return `<label class="f"><span>${d ? 'Defendant’s address' : 'Address'}${d ? '' : ' (optional)'}</span><textarea data-k="parties.${i}.address" rows="2" placeholder="Street, city, state, ZIP">${esc(p.address || '')}</textarea><small>${d ? 'Required. It is printed on the summons and used to serve the defendant.' : 'Printed on the summons.'}</small></label>${d ? `<label class="chk" style="margin:-6px 0 14px"><input type="checkbox" data-k="parties.${i}.autoSummons" ${p.autoSummons !== false ? 'checked' : ''}> Request a summons for this defendant when I file</label>` : ''}`;
+  return `<label class="f"><span>${d ? 'Defendant’s address' : 'Address'}${d ? '' : ' (optional)'}</span><textarea data-k="parties.${i}.address" rows="2" placeholder="Street, city, state, ZIP">${esc(p.address || '')}</textarea><small>${d ? 'Required. It is printed on the summons and used to serve the defendant.' : 'Printed on the summons.'}</small></label>${d && p.kind === 'Business or organization' ? `<label class="f"><span>Authorized representative (name)</span><input type="text" data-k="parties.${i}.representative" value="${esc(p.representative || '')}" placeholder="As registered with the Michigan Department of State"><small>Required. The entity is served through its authorized representative, as shown in its Department of State registration. The summons names this person.</small></label>` : ''}${d ? `<label class="chk" style="margin:-6px 0 14px"><input type="checkbox" data-k="parties.${i}.autoSummons" ${p.autoSummons !== false ? 'checked' : ''}> Request a summons for this defendant when I file</label>` : ''}`;
 }
 function partyCard(p, i) {
   const pa = S.ctype === 'Civil Infraction' && p.role === 'Prosecuting Authority'; if (pa) p.kind = 'Government';
@@ -346,6 +346,7 @@ function check() {
       if (S.court === SUPREME_COURT && /^Appeal/.test(S.ctype) && !S.lower) return 'Select the lower court case you are appealing.';
       if (S.parties.some(p => !p.name.trim() || (p.kind === 'Person' && ((!p.pin.trim() && !p.pinUnknown) || (!p.dob && !p.dobUnknown))))) return 'Complete the name, PIN and date of birth for every individual. For other parties you can choose Unknown.';
       if (addrNeeded() && S.parties.some(p => isDef(p.role) && !(p.address || '').trim())) return 'Enter the defendant’s address. The summons cannot be issued without it.';
+      if (addrNeeded() && S.parties.some(p => isDef(p.role) && p.kind === 'Business or organization' && p.autoSummons !== false && !(p.representative || '').trim())) return 'Enter the name of each business defendant’s authorized representative, as registered with the Michigan Department of State, or turn off the summons request for it.';
       if (S.counsel && !S.parties.some(p => p.mine)) return 'Check each party you represent.';
       if (S.parties.some(p => p.mine && opposing(p))) return 'You cannot be counsel for the opposing party when opening a case.';
     }
@@ -389,7 +390,7 @@ async function openProvisional(obj, pfId, documents, now, autoNames = []) {
     const complaint = documents.map(d => ({ name: d.name, documentType: d.documentType, url: d.fileUrl || d.link || null })).filter(d => d.url);
     for (const d of parties.filter(p => isDef(p.role) && autoNames.includes(p.name))) {
       try {
-        const values = summonsValues({ caseno: caseId, judge: '', plaintiffs: plNames, plaintiffAddress: pls[0]?.address || '', defendant: d.name, defendantAddress: d.address || ''});
+        const values = summonsValues({ caseno: caseId, judge: '', plaintiffs: plNames, plaintiffAddress: pls[0]?.address || '', defendant: d.name, defendantAddress: d.address || '', kind: d.kind || 'Person', representative: d.representative || '' });
         const sr = await newSummons(db, { court: obj.court, caseId, caseFirestoreId: caseId, formId: formFor(d.kind), party: { name: d.name, kind: d.kind || 'Person', address: d.address || '' }, values, complaint, by: account, status: 'sumreq' });
         summonses.push({ id: sr._id, name: d.name });
       } catch (e) { console.error('Could not request a summons', e); summonses.failed = (summonses.failed || 0) + 1; }
@@ -432,7 +433,7 @@ async function submit() {
     S.links.forEach(l => documents.push({ type: 'gdrive', name: 'Google Drive Document', link: l.url.trim(), documentType: l.type, fee: fee(l.type, court) }));
 
     const obj = { confirmationNumber: conf, filingType: S.type, court, caseType: isNew ? S.ctype : S.kase.caseType || '', documentType: documents[0]?.documentType || 'Appearance (MC 02)',
-      parties: isNew ? S.parties.map(p => ({ role: p.role, name: p.name.trim(), ...(p.kind === 'Person' && p.pin.trim() ? { pin: p.pin.trim() } : p.kind === 'Person' && p.pinUnknown ? { pinUnknown: true } : {}), ...(p.kind === 'Person' && p.dob ? { dob: new Date(p.dob + 'T12:00:00').toISOString() } : p.kind === 'Person' && p.dobUnknown ? { dobUnknown: true } : {}), ...(p.address && p.address.trim() ? { address: p.address.trim() } : {}), kind: p.kind, selfRepresented: !p.mine, ...(p.mine ? { attorney: atty, attorneys: [atty] } : {}) })) : [],
+      parties: isNew ? S.parties.map(p => ({ role: p.role, name: p.name.trim(), ...(p.kind === 'Person' && p.pin.trim() ? { pin: p.pin.trim() } : p.kind === 'Person' && p.pinUnknown ? { pinUnknown: true } : {}), ...(p.kind === 'Person' && p.dob ? { dob: new Date(p.dob + 'T12:00:00').toISOString() } : p.kind === 'Person' && p.dobUnknown ? { dobUnknown: true } : {}), ...(p.address && p.address.trim() ? { address: p.address.trim() } : {}), ...(p.representative && p.representative.trim() ? { representative: p.representative.trim() } : {}), kind: p.kind, selfRepresented: !p.mine, ...(p.mine ? { attorney: atty, attorneys: [atty] } : {}) })) : [],
       documents, totalFee: documents.reduce((t, d) => t + d.fee, 0), notesToClerk: S.notes.trim() || null, confirmationEmail: (account.email || S.email).trim(), filerRole,
       filedBy: account.name, filedByUid: account.uid, isFilingAsCounsel: counsel, counselRepresents: counsel ? repNames : null, barNumber: counsel ? account.barNumber || null : null,
       dateFiled: now, status: 'Pending', accepted: false, urgent: false,

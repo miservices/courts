@@ -47,9 +47,10 @@ main{max-width:1180px;margin:0 auto;padding:20px 16px 60px;display:grid;grid-tem
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
 import { getAuth } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
 import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
-import { getRequest, acknowledge, fileProof, canFile } from '/courts/online-services/portal/dashboard/assets/forms/servicedb.js?v=3';
-import { mountPreview, proofPanel } from '/courts/online-services/portal/dashboard/assets/forms/serviceui.js?v=4';
-import { FORM_NUM } from '/courts/online-services/portal/dashboard/assets/forms/service.js?v=2';
+import { proofProblem } from '/courts/online-services/portal/dashboard/assets/forms/service.js?v=4';
+import { getRequest, acknowledge, fileProof, canFile, ackOpen } from '/courts/online-services/portal/dashboard/assets/forms/servicedb.js?v=5';
+import { mountPreview, proofPanel } from '/courts/online-services/portal/dashboard/assets/forms/serviceui.js?v=5';
+import { FORM_NUM } from '/courts/online-services/portal/dashboard/assets/forms/service.js?v=4';
 
 const app = initializeApp({ apiKey: "AIzaSyA8sUFIq81cs6uQvqduardpGJ4R2DxO8NQ", authDomain: "micourt-dada6.firebaseapp.com", projectId: "micourt-dada6", storageBucket: "micourt-dada6.firebasestorage.app", messagingSenderId: "1013564619997", appId: "1:1013564619997:web:8f259dab457915758f6f34" });
 const auth = getAuth(app), db = getFirestore(app), $ = id => document.getElementById(id);
@@ -87,10 +88,10 @@ async function main() {
 }
 function drawAck(sr, account, prev) {
   const box = $('ack'), ent = sr.formId !== 'mc01a', a = sr.ack;
-  if (a) { box.innerHTML = `<h2>Acknowledgment of service</h2><p>Signed by <b>${esc(a.name)}</b>${a.title ? ', ' + esc(a.title) : ''} on ${esc(fmt(a.at))}. An acknowledgment gives the defendant 7 additional days to respond.</p>`; return; }
-  if (sr.proof?.filedAt) { box.innerHTML = '<h2>Acknowledgment of service</h2><p>Service has been completed and proof of service is on file.</p>'; return; }
-  if (!account) { box.innerHTML = `<h2>Acknowledgment of service</h2><p>Signing the acknowledgment is optional. It confirms that you received this summons and complaint and gives you 7 additional days to respond. You must be signed in to sign it.</p><a class="btn" href="${PORTAL}">Sign in to the Online Portal</a>`; return; }
-  box.innerHTML = `<h2>Acknowledgment of service</h2><p>Signing is optional. It confirms you received this summons and complaint and gives you 7 additional days to respond. It is not an admission or denial of anything in the complaint. You are signed in as <b>${esc(account.name)}</b>.</p>${ent ? '<label class="f">Your title<input id="ack-t" type="text" placeholder="e.g. Registered agent"></label>' : ''}<button class="btn" type="button" id="ack-go">Sign the acknowledgment of service</button>`;
+  if (a) { box.innerHTML = `<h2>Acknowledgment of service</h2><p>Signed by <b>${esc(a.name)}</b>${a.title ? ', ' + esc(a.title) : ''} on ${esc(fmt(a.at))}. An acknowledgment extends the time to respond (7 days becomes 10; 10 becomes 14). It was filed with the court.</p>`; return; }
+  if (!ackOpen(sr)) { box.innerHTML = '<h2>Acknowledgment of service</h2><p>The 72 hours to acknowledge service have passed, or service was not completed.</p>'; return; }
+  if (!account) { box.innerHTML = `<h2>Acknowledgment of service</h2><p>Signing the acknowledgment is optional. It must be done within 72 hours after service. It confirms that you received this summons and complaint and extends your time to respond (7 days becomes 10; 10 becomes 14). It is filed with the court automatically. You must be signed in to sign it.</p><a class="btn" href="${PORTAL}">Sign in to the Online Portal</a>`; return; }
+  box.innerHTML = `<h2>Acknowledgment of service</h2><p>Signing is optional and must be done within 72 hours after service. It confirms you received this summons and complaint and extends your time to respond (7 days becomes 10; 10 becomes 14). It is filed with the court automatically. It is not an admission or denial of anything in the complaint. You are signed in as <b>${esc(account.name)}</b>.</p>${ent ? '<label class="f">Your title<input id="ack-t" type="text" placeholder="e.g. Registered agent"></label>' : ''}<button class="btn" type="button" id="ack-go">Sign the acknowledgment of service</button>`;
   $('ack-go').onclick = async () => {
     if (ent && !$('ack-t').value.trim()) return toast('Enter your title first.', true);
     if (!await ask('Sign the acknowledgment?', `This signs the acknowledgment of service as ${account.name}.`, 'Sign')) return;
@@ -107,7 +108,7 @@ function drawProof(sr, account, role, prev) {
   let t = 0; const pp = proofPanel($('pp'), sr, true, v => { clearTimeout(t); t = setTimeout(() => prev.draw({ ...sr.values, ...v }).catch(() => { }), 350); }, { name: account.name, tz: account.timezone });
   $('pf-go').onclick = async () => {
     const v = { ...sr.values, ...pp.values() };
-    if (!v.pchk && !v.schk && !v.uchk && !v.nonc) return toast('Choose how service was made, or mark it as not served.', true);
+    { const pr = proofProblem(v, sr.formId); if (pr) return toast(pr, true); }
     if (!v.pname) v.pname = account.name; if (!v.psig) v.psig = account.name;
     if (!await ask('File the proof of service?', 'This records the result on the case and closes the service request. It cannot be changed afterward.', 'File proof of service')) return;
     $('pf-go').disabled = true;

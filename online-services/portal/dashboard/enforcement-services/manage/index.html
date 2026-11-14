@@ -73,8 +73,9 @@ import { boot, db, $, esc, has, STAFF, DISTRICT, scopeOf, colFor, DISTRICT_COURT
 import { collection, getDocs, doc, runTransaction, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 import { partiesOf, caption, isDefendantSide, addEvent, iso, fmtD, fmtDT, uid, isJudicial, isChief, governs, presidingOf, reviewerUidOf, is } from '/courts/online-services/portal/dashboard/assets/js/court.js?v=1';
 
-import { assignServer, fileProof, canFile, linkOf } from '/courts/online-services/portal/dashboard/assets/forms/servicedb.js?v=3';
-import { SR_STATUS } from '/courts/online-services/portal/dashboard/assets/forms/service.js?v=2';
+import { proofProblem } from '/courts/online-services/portal/dashboard/assets/forms/service.js?v=4';
+import { assignServer, fileProof, canFile, linkOf } from '/courts/online-services/portal/dashboard/assets/forms/servicedb.js?v=5';
+import { SR_STATUS } from '/courts/online-services/portal/dashboard/assets/forms/service.js?v=4';
 const { account, role } = await boot({ id: 'menforce', title: 'Enforcement administration', subtitle: 'Warrants, supervision orders, and reports from probation, pretrial services and community service sites.' });
 const root = $('page-body');
 if (!has(STAFF, role)) root.innerHTML = '<section class="card"><div class="empty"><strong>Court staff only</strong></div></section>';
@@ -201,9 +202,9 @@ function svcReqView() {
   return `<section class="card"><div class="tbar"><h3>Summonses and service requests</h3>${search('Search by case, defendant or server')}</div>${!l.length ? '<div class="empty"><strong>No summonses yet</strong><p>A summons is created when a civil case is filed. Service requests appear here for you to assign to a process server.</p></div>' : `<div class="table-scroll"><table><thead><tr><th>Defendant</th><th>Case</th><th>Status</th><th>Process server</th><th></th></tr></thead><tbody>${l.map(r => `<tr data-a="sopen:${esc(r._id)}"><td><b>${esc(r.party?.name || '—')}</b><small>${esc(r.party?.address || '')}</small></td><td>${esc(r.caseId || '—')}</td><td>${esc(r.status || '')}</td><td>${esc(r.serverName || '—')}</td><td>${r.proof?.filedAt ? 'Filed' : r.status === SR_STATUS.sumreq || r.status === SR_STATUS.subreq ? 'Awaiting issue' : r.status === SR_STATUS.requested || r.serverUid ? 'Assign / edit' : 'Open'}</td></tr>`).join('')}</tbody></table></div>`}</section>`;
 }
 async function svcModal(r) {
-  const ui = await import('/courts/online-services/portal/dashboard/assets/forms/serviceui.js?v=4'), can = canFile(r, account, role), servers = accts.filter(a => SERVERS.includes(a.role)).sort((a, b) => String(a.name).localeCompare(String(b.name))); let pp = null;
+  const ui = await import('/courts/online-services/portal/dashboard/assets/forms/serviceui.js?v=5'), can = canFile(r, account, role), servers = accts.filter(a => SERVERS.includes(a.role)).sort((a, b) => String(a.name).localeCompare(String(b.name))); let pp = null;
   modal({ title: ui.titleOf(r), sub: `${r.caseId} · ${r.status}`, wide: true, ok: 'File proof of service', okCls: 'good',
-    onOk: can ? async () => { const v = pp.values(); need(v.pchk || v.schk || v.uchk || v.nonc, 'Check how the summons was served, or check that it was not served.'); await fileProof(db, r, v, account, role); closeDlg(); } : null,
+    onOk: can ? async () => { const v = pp.values(); need(!proofProblem(v, r.formId), proofProblem(v, r.formId)); await fileProof(db, r, v, account, role); closeDlg(); } : null,
     extra: `<a class="btn outline" href="${esc(linkOf(r))}" target="_blank" rel="noopener">Open service page</a>`,
     body: `${ui.summaryHtml(r)}${r.proof?.filedAt ? '' : `<div class="cols">${selF('Process server', 'sv-srv', [['', 'Not assigned'], ...servers.map(a => [a.uid, a.name])], r.serverUid || '')}<div class="f"><span>&nbsp;</span><button class="btn outline" type="button" data-a="sassign:${esc(r._id)}">Assign process server</button></div></div>`}
       <p class="m" style="margin:0 0 12px">Court staff can edit the return of service below and file it.</p><div id="sv-pp"></div>`,

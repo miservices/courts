@@ -69,8 +69,8 @@ tr[data-open]{cursor:pointer}
 const caseAlias = id => { const m = /^(\d{2}|\d{4})-(\d+)(?:-([A-Za-z]+))?$/.exec(String(id || '')); if (!m) return ''; const yy = m[1].slice(-2), yyyy = m[1].length === 2 ? '20' + m[1] : m[1], n = m[2], t = m[3] ? '-' + m[3] : ''; return [`${yy}-${n}${t}`, `${yy}-${n}`, `${yyyy}-${n}${t}`, `${yyyy}-${n}`].join(' '); };
 import { boot, db, $, esc, has, SELF, STAFF, colFor, DISTRICT_COURT, SUPREME_COURT } from '/courts/online-services/portal/dashboard/assets/js/portal-shell.js?v=8';
 import { collection, getDocs, getDoc, doc, query, where } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
-import { needsSummons, formFor, summonsValues, FORM_NUM } from '/courts/online-services/portal/dashboard/assets/forms/service.js?v=2';
-import { newSummons, issueProcess, linkOf } from '/courts/online-services/portal/dashboard/assets/forms/servicedb.js?v=3';
+import { needsSummons, formFor, summonsValues, FORM_NUM } from '/courts/online-services/portal/dashboard/assets/forms/service.js?v=4';
+import { newSummons, issueProcess, linkOf } from '/courts/online-services/portal/dashboard/assets/forms/servicedb.js?v=5';
 
 const { account, role } = await boot({ id: 'cases', title: 'My cases', subtitle: 'Cases where you are a party or an attorney of record.' });
 const root = $('page-body'), BASE = 'https://migovt.org/courts/online-services/portal/dashboard/';
@@ -215,7 +215,7 @@ function alerts() {
   else if (/^(returned|rejected)/i.test(cur.clerkReview?.status || '')) out.push(['hi', `<b>The clerk ${esc(String(cur.clerkReview.status).toLowerCase())} the initial filing.</b> ${esc(cur.clerkReview.reason || '')}`]);
   (cur.hearings || []).forEach(h => { const d = parse(h.date); if (!d || hv(h.result)) return; const diff = (d - n) / 864e5; if (diff >= 0 && diff <= 7) out.push(['hi', `<b>Hearing coming up:</b> ${esc(h.type || 'Hearing')} on ${esc(fmtDate(h.date))} at ${esc(fmtTime(h.date))}${h.courtroom ? ', ' + esc(roomLabel(h.courtroom)) : ''}.`]); });
   const b = balanceOf(cur); if (b.bal > 0 && lk.asParty.length) out.push(['med', `You may owe <b>${money(b.bal)}</b> on this case. <a href="${BASE}financials/">View My financials</a>.`]);
-  lk.asParty.filter(p => sideOf(p.role) === 1 && isServed(p) && !hv(p.answerDate) && !isCrim(cur) && !closedOf(cur)).forEach(p => out.push(['med', `You were served${hv(p.serviceDate) ? ' on ' + esc(fmtDate(p.serviceDate)) : ''}. Check your summons for the deadline to respond.`]));
+  lk.asParty.filter(p => sideOf(p.role) === 1 && isServed(p) && !hv(p.answerDate) && !isCrim(cur) && !closedOf(cur)).forEach(p => out.push(['med', `You were served${hv(p.serviceDate) ? ' on ' + esc(fmtDate(p.serviceDate)) : ''}. ${hv(p.responseDue) ? 'Your response is due ' + esc(fmtDate(p.responseDue)) + '.' : 'Check your summons for the deadline to respond.'}`]));
   returnedFor(cur).forEach(f => out.push(['hi', `A filing was <b>returned by the clerk</b>: ${esc(f.documentType || 'document')}. <a href="${BASE}file/">Open My filings</a> to correct and refile it.`]));
   if (cur.sealed) out.push(['low', 'This case is sealed. It is hidden from public case search, and only the parties and the court can see it.']);
   if (!cur.judge && !closedOf(cur)) out.push(['low', 'A judge has not been assigned yet.']);
@@ -264,11 +264,13 @@ function serviceTab() {
       ${waiting(r) ? '<small>Waiting for the clerk to issue it. </small>' : ''}
       <div class="ea" style="margin-top:8px">${r.issued && !sub ? `<a class="btn outline sm" href="${esc(linkOf(r))}" target="_blank" rel="noopener">View summons and service page</a>` : ''}
       ${r.issued && !sub ? btn('copy:' + r._id, 'Copy service link') : ''}</div></div>`; }).join('');
-  const missing = defs.filter(d => !svc.some(r => r.kind !== 'subpoena' && r.party?.name === d.name));
+  const sums = d => svc.filter(r => r.kind !== 'subpoena' && r.party?.name === d.name), lapsed = r => r.issued && r.status !== 'Served' && Date.now() > r.issued.at + (r.second ? 14 : 30) * 864e5,
+    missing = defs.filter(d => !sums(d).length), second = defs.filter(d => { const l = sums(d); return l.length === 1 && lapsed(l[0]) && !l[0].second; });
   return `<section class="card"><header><h3>Summons and service</h3></header>
-    <p class="m" style="margin:0 0 12px">The clerk issues each summons. Once it is issued it goes straight to the process servers to be served (MCR 2.302). The service page lets the defendant see both and acknowledge service when signed in.</p>
+    <p class="m" style="margin:0 0 12px">The clerk issues each summons. Once it is issued it goes straight to the process servers, and it must be served within 30 days (MCR 2.301). The service page lets the defendant see both and acknowledge service within 72 hours when signed in (MCR 2.302). Request a summons within 5 days after the case is started.</p>
     ${svcMsg ? `<div class="al low" style="margin-bottom:12px">${svcMsg}</div>` : ''}
     ${rows || empty('No summons or subpoena yet', 'Request a summons for each defendant below.')}
+    ${second.map(d => `<div class="note"><b>${esc(d.name)}</b><small>The first summons expired without service. A second summons is valid for 14 days (MCR 2.301(A)(6)).</small><div class="ea" style="margin-top:8px">${btn('gensum:' + encodeURIComponent(d.name), svcBusy === 'g' + d.name ? 'Requesting…' : 'Request a second summons', 'sm')}</div></div>`).join('')}
     ${missing.map(d => `<div class="note"><b>${esc(d.name)}</b><small>${d.address ? esc(d.address) : 'No address on file'}</small><div class="ea" style="margin-top:8px">${btn('gensum:' + encodeURIComponent(d.name), svcBusy === 'g' + d.name ? 'Requesting…' : 'Request a summons', 'sm')}</div></div>`).join('')}
     <h4 style="margin:18px 0 6px;font-size:15px">Subpoena</h4><p class="m" style="margin:0 0 10px">${self ? 'As an officer of the court you issue your own subpoena; it does not need the clerk’s signature. It is recorded on the docket.' : 'Request that the clerk issue a subpoena. It appears here once it is issued.'}</p>
     <div class="cols" style="display:grid;grid-template-columns:1fr 1fr;gap:12px"><label class="f"><span>Person to be subpoenaed</span><input class="in" id="sp-name" placeholder="Full name"></label><label class="f"><span>What is it for (optional)</span><input class="in" id="sp-note" placeholder="Hearing, trial or records"></label></div>
@@ -279,9 +281,10 @@ async function genSummons(name) {
   svcBusy = 'g' + name; draw();
   try {
     const pls = plist(cur).filter(p => /plaintiff|petitioner/i.test(p.role || '')), kind = d.kind || (/\b(llc|inc|corp|company|co\.|ltd|llp|association|bank)\b/i.test(name) ? 'Business or organization' : 'Person');
-    const complaint = (cur.events || []).filter(e => e.type === 'filing' && e.documentLink).slice(0, 5).map(e => ({ name: e.docName || e.description, documentType: e.description, url: e.documentLink }));
-    const values = summonsValues({ caseno: cur.caseId, judge: judgeName(cur) || '', plaintiffs: pls.map(p => p.name), plaintiffAddress: pls[0]?.address || '', defendant: d.name, defendantAddress: d.address || '' });
-    const sr = await newSummons(db, { court: cur.court, caseId: cur.caseId, caseFirestoreId: cur._id, formId: formFor(kind), party: { name: d.name, kind, address: d.address || '' }, values, complaint, by: account, status: 'sumreq' });
+    const complaint = (cur.events || []).filter(e => e.type === 'filing' && e.documentLink && !e.svc).slice(0, 5).map(e => ({ name: e.docName || e.description, documentType: e.description, url: e.documentLink }));
+    const values = summonsValues({ caseno: cur.caseId, judge: judgeName(cur) || '', plaintiffs: pls.map(p => p.name), plaintiffAddress: pls[0]?.address || '', defendant: d.name, defendantAddress: d.address || '', kind, representative: d.representative || '' });
+    const prior = svc.filter(r => r.kind !== 'subpoena' && r.party?.name === name), isSecond = prior.length > 0;
+    const sr = await newSummons(db, { court: cur.court, caseId: cur.caseId, caseFirestoreId: cur._id, formId: formFor(kind), party: { name: d.name, kind, address: d.address || '' }, values, complaint, by: account, status: 'sumreq', second: isSecond });
     svc.push(sr); svcMsg = 'Summons requested. The clerk will issue it.';
   } catch (e) { console.error(e); svcMsg = 'We could not request the summons. Try again.'; }
   svcBusy = ''; draw();
@@ -320,7 +323,7 @@ function partiesTab() {
   return l.length ? l.map(p => { const cs = counselOf(p), isMe = me.includes(norm(p.name));
     return `<div class="item${isMe ? ' mine' : ''}"><div class="ih"><div><h4>${esc(p.name)}</h4>${Array.isArray(p.aliases) && p.aliases.length ? `<small>a/k/a ${p.aliases.map(esc).join(', ')}</small>` : ''}</div><div class="acts"><span class="pill live">${esc(p.role || 'Party')}</span>${isMe ? '<span class="pill mid">You</span>' : ''}</div></div>
       ${kv([['Representation', cs.length ? '' : 'Self-represented'], ...cs.map((a, k) => [k === 0 ? 'Attorney' : 'Co-counsel', a.name + (a.barNumber ? ` (Bar No. ${a.barNumber})` : '')]),
-        ...(sideOf(p.role) === 1 ? [['Service', isServed(p) ? 'Served' + (hv(p.serviceDate) ? ' ' + fmtDate(p.serviceDate) : '') : 'Not yet served']] : []), ['Answer filed', fmtDate(p.answerDate)], ['Response filed', fmtDate(p.responseDate)], ...(p.additionalFields || []).filter(f => hv(f.label)).map(f => [f.label, f.value])])}</div>`; }).join('')
+        ...(sideOf(p.role) === 1 ? [['Service', isServed(p) ? 'Served' + (hv(p.serviceDate) ? ' ' + fmtDate(p.serviceDate) : '') : 'Not yet served']] : []), ...(hv(p.responseDue) && isServed(p) ? [['Response due', fmtDate(p.responseDue)]] : []), ['Answer filed', fmtDate(p.answerDate)], ['Response filed', fmtDate(p.responseDate)], ...(p.additionalFields || []).filter(f => hv(f.label)).map(f => [f.label, f.value])])}</div>`; }).join('')
     : `<section class="card">${empty('No parties on record')}</section>`;
 }
 

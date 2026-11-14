@@ -64,8 +64,8 @@ tbody tr[data-a]{cursor:pointer}tbody tr[data-a]:hover{background:#f6f9fd}
 <script type="module">
 import { boot, db, $, esc, has, STAFF, CLERKS, OFFICERS, ADMINS } from '/courts/online-services/portal/dashboard/assets/js/portal-shell.js?v=8';
 import { collection, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
-import { issueProcess } from '/courts/online-services/portal/dashboard/assets/forms/servicedb.js?v=3';
-import { FORM_NUM } from '/courts/online-services/portal/dashboard/assets/forms/service.js?v=2';
+import { issueProcess } from '/courts/online-services/portal/dashboard/assets/forms/servicedb.js?v=5';
+import { FORM_NUM } from '/courts/online-services/portal/dashboard/assets/forms/service.js?v=4';
 
 const { account, role } = await boot({ id: 'process', title: 'Process', subtitle: 'Summonses and subpoenas waiting for the court to issue them.' });
 const root = $('page-body'), canIssue = has([...CLERKS, ...OFFICERS, ...ADMINS], role);
@@ -96,7 +96,7 @@ function draw() {
       `<div class="table-scroll"><table><thead><tr><th>${tab === 'wait' ? 'Requested' : 'Issued'}</th><th>Type</th><th>Case</th><th>For</th><th>${tab === 'wait' ? 'Requested by' : 'Issued by'}</th><th></th></tr></thead><tbody>${list.map(r => `<tr data-a="open:${esc(r._id)}"><td>${esc(fmt(tab === 'wait' ? r.createdAt : r.issued.at))}</td><td><b>${esc(kindOf(r))}</b></td><td>${esc(r.caseId || '—')}</td><td><b>${esc(r.party?.name || '—')}</b><small>${esc(r.party?.address || '')}</small></td><td>${esc(tab === 'wait' ? r.createdBy || '—' : r.issued.by)}${tab === 'done' && r.issued.role ? `<small>${esc(r.issued.role)}</small>` : ''}</td><td>${tab === 'wait' ? (canIssue ? 'Review and issue' : 'View') : 'View'}</td></tr>`).join('')}</tbody></table></div>`}</section>`;
 }
 async function openReq(r) {
-  const sub = r.kind === 'subpoena', ui = sub ? null : await import('/courts/online-services/portal/dashboard/assets/forms/serviceui.js?v=4'), svc = await import('/courts/online-services/portal/dashboard/assets/forms/service.js?v=2');
+  const sub = r.kind === 'subpoena', ui = sub ? null : await import('/courts/online-services/portal/dashboard/assets/forms/serviceui.js?v=5'), svc = await import('/courts/online-services/portal/dashboard/assets/forms/service.js?v=4');
   let png = '', pref = ''; if (canIssue && isWait(r)) { try { const d = await getDoc(doc(db, 'userSignatures', account.uid)); if (d.exists()) { png = d.data().png || ''; pref = d.data().pref || ''; } } catch (e) { console.warn(e); } }
   const useImg = !!png && pref !== 'slash', waiting = isWait(r), sigOf = () => ({ name: account.name, uid: account.uid, at: new Date().toISOString(), png: useImg ? png : '' });
   $('dlg-t').textContent = `${kindOf(r)} · ${r.party?.name || ''}`; $('dlg-w').textContent = `${r.caseId} · ${r.status}`; dlg.classList.add('wide'); dlgOk = null;
@@ -106,7 +106,7 @@ async function openReq(r) {
   $('dlg-e').innerHTML = ''; $('dlg-f').innerHTML = `<button class="btn outline" type="button" data-close>${waiting && canIssue ? 'Cancel' : 'Close'}</button>${waiting && canIssue ? `<button class="btn good" type="button" id="dlg-ok">Issue ${sub ? 'subpoena' : 'summons'}</button>` : ''}`;
   if (waiting && canIssue) dlgOk = async () => { await issueProcess(db, r, account, role, { sig: useImg ? png : null }); note = `${sub ? 'Subpoena' : 'Summons'} issued for ${r.party.name}. It is logged on the case docket.`; closeDlg(); };
   dlg.showModal();
-  if (!sub) { const pv = ui.mountPreview($('pv'), r), vals = waiting ? svc.issueValues(r.values, { name: account.name }) : r.values; pv.draw(vals, waiting ? { clk: sigOf() } : r.sig ? { clk: r.sig } : undefined).catch(e => { console.error(e); $('pv').innerHTML = '<p class="m">We could not show the summons.</p>'; }); }
+  if (!sub) { const pv = ui.mountPreview($('pv'), r), vals = waiting ? svc.issueValues(r.values, { name: account.name, days: r.second ? svc.SECOND_SUMMONS_DAYS : svc.SUMMONS_DAYS }) : r.values; pv.draw(vals, waiting ? { clk: sigOf() } : r.sig ? { clk: r.sig } : undefined).catch(e => { console.error(e); $('pv').innerHTML = '<p class="m">We could not show the summons.</p>'; }); }
 }
 root.addEventListener('click', e => { const el = e.target.closest('[data-a]'); if (!el) return; const [n, v] = [el.dataset.a.split(':')[0], el.dataset.a.slice(el.dataset.a.indexOf(':') + 1)]; if (n === 'tab') { tab = v; q = ''; note = ''; draw(); } else if (n === 'open') { const r = reqs.find(x => x._id === v); r && openReq(r); } });
 document.addEventListener('input', e => { if (e.target.id === 'f-q') { q = e.target.value; draw(); const i = $('f-q'); i.focus(); i.setSelectionRange(i.value.length, i.value.length); } });
