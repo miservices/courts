@@ -128,7 +128,7 @@ const fail = (t, m) => { root.innerHTML = `<div class="sg-card"><h1>${esc(t)}</h
   if (l.status === 'signed' || l.status === 'applied') return root.innerHTML = '<div class="sg-card sg-ok"><div class="tick" aria-hidden="true">✓</div><h1>Already signed</h1><p>Your signature was received. You do not need to do anything else.</p></div>';
   if (l.expiresAt < Date.now()) return fail('This link has expired', 'Signing links last 14 days. Contact the court for a new one.');
   const form = byId(l.formId); if (!form) return fail('This document type is not available', 'Contact the court.');
-  const def = (await import(`/courts/online-services/portal/dashboard/assets/forms/${form.id}.js?v=23`)).default;
+  const def = (await import(`/courts/online-services/portal/dashboard/assets/forms/${form.id}.js?v=24`)).default;
   let name = String(l.name || '').trim();
   root.innerHTML = `<div class="sg-card"><h1>${esc(l.title)}</h1><p>The court has asked <b>${esc(name)}</b> to sign this document. You do not need an account. Read it, then click each signature line you are asked to sign.</p>
     <div class="sg-chips" id="chips"></div><p class="sg-note">This link is private to you. Do not share it. It expires ${esc(new Date(l.expiresAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }))}.</p></div>

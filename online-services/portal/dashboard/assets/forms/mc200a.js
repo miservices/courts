@@ -43,7 +43,7 @@ const css = ({ U, P, B }) => `
 .u{display:inline-block;min-width:${P(85)};border-bottom:${B} solid #000;text-align:center;font-weight:normal;line-height:${P(11)}}
 .or{display:flex;align-items:center;height:${P(22)};margin-top:${P(26)}}
 .or .cap{width:${P(209)};padding-left:${P(5)};font-size:${P(7.5)}}
-.or .ob{width:${P(80)};height:${P(22)};border:${B} solid #333;text-align:center;font-weight:bold;font-size:${P(10.5)};line-height:${P(19.5)}}
+.or .ob{width:${P(80)};height:${P(22)};border:${B} solid #222;box-shadow:1px 1px 0 #222;background:#f4f4f4;text-align:center;font-weight:bold;font-size:${P(10.5)};line-height:${P(19.5)}}
 .oo{display:flex;align-items:center;height:${P(19.5)};white-space:nowrap}
 .cb{width:${P(10)};height:${P(10)};border:${B} solid #333;border-radius:2px;flex:none;text-align:center;font-size:${P(10)};line-height:${P(8)};margin:0 ${P(5)} 0 ${P(2)}}
 .ol{height:0;border-top:${B} solid #000}

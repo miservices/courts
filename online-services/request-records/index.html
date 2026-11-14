@@ -237,7 +237,7 @@ async function mdToPdf(text, cs, ss) {
   window.__pl = (await loadEngine()).placementOf;
   const [{ byNumber }, { formOf, mountForm }] = await Promise.all([import(FORMS + 'registry.js?v=8'), loadEngine()]);
   const num = formOf(text), form = num && byNumber(num); if (!form) throw new Error('form');
-  const def = (await import(`${FORMS}${form.id}.js?v=23`)).default, host = document.createElement('div');
+  const def = (await import(`${FORMS}${form.id}.js?v=24`)).default, host = document.createElement('div');
   host.style.cssText = 'position:fixed;left:-12000px;top:0;width:1000px;height:900px'; document.body.appendChild(host);
   try { const eng = await mountForm(def, host, { md: text, readOnly: true }); try { const bytes = await eng.pdfBytes(); return { bytes, defaults: eng.markDefaults(cs, ss) }; } finally { eng.destroy(); } } finally { host.remove(); }
 }
