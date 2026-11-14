@@ -13,6 +13,8 @@ export const FORMS = [
     summary: 'The process server certifies that a summons could not be served (MCR 2.301(H)); the clerk records its return and the judge or magistrate rules on it, including any order for service by publication.' },
   { id: 'mc02', number: 'MC 02', title: 'Appearance', group: 'General',
     summary: 'An attorney enters an appearance as counsel of record for one or more parties.' },
+  { id: 'mc328a', number: 'MC 328A', title: 'Scheduling Order (Civil)', group: 'General',
+    summary: 'The court’s scheduling order in a civil action: pleadings and parties, discovery, witnesses and experts, exhibits and motion deadlines, settlement and trial. Completed by the judge or magistrate.' },
   { id: 'mc09', number: 'MC 09', title: 'Dismissal', group: 'General',
     summary: 'A request to dismiss the entire action or certain claims or parties, by the plaintiff or by stipulation, with the court’s order granting or denying it.' },
   { id: 'mc09a', number: 'MC 09A', title: 'Order of Dismissal for Lack of Progress', group: 'General',
