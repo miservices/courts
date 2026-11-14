@@ -104,7 +104,7 @@ export function openStampEditor({ pdf = null, md = null, label = '7TH DISTRICT C
     try {
       if (md != null) {   /* a court form: the form engine draws the page and the marks */
         const { byNumber } = await import('./registry.js?v=8'), num = formOf(md), form = num && byNumber(num); if (!form) throw new Error('form');
-        const def = (await import(`./${form.id}.js?v=22`)).default, host = document.createElement('div'); host.style.cssText = 'width:860px;max-width:100%;margin:0 auto'; box.replaceChildren(host); box.style.width = '100%';
+        const def = (await import(`./${form.id}.js?v=23`)).default, host = document.createElement('div'); host.style.cssText = 'width:860px;max-width:100%;margin:0 auto'; box.replaceChildren(host); box.style.width = '100%';
         eng = await mountForm(def, host, { md, readOnly: true, stamp: stampView(), onStampMove: p => { M.stamp = { ...M.stamp, ...p }; sync(); }, marks: { cert: certView(), seal: sealView() },
           onMarkMove: (k, p) => { M[k] = { ...M[k], ...p }; placed[k] = true; sync(); } });
         redraw = () => { eng.setStamp(stampView()); eng.setMark('cert', certView()); eng.setMark('seal', sealView()); };

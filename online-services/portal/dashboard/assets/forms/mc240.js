@@ -8,7 +8,7 @@ const css = args => a200.css(args) + (({ U, P, B }) => `
 .h3 .jv{font-size:${P(8)};white-space:nowrap}
 .pt .c5{flex:1;border-top:${B} solid #000;padding-left:${P(5)}}
 .mt{width:${P(497.5)};border-bottom:${B} solid #000;padding:${P(9)} 0 ${P(9)} ${P(8)};line-height:${P(13)}}
-.sb{width:max-content;min-width:${P(104)};margin:${P(16)} auto 0;border:${B} solid #333;padding:${P(5)} ${P(14)};text-align:center;font-weight:bold;line-height:${P(12)}}
+.sb{width:max-content;min-width:${P(104)};margin:${P(16)} auto 0;border:${B} solid #222;box-shadow:1px 1px 0 #222;background:#f4f4f4;padding:${P(5)} ${P(21)};font-weight:bold;text-align:center;line-height:${P(12)}}
 .sb.l{margin:${P(22)} 0 0 ${P(209)}}
 .pp{line-height:${P(14)};margin-top:${P(14)}}.pp.t{margin-top:${P(12)}}
 .ob2{display:flex;align-items:flex-start;min-height:${P(18.5)};line-height:${P(14)}}.ob2 .cb{margin-top:${P(2.5)}}.ob2 .tx{flex:1;min-width:0;white-space:pre-wrap;word-wrap:break-word}

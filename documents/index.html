@@ -70,7 +70,7 @@ import { getStorage, ref, getBytes, getMetadata } from "https://www.gstatic.com/
 import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 import { drawMarks } from '/courts/online-services/portal/dashboard/assets/forms/marks.js?v=3';
 import { placementOf } from '/courts/online-services/portal/dashboard/assets/forms/engine.js?v=33';
-import { openStampEditor } from '/courts/online-services/portal/dashboard/assets/forms/stampeditor.js?v=3';
+import { openStampEditor } from '/courts/online-services/portal/dashboard/assets/forms/stampeditor.js?v=4';
 
 const app = initializeApp({
   apiKey: "AIzaSyA8sUFIq81cs6uQvqduardpGJ4R2DxO8NQ", authDomain: "micourt-dada6.firebaseapp.com", projectId: "micourt-dada6",
@@ -164,7 +164,7 @@ async function open() {
     const [{ byNumber }, { formOf, mountForm }] = await Promise.all([import(FORMS + 'registry.js?v=8'), import(FORMS + 'engine.js?v=33')]);
     const num = formOf(text), form = num && byNumber(num);
     if (!form) return card('This document cannot be shown', num ? `It was prepared on form "${num}", which this viewer does not support yet.` : 'We could not tell which form this file is for.');
-    const def = (await import(`${FORMS}${form.id}.js?v=22`)).default; if (my !== token) return;
+    const def = (await import(`${FORMS}${form.id}.js?v=23`)).default; if (my !== token) return;
     $('host').innerHTML = '';
     engine = await mountForm(def, $('host'), { md: text, readOnly: true, stamp: { ...stampRec }, onNote: (t, b) => { if (shown && b) bad(t); } });
     if (my !== token) { engine.destroy(); return; }

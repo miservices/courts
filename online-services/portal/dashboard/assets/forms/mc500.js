@@ -16,7 +16,7 @@ const css = args => a02.css(args) + (({ U, P, B }) => `
 .rcpt{width:${P(497.5)};text-align:right;font-weight:bold;margin-top:${P(2)};line-height:${P(14)}}
 .rcpt .cu{display:inline-block;min-width:${P(110)};border-bottom:${B} solid #000;font-weight:normal;text-align:left;padding-left:${P(4)}}
 .cr2{position:relative;display:flex;align-items:center;justify-content:center;width:${P(497.5)};margin-top:${P(16)};height:${P(26)}}
-.cr2 .sb{border:${B} solid #000;padding:${P(6)} ${P(14)};font-weight:bold;line-height:${P(12)};text-align:center}
+.cr2 .sb{min-width:${P(86)};border:${B} solid #222;box-shadow:1px 1px 0 #222;background:#f4f4f4;padding:${P(5)} ${P(21)};font-weight:bold;text-align:center;line-height:${P(12)}}
 .cr2 .sm{position:absolute;left:0;top:50%;transform:translateY(-50%);font-size:${P(7.1)}}
 .tb{width:${P(497.5)};margin-top:${P(9)};border-top:${B} solid #000;font-size:${P(9)}}
 .tb .r2{display:flex;align-items:stretch;border-bottom:${B} solid #000;min-height:${P(32)}}
